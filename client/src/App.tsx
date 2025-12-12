@@ -8,6 +8,7 @@ import Home from "@/pages/Home";
 import Blog from "@/pages/Blog";
 import { CommunityHub } from "@/pages/CommunityHub";
 import { SparksPage } from "@/pages/Sparks";
+import { MissionPage } from "@/pages/Mission";
 
 function Router() {
   return (
@@ -16,6 +17,7 @@ function Router() {
       <Route path="/blog" component={Blog} />
       <Route path="/community" component={CommunityHub} />
       <Route path="/sparks" component={SparksPage} />
+      <Route path="/mission" component={MissionPage} />
       <Route component={NotFound} />
     </Switch>
   );
