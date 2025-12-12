@@ -1,61 +1,64 @@
 import { useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
-import { Play } from "lucide-react";
+import { motion } from "framer-motion";
+import { Play, Heart, ArrowRight } from "lucide-react";
 
 const sparks = [
-  { id: 1, title: "Identity in Chaos", author: "@sarah_faith", views: "12k", color: "from-purple-500 to-blue-500" },
-  { id: 2, title: "Why I Believe", author: "@josh_real", views: "8.5k", color: "from-orange-500 to-red-500" },
-  { id: 3, title: "Hearing God's Voice", author: "@pastor_mike", views: "45k", color: "from-blue-500 to-cyan-500" },
-  { id: 4, title: "Boldness at Work", author: "@maria_light", views: "15k", color: "from-pink-500 to-rose-500" },
-  { id: 5, title: "Miracles Today", author: "@revival_now", views: "32k", color: "from-emerald-500 to-teal-500" },
+  { id: 1, title: "Identity in Chaos", author: "Sarah Faith", views: "12k", category: "Faith", image: "https://images.unsplash.com/photo-1529070538774-1843cb3265df?auto=format&fit=crop&q=80&w=600" },
+  { id: 2, title: "Why I Believe", author: "Josh Real", views: "8.5k", category: "Testimony", image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=600" },
+  { id: 3, title: "Hearing God's Voice", author: "Pastor Mike", views: "45k", category: "Teaching", image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=600" },
+  { id: 4, title: "Boldness at Work", author: "Maria Light", views: "15k", category: "Lifestyle", image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=600" },
 ];
 
 export function DailySparks() {
   return (
-    <section id="sparks" className="py-24 bg-background relative">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
-        <div className="flex flex-col md:flex-row justify-between items-end gap-6">
-          <div className="space-y-2">
-            <h2 className="text-3xl md:text-4xl font-display font-bold text-white">Daily Sparks</h2>
-            <p className="text-muted-foreground max-w-md">Short, high-impact truths to ignite your faith every day. Swipe, watch, and be transformed.</p>
+    <section id="sparks" className="py-24 bg-white relative">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col md:flex-row justify-between items-end gap-6 mb-12">
+          <div className="space-y-4">
+            <span className="text-primary font-bold tracking-wider uppercase text-sm">Daily Inspiration</span>
+            <h2 className="text-4xl md:text-5xl font-display font-bold text-gray-900 leading-tight">
+              Ignite Your <br /><span className="text-primary">Spiritual Journey</span>
+            </h2>
           </div>
-          <button className="text-primary hover:text-primary/80 font-medium text-sm tracking-wide uppercase transition-colors">
-            View All Sparks &rarr;
+          <button className="bg-gray-100 hover:bg-gray-200 text-gray-900 font-bold px-6 py-3 rounded-full flex items-center gap-2 transition-colors">
+            View All Sparks <ArrowRight className="h-4 w-4" />
           </button>
         </div>
-      </div>
 
-      <div className="overflow-x-auto pb-12 px-4 scrollbar-hide">
-        <div className="flex space-x-6 min-w-max px-4 md:px-8 lg:px-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {sparks.map((spark, i) => (
             <motion.div
               key={spark.id}
-              initial={{ opacity: 0, x: 50 }}
-              whileInView={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1, duration: 0.5 }}
               viewport={{ once: true }}
-              className="relative group cursor-pointer"
+              className="group cursor-pointer"
             >
-              <div className={`w-[280px] h-[500px] rounded-3xl bg-gradient-to-br ${spark.color} p-1 relative overflow-hidden shadow-2xl transition-transform duration-300 group-hover:-translate-y-2`}>
-                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
+              <div className="relative rounded-[24px] overflow-hidden aspect-[3/4] mb-4 shadow-md group-hover:shadow-xl transition-all duration-300">
+                <img 
+                  src={spark.image} 
+                  alt={spark.title} 
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
                 
-                {/* Play Button Overlay */}
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <div className="bg-white/20 backdrop-blur-md p-4 rounded-full">
-                    <Play className="h-8 w-8 text-white fill-white" />
-                  </div>
+                <div className="absolute top-4 left-4 bg-white/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
+                  <span className="text-xs font-bold text-white">{spark.category}</span>
                 </div>
 
-                {/* Content */}
-                <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/90 via-black/50 to-transparent pt-24">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <div className="h-8 w-8 rounded-full bg-white/20" />
-                    <span className="text-sm font-medium text-white/90">{spark.author}</span>
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <div className="h-14 w-14 bg-white/30 backdrop-blur-md rounded-full flex items-center justify-center border border-white/50">
+                    <Play className="h-6 w-6 text-white fill-white ml-1" />
                   </div>
-                  <h3 className="text-xl font-bold text-white leading-tight mb-2">{spark.title}</h3>
-                  <p className="text-xs text-white/60 flex items-center">
-                    <Play className="h-3 w-3 mr-1" /> {spark.views} views
-                  </p>
+                </div>
+              </div>
+              
+              <div className="space-y-1">
+                <h3 className="text-xl font-bold text-gray-900 group-hover:text-primary transition-colors">{spark.title}</h3>
+                <div className="flex items-center justify-between text-sm text-gray-500 font-medium">
+                  <span>{spark.author}</span>
+                  <span className="flex items-center gap-1"><Heart className="h-3 w-3" /> {spark.views}</span>
                 </div>
               </div>
             </motion.div>

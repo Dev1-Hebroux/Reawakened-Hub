@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Flame, Wheat, MoveHorizontal } from "lucide-react";
+import { CheckCircle2, Lock, Flame, Wheat, MoveHorizontal } from "lucide-react";
 
 const pillars = [
   {
@@ -7,34 +7,35 @@ const pillars = [
     title: "The Outpouring",
     scripture: "Joel 2",
     desc: "I will pour out my Spirit upon all of you! Your sons and daughters will prophesy.",
-    color: "text-orange-500",
-    bg: "bg-orange-500/10",
-    border: "border-orange-500/20"
+    color: "bg-orange-100 text-orange-600",
   },
   {
     icon: Wheat,
     title: "The Harvest",
     scripture: "John 4",
     desc: "Open your eyes and look at the fields! They are ripe for harvest.",
-    color: "text-yellow-500",
-    bg: "bg-yellow-500/10",
-    border: "border-yellow-500/20"
+    color: "bg-yellow-100 text-yellow-600",
   },
   {
     icon: MoveHorizontal,
     title: "Without Walls",
     scripture: "Zechariah 2",
-    desc: "Jerusalem will be a city without walls because of the multitude of people and livestock in it.",
-    color: "text-blue-500",
-    bg: "bg-blue-500/10",
-    border: "border-blue-500/20"
+    desc: "Jerusalem will be a city without walls because of the multitude of people.",
+    color: "bg-blue-100 text-blue-600",
   }
 ];
 
 export function Foundations() {
   return (
-    <section className="py-20 bg-background border-b border-white/5">
+    <section className="py-24 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <span className="text-primary font-bold tracking-wider uppercase text-sm">Our Pillars</span>
+          <h2 className="text-3xl md:text-5xl font-display font-bold text-gray-900 mt-2">
+            Built on <span className="text-primary">Biblical Truth</span>
+          </h2>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {pillars.map((pillar, i) => (
             <motion.div
@@ -43,24 +44,18 @@ export function Foundations() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1, duration: 0.5 }}
               viewport={{ once: true }}
-              className={`rounded-2xl p-8 border ${pillar.border} ${pillar.bg} backdrop-blur-sm relative overflow-hidden group`}
+              className="bg-white p-8 rounded-[30px] border border-gray-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 text-center group"
             >
-              <div className="absolute top-0 right-0 p-4 opacity-10 font-display font-bold text-6xl text-white select-none">
-                {i + 1}
-              </div>
-              
-              <div className={`h-12 w-12 rounded-xl bg-background border border-white/10 flex items-center justify-center mb-6 ${pillar.color}`}>
-                <pillar.icon className="h-6 w-6" />
+              <div className={`h-20 w-20 rounded-full mx-auto flex items-center justify-center mb-6 ${pillar.color} group-hover:scale-110 transition-transform`}>
+                <pillar.icon className="h-10 w-10" />
               </div>
 
-              <div className="flex items-baseline space-x-3 mb-2">
-                <h3 className="text-xl font-bold text-white">{pillar.title}</h3>
-                <span className={`text-xs font-bold px-2 py-0.5 rounded-full bg-white/5 ${pillar.color} border border-white/10`}>
-                  {pillar.scripture}
-                </span>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">{pillar.title}</h3>
+              <div className="inline-block px-3 py-1 rounded-full bg-gray-100 text-xs font-bold text-gray-600 mb-4">
+                {pillar.scripture}
               </div>
               
-              <p className="text-muted-foreground text-sm leading-relaxed">
+              <p className="text-gray-500 leading-relaxed">
                 "{pillar.desc}"
               </p>
             </motion.div>
