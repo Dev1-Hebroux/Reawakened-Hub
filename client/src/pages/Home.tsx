@@ -5,6 +5,7 @@ import { DailySparks } from "@/components/sections/DailySparks";
 import { CommunityRooms } from "@/components/sections/CommunityRooms";
 import { DiscipleshipPaths } from "@/components/sections/DiscipleshipPaths";
 import { MissionEngine } from "@/components/sections/MissionEngine";
+import { MarqueeCTA } from "@/components/sections/MarqueeCTA";
 import { Footer } from "@/components/layout/Footer";
 
 export default function Home() {
@@ -31,6 +32,7 @@ export default function Home() {
         </div>
         
         <Foundations />
+        <MarqueeCTA />
         <DailySparks />
         <CommunityRooms />
         <DiscipleshipPaths />
