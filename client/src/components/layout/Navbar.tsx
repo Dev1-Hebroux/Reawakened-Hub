@@ -53,6 +53,7 @@ export function Navbar() {
           <div className={`hidden md:block px-6 py-2.5 rounded-full border transition-all duration-300 ${scrolled ? 'bg-white/50 border-gray-200' : 'bg-transparent border-transparent'}`}>
             <div className="flex items-baseline space-x-1">
               <Link href="/"><span className={`${textColor} ${hoverColor} px-4 py-2 rounded-full text-sm font-bold transition-all cursor-pointer`}>Home</span></Link>
+              <Link href="/about"><span className={`${textColor} ${hoverColor} px-4 py-2 rounded-full text-sm font-bold transition-all cursor-pointer`}>About</span></Link>
               <Link href="/blog"><span className={`${textColor} ${hoverColor} px-4 py-2 rounded-full text-sm font-bold transition-all cursor-pointer`}>Blog</span></Link>
               <Link href="/community"><span className={`${textColor} ${hoverColor} px-4 py-2 rounded-full text-sm font-bold transition-all cursor-pointer`}>Community</span></Link>
               <Link href="/sparks"><span className={`${textColor} ${hoverColor} px-4 py-2 rounded-full text-sm font-bold transition-all cursor-pointer`}>Sparks</span></Link>
@@ -87,6 +88,7 @@ export function Navbar() {
           >
             <div className="px-4 pt-4 pb-6 space-y-2">
               <Link href="/"><span className="text-gray-800 hover:text-primary hover:bg-gray-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer">Home</span></Link>
+              <Link href="/about"><span className="text-gray-800 hover:text-primary hover:bg-gray-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer">About</span></Link>
               <Link href="/blog"><span className="text-gray-800 hover:text-primary hover:bg-gray-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer">Blog</span></Link>
               <Link href="/community"><span className="text-gray-800 hover:text-primary hover:bg-gray-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer">Community</span></Link>
               <Link href="/sparks"><span className="text-gray-800 hover:text-primary hover:bg-gray-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer">Sparks</span></Link>

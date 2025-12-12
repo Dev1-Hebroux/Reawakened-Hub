@@ -1,11 +1,49 @@
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Play, Globe2 } from "lucide-react";
+import { Play, Globe2, X } from "lucide-react";
+import { useState } from "react";
 import heroImage from "@assets/generated_images/young_man_praying_with_golden_light_overlay.png";
+import visionVideo from "@assets/generated_videos/holy_spirit_dove_vision_video.mp4";
 
 export function Hero() {
+  const [showVideo, setShowVideo] = useState(false);
+
   return (
     <section className="relative min-h-[90vh] flex items-center pt-24 pb-12 bg-[#FFF8F3] overflow-hidden">
+      {/* Video Modal */}
+      <AnimatePresence>
+        {showVideo && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+            onClick={() => setShowVideo(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              className="relative w-full max-w-4xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={() => setShowVideo(false)}
+                className="absolute -top-12 right-0 text-white hover:text-primary transition-colors"
+              >
+                <X className="h-8 w-8" />
+              </button>
+              <video
+                src={visionVideo}
+                controls
+                autoPlay
+                className="w-full rounded-2xl shadow-2xl"
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Decorative Circles */}
       <div className="absolute top-20 left-10 w-64 h-64 bg-orange-200/30 rounded-full blur-3xl" />
       <div className="absolute bottom-20 right-10 w-96 h-96 bg-blue-200/30 rounded-full blur-3xl" />
@@ -22,29 +60,33 @@ export function Hero() {
           >
             <div className="inline-flex items-center space-x-2 bg-white border border-orange-100 rounded-full px-4 py-2 shadow-sm">
               <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse"></span>
-              <span className="font-bold text-xs text-orange-900 uppercase tracking-wider">The Movement is Live</span>
+              <span className="font-bold text-xs text-orange-900 uppercase tracking-wider">A Call to Vigilance, Revival & Spiritual Awakening</span>
             </div>
 
-            <h1 className="text-6xl md:text-7xl lg:text-8xl font-display font-bold text-gray-900 leading-[1.05] tracking-tight">
-              Faith. <br />
-              Real Life. <br />
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-display font-bold text-gray-900 leading-[1.05] tracking-tight">
+              Raising a <br />
+              Standard & <br />
               <span className="text-primary relative inline-block">
-                Mission.
+                Building Without Walls
                 <svg className="absolute -bottom-2 left-0 w-full h-3 text-orange-200 -z-10" viewBox="0 0 100 10" preserveAspectRatio="none">
                   <path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="8" fill="none" />
                 </svg>
               </span>
             </h1>
 
-            <p className="text-lg md:text-xl text-gray-500 max-w-lg leading-relaxed font-medium">
-              Reawakened is the digital hub for a generation ready to encounter Jesus, find their purpose, and change the world.
-            </p>
+            <blockquote className="text-lg md:text-xl text-gray-600 max-w-lg leading-relaxed font-medium border-l-4 border-primary pl-4 italic">
+              "I will pour out my Spirit upon all of you! Your sons and daughters will prophesy; your old men will dream dreams, and your young men see visions."
+              <span className="block text-sm text-primary font-bold mt-2 not-italic">— Joel 2:28</span>
+            </blockquote>
 
             <div className="flex flex-col sm:flex-row items-center gap-4 pt-2">
               <Button size="lg" className="bg-primary hover:bg-primary/90 text-white rounded-full px-8 h-16 text-lg font-bold shadow-xl shadow-orange-500/20 w-full sm:w-auto hover:-translate-y-1 transition-all">
                 Join the Movement
               </Button>
-              <div className="flex items-center gap-3 cursor-pointer group w-full sm:w-auto justify-center sm:justify-start">
+              <div 
+                className="flex items-center gap-3 cursor-pointer group w-full sm:w-auto justify-center sm:justify-start"
+                onClick={() => setShowVideo(true)}
+              >
                 <div className="h-14 w-14 rounded-full bg-white border border-gray-100 shadow-lg flex items-center justify-center group-hover:scale-110 transition-transform text-primary">
                   <Play className="h-5 w-5 fill-current ml-1" />
                 </div>
