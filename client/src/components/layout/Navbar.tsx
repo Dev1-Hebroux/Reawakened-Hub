@@ -1,12 +1,20 @@
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Menu, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 
+// Brand Assets
+import logoDark from "@assets/1_1765580635080.png";
+import logoLight from "@assets/6_1765580635085.png";
+
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [location] = useLocation();
+
+  // Check if current page has a dark hero section
+  const isDarkHeroPage = ["/", "/mission", "/sparks"].includes(location);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -16,31 +24,44 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Determine which logo and text color to use
+  // If scrolled: White background -> Dark Logo, Dark Text
+  // If not scrolled & Dark Hero: Transparent background -> Light Logo, Light Text
+  // If not scrolled & Light Hero: Transparent background -> Dark Logo, Dark Text
+  
+  const showDarkNav = scrolled || !isDarkHeroPage;
+  const textColor = showDarkNav ? "text-gray-900" : "text-white";
+  const hoverColor = showDarkNav ? "hover:text-primary hover:bg-gray-100" : "hover:text-white hover:bg-white/10";
+  const currentLogo = showDarkNav ? logoDark : logoLight;
+
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-white/90 backdrop-blur-md shadow-sm py-4' : 'bg-transparent py-6'}`}>
+    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-white/95 backdrop-blur-md shadow-sm py-4' : 'bg-transparent py-6'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
           <div className="flex-shrink-0">
             <Link href="/">
-              <span className={`text-2xl font-display font-bold tracking-tighter cursor-pointer flex items-center gap-2 ${scrolled ? 'text-gray-900' : 'text-gray-900'}`}>
-                <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center text-white font-bold text-lg">R</div>
-                REAWAKENED
-              </span>
+              <div className="cursor-pointer">
+                <img 
+                  src={currentLogo} 
+                  alt="The Reawakened One" 
+                  className="h-10 w-auto object-contain transition-all duration-300"
+                />
+              </div>
             </Link>
           </div>
           
-          <div className="hidden md:block bg-white/80 backdrop-blur-sm px-6 py-2.5 rounded-full border border-gray-100 shadow-sm">
+          <div className={`hidden md:block px-6 py-2.5 rounded-full border transition-all duration-300 ${scrolled ? 'bg-white/50 border-gray-200' : 'bg-transparent border-transparent'}`}>
             <div className="flex items-baseline space-x-1">
-              <Link href="/"><span className="text-gray-600 hover:text-primary px-4 py-2 rounded-full text-sm font-bold transition-colors cursor-pointer hover:bg-orange-50">Home</span></Link>
-              <Link href="/blog"><span className="text-gray-600 hover:text-primary px-4 py-2 rounded-full text-sm font-bold transition-colors cursor-pointer hover:bg-orange-50">Blog</span></Link>
-              <Link href="/community"><span className="text-gray-600 hover:text-primary px-4 py-2 rounded-full text-sm font-bold transition-colors cursor-pointer hover:bg-orange-50">Community</span></Link>
-              <Link href="/sparks"><span className="text-gray-600 hover:text-primary px-4 py-2 rounded-full text-sm font-bold transition-colors cursor-pointer hover:bg-orange-50">Sparks</span></Link>
-              <Link href="/mission"><span className="text-gray-600 hover:text-primary px-4 py-2 rounded-full text-sm font-bold transition-colors cursor-pointer hover:bg-orange-50">Mission</span></Link>
+              <Link href="/"><span className={`${textColor} ${hoverColor} px-4 py-2 rounded-full text-sm font-bold transition-all cursor-pointer`}>Home</span></Link>
+              <Link href="/blog"><span className={`${textColor} ${hoverColor} px-4 py-2 rounded-full text-sm font-bold transition-all cursor-pointer`}>Blog</span></Link>
+              <Link href="/community"><span className={`${textColor} ${hoverColor} px-4 py-2 rounded-full text-sm font-bold transition-all cursor-pointer`}>Community</span></Link>
+              <Link href="/sparks"><span className={`${textColor} ${hoverColor} px-4 py-2 rounded-full text-sm font-bold transition-all cursor-pointer`}>Sparks</span></Link>
+              <Link href="/mission"><span className={`${textColor} ${hoverColor} px-4 py-2 rounded-full text-sm font-bold transition-all cursor-pointer`}>Mission</span></Link>
             </div>
           </div>
 
           <div className="hidden md:block">
-            <Button className="bg-black hover:bg-gray-800 text-white font-bold px-6 py-5 rounded-full shadow-lg transition-all hover:scale-105">
+            <Button className={`${showDarkNav ? 'bg-primary text-white hover:bg-primary/90' : 'bg-white text-primary hover:bg-gray-100'} font-bold px-6 py-5 rounded-full shadow-lg transition-all hover:scale-105`}>
               Join Now
             </Button>
           </div>
@@ -48,7 +69,7 @@ export function Navbar() {
           <div className="-mr-2 flex md:hidden">
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-primary focus:outline-none"
+              className={`inline-flex items-center justify-center p-2 rounded-md focus:outline-none ${textColor}`}
             >
               {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
@@ -65,11 +86,11 @@ export function Navbar() {
             className="md:hidden bg-white border-b border-gray-100 shadow-lg"
           >
             <div className="px-4 pt-4 pb-6 space-y-2">
-              <Link href="/"><span className="text-gray-800 hover:text-primary hover:bg-orange-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer">Home</span></Link>
-              <Link href="/blog"><span className="text-gray-800 hover:text-primary hover:bg-orange-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer">Blog</span></Link>
-              <Link href="/community"><span className="text-gray-800 hover:text-primary hover:bg-orange-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer">Community</span></Link>
-              <Link href="/sparks"><span className="text-gray-800 hover:text-primary hover:bg-orange-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer">Sparks</span></Link>
-              <Link href="/mission"><span className="text-gray-800 hover:text-primary hover:bg-orange-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer">Mission</span></Link>
+              <Link href="/"><span className="text-gray-800 hover:text-primary hover:bg-gray-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer">Home</span></Link>
+              <Link href="/blog"><span className="text-gray-800 hover:text-primary hover:bg-gray-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer">Blog</span></Link>
+              <Link href="/community"><span className="text-gray-800 hover:text-primary hover:bg-gray-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer">Community</span></Link>
+              <Link href="/sparks"><span className="text-gray-800 hover:text-primary hover:bg-gray-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer">Sparks</span></Link>
+              <Link href="/mission"><span className="text-gray-800 hover:text-primary hover:bg-gray-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer">Mission</span></Link>
               <div className="pt-4">
                 <Button className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-6 rounded-xl">
                   Join the Movement
