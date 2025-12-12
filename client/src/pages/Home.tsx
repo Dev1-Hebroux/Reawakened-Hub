@@ -10,9 +10,9 @@ import { Footer } from "@/components/layout/Footer";
 import { ArrowRight, ShoppingBag } from "lucide-react";
 
 // Generated Merch Images
-import outreachImg from "@assets/generated_images/group_at_outreach_wearing_branded_gear.png";
-import capImg from "@assets/generated_images/branded_baseball_cap_mockup.png";
-import hoodieImg from "@assets/generated_images/worship_event_with_branded_hoodies.png";
+import outreachImg from "@assets/generated_images/group_wearing_reawakened.one_branded_t-shirts.png";
+import capImg from "@assets/generated_images/cap_with_reawakened_embroidery.png";
+import hoodieImg from "@assets/generated_images/hoodies_with_reawakened_logo.png";
 
 export default function Home() {
   return (
