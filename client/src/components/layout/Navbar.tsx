@@ -33,6 +33,7 @@ export function Navbar() {
             <div className="flex items-baseline space-x-1">
               <Link href="/"><span className="text-gray-600 hover:text-primary px-4 py-2 rounded-full text-sm font-bold transition-colors cursor-pointer hover:bg-orange-50">Home</span></Link>
               <Link href="/blog"><span className="text-gray-600 hover:text-primary px-4 py-2 rounded-full text-sm font-bold transition-colors cursor-pointer hover:bg-orange-50">Blog</span></Link>
+              <Link href="/community"><span className="text-gray-600 hover:text-primary px-4 py-2 rounded-full text-sm font-bold transition-colors cursor-pointer hover:bg-orange-50">Community</span></Link>
               <Link href="/#sparks"><span className="text-gray-600 hover:text-primary px-4 py-2 rounded-full text-sm font-bold transition-colors cursor-pointer hover:bg-orange-50">Sparks</span></Link>
               <Link href="/#community"><span className="text-gray-600 hover:text-primary px-4 py-2 rounded-full text-sm font-bold transition-colors cursor-pointer hover:bg-orange-50">Community</span></Link>
               <Link href="/#mission"><span className="text-gray-600 hover:text-primary px-4 py-2 rounded-full text-sm font-bold transition-colors cursor-pointer hover:bg-orange-50">Mission</span></Link>
@@ -67,6 +68,7 @@ export function Navbar() {
             <div className="px-4 pt-4 pb-6 space-y-2">
               <Link href="/"><span className="text-gray-800 hover:text-primary hover:bg-orange-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer">Home</span></Link>
               <Link href="/blog"><span className="text-gray-800 hover:text-primary hover:bg-orange-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer">Blog</span></Link>
+              <Link href="/community"><span className="text-gray-800 hover:text-primary hover:bg-orange-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer">Community</span></Link>
               <Link href="/#sparks"><span className="text-gray-800 hover:text-primary hover:bg-orange-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer">Sparks</span></Link>
               <Link href="/#community"><span className="text-gray-800 hover:text-primary hover:bg-orange-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer">Community</span></Link>
               <Link href="/#mission"><span className="text-gray-800 hover:text-primary hover:bg-orange-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer">Mission</span></Link>
