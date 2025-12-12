@@ -78,7 +78,7 @@ const coreValues = [
   }
 ];
 
-export function AboutPage() {
+export default function AboutPage() {
   return (
     <div className="min-h-screen bg-white text-foreground overflow-x-hidden">
       <Navbar />

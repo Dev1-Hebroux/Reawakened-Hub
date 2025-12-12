@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
-import { AboutPage } from "@/pages/About";
+import AboutPage from "@/pages/About";
 import Blog from "@/pages/Blog";
 import { CommunityHub } from "@/pages/CommunityHub";
 import { SparksPage } from "@/pages/Sparks";
