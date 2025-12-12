@@ -2,7 +2,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   Flame, MapPin, Share2, MessageCircle, 
   Heart, Play, Globe, X, Send,
-  Maximize2, MoreVertical, ArrowRight
+  Maximize2, MoreVertical, ArrowRight,
+  Mail, Rss, Smartphone, BookOpen, Clock, Calendar
 } from "lucide-react";
 import { useState } from "react";
 import { Navbar } from "@/components/layout/Navbar";
@@ -12,6 +13,7 @@ import spark1 from "@assets/generated_images/raw_street_worship_in_brazil.png";
 import spark2 from "@assets/generated_images/testimony_of_healing_in_a_village.png";
 import spark3 from "@assets/generated_images/underground_prayer_meeting.png";
 import spark4 from "@assets/generated_images/student_sharing_gospel_on_campus.png";
+import dailyBg from "@assets/generated_images/cinematic_sunrise_devotional_background.png";
 
 const sparks = [
   {
@@ -65,6 +67,7 @@ const pillars = ["All", "Outpouring", "Harvest", "Without Walls", "Intercession"
 export function SparksPage() {
   const [activeFilter, setActiveFilter] = useState("All");
   const [selectedSpark, setSelectedSpark] = useState<typeof sparks[0] | null>(null);
+  const [showSubscribe, setShowSubscribe] = useState(false);
 
   const filteredSparks = activeFilter === "All" 
     ? sparks 
@@ -119,6 +122,89 @@ export function SparksPage() {
           </div>
         </div>
       </section>
+
+      {/* Daily Devotional Section */}
+      <div className="bg-gray-900 border-y border-white/10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h2 className="text-2xl font-bold font-display flex items-center gap-2">
+                <BookOpen className="h-6 w-6 text-primary" /> Daily Spark
+              </h2>
+              <p className="text-gray-400 text-sm">Your daily dose of scripture and inspiration.</p>
+            </div>
+            <button 
+              onClick={() => setShowSubscribe(true)}
+              className="hidden md:flex items-center gap-2 text-sm font-bold text-primary hover:text-white transition-colors"
+            >
+              Get Daily Updates <ArrowRight className="h-4 w-4" />
+            </button>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            {/* Today's Video */}
+            <div className="relative aspect-video rounded-2xl overflow-hidden group cursor-pointer border border-white/10">
+              <img src={dailyBg} alt="Daily Devotional" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+              <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                <div className="h-16 w-16 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 group-hover:scale-110 transition-transform">
+                  <Play className="h-8 w-8 fill-white text-white ml-1" />
+                </div>
+              </div>
+              <div className="absolute bottom-4 left-4 right-4">
+                <span className="bg-primary text-white text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wider mb-2 inline-block">
+                  Today's Word
+                </span>
+                <h3 className="text-xl font-bold text-white">The Power of Secret Prayer</h3>
+                <p className="text-sm text-white/80">Pastor Michael • 5 min watch</p>
+              </div>
+            </div>
+
+            {/* Today's Verse & Subscribe CTA */}
+            <div className="flex flex-col justify-between space-y-6">
+              <div className="bg-white/5 rounded-2xl p-6 border border-white/10 flex-1">
+                 <div className="flex items-center justify-between mb-4">
+                   <span className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
+                     <Calendar className="h-4 w-4" /> Dec 12, 2025
+                   </span>
+                   <Share2 className="h-4 w-4 text-gray-400 cursor-pointer hover:text-white" />
+                 </div>
+                 <blockquote className="text-xl md:text-2xl font-serif italic leading-relaxed text-white/90 mb-4">
+                   "But when you pray, go into your room, close the door and pray to your Father, who is unseen. Then your Father, who sees what is done in secret, will reward you."
+                 </blockquote>
+                 <p className="text-right text-primary font-bold">— Matthew 6:6 (NIV)</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                 <button 
+                   onClick={() => setShowSubscribe(true)}
+                   className="bg-gray-800 hover:bg-gray-700 p-4 rounded-xl flex items-center gap-3 transition-colors border border-white/5 group"
+                 >
+                   <div className="h-10 w-10 bg-green-500/20 rounded-full flex items-center justify-center text-green-500 group-hover:bg-green-500 group-hover:text-white transition-colors">
+                     <MessageCircle className="h-5 w-5" />
+                   </div>
+                   <div className="text-left">
+                     <div className="text-xs text-gray-400">Join on</div>
+                     <div className="font-bold">WhatsApp</div>
+                   </div>
+                 </button>
+
+                 <button 
+                   onClick={() => setShowSubscribe(true)}
+                   className="bg-gray-800 hover:bg-gray-700 p-4 rounded-xl flex items-center gap-3 transition-colors border border-white/5 group"
+                 >
+                   <div className="h-10 w-10 bg-blue-500/20 rounded-full flex items-center justify-center text-blue-500 group-hover:bg-blue-500 group-hover:text-white transition-colors">
+                     <Mail className="h-5 w-5" />
+                   </div>
+                   <div className="text-left">
+                     <div className="text-xs text-gray-400">Get via</div>
+                     <div className="font-bold">Email</div>
+                   </div>
+                 </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -227,6 +313,59 @@ export function SparksPage() {
         </div>
 
       </div>
+
+      {/* Subscribe Modal */}
+      <AnimatePresence>
+        {showSubscribe && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[70] bg-black/80 backdrop-blur-md flex items-center justify-center p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-gray-900 border border-white/10 rounded-3xl p-8 max-w-lg w-full relative overflow-hidden"
+            >
+              <button 
+                onClick={() => setShowSubscribe(false)}
+                className="absolute top-4 right-4 text-gray-400 hover:text-white"
+              >
+                <X className="h-6 w-6" />
+              </button>
+
+              <div className="text-center mb-8">
+                <div className="h-16 w-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Flame className="h-8 w-8 text-primary" />
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-2">Ignite Your Daily Walk</h3>
+                <p className="text-gray-400">Get daily sparks, video devotionals, and prayer alerts delivered straight to you.</p>
+              </div>
+
+              <div className="space-y-3">
+                <button className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold py-4 rounded-xl flex items-center justify-center gap-3 transition-colors">
+                  <MessageCircle className="h-5 w-5" /> Join WhatsApp Community
+                </button>
+                <button className="w-full bg-white hover:bg-gray-100 text-black font-bold py-4 rounded-xl flex items-center justify-center gap-3 transition-colors">
+                  <Mail className="h-5 w-5" /> Subscribe via Email
+                </button>
+                <button className="w-full bg-gray-800 hover:bg-gray-700 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-3 transition-colors">
+                  <Smartphone className="h-5 w-5" /> Get SMS Alerts
+                </button>
+                <button className="w-full bg-transparent hover:bg-white/5 text-gray-400 hover:text-white font-medium py-3 rounded-xl flex items-center justify-center gap-2 transition-colors border border-white/10">
+                  <Rss className="h-4 w-4" /> RSS Feed
+                </button>
+              </div>
+
+              <p className="text-center text-xs text-gray-500 mt-6">
+                We respect your privacy. Unsubscribe at any time.
+              </p>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Immersive Overlay Modal */}
       <AnimatePresence>
