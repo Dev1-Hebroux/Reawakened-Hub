@@ -1,5 +1,6 @@
 import { Navbar } from "@/components/layout/Navbar";
 import { Hero } from "@/components/sections/Hero";
+import { Foundations } from "@/components/sections/Foundations";
 import { DailySparks } from "@/components/sections/DailySparks";
 import { CommunityRooms } from "@/components/sections/CommunityRooms";
 import { DiscipleshipPaths } from "@/components/sections/DiscipleshipPaths";
@@ -12,6 +13,7 @@ export default function Home() {
       <Navbar />
       <main>
         <Hero />
+        <Foundations />
         <DailySparks />
         <CommunityRooms />
         <DiscipleshipPaths />

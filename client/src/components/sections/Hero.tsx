@@ -27,7 +27,7 @@ export function Hero() {
         >
           <div className="inline-flex items-center space-x-2 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full px-4 py-1.5 text-sm text-primary-foreground mb-4">
             <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse"></span>
-            <span className="font-medium tracking-wide text-xs uppercase">The movement is live</span>
+            <span className="font-medium tracking-wide text-xs uppercase">A Call to Vigilance & Revival</span>
           </div>
 
           <h1 className="text-5xl md:text-7xl lg:text-8xl font-display font-bold tracking-tighter text-white leading-[1.1]">
