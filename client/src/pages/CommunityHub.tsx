@@ -3,13 +3,21 @@ import {
   Heart, MessageCircle, Share2, MapPin, 
   Video, Image as ImageIcon, Send, Globe,
   Users, Flame, Bell, Search, MoreHorizontal,
-  Phone, Video as VideoIcon, Mic, CheckCircle2
+  Phone, Video as VideoIcon, Mic, CheckCircle2, Loader2
 } from "lucide-react";
 import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/useAuth";
+import { apiRequest } from "@/lib/queryClient";
+import { isUnauthorizedError } from "@/lib/authUtils";
+import { toast } from "sonner";
+import type { Post, User } from "@shared/schema";
 import mapBg from "@assets/generated_images/digital_map_of_the_world_with_glowing_connections.png";
 import userAvatar from "@assets/generated_images/diverse_group_taking_a_selfie.png"; 
 import feedImg from "@assets/generated_images/hands_typing_on_a_phone_with_bible_in_background.png";
 import storyImg from "@assets/generated_images/young_woman_speaking_passionately_into_camera.png";
+
+type PostWithUser = Post & { user: User; reactionCount?: number };
 
 const stories = [
   { id: 1, name: "Your Story", img: userAvatar, isUser: true },
@@ -19,35 +27,6 @@ const stories = [
   { id: 5, name: "Revival Now", img: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&q=80&w=200", hasUnseen: true },
 ];
 
-const posts = [
-  {
-    id: 1,
-    author: "Global Watchmen London",
-    avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=100",
-    time: "2 hrs ago",
-    location: "London, UK",
-    content: "URGENT: Join us in prayer for the youth gathering in Brixton tonight. We are believing for a massive outpouring of the Spirit! 🔥🇬🇧 #Revival #London",
-    image: mapBg,
-    likes: 245,
-    comments: 42,
-    shares: 12,
-    type: "alert"
-  },
-  {
-    id: 2,
-    author: "Jessica Chen",
-    avatar: storyImg,
-    time: "4 hrs ago",
-    location: "Taipei, Taiwan",
-    content: "Just finished our campus outreach. 5 students gave their lives to Jesus today! The hunger is real. Here is a clip from our worship time.",
-    image: feedImg,
-    likes: 892,
-    comments: 156,
-    shares: 89,
-    type: "update"
-  }
-];
-
 const groups = [
   { id: 1, name: "Europe Intercessors", members: "1.2k", active: true },
   { id: 2, name: "Gen Z Evangelists", members: "4.5k", active: true },
@@ -55,7 +34,95 @@ const groups = [
 ];
 
 export function CommunityHub() {
-  const [activeTab, setActiveTab] = useState("feed");
+  const [postFilter, setPostFilter] = useState<"all" | "mission" | "prayer">("all");
+  const [newPostContent, setNewPostContent] = useState("");
+  const [newPostType, setNewPostType] = useState<"mission" | "prayer">("mission");
+  
+  const { user, isAuthenticated } = useAuth() as { user: User | null; isAuthenticated: boolean; isLoading: boolean };
+  const queryClient = useQueryClient();
+
+  // Fetch posts
+  const { data: posts = [], isLoading } = useQuery<PostWithUser[]>({
+    queryKey: ["/api/posts"],
+  });
+
+  // Filter posts
+  const filteredPosts = posts.filter(post => {
+    if (postFilter === "all") return true;
+    return post.type === postFilter;
+  });
+
+  // Create post mutation
+  const createPostMutation = useMutation({
+    mutationFn: async (data: { content: string; type: string }) => {
+      const res = await apiRequest("POST", "/api/posts", data);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/posts"] });
+      setNewPostContent("");
+      toast.success("Post created successfully!");
+    },
+    onError: (error: Error) => {
+      if (isUnauthorizedError(error)) {
+        toast.error("Please log in to create a post");
+        setTimeout(() => window.location.href = "/api/login", 1000);
+      } else {
+        toast.error("Failed to create post");
+      }
+    },
+  });
+
+  // Add reaction mutation
+  const addReactionMutation = useMutation({
+    mutationFn: async (data: { postId: number; emoji: string }) => {
+      const res = await apiRequest("POST", "/api/reactions", data);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/posts"] });
+    },
+    onError: (error: Error) => {
+      if (isUnauthorizedError(error)) {
+        toast.error("Please log in to react to posts");
+        setTimeout(() => window.location.href = "/api/login", 1000);
+      } else {
+        toast.error("Failed to add reaction");
+      }
+    },
+  });
+
+  const handleCreatePost = () => {
+    if (!newPostContent.trim()) {
+      toast.error("Please enter some content");
+      return;
+    }
+    if (!isAuthenticated) {
+      toast.error("Please log in to create a post");
+      setTimeout(() => window.location.href = "/api/login", 1000);
+      return;
+    }
+    createPostMutation.mutate({ content: newPostContent, type: newPostType });
+  };
+
+  const handleReaction = (postId: number) => {
+    if (!isAuthenticated) {
+      toast.error("Please log in to react to posts");
+      setTimeout(() => window.location.href = "/api/login", 1000);
+      return;
+    }
+    addReactionMutation.mutate({ postId, emoji: "❤️" });
+  };
+
+  const formatTimeAgo = (date: Date) => {
+    const now = new Date();
+    const diff = now.getTime() - new Date(date).getTime();
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    if (hours < 1) return "Just now";
+    if (hours < 24) return `${hours} hrs ago`;
+    const days = Math.floor(hours / 24);
+    return `${days} days ago`;
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 pt-20 pb-12">
@@ -67,11 +134,19 @@ export function CommunityHub() {
             <div className="bg-white rounded-[30px] p-6 shadow-sm border border-gray-100">
               <div className="flex items-center gap-4 mb-6">
                 <div className="h-14 w-14 rounded-full overflow-hidden border-2 border-primary p-0.5">
-                  <img src={userAvatar} alt="User" className="w-full h-full object-cover rounded-full" />
+                  <img 
+                    src={user?.profileImageUrl || userAvatar} 
+                    alt={user?.firstName || "User"} 
+                    className="w-full h-full object-cover rounded-full" 
+                  />
                 </div>
                 <div>
-                  <h3 className="font-bold text-gray-900">Welcome back!</h3>
-                  <p className="text-xs text-gray-500">Global Watchman</p>
+                  <h3 className="font-bold text-gray-900">
+                    {isAuthenticated ? `Welcome, ${user?.firstName}!` : "Welcome!"}
+                  </h3>
+                  <p className="text-xs text-gray-500">
+                    {isAuthenticated ? "Global Watchman" : <button onClick={() => window.location.href = "/api/login"} className="text-primary hover:underline">Log in</button>}
+                  </p>
                 </div>
               </div>
               
@@ -137,94 +212,186 @@ export function CommunityHub() {
               </div>
             </div>
 
+            {/* Filter Tabs */}
+            <div className="bg-white rounded-[30px] p-2 shadow-sm border border-gray-100 flex gap-2">
+              <button
+                data-testid="filter-all"
+                onClick={() => setPostFilter("all")}
+                className={`flex-1 py-2 px-4 rounded-full text-sm font-medium transition-colors ${
+                  postFilter === "all" ? "bg-primary text-white" : "text-gray-600 hover:bg-gray-50"
+                }`}
+              >
+                All Posts
+              </button>
+              <button
+                data-testid="filter-mission"
+                onClick={() => setPostFilter("mission")}
+                className={`flex-1 py-2 px-4 rounded-full text-sm font-medium transition-colors ${
+                  postFilter === "mission" ? "bg-primary text-white" : "text-gray-600 hover:bg-gray-50"
+                }`}
+              >
+                Missions
+              </button>
+              <button
+                data-testid="filter-prayer"
+                onClick={() => setPostFilter("prayer")}
+                className={`flex-1 py-2 px-4 rounded-full text-sm font-medium transition-colors ${
+                  postFilter === "prayer" ? "bg-primary text-white" : "text-gray-600 hover:bg-gray-50"
+                }`}
+              >
+                Prayers
+              </button>
+            </div>
+
             {/* Create Post */}
             <div className="bg-white rounded-[30px] p-6 shadow-sm border border-gray-100">
               <div className="flex gap-4 mb-4">
                 <div className="h-10 w-10 rounded-full overflow-hidden bg-gray-100 flex-shrink-0">
-                  <img src={userAvatar} alt="User" className="w-full h-full object-cover" />
+                  <img 
+                    src={user?.profileImageUrl || userAvatar} 
+                    alt={user?.firstName || "User"} 
+                    className="w-full h-full object-cover" 
+                  />
                 </div>
-                <input 
-                  type="text" 
+                <textarea
+                  data-testid="input-create-post"
+                  value={newPostContent}
+                  onChange={(e) => setNewPostContent(e.target.value)}
                   placeholder="Share a testimony, prayer request, or mission update..." 
-                  className="flex-1 bg-gray-50 rounded-full px-6 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  className="flex-1 bg-gray-50 rounded-2xl px-6 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none min-h-[60px]"
+                  rows={2}
                 />
               </div>
               <div className="flex justify-between items-center border-t border-gray-50 pt-4">
-                <div className="flex gap-4">
-                  <button className="flex items-center gap-2 text-gray-500 hover:text-primary text-sm font-medium">
-                    <Video className="h-5 w-5 text-red-500" /> Live
-                  </button>
-                  <button className="flex items-center gap-2 text-gray-500 hover:text-primary text-sm font-medium">
-                    <ImageIcon className="h-5 w-5 text-green-500" /> Photo/Video
-                  </button>
-                  <button className="flex items-center gap-2 text-gray-500 hover:text-primary text-sm font-medium">
-                    <MapPin className="h-5 w-5 text-blue-500" /> Check-in
-                  </button>
+                <div className="flex gap-2 items-center">
+                  <select
+                    data-testid="select-post-type"
+                    value={newPostType}
+                    onChange={(e) => setNewPostType(e.target.value as "mission" | "prayer")}
+                    className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  >
+                    <option value="mission">Mission</option>
+                    <option value="prayer">Prayer</option>
+                  </select>
                 </div>
-                <button className="bg-primary text-white p-2 rounded-full hover:bg-primary/90">
-                  <Send className="h-4 w-4" />
+                <button 
+                  data-testid="button-submit-post"
+                  onClick={handleCreatePost}
+                  disabled={createPostMutation.isPending || !newPostContent.trim()}
+                  className="bg-primary text-white px-6 py-2 rounded-full hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm font-medium"
+                >
+                  {createPostMutation.isPending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Posting...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="h-4 w-4" />
+                      Post
+                    </>
+                  )}
                 </button>
               </div>
             </div>
 
             {/* Feed Posts */}
-            {posts.map((post) => (
-              <motion.div 
-                key={post.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-white rounded-[30px] overflow-hidden shadow-sm border border-gray-100"
-              >
-                <div className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 rounded-full overflow-hidden">
-                        <img src={post.avatar} alt={post.author} className="w-full h-full object-cover" />
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-gray-900 text-sm">{post.author}</h4>
-                        <div className="flex items-center gap-2 text-xs text-gray-500">
-                          <span>{post.time}</span>
-                          <span>•</span>
-                          <span className="flex items-center gap-1"><Globe className="h-3 w-3" /> {post.location}</span>
+            {isLoading ? (
+              <div className="bg-white rounded-[30px] p-12 shadow-sm border border-gray-100 flex items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : filteredPosts.length === 0 ? (
+              <div className="bg-white rounded-[30px] p-12 shadow-sm border border-gray-100 text-center">
+                <p className="text-gray-500 mb-4">No posts yet. Be the first to share!</p>
+                {!isAuthenticated && (
+                  <button
+                    onClick={() => window.location.href = "/api/login"}
+                    className="text-primary font-medium hover:underline"
+                  >
+                    Log in to create a post
+                  </button>
+                )}
+              </div>
+            ) : (
+              filteredPosts.map((post) => (
+                <motion.div 
+                  key={post.id}
+                  data-testid={`post-${post.id}`}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-white rounded-[30px] overflow-hidden shadow-sm border border-gray-100"
+                >
+                  <div className="p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-full overflow-hidden bg-gray-100">
+                          <img 
+                            src={post.user?.profileImageUrl || userAvatar} 
+                            alt={post.user?.firstName || "User"} 
+                            className="w-full h-full object-cover" 
+                          />
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-gray-900 text-sm" data-testid={`text-author-${post.id}`}>
+                            {post.user?.firstName} {post.user?.lastName}
+                          </h4>
+                          <div className="flex items-center gap-2 text-xs text-gray-500">
+                            <span data-testid={`text-time-${post.id}`}>
+                              {formatTimeAgo(post.createdAt!)}
+                            </span>
+                            <span>•</span>
+                            <span className="flex items-center gap-1 capitalize" data-testid={`text-type-${post.id}`}>
+                              {post.type === 'mission' ? <MapPin className="h-3 w-3" /> : <Flame className="h-3 w-3" />}
+                              {post.type}
+                            </span>
+                          </div>
                         </div>
                       </div>
+                      <button className="text-gray-400 hover:text-gray-600">
+                        <MoreHorizontal className="h-5 w-5" />
+                      </button>
                     </div>
-                    <button className="text-gray-400 hover:text-gray-600">
-                      <MoreHorizontal className="h-5 w-5" />
-                    </button>
-                  </div>
 
-                  <p className="text-gray-800 mb-4 leading-relaxed">{post.content}</p>
-                  
-                  {post.image && (
-                    <div className="rounded-2xl overflow-hidden mb-4 relative aspect-video">
-                      <img src={post.image} alt="Content" className="w-full h-full object-cover" />
-                      {post.type === 'alert' && (
-                        <div className="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold animate-pulse flex items-center gap-1">
-                          <Flame className="h-3 w-3" /> PRAYER ALERT
-                        </div>
-                      )}
+                    <p className="text-gray-800 mb-4 leading-relaxed" data-testid={`text-content-${post.id}`}>
+                      {post.content}
+                    </p>
+                    
+                    {post.imageUrl && (
+                      <div className="rounded-2xl overflow-hidden mb-4 relative aspect-video">
+                        <img src={post.imageUrl} alt="Content" className="w-full h-full object-cover" />
+                        {post.type === 'prayer' && (
+                          <div className="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold animate-pulse flex items-center gap-1">
+                            <Flame className="h-3 w-3" /> PRAYER REQUEST
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-between pt-4 border-t border-gray-50">
+                      <button 
+                        data-testid={`button-react-${post.id}`}
+                        onClick={() => handleReaction(post.id)}
+                        disabled={addReactionMutation.isPending}
+                        className="flex items-center gap-2 text-gray-500 hover:text-red-500 transition-colors disabled:opacity-50"
+                      >
+                        <Heart className="h-5 w-5" />
+                        <span className="text-sm font-medium" data-testid={`text-reactions-${post.id}`}>
+                          {post.reactionCount || 0}
+                        </span>
+                      </button>
+                      <button className="flex items-center gap-2 text-gray-500 hover:text-blue-500 transition-colors">
+                        <MessageCircle className="h-5 w-5" />
+                        <span className="text-sm font-medium">0</span>
+                      </button>
+                      <button className="flex items-center gap-2 text-gray-500 hover:text-green-500 transition-colors">
+                        <Share2 className="h-5 w-5" />
+                        <span className="text-sm font-medium">0</span>
+                      </button>
                     </div>
-                  )}
-
-                  <div className="flex items-center justify-between pt-4 border-t border-gray-50">
-                    <button className="flex items-center gap-2 text-gray-500 hover:text-red-500 transition-colors">
-                      <Heart className="h-5 w-5" />
-                      <span className="text-sm font-medium">{post.likes}</span>
-                    </button>
-                    <button className="flex items-center gap-2 text-gray-500 hover:text-blue-500 transition-colors">
-                      <MessageCircle className="h-5 w-5" />
-                      <span className="text-sm font-medium">{post.comments}</span>
-                    </button>
-                    <button className="flex items-center gap-2 text-gray-500 hover:text-green-500 transition-colors">
-                      <Share2 className="h-5 w-5" />
-                      <span className="text-sm font-medium">{post.shares}</span>
-                    </button>
                   </div>
-                </div>
-              </motion.div>
-            ))}
+                </motion.div>
+              ))
+            )}
           </div>
 
           {/* Right Sidebar - Chat & Trending (25%) */}

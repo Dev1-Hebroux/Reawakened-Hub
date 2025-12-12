@@ -25,7 +25,7 @@ import {
   type InsertBlogPost,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and } from "drizzle-orm";
+import { eq, desc, and, sql, inArray, count } from "drizzle-orm";
 
 // Interface for storage operations
 export interface IStorage {
@@ -92,11 +92,53 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Posts
-  async getPosts(type?: string): Promise<Post[]> {
-    if (type) {
-      return db.select().from(posts).where(eq(posts.type, type)).orderBy(desc(posts.createdAt));
+  async getPosts(type?: string): Promise<any[]> {
+    const query = db
+      .select({
+        id: posts.id,
+        userId: posts.userId,
+        type: posts.type,
+        content: posts.content,
+        imageUrl: posts.imageUrl,
+        createdAt: posts.createdAt,
+        user: {
+          id: users.id,
+          email: users.email,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          profileImageUrl: users.profileImageUrl,
+        },
+      })
+      .from(posts)
+      .leftJoin(users, eq(posts.userId, users.id))
+      .orderBy(desc(posts.createdAt));
+
+    const results = type 
+      ? await query.where(eq(posts.type, type))
+      : await query;
+
+    // Get reaction counts for all posts
+    const postIds = results.map(p => p.id);
+    let reactionCounts: { postId: number; count: number }[] = [];
+    
+    if (postIds.length > 0) {
+      reactionCounts = await db
+        .select({
+          postId: reactions.postId,
+          count: count(reactions.id),
+        })
+        .from(reactions)
+        .where(inArray(reactions.postId, postIds))
+        .groupBy(reactions.postId);
     }
-    return db.select().from(posts).orderBy(desc(posts.createdAt));
+
+    // Map reaction counts to posts
+    const postsWithCounts = results.map(post => ({
+      ...post,
+      reactionCount: reactionCounts.find(r => r.postId === post.id)?.count || 0,
+    }));
+
+    return postsWithCounts;
   }
 
   async getPost(id: number): Promise<Post | undefined> {
