@@ -9,6 +9,7 @@ import Blog from "@/pages/Blog";
 import { CommunityHub } from "@/pages/CommunityHub";
 import { SparksPage } from "@/pages/Sparks";
 import { MissionPage } from "@/pages/Mission";
+import { MobileNav } from "@/components/layout/MobileNav";
 
 function Router() {
   return (
@@ -29,6 +30,7 @@ function App() {
       <TooltipProvider>
         <Toaster />
         <Router />
+        <MobileNav />
       </TooltipProvider>
     </QueryClientProvider>
   );

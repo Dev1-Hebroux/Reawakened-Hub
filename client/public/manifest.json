@@ -1,0 +1,21 @@
+{
+  "name": "Reawakened",
+  "short_name": "Reawakened",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#f97316",
+  "description": "A digital online hub and community focused on faith, purpose, discipleship, and global outreach.",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
