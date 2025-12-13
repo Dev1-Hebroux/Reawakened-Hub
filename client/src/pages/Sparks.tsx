@@ -299,7 +299,7 @@ export function SparksPage() {
                 data-testid={`card-spark-${spark.id}`}
               >
                 <img 
-                  src={spark.thumbnailUrl || getDefaultThumbnail(i)} 
+                  src={spark.imageUrl || spark.thumbnailUrl || getDefaultThumbnail(i)} 
                   alt={spark.title} 
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-80 group-hover:opacity-100" 
                 />
@@ -322,17 +322,19 @@ export function SparksPage() {
                     {spark.description}
                   </p>
                   <div className="flex items-center justify-between text-xs font-bold text-white/50 border-t border-white/10 pt-3">
-                    <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {spark.duration ? `${Math.floor(spark.duration / 60)}min` : '5min'}</span>
-                    <span className="flex items-center gap-1 text-primary"><Flame className="h-3 w-3" /> Watch</span>
+                    <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {spark.duration ? `${Math.floor(spark.duration / 60)}min` : spark.videoUrl ? '5min' : '1min'}</span>
+                    <span className="flex items-center gap-1 text-primary"><Flame className="h-3 w-3" /> {spark.videoUrl ? 'Watch' : 'Read'}</span>
                   </div>
                 </div>
 
-                {/* Hover Play Button */}
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <div className="h-12 w-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/30">
-                    <Play className="h-6 w-6 fill-white text-white" />
+                {/* Hover Play Button - only show for video sparks */}
+                {spark.videoUrl && (
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="h-12 w-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/30">
+                      <Play className="h-6 w-6 fill-white text-white" />
+                    </div>
                   </div>
-                </div>
+                )}
               </motion.div>
             ))}
           </div>
@@ -494,7 +496,7 @@ export function SparksPage() {
                     autoPlay
                   />
                 ) : (
-                  <img src={selectedSpark.thumbnailUrl || spark1} className="w-full h-full object-cover" />
+                  <img src={selectedSpark.imageUrl || selectedSpark.thumbnailUrl || spark1} alt={selectedSpark.title} className="w-full h-full object-cover" />
                 )}
                 <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80 pointer-events-none" />
                 

@@ -72,12 +72,13 @@ export const insertReactionSchema = createInsertSchema(reactions).omit({
 export type InsertReaction = z.infer<typeof insertReactionSchema>;
 export type Reaction = typeof reactions.$inferSelect;
 
-// Sparks - video devotionals
+// Sparks - video or image devotionals
 export const sparks = pgTable("sparks", {
   id: serial("id").primaryKey(),
   title: varchar("title").notNull(),
   description: text("description").notNull(),
-  videoUrl: varchar("video_url").notNull(),
+  videoUrl: varchar("video_url"),
+  imageUrl: varchar("image_url"),
   thumbnailUrl: varchar("thumbnail_url"),
   category: varchar("category").notNull(), // 'daily-devotional', 'worship', 'testimony', etc.
   duration: integer("duration"), // in seconds
