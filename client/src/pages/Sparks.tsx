@@ -3,9 +3,10 @@ import {
   Flame, MapPin, Share2, MessageCircle, 
   Heart, Play, Globe, X, Send,
   Maximize2, MoreVertical, ArrowRight,
-  Mail, Rss, Smartphone, BookOpen, Clock, Calendar, Loader2, Check
+  Mail, Rss, Smartphone, BookOpen, Clock, Calendar, Loader2, Check,
+  Headphones, Download, Volume2, Pause, HandHeart
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Navbar } from "@/components/layout/Navbar";
 import { useAuth } from "@/hooks/useAuth";
@@ -36,10 +37,39 @@ const pillarLabels: Record<string, string> = {
 
 const subscriptionCategories = ["daily-devotional", "worship", "testimony"];
 
+function getMediaTypeIcon(mediaType: string | null) {
+  switch (mediaType) {
+    case 'video': return Play;
+    case 'audio': return Headphones;
+    case 'quick-read': return BookOpen;
+    case 'download': return Download;
+    default: return Play;
+  }
+}
+
+function getMediaTypeLabel(mediaType: string | null) {
+  switch (mediaType) {
+    case 'video': return 'Watch';
+    case 'audio': return 'Listen';
+    case 'quick-read': return 'Read';
+    case 'download': return 'Download';
+    default: return 'View';
+  }
+}
+
+interface ReactionCounts {
+  flame: number;
+  amen: number;
+  praying: number;
+}
+
 export function SparksPage() {
   const [activeFilter, setActiveFilter] = useState("All");
   const [selectedSpark, setSelectedSpark] = useState<Spark | null>(null);
   const [showSubscribe, setShowSubscribe] = useState(false);
+  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
+  const [audioProgress, setAudioProgress] = useState(0);
+  const audioRef = useRef<HTMLAudioElement>(null);
   const queryClient = useQueryClient();
   const { user, isAuthenticated } = useAuth();
 
@@ -88,6 +118,88 @@ export function SparksPage() {
       }
     },
   });
+
+  const { data: reactionCounts = { flame: 0, amen: 0, praying: 0 } } = useQuery<ReactionCounts>({
+    queryKey: ["/api/sparks", selectedSpark?.id, "reactions"],
+    queryFn: async () => {
+      if (!selectedSpark) return { flame: 0, amen: 0, praying: 0 };
+      const res = await fetch(`/api/sparks/${selectedSpark.id}/reactions`);
+      return res.json();
+    },
+    enabled: !!selectedSpark,
+  });
+
+  const reactionMutation = useMutation({
+    mutationFn: async ({ sparkId, reactionType }: { sparkId: number; reactionType: string }) => {
+      const res = await apiRequest("POST", `/api/sparks/${sparkId}/reactions`, { reactionType });
+      return res.json();
+    },
+    onSuccess: () => {
+      if (selectedSpark) {
+        queryClient.invalidateQueries({ queryKey: ["/api/sparks", selectedSpark.id, "reactions"] });
+      }
+    },
+    onError: (error: Error) => {
+      if (isUnauthorizedError(error)) {
+        toast.error("Please log in to react");
+        setTimeout(() => window.location.href = "/api/login", 1000);
+      } else {
+        toast.error("Failed to add reaction");
+      }
+    },
+  });
+
+  const handleReaction = (reactionType: string) => {
+    if (!isAuthenticated) {
+      toast.error("Please log in to react");
+      setTimeout(() => window.location.href = "/api/login", 1000);
+      return;
+    }
+    if (selectedSpark) {
+      reactionMutation.mutate({ sparkId: selectedSpark.id, reactionType });
+    }
+  };
+
+  const toggleAudioPlayback = () => {
+    if (audioRef.current) {
+      if (isAudioPlaying) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play();
+      }
+      setIsAudioPlaying(!isAudioPlaying);
+    }
+  };
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    
+    const handleTimeUpdate = () => {
+      const progress = (audio.currentTime / audio.duration) * 100;
+      setAudioProgress(progress || 0);
+    };
+    
+    const handleEnded = () => {
+      setIsAudioPlaying(false);
+      setAudioProgress(0);
+    };
+    
+    audio.addEventListener('timeupdate', handleTimeUpdate);
+    audio.addEventListener('ended', handleEnded);
+    
+    return () => {
+      audio.removeEventListener('timeupdate', handleTimeUpdate);
+      audio.removeEventListener('ended', handleEnded);
+    };
+  }, [selectedSpark]);
+
+  useEffect(() => {
+    if (!selectedSpark) {
+      setIsAudioPlaying(false);
+      setAudioProgress(0);
+    }
+  }, [selectedSpark]);
 
   const isSubscribed = (category: string) => {
     return subscriptions.some(sub => sub.category === category);
@@ -322,19 +434,27 @@ export function SparksPage() {
                     {spark.description}
                   </p>
                   <div className="flex items-center justify-between text-xs font-bold text-white/50 border-t border-white/10 pt-3">
-                    <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {spark.duration ? `${Math.floor(spark.duration / 60)}min` : spark.videoUrl ? '5min' : '1min'}</span>
-                    <span className="flex items-center gap-1 text-primary"><Flame className="h-3 w-3" /> {spark.videoUrl ? 'Watch' : 'Read'}</span>
+                    <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {spark.duration ? `${Math.floor(spark.duration / 60)}min` : spark.mediaType === 'quick-read' ? '2min' : '5min'}</span>
+                    {(() => {
+                      const MediaIcon = getMediaTypeIcon(spark.mediaType);
+                      return (
+                        <span className="flex items-center gap-1 text-primary">
+                          <MediaIcon className="h-3 w-3" /> {getMediaTypeLabel(spark.mediaType)}
+                        </span>
+                      );
+                    })()}
                   </div>
                 </div>
 
-                {/* Hover Play Button - only show for video sparks */}
-                {spark.videoUrl && (
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <div className="h-12 w-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/30">
-                      <Play className="h-6 w-6 fill-white text-white" />
-                    </div>
+                {/* Hover Action Button - based on media type */}
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="h-12 w-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/30">
+                    {(() => {
+                      const MediaIcon = getMediaTypeIcon(spark.mediaType);
+                      return <MediaIcon className="h-6 w-6 fill-white text-white" />;
+                    })()}
                   </div>
-                )}
+                </div>
               </motion.div>
             ))}
           </div>
@@ -486,50 +606,160 @@ export function SparksPage() {
 
             <div className="w-full max-w-6xl h-full flex flex-col md:flex-row gap-8 items-center justify-center">
               
-              {/* Video Player */}
+              {/* Media Player - adapts based on media type */}
               <div className="relative w-full max-w-md aspect-[9/16] bg-black rounded-[30px] overflow-hidden shadow-2xl border border-white/10 flex-shrink-0">
-                {selectedSpark.videoUrl ? (
+                {/* Background image for all types */}
+                <img 
+                  src={selectedSpark.imageUrl || selectedSpark.thumbnailUrl || spark1} 
+                  alt={selectedSpark.title} 
+                  className="w-full h-full object-cover" 
+                />
+                
+                {/* Video overlay */}
+                {selectedSpark.mediaType === 'video' && selectedSpark.videoUrl && (
                   <video 
                     src={selectedSpark.videoUrl} 
-                    className="w-full h-full object-cover" 
+                    className="absolute inset-0 w-full h-full object-cover" 
                     controls 
                     autoPlay
                   />
-                ) : (
-                  <img src={selectedSpark.imageUrl || selectedSpark.thumbnailUrl || spark1} alt={selectedSpark.title} className="w-full h-full object-cover" />
                 )}
+
+                {/* Audio overlay */}
+                {selectedSpark.mediaType === 'audio' && selectedSpark.audioUrl && (
+                  <>
+                    <audio ref={audioRef} src={selectedSpark.audioUrl} />
+                    <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center p-8">
+                      <div 
+                        onClick={toggleAudioPlayback}
+                        className="h-24 w-24 bg-primary rounded-full flex items-center justify-center cursor-pointer hover:scale-105 transition-transform shadow-lg mb-8"
+                        data-testid="button-audio-play"
+                      >
+                        {isAudioPlaying ? (
+                          <Pause className="h-12 w-12 text-white" />
+                        ) : (
+                          <Play className="h-12 w-12 text-white ml-2" />
+                        )}
+                      </div>
+                      <div className="w-full max-w-xs">
+                        <div className="h-2 bg-white/20 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-primary transition-all duration-300" 
+                            style={{ width: `${audioProgress}%` }}
+                          />
+                        </div>
+                        <div className="flex justify-between text-xs text-white/60 mt-2">
+                          <span>{Math.floor(audioProgress * (selectedSpark.duration || 300) / 6000)}:{String(Math.floor((audioProgress * (selectedSpark.duration || 300) / 100) % 60)).padStart(2, '0')}</span>
+                          <span>{selectedSpark.duration ? `${Math.floor(selectedSpark.duration / 60)}:${String(selectedSpark.duration % 60).padStart(2, '0')}` : '5:00'}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* Quick-read overlay */}
+                {selectedSpark.mediaType === 'quick-read' && (
+                  <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center p-8 overflow-y-auto">
+                    <div className="max-w-sm text-center">
+                      <BookOpen className="h-12 w-12 text-primary mx-auto mb-6" />
+                      {selectedSpark.scriptureRef && (
+                        <span className="text-primary font-bold text-sm uppercase tracking-wider mb-4 block">
+                          {selectedSpark.scriptureRef}
+                        </span>
+                      )}
+                      <blockquote className="text-xl md:text-2xl font-serif italic leading-relaxed text-white/90 mb-6">
+                        "{selectedSpark.description}"
+                      </blockquote>
+                    </div>
+                  </div>
+                )}
+
+                {/* Download overlay */}
+                {selectedSpark.mediaType === 'download' && (
+                  <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center p-8">
+                    <div className="text-center">
+                      <div className="h-20 w-20 bg-primary/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                        <Download className="h-10 w-10 text-primary" />
+                      </div>
+                      <h4 className="text-xl font-bold text-white mb-2">{selectedSpark.title}</h4>
+                      <p className="text-white/70 text-sm mb-6 max-w-xs">{selectedSpark.description}</p>
+                      {selectedSpark.downloadUrl && (
+                        <a
+                          href={selectedSpark.downloadUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="bg-primary hover:bg-primary/90 text-white font-bold px-8 py-4 rounded-full inline-flex items-center gap-2 transition-all hover:scale-105"
+                          data-testid="button-download-resource"
+                        >
+                          <Download className="h-5 w-5" /> Download Now
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80 pointer-events-none" />
                 
-                {/* Overlay Controls */}
+                {/* Overlay Info */}
                 <div className="absolute bottom-0 left-0 right-0 p-8 space-y-4 pointer-events-none">
                   <div className="flex items-center gap-3">
-                     <div className="h-10 w-10 rounded-full bg-white/20" />
+                     <div className="h-10 w-10 rounded-full bg-primary/30 flex items-center justify-center">
+                       {(() => {
+                         const MediaIcon = getMediaTypeIcon(selectedSpark.mediaType);
+                         return <MediaIcon className="h-5 w-5 text-primary" />;
+                       })()}
+                     </div>
                      <div>
                        <h4 className="font-bold text-white">{selectedSpark.title}</h4>
                        <p className="text-xs text-white/70">{pillarLabels[selectedSpark.category] || selectedSpark.category}</p>
                      </div>
                   </div>
-                  <p className="text-sm text-white/90">{selectedSpark.description}</p>
+                  {selectedSpark.mediaType !== 'quick-read' && (
+                    <p className="text-sm text-white/90">{selectedSpark.description}</p>
+                  )}
                 </div>
 
-                {/* Side Actions */}
-                <div className="absolute right-4 bottom-32 flex flex-col gap-6 items-center">
+                {/* Side Actions - Reactions */}
+                <div className="absolute right-4 bottom-32 flex flex-col gap-6 items-center pointer-events-auto">
                   <div className="text-center space-y-1">
-                    <div className="h-12 w-12 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center hover:bg-white/20 cursor-pointer transition-colors">
-                      <Heart className="h-6 w-6 fill-white text-white" />
-                    </div>
-                    <span className="text-xs font-bold">Like</span>
-                  </div>
-                  <div className="text-center space-y-1">
-                    <div className="h-12 w-12 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center hover:bg-white/20 cursor-pointer transition-colors">
+                    <button 
+                      onClick={() => handleReaction('flame')}
+                      disabled={reactionMutation.isPending}
+                      className="h-12 w-12 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center hover:bg-primary/30 cursor-pointer transition-colors"
+                      data-testid="button-react-flame"
+                    >
                       <Flame className="h-6 w-6 text-primary" />
-                    </div>
-                    <span className="text-xs font-bold">Pray</span>
+                    </button>
+                    <span className="text-xs font-bold">{reactionCounts.flame || 0}</span>
                   </div>
                   <div className="text-center space-y-1">
-                     <div className="h-12 w-12 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center hover:bg-white/20 cursor-pointer transition-colors">
+                    <button 
+                      onClick={() => handleReaction('amen')}
+                      disabled={reactionMutation.isPending}
+                      className="h-12 w-12 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center hover:bg-primary/30 cursor-pointer transition-colors"
+                      data-testid="button-react-amen"
+                    >
+                      <HandHeart className="h-6 w-6 text-white" />
+                    </button>
+                    <span className="text-xs font-bold">{reactionCounts.amen || 0}</span>
+                  </div>
+                  <div className="text-center space-y-1">
+                     <button 
+                       onClick={() => {
+                         navigator.share?.({
+                           title: selectedSpark.title,
+                           text: selectedSpark.description,
+                           url: window.location.href
+                         }).catch(() => {
+                           navigator.clipboard.writeText(window.location.href);
+                           toast.success("Link copied to clipboard!");
+                         });
+                       }}
+                       className="h-12 w-12 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center hover:bg-white/20 cursor-pointer transition-colors"
+                       data-testid="button-share-spark"
+                     >
                        <Share2 className="h-6 w-6 text-white" />
-                     </div>
+                     </button>
                      <span className="text-xs font-bold">Share</span>
                   </div>
                 </div>
