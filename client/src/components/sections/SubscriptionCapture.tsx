@@ -155,44 +155,44 @@ export function SubscriptionCapture({
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      className={`bg-white rounded-3xl p-8 shadow-xl border border-gray-100 ${className}`}
+      className={`bg-white rounded-2xl p-6 shadow-lg border border-gray-100 ${className}`}
     >
-      <div className="text-center mb-6">
-        <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 text-primary mb-4">
-          <Mail className="h-6 w-6" />
+      <div className="text-center mb-4">
+        <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 text-primary mb-3">
+          <Mail className="h-5 w-5" />
         </div>
-        <h3 className="text-2xl font-bold text-gray-900 mb-2">{title}</h3>
-        <p className="text-gray-600">{subtitle}</p>
+        <h3 className="text-xl font-bold text-gray-900 mb-1">{title}</h3>
+        <p className="text-gray-600 text-sm">{subtitle}</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-4">
         <Input
           type="email"
           placeholder="Your email address"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="text-center text-lg py-6"
+          className="text-center"
           data-testid="input-subscribe-email-card"
         />
 
         {showCategories && (
-          <div className="space-y-3">
-            <p className="text-sm font-medium text-gray-700 text-center">What interests you?</p>
-            <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-2">
+            <p className="text-xs font-medium text-gray-700 text-center">What interests you?</p>
+            <div className="grid grid-cols-2 gap-2">
               {categories.map((cat) => (
                 <button
                   key={cat.id}
                   type="button"
                   onClick={() => toggleCategory(cat.id)}
-                  className={`flex items-center gap-2 p-3 rounded-xl border transition-all ${
+                  className={`flex items-center gap-2 p-2 rounded-lg border text-sm transition-all ${
                     selectedCategories.includes(cat.id)
                       ? "border-primary bg-primary/5 text-primary"
                       : "border-gray-200 hover:border-gray-300 text-gray-600"
                   }`}
                   data-testid={`button-category-${cat.id}`}
                 >
-                  <cat.icon className={`h-4 w-4 ${selectedCategories.includes(cat.id) ? cat.color : ""}`} />
-                  <span className="text-sm font-medium">{cat.label}</span>
+                  <cat.icon className={`h-3.5 w-3.5 ${selectedCategories.includes(cat.id) ? cat.color : ""}`} />
+                  <span className="text-xs font-medium">{cat.label}</span>
                 </button>
               ))}
             </div>
@@ -200,14 +200,14 @@ export function SubscriptionCapture({
         )}
 
         {showWhatsApp && (
-          <div className="flex items-center gap-3 p-4 rounded-xl bg-green-50 border border-green-100">
+          <div className="flex items-center gap-2 p-3 rounded-lg bg-green-50 border border-green-100">
             <Checkbox
               id="whatsapp-optin"
               checked={whatsappOptIn}
               onCheckedChange={(checked) => setWhatsappOptIn(checked as boolean)}
               data-testid="checkbox-whatsapp-optin"
             />
-            <label htmlFor="whatsapp-optin" className="text-sm text-gray-700 cursor-pointer">
+            <label htmlFor="whatsapp-optin" className="text-xs text-gray-700 cursor-pointer">
               Also send me updates via <span className="text-green-600 font-medium">WhatsApp</span>
             </label>
           </div>
@@ -215,17 +215,17 @@ export function SubscriptionCapture({
 
         <Button
           type="submit"
-          className="w-full py-6 text-lg bg-primary hover:bg-primary/90"
+          className="w-full py-5 bg-primary hover:bg-primary/90"
           disabled={subscribeMutation.isPending || isSuccess}
           data-testid="button-subscribe-card"
         >
           {subscribeMutation.isPending ? (
             <>
-              <Loader2 className="h-5 w-5 animate-spin mr-2" /> Subscribing...
+              <Loader2 className="h-4 w-4 animate-spin mr-2" /> Subscribing...
             </>
           ) : isSuccess ? (
             <>
-              <Check className="h-5 w-5 mr-2" /> You're In!
+              <Check className="h-4 w-4 mr-2" /> You're In!
             </>
           ) : (
             "Join the Movement"
@@ -234,16 +234,16 @@ export function SubscriptionCapture({
       </form>
 
       {showWhatsApp && (
-        <div className="mt-6 text-center">
-          <span className="text-gray-400 text-sm">or</span>
+        <div className="mt-4 text-center">
+          <span className="text-gray-400 text-xs">or</span>
           <a
             href={COMMUNITY_LINKS.whatsapp}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 mt-3 text-green-600 hover:text-green-700 font-medium transition-colors"
+            className="flex items-center justify-center gap-2 mt-2 text-green-600 hover:text-green-700 text-sm font-medium transition-colors"
             data-testid="link-whatsapp-card"
           >
-            <MessageCircle className="h-5 w-5" /> Join Our WhatsApp Community
+            <MessageCircle className="h-4 w-4" /> Join Our WhatsApp Community
           </a>
         </div>
       )}

@@ -175,34 +175,33 @@ export default function Home() {
         <DiscipleshipPaths />
         <MissionEngine />
 
-        <section className="py-24 bg-gradient-to-br from-primary via-primary to-blue-700 relative overflow-hidden">
+        <section className="py-16 bg-gradient-to-br from-primary via-primary to-blue-700 relative overflow-hidden">
           <div className="absolute inset-0 opacity-10">
             <div className="absolute top-0 left-0 w-full h-full bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIyIi8+PC9nPjwvZz48L3N2Zz4=')] " />
           </div>
           
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <div className="text-center mb-12">
+          <div className="max-w-md mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div className="text-center mb-6">
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
-                className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/20 text-white mb-6"
+                className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-white/20 text-white mb-4"
               >
-                <Zap className="h-8 w-8" />
+                <Zap className="h-6 w-6" />
               </motion.div>
-              <h2 className="text-4xl md:text-5xl font-display font-bold text-white mb-6">
+              <h2 className="text-2xl md:text-3xl font-display font-bold text-white mb-2">
                 Stay Ignited. Stay Connected.
               </h2>
-              <p className="text-xl text-white/80 max-w-2xl mx-auto">
-                Join thousands receiving weekly inspiration, mission updates, prayer points, and exclusive content.
+              <p className="text-sm text-white/80">
+                Join thousands receiving weekly inspiration and mission updates.
               </p>
             </div>
 
             <motion.div
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="bg-white rounded-3xl p-8 shadow-2xl"
             >
               <SubscriptionCapture 
                 variant="card"
@@ -210,7 +209,6 @@ export default function Home() {
                 subtitle="Get daily sparks, mission updates, and prayer points delivered to your inbox."
                 showCategories={true}
                 showWhatsApp={true}
-                className="shadow-none border-none p-0"
               />
             </motion.div>
           </div>
