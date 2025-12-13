@@ -132,13 +132,26 @@ export function MissionaryPathway() {
               A journey from personal prayer to movement multiplication. Every disciple-making movement follows this pattern—from the book of Acts to today's global movements.
             </p>
 
-            <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
-              <span className="flex items-center gap-1">
-                <CheckCircle2 className="h-4 w-4 text-green-500" />
-                5 Stages
-              </span>
-              <span className="text-gray-600">|</span>
-              <span>Reverse-engineered from global movements</span>
+            <div className="flex flex-col items-center gap-2 text-sm text-gray-500">
+              <div className="flex items-center gap-2">
+                <span className="flex items-center gap-1">
+                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                  5 Stages
+                </span>
+                <span className="text-gray-600">|</span>
+                <span>Reverse-engineered from global movements</span>
+              </div>
+              <p className="text-xs text-gray-600">
+                Adapted from{" "}
+                <a 
+                  href="https://kcunderground.org/toolkit" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-orange-400 hover:text-orange-300 underline"
+                >
+                  KC Underground's Missionary Pathway Toolkit
+                </a>
+              </p>
             </div>
           </motion.div>
         </div>
