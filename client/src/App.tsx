@@ -11,6 +11,7 @@ import { CommunityHub } from "@/pages/CommunityHub";
 import { SparksPage } from "@/pages/Sparks";
 import { MissionPage } from "@/pages/Mission";
 import { MobileNav } from "@/components/layout/MobileNav";
+import { QuickShare } from "@/components/ui/QuickShare";
 
 function Router() {
   return (
@@ -34,6 +35,7 @@ function App() {
           <Toaster />
           <Router />
           <MobileNav />
+          <QuickShare />
         </div>
       </TooltipProvider>
     </QueryClientProvider>
