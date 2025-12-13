@@ -28,6 +28,8 @@ app.use(
 app.use(express.urlencoded({ extended: false }));
 
 app.use("/attached_assets", express.static(path.resolve(__dirname, "..", "attached_assets")));
+app.use("/assets", express.static(path.resolve(__dirname, "..", "attached_assets")));
+app.use("/assets", express.static(path.resolve(__dirname, "..", "attached_assets", "generated_images")));
 
 export function log(message: string, source = "express") {
   const formattedTime = new Date().toLocaleTimeString("en-US", {
