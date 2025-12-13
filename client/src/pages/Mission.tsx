@@ -3,7 +3,8 @@ import {
   Globe, BookOpen, Briefcase, Cpu, Users, 
   ArrowRight, Code, Database, Zap, Map, 
   GraduationCap, Heart, Rocket, Terminal,
-  LayoutGrid, Share2, Network, Calendar, MapPin, Loader2, Check
+  LayoutGrid, Share2, Network, Calendar, MapPin, Loader2, Check,
+  Flame, MessageCircle, Plane, Hand
 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -14,6 +15,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { toast } from "sonner";
+import { SubscriptionCapture } from "@/components/sections/SubscriptionCapture";
+import { PrayerRequestModal, TestimonyModal, VolunteerModal, MissionTripModal } from "@/components/sections/EngagementForms";
+import { COMMUNITY_LINKS } from "@/lib/config";
 import type { Event, EventRegistration } from "@shared/schema";
 
 import heroBg from "@assets/generated_images/global_mission_map_concept.png";
@@ -80,12 +84,13 @@ const eventTypeLabels: Record<string, string> = {
   "discipleship": "Discipleship"
 };
 
-interface EventWithRegistration extends Event {
-  isRegistered?: boolean;
-}
-
 export function MissionPage() {
   const [activeEventType, setActiveEventType] = useState("All");
+  const [prayerModalOpen, setPrayerModalOpen] = useState(false);
+  const [testimonyModalOpen, setTestimonyModalOpen] = useState(false);
+  const [volunteerModalOpen, setVolunteerModalOpen] = useState(false);
+  const [missionModalOpen, setMissionModalOpen] = useState(false);
+  
   const queryClient = useQueryClient();
   const { user, isAuthenticated } = useAuth();
 
@@ -93,7 +98,7 @@ export function MissionPage() {
     queryKey: ["/api/events"],
   });
 
-  const { data: myRegistrations = [], isLoading: registrationsLoading } = useQuery<EventRegistration[]>({
+  const { data: myRegistrations = [] } = useQuery<EventRegistration[]>({
     queryKey: ["/api/my-registrations", events.map(e => e.id).join(",")],
     queryFn: async () => {
       if (!user) return [];
@@ -102,13 +107,8 @@ export function MissionPage() {
           const res = await fetch(`/api/events/${event.id}/my-registration`, {
             credentials: "include",
           });
-          if (res.status === 401) {
-            return null;
-          }
-          if (res.ok) {
-            const data = await res.json();
-            return data;
-          }
+          if (res.status === 401) return null;
+          if (res.ok) return await res.json();
           return null;
         } catch {
           return null;
@@ -160,7 +160,11 @@ export function MissionPage() {
     <div className="min-h-screen bg-white text-gray-900 font-sans">
       <Navbar />
       
-      {/* Hero Section */}
+      <PrayerRequestModal open={prayerModalOpen} onOpenChange={setPrayerModalOpen} />
+      <TestimonyModal open={testimonyModalOpen} onOpenChange={setTestimonyModalOpen} />
+      <VolunteerModal open={volunteerModalOpen} onOpenChange={setVolunteerModalOpen} />
+      <MissionTripModal open={missionModalOpen} onOpenChange={setMissionModalOpen} />
+      
       <section className="relative h-[80vh] flex items-center justify-center overflow-hidden bg-black">
         <div className="absolute inset-0 z-0">
           <img 
@@ -190,10 +194,18 @@ export function MissionPage() {
               We are a movement committed to spiritual awakening, societal transformation, and empowering the next generation through faith, technology, and excellence.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button className="bg-primary hover:bg-primary/90 text-white px-8 py-6 rounded-full text-lg font-bold" data-testid="button-join-movement">
+              <Button 
+                className="bg-primary hover:bg-primary/90 text-white px-8 py-6 rounded-full text-lg font-bold" 
+                onClick={() => setVolunteerModalOpen(true)}
+                data-testid="button-join-movement"
+              >
                 Join the Movement
               </Button>
-              <Button variant="outline" className="border-white/20 text-white hover:bg-white/10 px-8 py-6 rounded-full text-lg font-bold backdrop-blur-sm" data-testid="button-explore-programs">
+              <Button 
+                variant="outline" 
+                className="border-white/20 text-white hover:bg-white/10 px-8 py-6 rounded-full text-lg font-bold backdrop-blur-sm" 
+                data-testid="button-explore-programs"
+              >
                 Explore Programs
               </Button>
             </div>
@@ -201,7 +213,6 @@ export function MissionPage() {
         </div>
       </section>
 
-      {/* Stats Bar */}
       <section className="bg-white border-b border-gray-100 relative z-20 -mt-20 max-w-6xl mx-auto rounded-2xl shadow-xl p-8 mx-4 md:mx-auto">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           {stats.map((stat, i) => (
@@ -213,7 +224,236 @@ export function MissionPage() {
         </div>
       </section>
 
-      {/* Core Pillars Grid */}
+      <section id="outpouring" className="py-24 px-4 bg-gradient-to-br from-orange-50 to-red-50 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-orange-200/30 rounded-full blur-3xl" />
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+            >
+              <div className="inline-flex items-center gap-2 bg-orange-100 text-orange-600 px-4 py-2 rounded-full text-sm font-bold mb-6">
+                <Flame className="h-4 w-4" /> Channel 1
+              </div>
+              <h2 className="text-4xl md:text-5xl font-display font-bold text-gray-900 mb-6">
+                The Outpouring
+              </h2>
+              <p className="text-lg text-gray-600 mb-6 leading-relaxed">
+                Experience the power of God through intentional prayer, worship encounters, and spiritual awakening movements. We believe in the Joel 2:28 promise of God's Spirit being poured out on all flesh.
+              </p>
+              <ul className="space-y-4 mb-8">
+                {["Weekly Prayer Nights", "Worship Encounters", "Revival Meetings", "Spiritual Retreats"].map((item, i) => (
+                  <li key={i} className="flex items-center gap-3 text-gray-700">
+                    <div className="w-2 h-2 rounded-full bg-orange-500" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <div className="flex flex-wrap gap-4">
+                <Button 
+                  className="bg-orange-500 hover:bg-orange-600 text-white rounded-full px-6"
+                  onClick={() => setPrayerModalOpen(true)}
+                  data-testid="button-submit-prayer"
+                >
+                  <Hand className="h-4 w-4 mr-2" /> Submit Prayer Request
+                </Button>
+                <Button 
+                  variant="outline"
+                  className="border-orange-200 text-orange-600 hover:bg-orange-50 rounded-full px-6"
+                  onClick={() => setTestimonyModalOpen(true)}
+                  data-testid="button-share-testimony"
+                >
+                  <BookOpen className="h-4 w-4 mr-2" /> Share Testimony
+                </Button>
+              </div>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="relative"
+            >
+              <div className="absolute -inset-4 bg-gradient-to-r from-orange-400 to-red-400 rounded-3xl blur-2xl opacity-20" />
+              <div className="relative bg-white rounded-3xl p-8 shadow-xl">
+                <SubscriptionCapture 
+                  variant="card"
+                  title="Stay Ignited"
+                  subtitle="Get daily prayer points, worship playlists, and revival news."
+                  showCategories={false}
+                  showWhatsApp={true}
+                  className="shadow-none border-none p-0"
+                />
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      <section id="harvest" className="py-24 px-4 bg-gradient-to-br from-blue-50 to-cyan-50 relative overflow-hidden">
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-200/30 rounded-full blur-3xl" />
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="lg:order-2"
+            >
+              <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-600 px-4 py-2 rounded-full text-sm font-bold mb-6">
+                <Globe className="h-4 w-4" /> Channel 2
+              </div>
+              <h2 className="text-4xl md:text-5xl font-display font-bold text-gray-900 mb-6">
+                The Harvest
+              </h2>
+              <p className="text-lg text-gray-600 mb-6 leading-relaxed">
+                Go into all the world! Join mission trips, school tours, and community outreach initiatives reaching the nations. From local neighborhoods to distant nations, we are laborers in the harvest.
+              </p>
+              <ul className="space-y-4 mb-8">
+                {["Short-Term Mission Trips", "School & Campus Outreach", "Medical Missions", "Community Service Projects"].map((item, i) => (
+                  <li key={i} className="flex items-center gap-3 text-gray-700">
+                    <div className="w-2 h-2 rounded-full bg-blue-500" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <div className="flex flex-wrap gap-4">
+                <Button 
+                  className="bg-blue-500 hover:bg-blue-600 text-white rounded-full px-6"
+                  onClick={() => setMissionModalOpen(true)}
+                  data-testid="button-join-mission"
+                >
+                  <Plane className="h-4 w-4 mr-2" /> Join a Mission Trip
+                </Button>
+                <Button 
+                  variant="outline"
+                  className="border-blue-200 text-blue-600 hover:bg-blue-50 rounded-full px-6"
+                  onClick={() => setVolunteerModalOpen(true)}
+                  data-testid="button-volunteer"
+                >
+                  <Users className="h-4 w-4 mr-2" /> Volunteer
+                </Button>
+              </div>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              className="lg:order-1"
+            >
+              <img 
+                src={outreachImg} 
+                alt="Outreach" 
+                className="rounded-3xl shadow-2xl w-full"
+              />
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      <section id="without-walls" className="py-24 px-4 bg-gradient-to-br from-purple-50 to-pink-50 relative overflow-hidden">
+        <div className="absolute top-1/2 right-0 w-96 h-96 bg-purple-200/30 rounded-full blur-3xl" />
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+            >
+              <div className="inline-flex items-center gap-2 bg-purple-100 text-purple-600 px-4 py-2 rounded-full text-sm font-bold mb-6">
+                <Heart className="h-4 w-4" /> Channel 3
+              </div>
+              <h2 className="text-4xl md:text-5xl font-display font-bold text-gray-900 mb-6">
+                Without Walls
+              </h2>
+              <p className="text-lg text-gray-600 mb-6 leading-relaxed">
+                Build kingdom connections across continents. Join our WhatsApp community, partner with believers globally, and be part of a movement that knows no boundaries.
+              </p>
+              <ul className="space-y-4 mb-8">
+                {["Global WhatsApp Community", "Cross-Cultural Partnerships", "Online Discipleship Groups", "Virtual Prayer Networks"].map((item, i) => (
+                  <li key={i} className="flex items-center gap-3 text-gray-700">
+                    <div className="w-2 h-2 rounded-full bg-purple-500" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <div className="flex flex-wrap gap-4">
+                <a
+                  href={COMMUNITY_LINKS.whatsapp}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white rounded-full px-6 py-3 font-bold transition-colors"
+                  data-testid="button-join-whatsapp"
+                >
+                  <MessageCircle className="h-4 w-4" /> Join WhatsApp Community
+                </a>
+                <Button 
+                  variant="outline"
+                  className="border-purple-200 text-purple-600 hover:bg-purple-50 rounded-full px-6"
+                  onClick={() => setVolunteerModalOpen(true)}
+                  data-testid="button-become-partner"
+                >
+                  <Network className="h-4 w-4 mr-2" /> Become a Partner
+                </Button>
+              </div>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+            >
+              <div className="bg-white rounded-3xl p-8 shadow-xl">
+                <div className="text-center mb-6">
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 text-green-600 mb-4">
+                    <MessageCircle className="h-8 w-8" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-2">Join Our WhatsApp</h3>
+                  <p className="text-gray-600">Connect with thousands of believers worldwide</p>
+                </div>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl">
+                    <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">
+                      <Users className="h-6 w-6 text-purple-600" />
+                    </div>
+                    <div>
+                      <div className="font-bold text-gray-900">10,000+ Members</div>
+                      <div className="text-sm text-gray-500">Active community</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl">
+                    <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+                      <Globe className="h-6 w-6 text-blue-600" />
+                    </div>
+                    <div>
+                      <div className="font-bold text-gray-900">45+ Nations</div>
+                      <div className="text-sm text-gray-500">Global presence</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl">
+                    <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center">
+                      <Flame className="h-6 w-6 text-orange-600" />
+                    </div>
+                    <div>
+                      <div className="font-bold text-gray-900">Daily Content</div>
+                      <div className="text-sm text-gray-500">Devotionals & updates</div>
+                    </div>
+                  </div>
+                </div>
+                <a
+                  href={COMMUNITY_LINKS.whatsapp}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-6 w-full inline-flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white rounded-xl px-6 py-4 font-bold transition-colors"
+                  data-testid="button-join-whatsapp-card"
+                >
+                  <MessageCircle className="h-5 w-5" /> Join Now
+                </a>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
       <section className="py-24 px-4 bg-gray-50">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
@@ -248,9 +488,7 @@ export function MissionPage() {
                 
                 <div className="p-8">
                   <h3 className="text-2xl font-bold text-gray-900 mb-3">{feature.title}</h3>
-                  <p className="text-gray-600 leading-relaxed mb-6">
-                    {feature.description}
-                  </p>
+                  <p className="text-gray-600 leading-relaxed mb-6">{feature.description}</p>
                   
                   <div className="flex flex-wrap gap-2 mb-8">
                     {feature.tags.map((tag) => (
@@ -270,8 +508,7 @@ export function MissionPage() {
         </div>
       </section>
 
-      {/* Upcoming Events Section */}
-      <section className="py-24 px-4 bg-white">
+      <section id="events" className="py-24 px-4 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
             <span className="text-primary font-bold tracking-wider uppercase text-sm">Get Involved</span>
@@ -281,7 +518,6 @@ export function MissionPage() {
             </p>
           </div>
 
-          {/* Event Type Filters */}
           <div className="flex flex-wrap justify-center gap-2 mb-12">
             {eventTypes.map((type) => (
               <button
@@ -391,9 +627,7 @@ export function MissionPage() {
         </div>
       </section>
 
-      {/* Digital Ecosystem Section */}
       <section className="py-24 bg-black text-white relative overflow-hidden">
-        {/* Abstract Background */}
         <div className="absolute inset-0 opacity-20">
           <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,_#3b82f6_0%,_transparent_50%)]" />
           <img src={apiImg} alt="Connectivity" className="w-full h-full object-cover opacity-30 mix-blend-screen" />
@@ -413,7 +647,7 @@ export function MissionPage() {
               </h2>
               
               <p className="text-xl text-gray-400 mb-8 leading-relaxed">
-                Our mission isn't limited by physical walls. We are building a digital-first ecosystem capable of integrating with global platforms. From custom APIs to AI-driven insights, we are future-proof.
+                Our mission isn't limited by physical walls. We are building a digital-first ecosystem capable of integrating with global platforms.
               </p>
 
               <div className="space-y-6">
@@ -423,7 +657,7 @@ export function MissionPage() {
                   </div>
                   <div>
                     <h4 className="text-lg font-bold text-white mb-1">Centralized Data Hub</h4>
-                    <p className="text-gray-400 text-sm">Unified database for member tracking, resource distribution, and impact analytics.</p>
+                    <p className="text-gray-400 text-sm">Unified database for member tracking and impact analytics.</p>
                   </div>
                 </div>
 
@@ -433,7 +667,7 @@ export function MissionPage() {
                   </div>
                   <div>
                     <h4 className="text-lg font-bold text-white mb-1">Open API Architecture</h4>
-                    <p className="text-gray-400 text-sm">Seamlessly connect with CRM, LMS, and communication platforms to scale our reach.</p>
+                    <p className="text-gray-400 text-sm">Seamlessly connect with CRM and communication platforms.</p>
                   </div>
                 </div>
 
@@ -443,13 +677,12 @@ export function MissionPage() {
                   </div>
                   <div>
                     <h4 className="text-lg font-bold text-white mb-1">AI-Powered Growth</h4>
-                    <p className="text-gray-400 text-sm">Leveraging artificial intelligence for personalized discipleship and strategic outreach planning.</p>
+                    <p className="text-gray-400 text-sm">Leveraging AI for personalized discipleship.</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Visual Code/Dashboard Mockup */}
             <div className="relative">
               <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500 to-purple-600 rounded-2xl blur opacity-30"></div>
               <div className="relative bg-gray-900 border border-gray-800 rounded-2xl p-6 shadow-2xl font-mono text-sm overflow-hidden">
@@ -479,23 +712,7 @@ export function MissionPage() {
                   </div>
                   <div className="flex">
                     <span className="text-purple-400 w-8">5</span>
-                    <span className="text-cyan-400">"integrations"</span>: {`{`}
-                  </div>
-                  <div className="flex pl-8">
-                    <span className="text-purple-400 w-8">6</span>
-                    <span className="text-blue-300">"stripe_connect"</span>: <span className="text-red-400">true</span>,
-                  </div>
-                  <div className="flex pl-8">
-                    <span className="text-purple-400 w-8">7</span>
-                    <span className="text-blue-300">"twilio_sms"</span>: <span className="text-red-400">true</span>,
-                  </div>
-                  <div className="flex pl-8">
-                    <span className="text-purple-400 w-8">8</span>
-                    <span className="text-blue-300">"openai_assistant"</span>: <span className="text-red-400">true</span>
-                  </div>
-                  <div className="flex">
-                    <span className="text-purple-400 w-8">9</span>
-                    {`}`}
+                    <span className="text-cyan-400">"channels"</span>: [<span className="text-green-300">"outpouring"</span>, <span className="text-green-300">"harvest"</span>, <span className="text-green-300">"without_walls"</span>]
                   </div>
                 </div>
 
@@ -507,25 +724,6 @@ export function MissionPage() {
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-24 bg-primary relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10" />
-        <div className="max-w-4xl mx-auto px-4 text-center relative z-10 text-white">
-          <h2 className="text-4xl font-display font-bold mb-6">Ready to Step Into Your Calling?</h2>
-          <p className="text-xl text-white/90 mb-10">
-            Whether you are a student, professional, or creative—there is a place for you in this movement. Let's build the future together.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button className="bg-white text-primary hover:bg-gray-100 px-8 py-6 rounded-full text-lg font-bold shadow-lg" data-testid="button-partner">
-              Partner With Us
-            </Button>
-            <Button variant="outline" className="border-white text-white hover:bg-white/10 px-8 py-6 rounded-full text-lg font-bold" data-testid="button-opportunities">
-              View Opportunities
-            </Button>
           </div>
         </div>
       </section>
