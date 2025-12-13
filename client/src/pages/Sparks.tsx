@@ -3,75 +3,115 @@ import {
   Flame, MapPin, Share2, MessageCircle, 
   Heart, Play, Globe, X, Send,
   Maximize2, MoreVertical, ArrowRight,
-  Mail, Rss, Smartphone, BookOpen, Clock, Calendar
+  Mail, Rss, Smartphone, BookOpen, Clock, Calendar, Loader2, Check
 } from "lucide-react";
 import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Navbar } from "@/components/layout/Navbar";
+import { useAuth } from "@/hooks/useAuth";
+import { apiRequest } from "@/lib/queryClient";
+import { isUnauthorizedError } from "@/lib/authUtils";
+import { toast } from "sonner";
+import type { Spark, SparkSubscription } from "@shared/schema";
 
-// Assets
 import spark1 from "@assets/generated_images/raw_street_worship_in_brazil.png";
 import spark2 from "@assets/generated_images/testimony_of_healing_in_a_village.png";
 import spark3 from "@assets/generated_images/underground_prayer_meeting.png";
 import spark4 from "@assets/generated_images/student_sharing_gospel_on_campus.png";
 import dailyBg from "@assets/generated_images/cinematic_sunrise_devotional_background.png";
 
-const sparks = [
-  {
-    id: 1,
-    type: "Outpouring",
-    location: "São Paulo, Brazil",
-    user: "Mateus Silva",
-    description: "The Holy Spirit broke out on the streets tonight! No stage, just hunger. 🔥🇧🇷 #Revival #StreetWorship",
-    video: spark1,
-    likes: "12.5k",
-    prayers: "4.2k",
-    isLive: true
-  },
-  {
-    id: 2,
-    type: "Harvest",
-    location: "Nairobi, Kenya",
-    user: "Sarah Mission",
-    description: "She couldn't walk without pain for 10 years. Jesus healed her instantly! The village is listening. 🙌🏾 #Miracles #Harvest",
-    video: spark2,
-    likes: "8.9k",
-    prayers: "2.1k",
-    isLive: false
-  },
-  {
-    id: 3,
-    type: "Without Walls",
-    location: "University of Oxford, UK",
-    user: "Campus Fire",
-    description: "Boldness rising! Preaching the simple gospel on the quad. Students are stopping to hear. Pray for harvest! 🇬🇧",
-    video: spark4,
-    likes: "5.6k",
-    prayers: "1.8k",
-    isLive: false
-  },
-  {
-    id: 4,
-    type: "Intercession",
-    location: "Underground Location",
-    user: "Hidden Watchmen",
-    description: " contending for the nation. We will not stop until we see the rain. 🌧️ #Prayer #Watchmen",
-    video: spark3,
-    likes: "3.2k",
-    prayers: "8.5k",
-    isLive: false
-  }
-];
+const defaultThumbnails = [spark1, spark2, spark3, spark4];
 
-const pillars = ["All", "Outpouring", "Harvest", "Without Walls", "Intercession"];
+function getDefaultThumbnail(index: number) {
+  return defaultThumbnails[index % defaultThumbnails.length];
+}
+
+const pillars = ["All", "daily-devotional", "worship", "testimony"];
+const pillarLabels: Record<string, string> = {
+  "All": "All",
+  "daily-devotional": "Devotional",
+  "worship": "Worship",
+  "testimony": "Testimony"
+};
+
+const subscriptionCategories = ["daily-devotional", "worship", "testimony"];
 
 export function SparksPage() {
   const [activeFilter, setActiveFilter] = useState("All");
-  const [selectedSpark, setSelectedSpark] = useState<typeof sparks[0] | null>(null);
+  const [selectedSpark, setSelectedSpark] = useState<Spark | null>(null);
   const [showSubscribe, setShowSubscribe] = useState(false);
+  const queryClient = useQueryClient();
+  const { user, isAuthenticated } = useAuth();
+
+  const { data: sparks = [], isLoading } = useQuery<Spark[]>({
+    queryKey: ["/api/sparks"],
+  });
+
+  const { data: subscriptions = [], isLoading: subscriptionsLoading } = useQuery<SparkSubscription[]>({
+    queryKey: ["/api/subscriptions"],
+    enabled: !!user,
+  });
+
+  const subscribeMutation = useMutation({
+    mutationFn: async (category: string) => {
+      const res = await apiRequest("POST", "/api/subscriptions", { category });
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/subscriptions"] });
+      toast.success("Subscribed successfully!");
+    },
+    onError: (error: Error) => {
+      if (isUnauthorizedError(error)) {
+        toast.error("Please log in to subscribe");
+        setTimeout(() => window.location.href = "/api/login", 1000);
+      } else {
+        toast.error("Failed to subscribe");
+      }
+    },
+  });
+
+  const unsubscribeMutation = useMutation({
+    mutationFn: async (category: string) => {
+      await apiRequest("DELETE", `/api/subscriptions/${category}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/subscriptions"] });
+      toast.success("Unsubscribed successfully!");
+    },
+    onError: (error: Error) => {
+      if (isUnauthorizedError(error)) {
+        toast.error("Please log in");
+        setTimeout(() => window.location.href = "/api/login", 1000);
+      } else {
+        toast.error("Failed to unsubscribe");
+      }
+    },
+  });
+
+  const isSubscribed = (category: string) => {
+    return subscriptions.some(sub => sub.category === category);
+  };
+
+  const handleSubscriptionToggle = (category: string) => {
+    if (!isAuthenticated) {
+      toast.error("Please log in to subscribe");
+      setTimeout(() => window.location.href = "/api/login", 1000);
+      return;
+    }
+    
+    if (isSubscribed(category)) {
+      unsubscribeMutation.mutate(category);
+    } else {
+      subscribeMutation.mutate(category);
+    }
+  };
 
   const filteredSparks = activeFilter === "All" 
     ? sparks 
-    : sparks.filter(s => s.type === activeFilter);
+    : sparks.filter(s => s.category === activeFilter);
+
+  const featuredSpark = sparks.length > 0 ? sparks[0] : null;
 
   return (
     <div className="min-h-screen bg-black text-white overflow-x-hidden">
@@ -81,7 +121,7 @@ export function SparksPage() {
       <section className="relative h-[60vh] md:h-[70vh] w-full overflow-hidden">
         <div className="absolute inset-0">
           <img 
-            src={spark1} 
+            src={featuredSpark?.thumbnailUrl || spark1} 
             alt="Live Spark" 
             className="w-full h-full object-cover opacity-60"
           />
@@ -92,31 +132,32 @@ export function SparksPage() {
           <div className="w-full md:w-1/2 space-y-4">
              <div className="flex items-center gap-2">
                <span className="bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider animate-pulse flex items-center gap-1">
-                 <div className="h-2 w-2 bg-white rounded-full" /> LIVE NOW
+                 <div className="h-2 w-2 bg-white rounded-full" /> FEATURED
                </span>
                <span className="bg-white/10 backdrop-blur-md text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider border border-white/10">
-                 São Paulo, Brazil
+                 {featuredSpark?.category || "Daily Spark"}
                </span>
              </div>
              
-             <h1 className="text-4xl md:text-6xl font-display font-bold leading-tight">
-               Street Worship Erupts in Downtown
+             <h1 className="text-4xl md:text-6xl font-display font-bold leading-tight" data-testid="text-hero-title">
+               {featuredSpark?.title || "Street Worship Erupts in Downtown"}
              </h1>
              
-             <p className="text-lg text-white/80 max-w-xl">
-               Join 12,000 young people gathering right now to declare Jesus over the city. Miracles are happening!
+             <p className="text-lg text-white/80 max-w-xl" data-testid="text-hero-description">
+               {featuredSpark?.description || "Join thousands gathering to declare Jesus over the city. Miracles are happening!"}
              </p>
              
              <div className="flex items-center gap-4 pt-4">
                <button 
-                 onClick={() => setSelectedSpark(sparks[0])}
+                 onClick={() => featuredSpark && setSelectedSpark(featuredSpark)}
                  className="bg-primary hover:bg-primary/90 text-white font-bold px-8 py-4 rounded-full flex items-center gap-2 transition-all hover:scale-105"
+                 data-testid="button-watch-featured"
                >
-                 <Play className="h-5 w-5 fill-current" /> Watch Live
+                 <Play className="h-5 w-5 fill-current" /> Watch Now
                </button>
                <div className="flex items-center gap-2 text-sm font-medium">
                  <div className="h-2 w-2 bg-green-500 rounded-full" />
-                 1.2k Praying
+                 {sparks.length} Sparks
                </div>
              </div>
           </div>
@@ -136,6 +177,7 @@ export function SparksPage() {
             <button 
               onClick={() => setShowSubscribe(true)}
               className="hidden md:flex items-center gap-2 text-sm font-bold text-primary hover:text-white transition-colors"
+              data-testid="button-get-updates"
             >
               Get Daily Updates <ArrowRight className="h-4 w-4" />
             </button>
@@ -164,7 +206,7 @@ export function SparksPage() {
               <div className="bg-white/5 rounded-2xl p-6 border border-white/10 flex-1">
                  <div className="flex items-center justify-between mb-4">
                    <span className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
-                     <Calendar className="h-4 w-4" /> Dec 12, 2025
+                     <Calendar className="h-4 w-4" /> Dec 13, 2025
                    </span>
                    <Share2 className="h-4 w-4 text-gray-400 cursor-pointer hover:text-white" />
                  </div>
@@ -178,6 +220,7 @@ export function SparksPage() {
                  <button 
                    onClick={() => setShowSubscribe(true)}
                    className="bg-gray-800 hover:bg-gray-700 p-4 rounded-xl flex items-center gap-3 transition-colors border border-white/5 group"
+                   data-testid="button-whatsapp"
                  >
                    <div className="h-10 w-10 bg-green-500/20 rounded-full flex items-center justify-center text-green-500 group-hover:bg-green-500 group-hover:text-white transition-colors">
                      <MessageCircle className="h-5 w-5" />
@@ -191,6 +234,7 @@ export function SparksPage() {
                  <button 
                    onClick={() => setShowSubscribe(true)}
                    className="bg-gray-800 hover:bg-gray-700 p-4 rounded-xl flex items-center gap-3 transition-colors border border-white/5 group"
+                   data-testid="button-email"
                  >
                    <div className="h-10 w-10 bg-blue-500/20 rounded-full flex items-center justify-center text-blue-500 group-hover:bg-blue-500 group-hover:text-white transition-colors">
                      <Mail className="h-5 w-5" />
@@ -216,13 +260,14 @@ export function SparksPage() {
               <button
                 key={pillar}
                 onClick={() => setActiveFilter(pillar)}
+                data-testid={`button-filter-${pillar}`}
                 className={`px-6 py-2.5 rounded-full text-sm font-bold whitespace-nowrap transition-all border ${
                   activeFilter === pillar 
                     ? "bg-white text-black border-white" 
                     : "bg-white/5 text-gray-400 border-white/10 hover:bg-white/10 hover:text-white"
                 }`}
               >
-                {pillar}
+                {pillarLabels[pillar]}
               </button>
             ))}
           </div>
@@ -231,62 +276,67 @@ export function SparksPage() {
           </div>
         </div>
 
-        {/* Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {/* Add more mock data by repeating/mapping */}
-          {[...filteredSparks, ...filteredSparks].map((spark, i) => (
-            <motion.div
-              key={`${spark.id}-${i}`}
-              layoutId={`spark-${spark.id}-${i}`}
-              onClick={() => setSelectedSpark(spark)}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
-              className="group relative aspect-[9/16] rounded-[24px] overflow-hidden bg-gray-900 cursor-pointer border border-white/5 hover:border-white/20 transition-colors"
-            >
-              <img 
-                src={spark.video} 
-                alt={spark.description} 
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-80 group-hover:opacity-100" 
-              />
-              
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent" />
-              
-              {/* Top Meta */}
-              <div className="absolute top-4 left-4 right-4 flex justify-between items-start">
-                 <span className="bg-black/40 backdrop-blur-md text-white text-[10px] font-bold px-2 py-1 rounded-md border border-white/10 flex items-center gap-1">
-                   <Flame className="h-3 w-3 text-primary" /> {spark.type}
-                 </span>
-                 {spark.isLive && (
-                   <span className="bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded-md animate-pulse">
-                     LIVE
+        {isLoading ? (
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : filteredSparks.length === 0 ? (
+          <div className="text-center py-20">
+            <Flame className="h-12 w-12 text-gray-600 mx-auto mb-4" />
+            <p className="text-gray-500 text-lg">No sparks yet. Check back soon!</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {filteredSparks.map((spark, i) => (
+              <motion.div
+                key={spark.id}
+                layoutId={`spark-${spark.id}`}
+                onClick={() => setSelectedSpark(spark)}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05 }}
+                className="group relative aspect-[9/16] rounded-[24px] overflow-hidden bg-gray-900 cursor-pointer border border-white/5 hover:border-white/20 transition-colors"
+                data-testid={`card-spark-${spark.id}`}
+              >
+                <img 
+                  src={spark.thumbnailUrl || getDefaultThumbnail(i)} 
+                  alt={spark.title} 
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-80 group-hover:opacity-100" 
+                />
+                
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent" />
+                
+                {/* Top Meta */}
+                <div className="absolute top-4 left-4 right-4 flex justify-between items-start">
+                   <span className="bg-black/40 backdrop-blur-md text-white text-[10px] font-bold px-2 py-1 rounded-md border border-white/10 flex items-center gap-1">
+                     <Flame className="h-3 w-3 text-primary" /> {pillarLabels[spark.category] || spark.category}
                    </span>
-                 )}
-              </div>
+                </div>
 
-              {/* Bottom Meta */}
-              <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-2 group-hover:translate-y-0 transition-transform">
-                <div className="flex items-center gap-2 mb-2 text-xs text-white/70">
-                  <MapPin className="h-3 w-3" /> {spark.location}
+                {/* Bottom Meta */}
+                <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-2 group-hover:translate-y-0 transition-transform">
+                  <h3 className="text-sm font-bold text-white line-clamp-1 mb-1">
+                    {spark.title}
+                  </h3>
+                  <p className="text-xs text-white/70 line-clamp-2 mb-3 leading-snug">
+                    {spark.description}
+                  </p>
+                  <div className="flex items-center justify-between text-xs font-bold text-white/50 border-t border-white/10 pt-3">
+                    <span className="flex items-center gap-1"><Clock className="h-3 w-3" /> {spark.duration ? `${Math.floor(spark.duration / 60)}min` : '5min'}</span>
+                    <span className="flex items-center gap-1 text-primary"><Flame className="h-3 w-3" /> Watch</span>
+                  </div>
                 </div>
-                <p className="text-sm font-medium text-white line-clamp-2 mb-3 leading-snug">
-                  {spark.description}
-                </p>
-                <div className="flex items-center justify-between text-xs font-bold text-white/50 border-t border-white/10 pt-3">
-                  <span className="flex items-center gap-1"><Heart className="h-3 w-3" /> {spark.likes}</span>
-                  <span className="flex items-center gap-1 text-primary"><Flame className="h-3 w-3" /> {spark.prayers} Prayers</span>
-                </div>
-              </div>
 
-              {/* Hover Play Button */}
-              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                <div className="h-12 w-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/30">
-                  <Play className="h-6 w-6 fill-white text-white" />
+                {/* Hover Play Button */}
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="h-12 w-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/30">
+                    <Play className="h-6 w-6 fill-white text-white" />
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
 
         {/* Real-time Ticker */}
         <div className="fixed bottom-8 right-8 z-40 hidden lg:block">
@@ -332,6 +382,7 @@ export function SparksPage() {
               <button 
                 onClick={() => setShowSubscribe(false)}
                 className="absolute top-4 right-4 text-gray-400 hover:text-white"
+                data-testid="button-close-subscribe"
               >
                 <X className="h-6 w-6" />
               </button>
@@ -341,26 +392,73 @@ export function SparksPage() {
                   <Flame className="h-8 w-8 text-primary" />
                 </div>
                 <h3 className="text-2xl font-bold text-white mb-2">Ignite Your Daily Walk</h3>
-                <p className="text-gray-400">Get daily sparks, video devotionals, and prayer alerts delivered straight to you.</p>
+                <p className="text-gray-400">Subscribe to spark categories to get notified when new content is posted.</p>
               </div>
 
-              <div className="space-y-3">
-                <button className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold py-4 rounded-xl flex items-center justify-center gap-3 transition-colors">
+              {/* Subscription Categories */}
+              <div className="space-y-3 mb-6">
+                {!user ? (
+                  <div className="text-center py-6">
+                    <p className="text-gray-400 mb-4">Log in to manage your subscriptions</p>
+                    <button
+                      onClick={() => window.location.href = "/api/login"}
+                      className="bg-primary hover:bg-primary/90 text-white font-bold py-3 px-6 rounded-xl"
+                      data-testid="button-login-to-subscribe"
+                    >
+                      Log In
+                    </button>
+                  </div>
+                ) : subscriptionsLoading ? (
+                  <div className="flex items-center justify-center py-6">
+                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                  </div>
+                ) : (
+                  subscriptionCategories.map((category) => {
+                    const subscribed = isSubscribed(category);
+                    const isPendingThis = (subscribeMutation.isPending && subscribeMutation.variables === category) || 
+                                          (unsubscribeMutation.isPending && unsubscribeMutation.variables === category);
+                    
+                    return (
+                      <button
+                        key={category}
+                        onClick={() => handleSubscriptionToggle(category)}
+                        disabled={isPendingThis}
+                        data-testid={`button-subscribe-${category}`}
+                        className={`w-full py-4 px-6 rounded-xl flex items-center justify-between transition-colors ${
+                          subscribed 
+                            ? 'bg-primary/20 border border-primary text-white' 
+                            : 'bg-gray-800 hover:bg-gray-700 border border-white/5 text-gray-300'
+                        }`}
+                      >
+                        <span className="font-bold">{pillarLabels[category]}</span>
+                        {isPendingThis ? (
+                          <Loader2 className="h-5 w-5 animate-spin" />
+                        ) : subscribed ? (
+                          <div className="flex items-center gap-2 text-primary">
+                            <Check className="h-5 w-5" />
+                            <span className="text-sm">Subscribed</span>
+                          </div>
+                        ) : (
+                          <span className="text-sm text-gray-500">Click to subscribe</span>
+                        )}
+                      </button>
+                    );
+                  })
+                )}
+              </div>
+
+              <div className="border-t border-white/10 pt-6 space-y-3">
+                <p className="text-center text-sm text-gray-400 mb-4">Or get updates via:</p>
+                <button className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold py-4 rounded-xl flex items-center justify-center gap-3 transition-colors" data-testid="button-join-whatsapp">
                   <MessageCircle className="h-5 w-5" /> Join WhatsApp Community
                 </button>
-                <button className="w-full bg-white hover:bg-gray-100 text-black font-bold py-4 rounded-xl flex items-center justify-center gap-3 transition-colors">
+                <button className="w-full bg-white hover:bg-gray-100 text-black font-bold py-4 rounded-xl flex items-center justify-center gap-3 transition-colors" data-testid="button-subscribe-email">
                   <Mail className="h-5 w-5" /> Subscribe via Email
-                </button>
-                <button className="w-full bg-gray-800 hover:bg-gray-700 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-3 transition-colors">
-                  <Smartphone className="h-5 w-5" /> Get SMS Alerts
-                </button>
-                <button className="w-full bg-transparent hover:bg-white/5 text-gray-400 hover:text-white font-medium py-3 rounded-xl flex items-center justify-center gap-2 transition-colors border border-white/10">
-                  <Rss className="h-4 w-4" /> RSS Feed
                 </button>
               </div>
 
               <p className="text-center text-xs text-gray-500 mt-6">
-                We respect your privacy. Unsubscribe at any time.
+                {isAuthenticated ? "Manage your subscriptions anytime." : "Log in to save your preferences."}
               </p>
             </motion.div>
           </motion.div>
@@ -379,6 +477,7 @@ export function SparksPage() {
             <button 
               onClick={() => setSelectedSpark(null)}
               className="absolute top-4 right-4 md:top-8 md:right-8 text-white/50 hover:text-white transition-colors z-50"
+              data-testid="button-close-spark-modal"
             >
               <X className="h-8 w-8" />
             </button>
@@ -387,18 +486,26 @@ export function SparksPage() {
               
               {/* Video Player */}
               <div className="relative w-full max-w-md aspect-[9/16] bg-black rounded-[30px] overflow-hidden shadow-2xl border border-white/10 flex-shrink-0">
-                <img src={selectedSpark.video} className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80" />
+                {selectedSpark.videoUrl ? (
+                  <video 
+                    src={selectedSpark.videoUrl} 
+                    className="w-full h-full object-cover" 
+                    controls 
+                    autoPlay
+                  />
+                ) : (
+                  <img src={selectedSpark.thumbnailUrl || spark1} className="w-full h-full object-cover" />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/80 pointer-events-none" />
                 
-                {/* Overlay Controls (Simulated) */}
-                <div className="absolute bottom-0 left-0 right-0 p-8 space-y-4">
+                {/* Overlay Controls */}
+                <div className="absolute bottom-0 left-0 right-0 p-8 space-y-4 pointer-events-none">
                   <div className="flex items-center gap-3">
                      <div className="h-10 w-10 rounded-full bg-white/20" />
                      <div>
-                       <h4 className="font-bold text-white">@{selectedSpark.user}</h4>
-                       <p className="text-xs text-white/70">{selectedSpark.location}</p>
+                       <h4 className="font-bold text-white">{selectedSpark.title}</h4>
+                       <p className="text-xs text-white/70">{pillarLabels[selectedSpark.category] || selectedSpark.category}</p>
                      </div>
-                     <button className="ml-auto bg-primary text-white text-xs font-bold px-4 py-1.5 rounded-full">Follow</button>
                   </div>
                   <p className="text-sm text-white/90">{selectedSpark.description}</p>
                 </div>
@@ -409,13 +516,13 @@ export function SparksPage() {
                     <div className="h-12 w-12 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center hover:bg-white/20 cursor-pointer transition-colors">
                       <Heart className="h-6 w-6 fill-white text-white" />
                     </div>
-                    <span className="text-xs font-bold">{selectedSpark.likes}</span>
+                    <span className="text-xs font-bold">Like</span>
                   </div>
                   <div className="text-center space-y-1">
                     <div className="h-12 w-12 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center hover:bg-white/20 cursor-pointer transition-colors">
                       <Flame className="h-6 w-6 text-primary" />
                     </div>
-                    <span className="text-xs font-bold">{selectedSpark.prayers}</span>
+                    <span className="text-xs font-bold">Pray</span>
                   </div>
                   <div className="text-center space-y-1">
                      <div className="h-12 w-12 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center hover:bg-white/20 cursor-pointer transition-colors">
@@ -430,7 +537,7 @@ export function SparksPage() {
               <div className="hidden md:flex flex-col h-[80vh] w-full max-w-md bg-gray-900 rounded-[30px] border border-white/10 overflow-hidden">
                 <div className="p-6 border-b border-white/10 bg-gray-900">
                   <h3 className="font-bold text-white">Live Intercession</h3>
-                  <p className="text-xs text-gray-400">1.2k people praying now</p>
+                  <p className="text-xs text-gray-400">Join the prayer community</p>
                 </div>
                 <div className="flex-1 overflow-y-auto p-6 space-y-4">
                   {[1,2,3,4,5,6].map((_, i) => (
@@ -438,10 +545,10 @@ export function SparksPage() {
                       <div className="h-8 w-8 rounded-full bg-white/10 flex-shrink-0" />
                       <div>
                         <div className="flex items-baseline gap-2">
-                          <span className="text-sm font-bold text-gray-300">User {i}</span>
+                          <span className="text-sm font-bold text-gray-300">User {i + 1}</span>
                           <span className="text-[10px] text-gray-600">2m</span>
                         </div>
-                        <p className="text-sm text-gray-400">Amen! Agreeing with this prayer from London. 🔥</p>
+                        <p className="text-sm text-gray-400">Amen! Agreeing with this prayer.</p>
                       </div>
                     </div>
                   ))}
@@ -452,8 +559,9 @@ export function SparksPage() {
                        type="text" 
                        placeholder="Add a prayer..." 
                        className="w-full bg-black rounded-full pl-4 pr-12 py-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-primary"
+                       data-testid="input-prayer"
                      />
-                     <button className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-primary rounded-full text-white">
+                     <button className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-primary rounded-full text-white" data-testid="button-send-prayer">
                        <Send className="h-4 w-4" />
                      </button>
                    </div>
