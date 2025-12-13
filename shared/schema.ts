@@ -392,3 +392,80 @@ export const insertUserBadgeSchema = createInsertSchema(userBadges).omit({
 });
 export type InsertUserBadge = z.infer<typeof insertUserBadgeSchema>;
 export type UserBadge = typeof userBadges.$inferSelect;
+
+// ===== ALPHA COHORT TABLES =====
+
+// Alpha Cohorts - scheduled group-based journeys
+export const alphaCohorts = pgTable("alpha_cohorts", {
+  id: serial("id").primaryKey(),
+  title: varchar("title").notNull(),
+  description: text("description"),
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date"),
+  status: varchar("status").notNull().default("upcoming"), // 'upcoming', 'active', 'completed'
+  capacity: integer("capacity").default(50),
+  registrationClosesAt: timestamp("registration_closes_at"),
+  heroImageUrl: varchar("hero_image_url"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertAlphaCohortSchema = createInsertSchema(alphaCohorts).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertAlphaCohort = z.infer<typeof insertAlphaCohortSchema>;
+export type AlphaCohort = typeof alphaCohorts.$inferSelect;
+
+// Alpha Cohort Weeks - weekly schedule with content links
+export const alphaCohortWeeks = pgTable("alpha_cohort_weeks", {
+  id: serial("id").primaryKey(),
+  cohortId: integer("cohort_id").notNull().references(() => alphaCohorts.id, { onDelete: 'cascade' }),
+  weekNumber: integer("week_number").notNull(),
+  theme: varchar("theme").notNull(), // e.g. "Who Is Jesus?"
+  description: text("description"),
+  videoUrl: varchar("video_url"), // Alpha Film Series episode URL
+  watchPartyDate: timestamp("watch_party_date"),
+  discussionPrompts: jsonb("discussion_prompts"), // array of prompts for small group
+  prayerAction: text("prayer_action"), // weekly challenge
+});
+
+export const insertAlphaCohortWeekSchema = createInsertSchema(alphaCohortWeeks).omit({
+  id: true,
+});
+export type InsertAlphaCohortWeek = z.infer<typeof insertAlphaCohortWeekSchema>;
+export type AlphaCohortWeek = typeof alphaCohortWeeks.$inferSelect;
+
+// Alpha Cohort Participants - enrollment and roles
+export const alphaCohortParticipants = pgTable("alpha_cohort_participants", {
+  id: serial("id").primaryKey(),
+  cohortId: integer("cohort_id").notNull().references(() => alphaCohorts.id, { onDelete: 'cascade' }),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  role: varchar("role").notNull().default("participant"), // 'participant', 'facilitator', 'host'
+  status: varchar("status").notNull().default("applied"), // 'applied', 'approved', 'waitlisted', 'removed'
+  joinedAt: timestamp("joined_at").defaultNow(),
+  groupNumber: integer("group_number"), // for small group assignment
+});
+
+export const insertAlphaCohortParticipantSchema = createInsertSchema(alphaCohortParticipants).omit({
+  id: true,
+  joinedAt: true,
+});
+export type InsertAlphaCohortParticipant = z.infer<typeof insertAlphaCohortParticipantSchema>;
+export type AlphaCohortParticipant = typeof alphaCohortParticipants.$inferSelect;
+
+// Alpha Cohort Week Progress - tracking individual progress per week
+export const alphaCohortWeekProgress = pgTable("alpha_cohort_week_progress", {
+  id: serial("id").primaryKey(),
+  participantId: integer("participant_id").notNull().references(() => alphaCohortParticipants.id, { onDelete: 'cascade' }),
+  weekNumber: integer("week_number").notNull(),
+  watchedAt: timestamp("watched_at"),
+  discussionNotes: text("discussion_notes"),
+  prayerActionCompletedAt: timestamp("prayer_action_completed_at"),
+  reflection: text("reflection"),
+});
+
+export const insertAlphaCohortWeekProgressSchema = createInsertSchema(alphaCohortWeekProgress).omit({
+  id: true,
+});
+export type InsertAlphaCohortWeekProgress = z.infer<typeof insertAlphaCohortWeekProgressSchema>;
+export type AlphaCohortWeekProgress = typeof alphaCohortWeekProgress.$inferSelect;
