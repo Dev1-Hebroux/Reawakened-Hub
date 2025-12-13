@@ -639,6 +639,91 @@ export async function registerRoutes(
     }
   });
 
+  // ===== JOURNEY WEEKS ROUTES (8-week programs) =====
+  
+  // Get all weeks for a journey by slug
+  app.get('/api/journeys/:slug/weeks', async (req, res) => {
+    try {
+      const slug = req.params.slug;
+      const journey = await storage.getJourneyBySlug(slug);
+      if (!journey) {
+        return res.status(404).json({ message: "Journey not found" });
+      }
+      const weeks = await storage.getJourneyWeeks(journey.id);
+      res.json({ journey, weeks });
+    } catch (error) {
+      console.error("Error fetching journey weeks:", error);
+      res.status(500).json({ message: "Failed to fetch journey weeks" });
+    }
+  });
+
+  // Get session sections for a specific week
+  app.get('/api/journey-weeks/:id/sections', async (req, res) => {
+    try {
+      const weekId = parseInt(req.params.id);
+      const sections = await storage.getSessionSections(weekId);
+      res.json(sections);
+    } catch (error) {
+      console.error("Error fetching session sections:", error);
+      res.status(500).json({ message: "Failed to fetch session sections" });
+    }
+  });
+
+  // Get mentor prompts for a specific week
+  app.get('/api/journey-weeks/:id/mentor-prompts', async (req, res) => {
+    try {
+      const weekId = parseInt(req.params.id);
+      const prompts = await storage.getMentorPrompts(weekId);
+      res.json(prompts);
+    } catch (error) {
+      console.error("Error fetching mentor prompts:", error);
+      res.status(500).json({ message: "Failed to fetch mentor prompts" });
+    }
+  });
+
+  // Create I Will commitment (protected)
+  app.post('/api/user-journeys/:id/commitments', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const userJourneyId = parseInt(req.params.id);
+      
+      const userJourney = await storage.getUserJourney(userJourneyId);
+      if (!userJourney || userJourney.userId !== userId) {
+        return res.status(404).json({ message: "Journey not found" });
+      }
+      
+      const commitment = await storage.createIWillCommitment({
+        userJourneyId,
+        weekNumber: req.body.weekNumber,
+        commitment: req.body.commitment,
+        whoToEncourage: req.body.whoToEncourage,
+      });
+      res.status(201).json(commitment);
+    } catch (error: any) {
+      console.error("Error creating commitment:", error);
+      res.status(400).json({ message: error.message || "Failed to create commitment" });
+    }
+  });
+
+  // Get user's commitments for a journey (protected)
+  app.get('/api/user-journeys/:id/commitments', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const userJourneyId = parseInt(req.params.id);
+      
+      const userJourney = await storage.getUserJourney(userJourneyId);
+      if (!userJourney || userJourney.userId !== userId) {
+        return res.status(404).json({ message: "Journey not found" });
+      }
+      
+      const commitments = await storage.getIWillCommitments(userJourneyId);
+      res.json(commitments);
+    } catch (error) {
+      console.error("Error fetching commitments:", error);
+      res.status(500).json({ message: "Failed to fetch commitments" });
+    }
+  });
+
   // Get user streak and badges (protected)
   app.get('/api/me/progress', isAuthenticated, async (req: any, res) => {
     try {
