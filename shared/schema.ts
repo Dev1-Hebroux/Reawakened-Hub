@@ -489,3 +489,154 @@ export const insertAlphaCohortWeekProgressSchema = createInsertSchema(alphaCohor
 });
 export type InsertAlphaCohortWeekProgress = z.infer<typeof insertAlphaCohortWeekProgressSchema>;
 export type AlphaCohortWeekProgress = typeof alphaCohortWeekProgress.$inferSelect;
+
+// ===== DISCIPLESHIP JOURNEY WEEKS (8-Week Programs) =====
+
+// Journey Weeks - weekly structure for 8-week programs like "Finding Your Way Back"
+export const journeyWeeks = pgTable("journey_weeks", {
+  id: serial("id").primaryKey(),
+  journeyId: integer("journey_id").notNull().references(() => journeys.id, { onDelete: 'cascade' }),
+  weekNumber: integer("week_number").notNull(),
+  title: varchar("title").notNull(),
+  theme: varchar("theme"), // e.g. "Returning to God", "Jesus and His Way"
+  scriptureRef: varchar("scripture_ref"), // e.g. "Zechariah 1:3", "John 13:34"
+  scriptureText: text("scripture_text"), // The actual verse text
+  estimatedMinutes: integer("estimated_minutes").default(50), // 45-60 min sessions
+  weekType: varchar("week_type").default("session"), // 'session' (weeks 1-3), 'dbs' (weeks 4-8 Discovery Bible Study)
+});
+
+export const insertJourneyWeekSchema = createInsertSchema(journeyWeeks).omit({
+  id: true,
+});
+export type InsertJourneyWeek = z.infer<typeof insertJourneyWeekSchema>;
+export type JourneyWeek = typeof journeyWeeks.$inferSelect;
+
+// Session Sections - the 45-60 min session flow components
+// Flow: Welcome(5) → Scripture(5) → Micro-teach(10) → Discussion(15-20) → Practice(7-10) → I Will + Prayer(8)
+export const sessionSections = pgTable("session_sections", {
+  id: serial("id").primaryKey(),
+  journeyWeekId: integer("journey_week_id").notNull().references(() => journeyWeeks.id, { onDelete: 'cascade' }),
+  sectionOrder: integer("section_order").notNull(),
+  sectionType: varchar("section_type").notNull(), // 'welcome', 'scripture', 'micro-teach', 'discussion', 'practice', 'i-will', 'prayer'
+  title: varchar("title").notNull(),
+  durationMinutes: integer("duration_minutes").default(5),
+  contentJson: jsonb("content_json").notNull(), // Flexible content: prompts, questions, instructions
+  facilitatorNotes: text("facilitator_notes"), // Tips for leading this section
+});
+
+export const insertSessionSectionSchema = createInsertSchema(sessionSections).omit({
+  id: true,
+});
+export type InsertSessionSection = z.infer<typeof insertSessionSectionSchema>;
+export type SessionSection = typeof sessionSections.$inferSelect;
+
+// Mentor Prompts - D-1/D0/D2/D4/D6 rhythm with WhatsApp scripts
+export const mentorPrompts = pgTable("mentor_prompts", {
+  id: serial("id").primaryKey(),
+  journeyWeekId: integer("journey_week_id").notNull().references(() => journeyWeeks.id, { onDelete: 'cascade' }),
+  promptDay: varchar("prompt_day").notNull(), // 'D-1', 'D0', 'D2', 'D4', 'D6'
+  promptType: varchar("prompt_type").notNull(), // 'reminder', 'recap', 'buddy-check', 'mentor-check', 'celebrate'
+  title: varchar("title").notNull(),
+  whatsappScript: text("whatsapp_script").notNull(), // Copy-paste ready message
+  tips: text("tips"), // Additional guidance for mentors
+});
+
+export const insertMentorPromptSchema = createInsertSchema(mentorPrompts).omit({
+  id: true,
+});
+export type InsertMentorPrompt = z.infer<typeof insertMentorPromptSchema>;
+export type MentorPrompt = typeof mentorPrompts.$inferSelect;
+
+// ===== PARTICIPANT RELATIONSHIPS =====
+
+// Mentor Assignments - linking mentors to participants in a journey
+export const mentorAssignments = pgTable("mentor_assignments", {
+  id: serial("id").primaryKey(),
+  userJourneyId: integer("user_journey_id").notNull().references(() => userJourneys.id, { onDelete: 'cascade' }),
+  mentorUserId: varchar("mentor_user_id").notNull().references(() => users.id),
+  status: varchar("status").notNull().default("active"), // 'active', 'paused', 'completed'
+  assignedAt: timestamp("assigned_at").defaultNow(),
+  notes: text("notes"),
+});
+
+export const insertMentorAssignmentSchema = createInsertSchema(mentorAssignments).omit({
+  id: true,
+  assignedAt: true,
+});
+export type InsertMentorAssignment = z.infer<typeof insertMentorAssignmentSchema>;
+export type MentorAssignment = typeof mentorAssignments.$inferSelect;
+
+// Buddy Pairs - accountability partners within a journey
+export const buddyPairs = pgTable("buddy_pairs", {
+  id: serial("id").primaryKey(),
+  journeyId: integer("journey_id").notNull().references(() => journeys.id, { onDelete: 'cascade' }),
+  userJourneyId1: integer("user_journey_id_1").notNull().references(() => userJourneys.id, { onDelete: 'cascade' }),
+  userJourneyId2: integer("user_journey_id_2").notNull().references(() => userJourneys.id, { onDelete: 'cascade' }),
+  status: varchar("status").notNull().default("active"), // 'active', 'dissolved'
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertBuddyPairSchema = createInsertSchema(buddyPairs).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertBuddyPair = z.infer<typeof insertBuddyPairSchema>;
+export type BuddyPair = typeof buddyPairs.$inferSelect;
+
+// ===== I WILL COMMITMENTS =====
+
+// I Will Commitments - weekly specific commitments participants make
+export const iWillCommitments = pgTable("i_will_commitments", {
+  id: serial("id").primaryKey(),
+  userJourneyId: integer("user_journey_id").notNull().references(() => userJourneys.id, { onDelete: 'cascade' }),
+  weekNumber: integer("week_number").notNull(),
+  commitment: text("commitment").notNull(), // "I will pray for 5 minutes each morning this week"
+  whoToEncourage: varchar("who_to_encourage"), // "I will encourage [name]"
+  createdAt: timestamp("created_at").defaultNow(),
+  completedAt: timestamp("completed_at"),
+  reflectionNotes: text("reflection_notes"), // How did it go?
+});
+
+export const insertIWillCommitmentSchema = createInsertSchema(iWillCommitments).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertIWillCommitment = z.infer<typeof insertIWillCommitmentSchema>;
+export type IWillCommitment = typeof iWillCommitments.$inferSelect;
+
+// Buddy Check-Ins - Win / Struggle / Prayer format
+export const buddyCheckIns = pgTable("buddy_check_ins", {
+  id: serial("id").primaryKey(),
+  buddyPairId: integer("buddy_pair_id").notNull().references(() => buddyPairs.id, { onDelete: 'cascade' }),
+  fromUserId: varchar("from_user_id").notNull().references(() => users.id),
+  weekNumber: integer("week_number").notNull(),
+  win: text("win"), // What went well this week
+  struggle: text("struggle"), // What was challenging
+  prayerRequest: text("prayer_request"), // How can I pray for you
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertBuddyCheckInSchema = createInsertSchema(buddyCheckIns).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertBuddyCheckIn = z.infer<typeof insertBuddyCheckInSchema>;
+export type BuddyCheckIn = typeof buddyCheckIns.$inferSelect;
+
+// Mentor Check-In Logs - tracking when mentors follow the D-1/D2/D4/D6 rhythm
+export const mentorCheckInLogs = pgTable("mentor_check_in_logs", {
+  id: serial("id").primaryKey(),
+  mentorAssignmentId: integer("mentor_assignment_id").notNull().references(() => mentorAssignments.id, { onDelete: 'cascade' }),
+  weekNumber: integer("week_number").notNull(),
+  promptDay: varchar("prompt_day").notNull(), // 'D-1', 'D0', 'D2', 'D4', 'D6'
+  completedAt: timestamp("completed_at").defaultNow(),
+  notes: text("notes"), // Any concerns or observations
+  escalated: varchar("escalated").default("false"), // Flag if participant needs extra support
+});
+
+export const insertMentorCheckInLogSchema = createInsertSchema(mentorCheckInLogs).omit({
+  id: true,
+  completedAt: true,
+});
+export type InsertMentorCheckInLog = z.infer<typeof insertMentorCheckInLogSchema>;
+export type MentorCheckInLog = typeof mentorCheckInLogs.$inferSelect;
