@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { insertPostSchema, insertReactionSchema, insertSparkSchema, insertSparkSubscriptionSchema, insertEventSchema, insertEventRegistrationSchema, insertBlogPostSchema } from "@shared/schema";
+import { insertPostSchema, insertReactionSchema, insertSparkSchema, insertSparkSubscriptionSchema, insertEventSchema, insertEventRegistrationSchema, insertBlogPostSchema, insertEmailSubscriptionSchema, insertPrayerRequestSchema, insertTestimonySchema, insertVolunteerSignupSchema, insertMissionRegistrationSchema } from "@shared/schema";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -300,6 +300,90 @@ export async function registerRoutes(
     } catch (error: any) {
       console.error("Error creating blog post:", error);
       res.status(400).json({ message: error.message || "Failed to create blog post" });
+    }
+  });
+
+  // ===== ENGAGEMENT FUNNEL ROUTES =====
+
+  // Newsletter subscription (public)
+  app.post('/api/subscribe', async (req, res) => {
+    try {
+      const subscriptionData = insertEmailSubscriptionSchema.parse(req.body);
+      const subscription = await storage.createEmailSubscription(subscriptionData);
+      res.status(201).json(subscription);
+    } catch (error: any) {
+      console.error("Error creating subscription:", error);
+      res.status(400).json({ message: error.message || "Failed to subscribe" });
+    }
+  });
+
+  // Prayer request (public)
+  app.post('/api/prayer-requests', async (req, res) => {
+    try {
+      const requestData = insertPrayerRequestSchema.parse(req.body);
+      const request = await storage.createPrayerRequest(requestData);
+      res.status(201).json(request);
+    } catch (error: any) {
+      console.error("Error creating prayer request:", error);
+      res.status(400).json({ message: error.message || "Failed to submit prayer request" });
+    }
+  });
+
+  // Get public prayer requests
+  app.get('/api/prayer-requests', async (req, res) => {
+    try {
+      const requests = await storage.getPrayerRequests();
+      res.json(requests);
+    } catch (error) {
+      console.error("Error fetching prayer requests:", error);
+      res.status(500).json({ message: "Failed to fetch prayer requests" });
+    }
+  });
+
+  // Testimony submission (public)
+  app.post('/api/testimonies', async (req, res) => {
+    try {
+      const testimonyData = insertTestimonySchema.parse(req.body);
+      const testimony = await storage.createTestimony(testimonyData);
+      res.status(201).json(testimony);
+    } catch (error: any) {
+      console.error("Error creating testimony:", error);
+      res.status(400).json({ message: error.message || "Failed to submit testimony" });
+    }
+  });
+
+  // Get approved testimonies
+  app.get('/api/testimonies', async (req, res) => {
+    try {
+      const testimonies = await storage.getTestimonies(true);
+      res.json(testimonies);
+    } catch (error) {
+      console.error("Error fetching testimonies:", error);
+      res.status(500).json({ message: "Failed to fetch testimonies" });
+    }
+  });
+
+  // Volunteer sign-up (public)
+  app.post('/api/volunteer', async (req, res) => {
+    try {
+      const signupData = insertVolunteerSignupSchema.parse(req.body);
+      const signup = await storage.createVolunteerSignup(signupData);
+      res.status(201).json(signup);
+    } catch (error: any) {
+      console.error("Error creating volunteer signup:", error);
+      res.status(400).json({ message: error.message || "Failed to sign up" });
+    }
+  });
+
+  // Mission trip registration (public)
+  app.post('/api/mission-registration', async (req, res) => {
+    try {
+      const registrationData = insertMissionRegistrationSchema.parse(req.body);
+      const registration = await storage.createMissionRegistration(registrationData);
+      res.status(201).json(registration);
+    } catch (error: any) {
+      console.error("Error creating mission registration:", error);
+      res.status(400).json({ message: error.message || "Failed to register" });
     }
   });
 

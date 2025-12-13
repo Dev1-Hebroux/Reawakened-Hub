@@ -7,6 +7,11 @@ import {
   events,
   eventRegistrations,
   blogPosts,
+  emailSubscriptions,
+  prayerRequests,
+  testimonies,
+  volunteerSignups,
+  missionRegistrations,
   type User,
   type UpsertUser,
   type Post,
@@ -23,6 +28,16 @@ import {
   type InsertEventRegistration,
   type BlogPost,
   type InsertBlogPost,
+  type EmailSubscription,
+  type InsertEmailSubscription,
+  type PrayerRequest,
+  type InsertPrayerRequest,
+  type Testimony,
+  type InsertTestimony,
+  type VolunteerSignup,
+  type InsertVolunteerSignup,
+  type MissionRegistration,
+  type InsertMissionRegistration,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, sql, inArray, count } from "drizzle-orm";
@@ -67,6 +82,23 @@ export interface IStorage {
   getBlogPosts(category?: string): Promise<BlogPost[]>;
   getBlogPost(slug: string): Promise<BlogPost | undefined>;
   createBlogPost(post: InsertBlogPost): Promise<BlogPost>;
+
+  // Email Subscriptions
+  createEmailSubscription(subscription: InsertEmailSubscription): Promise<EmailSubscription>;
+
+  // Prayer Requests
+  createPrayerRequest(request: InsertPrayerRequest): Promise<PrayerRequest>;
+  getPrayerRequests(): Promise<PrayerRequest[]>;
+
+  // Testimonies
+  createTestimony(testimony: InsertTestimony): Promise<Testimony>;
+  getTestimonies(approved?: boolean): Promise<Testimony[]>;
+
+  // Volunteer Sign-ups
+  createVolunteerSignup(signup: InsertVolunteerSignup): Promise<VolunteerSignup>;
+
+  // Mission Registrations
+  createMissionRegistration(registration: InsertMissionRegistration): Promise<MissionRegistration>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -251,6 +283,47 @@ export class DatabaseStorage implements IStorage {
   async createBlogPost(postData: InsertBlogPost): Promise<BlogPost> {
     const [post] = await db.insert(blogPosts).values(postData).returning();
     return post;
+  }
+
+  // Email Subscriptions
+  async createEmailSubscription(subscriptionData: InsertEmailSubscription): Promise<EmailSubscription> {
+    const [subscription] = await db.insert(emailSubscriptions).values(subscriptionData).returning();
+    return subscription;
+  }
+
+  // Prayer Requests
+  async createPrayerRequest(requestData: InsertPrayerRequest): Promise<PrayerRequest> {
+    const [request] = await db.insert(prayerRequests).values(requestData).returning();
+    return request;
+  }
+
+  async getPrayerRequests(): Promise<PrayerRequest[]> {
+    return db.select().from(prayerRequests).where(eq(prayerRequests.isPrivate, "false")).orderBy(desc(prayerRequests.createdAt));
+  }
+
+  // Testimonies
+  async createTestimony(testimonyData: InsertTestimony): Promise<Testimony> {
+    const [testimony] = await db.insert(testimonies).values(testimonyData).returning();
+    return testimony;
+  }
+
+  async getTestimonies(approved?: boolean): Promise<Testimony[]> {
+    if (approved) {
+      return db.select().from(testimonies).where(eq(testimonies.isApproved, "true")).orderBy(desc(testimonies.createdAt));
+    }
+    return db.select().from(testimonies).orderBy(desc(testimonies.createdAt));
+  }
+
+  // Volunteer Sign-ups
+  async createVolunteerSignup(signupData: InsertVolunteerSignup): Promise<VolunteerSignup> {
+    const [signup] = await db.insert(volunteerSignups).values(signupData).returning();
+    return signup;
+  }
+
+  // Mission Registrations
+  async createMissionRegistration(registrationData: InsertMissionRegistration): Promise<MissionRegistration> {
+    const [registration] = await db.insert(missionRegistrations).values(registrationData).returning();
+    return registration;
   }
 }
 

@@ -163,3 +163,98 @@ export const insertBlogPostSchema = createInsertSchema(blogPosts).omit({
 });
 export type InsertBlogPost = z.infer<typeof insertBlogPostSchema>;
 export type BlogPost = typeof blogPosts.$inferSelect;
+
+// Newsletter/Email Subscriptions
+export const emailSubscriptions = pgTable("email_subscriptions", {
+  id: serial("id").primaryKey(),
+  email: varchar("email").notNull(),
+  name: varchar("name"),
+  categories: text("categories").array(), // 'prayer', 'missions', 'devotional', 'events'
+  whatsappOptIn: varchar("whatsapp_opt_in"), // phone number if opted in
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertEmailSubscriptionSchema = createInsertSchema(emailSubscriptions).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertEmailSubscription = z.infer<typeof insertEmailSubscriptionSchema>;
+export type EmailSubscription = typeof emailSubscriptions.$inferSelect;
+
+// Prayer Requests
+export const prayerRequests = pgTable("prayer_requests", {
+  id: serial("id").primaryKey(),
+  name: varchar("name").notNull(),
+  email: varchar("email"),
+  request: text("request").notNull(),
+  isPrivate: varchar("is_private").default("false"),
+  userId: varchar("user_id").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertPrayerRequestSchema = createInsertSchema(prayerRequests).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertPrayerRequest = z.infer<typeof insertPrayerRequestSchema>;
+export type PrayerRequest = typeof prayerRequests.$inferSelect;
+
+// Testimonies
+export const testimonies = pgTable("testimonies", {
+  id: serial("id").primaryKey(),
+  name: varchar("name").notNull(),
+  email: varchar("email"),
+  title: varchar("title").notNull(),
+  story: text("story").notNull(),
+  category: varchar("category"), // 'healing', 'salvation', 'provision', 'deliverance'
+  isApproved: varchar("is_approved").default("false"),
+  userId: varchar("user_id").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertTestimonySchema = createInsertSchema(testimonies).omit({
+  id: true,
+  createdAt: true,
+  isApproved: true,
+});
+export type InsertTestimony = z.infer<typeof insertTestimonySchema>;
+export type Testimony = typeof testimonies.$inferSelect;
+
+// Volunteer Sign-ups
+export const volunteerSignups = pgTable("volunteer_signups", {
+  id: serial("id").primaryKey(),
+  name: varchar("name").notNull(),
+  email: varchar("email").notNull(),
+  phone: varchar("phone"),
+  areas: text("areas").array(), // 'worship', 'tech', 'outreach', 'prayer', 'hospitality'
+  message: text("message"),
+  userId: varchar("user_id").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertVolunteerSignupSchema = createInsertSchema(volunteerSignups).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertVolunteerSignup = z.infer<typeof insertVolunteerSignupSchema>;
+export type VolunteerSignup = typeof volunteerSignups.$inferSelect;
+
+// Mission Trip Registrations
+export const missionRegistrations = pgTable("mission_registrations", {
+  id: serial("id").primaryKey(),
+  name: varchar("name").notNull(),
+  email: varchar("email").notNull(),
+  phone: varchar("phone"),
+  tripInterest: varchar("trip_interest"), // specific trip or 'any'
+  experience: text("experience"),
+  message: text("message"),
+  userId: varchar("user_id").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertMissionRegistrationSchema = createInsertSchema(missionRegistrations).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertMissionRegistration = z.infer<typeof insertMissionRegistrationSchema>;
+export type MissionRegistration = typeof missionRegistrations.$inferSelect;
