@@ -72,16 +72,20 @@ export const insertReactionSchema = createInsertSchema(reactions).omit({
 export type InsertReaction = z.infer<typeof insertReactionSchema>;
 export type Reaction = typeof reactions.$inferSelect;
 
-// Sparks - video or image devotionals
+// Sparks - video, audio, or image devotionals
 export const sparks = pgTable("sparks", {
   id: serial("id").primaryKey(),
   title: varchar("title").notNull(),
   description: text("description").notNull(),
+  mediaType: varchar("media_type").notNull().default("video"), // 'video', 'audio', 'quick-read', 'download'
   videoUrl: varchar("video_url"),
+  audioUrl: varchar("audio_url"),
+  downloadUrl: varchar("download_url"),
   imageUrl: varchar("image_url"),
   thumbnailUrl: varchar("thumbnail_url"),
   category: varchar("category").notNull(), // 'daily-devotional', 'worship', 'testimony', etc.
   duration: integer("duration"), // in seconds
+  scriptureRef: varchar("scripture_ref"), // e.g. "Matthew 6:6"
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -91,6 +95,22 @@ export const insertSparkSchema = createInsertSchema(sparks).omit({
 });
 export type InsertSpark = z.infer<typeof insertSparkSchema>;
 export type Spark = typeof sparks.$inferSelect;
+
+// Spark Reactions - flame/amen/share tracking
+export const sparkReactions = pgTable("spark_reactions", {
+  id: serial("id").primaryKey(),
+  sparkId: integer("spark_id").notNull().references(() => sparks.id, { onDelete: 'cascade' }),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  reactionType: varchar("reaction_type").notNull(), // 'flame', 'amen', 'praying'
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertSparkReactionSchema = createInsertSchema(sparkReactions).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertSparkReaction = z.infer<typeof insertSparkReactionSchema>;
+export type SparkReaction = typeof sparkReactions.$inferSelect;
 
 // Spark subscriptions (for notifications)
 export const sparkSubscriptions = pgTable("spark_subscriptions", {

@@ -3,6 +3,7 @@ import {
   posts,
   reactions,
   sparks,
+  sparkReactions,
   sparkSubscriptions,
   events,
   eventRegistrations,
@@ -32,6 +33,8 @@ import {
   type InsertReaction,
   type Spark,
   type InsertSpark,
+  type SparkReaction,
+  type InsertSparkReaction,
   type SparkSubscription,
   type InsertSparkSubscription,
   type Event,
@@ -98,6 +101,13 @@ export interface IStorage {
   getSparks(category?: string): Promise<Spark[]>;
   getSpark(id: number): Promise<Spark | undefined>;
   createSpark(spark: InsertSpark): Promise<Spark>;
+
+  // Spark Reactions
+  getSparkReactions(sparkId: number): Promise<SparkReaction[]>;
+  getSparkReactionCounts(sparkId: number): Promise<{ reactionType: string; count: number }[]>;
+  getUserSparkReaction(sparkId: number, userId: string): Promise<SparkReaction | undefined>;
+  createSparkReaction(reaction: InsertSparkReaction): Promise<SparkReaction>;
+  deleteSparkReaction(sparkId: number, userId: string, reactionType: string): Promise<void>;
 
   // Spark Subscriptions
   getSubscriptions(userId: string): Promise<SparkSubscription[]>;
@@ -302,6 +312,41 @@ export class DatabaseStorage implements IStorage {
   async createSpark(sparkData: InsertSpark): Promise<Spark> {
     const [spark] = await db.insert(sparks).values(sparkData).returning();
     return spark;
+  }
+
+  // Spark Reactions
+  async getSparkReactions(sparkId: number): Promise<SparkReaction[]> {
+    return db.select().from(sparkReactions).where(eq(sparkReactions.sparkId, sparkId));
+  }
+
+  async getSparkReactionCounts(sparkId: number): Promise<{ reactionType: string; count: number }[]> {
+    const results = await db
+      .select({
+        reactionType: sparkReactions.reactionType,
+        count: count(sparkReactions.id),
+      })
+      .from(sparkReactions)
+      .where(eq(sparkReactions.sparkId, sparkId))
+      .groupBy(sparkReactions.reactionType);
+    return results;
+  }
+
+  async getUserSparkReaction(sparkId: number, userId: string): Promise<SparkReaction | undefined> {
+    const [reaction] = await db.select().from(sparkReactions).where(
+      and(eq(sparkReactions.sparkId, sparkId), eq(sparkReactions.userId, userId))
+    );
+    return reaction;
+  }
+
+  async createSparkReaction(reactionData: InsertSparkReaction): Promise<SparkReaction> {
+    const [reaction] = await db.insert(sparkReactions).values(reactionData).returning();
+    return reaction;
+  }
+
+  async deleteSparkReaction(sparkId: number, userId: string, reactionType: string): Promise<void> {
+    await db.delete(sparkReactions).where(
+      and(eq(sparkReactions.sparkId, sparkId), eq(sparkReactions.userId, userId), eq(sparkReactions.reactionType, reactionType))
+    );
   }
 
   // Spark Subscriptions

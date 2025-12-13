@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { insertPostSchema, insertReactionSchema, insertSparkSchema, insertSparkSubscriptionSchema, insertEventSchema, insertEventRegistrationSchema, insertBlogPostSchema, insertEmailSubscriptionSchema, insertPrayerRequestSchema, insertTestimonySchema, insertVolunteerSignupSchema, insertMissionRegistrationSchema, insertJourneySchema, insertJourneyDaySchema, insertJourneyStepSchema, insertAlphaCohortSchema, insertAlphaCohortWeekSchema, insertAlphaCohortParticipantSchema } from "@shared/schema";
+import { insertPostSchema, insertReactionSchema, insertSparkSchema, insertSparkReactionSchema, insertSparkSubscriptionSchema, insertEventSchema, insertEventRegistrationSchema, insertBlogPostSchema, insertEmailSubscriptionSchema, insertPrayerRequestSchema, insertTestimonySchema, insertVolunteerSignupSchema, insertMissionRegistrationSchema, insertJourneySchema, insertJourneyDaySchema, insertJourneyStepSchema, insertAlphaCohortSchema, insertAlphaCohortWeekSchema, insertAlphaCohortParticipantSchema } from "@shared/schema";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -141,6 +141,40 @@ export async function registerRoutes(
     } catch (error: any) {
       console.error("Error creating spark:", error);
       res.status(400).json({ message: error.message || "Failed to create spark" });
+    }
+  });
+
+  // Get spark reaction counts
+  app.get('/api/sparks/:id/reactions', async (req, res) => {
+    try {
+      const sparkId = parseInt(req.params.id);
+      const counts = await storage.getSparkReactionCounts(sparkId);
+      res.json(counts);
+    } catch (error) {
+      console.error("Error fetching spark reactions:", error);
+      res.status(500).json({ message: "Failed to fetch reactions" });
+    }
+  });
+
+  // Add a spark reaction (protected)
+  app.post('/api/sparks/:id/reactions', isAuthenticated, async (req: any, res) => {
+    try {
+      const sparkId = parseInt(req.params.id);
+      const userId = req.user.claims.sub;
+      const { reactionType } = req.body;
+      
+      const existing = await storage.getUserSparkReaction(sparkId, userId);
+      if (existing && existing.reactionType === reactionType) {
+        await storage.deleteSparkReaction(sparkId, userId, reactionType);
+        return res.json({ removed: true });
+      }
+      
+      const reactionData = insertSparkReactionSchema.parse({ sparkId, userId, reactionType });
+      const reaction = await storage.createSparkReaction(reactionData);
+      res.status(201).json(reaction);
+    } catch (error: any) {
+      console.error("Error creating spark reaction:", error);
+      res.status(400).json({ message: error.message || "Failed to add reaction" });
     }
   });
 
