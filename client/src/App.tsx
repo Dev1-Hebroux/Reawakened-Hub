@@ -11,6 +11,9 @@ import BlogPostPage from "@/pages/BlogPost";
 import { CommunityHub } from "@/pages/CommunityHub";
 import { SparksPage } from "@/pages/Sparks";
 import { MissionPage } from "@/pages/Mission";
+import { JourneyLibrary } from "@/pages/JourneyLibrary";
+import { JourneyDetail } from "@/pages/JourneyDetail";
+import { JourneyDayPage } from "@/pages/JourneyDay";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { QuickShare } from "@/components/ui/QuickShare";
 
@@ -24,6 +27,9 @@ function Router() {
       <Route path="/community" component={CommunityHub} />
       <Route path="/sparks" component={SparksPage} />
       <Route path="/mission" component={MissionPage} />
+      <Route path="/journeys" component={JourneyLibrary} />
+      <Route path="/journeys/:slug" component={JourneyDetail} />
+      <Route path="/journey/:userJourneyId/day/:dayNumber" component={JourneyDayPage} />
       <Route component={NotFound} />
     </Switch>
   );

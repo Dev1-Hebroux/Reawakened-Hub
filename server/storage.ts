@@ -12,6 +12,14 @@ import {
   testimonies,
   volunteerSignups,
   missionRegistrations,
+  journeys,
+  journeyDays,
+  journeySteps,
+  userJourneys,
+  userJourneyDays,
+  userStreaks,
+  badges,
+  userBadges,
   type User,
   type UpsertUser,
   type Post,
@@ -38,6 +46,22 @@ import {
   type InsertVolunteerSignup,
   type MissionRegistration,
   type InsertMissionRegistration,
+  type Journey,
+  type InsertJourney,
+  type JourneyDay,
+  type InsertJourneyDay,
+  type JourneyStep,
+  type InsertJourneyStep,
+  type UserJourney,
+  type InsertUserJourney,
+  type UserJourneyDay,
+  type InsertUserJourneyDay,
+  type UserStreak,
+  type InsertUserStreak,
+  type Badge,
+  type InsertBadge,
+  type UserBadge,
+  type InsertUserBadge,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, sql, inArray, count } from "drizzle-orm";
@@ -99,6 +123,41 @@ export interface IStorage {
 
   // Mission Registrations
   createMissionRegistration(registration: InsertMissionRegistration): Promise<MissionRegistration>;
+
+  // Journeys
+  getJourneys(category?: string): Promise<Journey[]>;
+  getJourneyBySlug(slug: string): Promise<Journey | undefined>;
+  getJourneyById(id: number): Promise<Journey | undefined>;
+  createJourney(journey: InsertJourney): Promise<Journey>;
+  getJourneyDays(journeyId: number): Promise<JourneyDay[]>;
+  getJourneyDay(journeyId: number, dayNumber: number): Promise<JourneyDay | undefined>;
+  createJourneyDay(day: InsertJourneyDay): Promise<JourneyDay>;
+  getJourneySteps(journeyDayId: number): Promise<JourneyStep[]>;
+  createJourneyStep(step: InsertJourneyStep): Promise<JourneyStep>;
+
+  // User Journeys
+  getUserJourneys(userId: string): Promise<UserJourney[]>;
+  getUserJourney(id: number): Promise<UserJourney | undefined>;
+  getUserJourneyByJourneyId(userId: string, journeyId: number): Promise<UserJourney | undefined>;
+  startJourney(userId: string, journeyId: number): Promise<UserJourney>;
+  updateUserJourney(id: number, updates: Partial<UserJourney>): Promise<UserJourney>;
+
+  // User Journey Days
+  getUserJourneyDays(userJourneyId: number): Promise<UserJourneyDay[]>;
+  getUserJourneyDay(userJourneyId: number, dayNumber: number): Promise<UserJourneyDay | undefined>;
+  completeJourneyDay(userJourneyId: number, dayNumber: number, notes?: string, reflectionResponse?: string): Promise<UserJourneyDay>;
+
+  // Streaks
+  getUserStreak(userId: string): Promise<UserStreak | undefined>;
+  updateUserStreak(userId: string, streak: Partial<InsertUserStreak>): Promise<UserStreak>;
+
+  // Badges
+  getBadges(): Promise<Badge[]>;
+  getBadgeByCode(code: string): Promise<Badge | undefined>;
+  createBadge(badge: InsertBadge): Promise<Badge>;
+  getUserBadges(userId: string): Promise<UserBadge[]>;
+  hasUserBadge(userId: string, badgeId: number): Promise<boolean>;
+  awardBadge(userId: string, badgeId: number): Promise<UserBadge>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -324,6 +383,178 @@ export class DatabaseStorage implements IStorage {
   async createMissionRegistration(registrationData: InsertMissionRegistration): Promise<MissionRegistration> {
     const [registration] = await db.insert(missionRegistrations).values(registrationData).returning();
     return registration;
+  }
+
+  // ===== JOURNEYS =====
+  
+  async getJourneys(category?: string): Promise<Journey[]> {
+    if (category) {
+      return db.select().from(journeys).where(and(eq(journeys.isPublished, "true"), eq(journeys.category, category)));
+    }
+    return db.select().from(journeys).where(eq(journeys.isPublished, "true"));
+  }
+
+  async getJourneyBySlug(slug: string): Promise<Journey | undefined> {
+    const [journey] = await db.select().from(journeys).where(eq(journeys.slug, slug));
+    return journey;
+  }
+
+  async getJourneyById(id: number): Promise<Journey | undefined> {
+    const [journey] = await db.select().from(journeys).where(eq(journeys.id, id));
+    return journey;
+  }
+
+  async createJourney(journeyData: InsertJourney): Promise<Journey> {
+    const [journey] = await db.insert(journeys).values(journeyData).returning();
+    return journey;
+  }
+
+  async getJourneyDays(journeyId: number): Promise<JourneyDay[]> {
+    return db.select().from(journeyDays).where(eq(journeyDays.journeyId, journeyId)).orderBy(journeyDays.dayNumber);
+  }
+
+  async getJourneyDay(journeyId: number, dayNumber: number): Promise<JourneyDay | undefined> {
+    const [day] = await db.select().from(journeyDays).where(
+      and(eq(journeyDays.journeyId, journeyId), eq(journeyDays.dayNumber, dayNumber))
+    );
+    return day;
+  }
+
+  async createJourneyDay(dayData: InsertJourneyDay): Promise<JourneyDay> {
+    const [day] = await db.insert(journeyDays).values(dayData).returning();
+    return day;
+  }
+
+  async getJourneySteps(journeyDayId: number): Promise<JourneyStep[]> {
+    return db.select().from(journeySteps).where(eq(journeySteps.journeyDayId, journeyDayId)).orderBy(journeySteps.stepOrder);
+  }
+
+  async createJourneyStep(stepData: InsertJourneyStep): Promise<JourneyStep> {
+    const [step] = await db.insert(journeySteps).values(stepData).returning();
+    return step;
+  }
+
+  // ===== USER JOURNEYS =====
+
+  async getUserJourneys(userId: string): Promise<UserJourney[]> {
+    return db.select().from(userJourneys).where(eq(userJourneys.userId, userId)).orderBy(desc(userJourneys.lastActivityAt));
+  }
+
+  async getUserJourney(id: number): Promise<UserJourney | undefined> {
+    const [userJourney] = await db.select().from(userJourneys).where(eq(userJourneys.id, id));
+    return userJourney;
+  }
+
+  async getUserJourneyByJourneyId(userId: string, journeyId: number): Promise<UserJourney | undefined> {
+    const [userJourney] = await db.select().from(userJourneys).where(
+      and(eq(userJourneys.userId, userId), eq(userJourneys.journeyId, journeyId))
+    );
+    return userJourney;
+  }
+
+  async startJourney(userId: string, journeyId: number): Promise<UserJourney> {
+    const [userJourney] = await db.insert(userJourneys).values({
+      userId,
+      journeyId,
+      status: "active",
+      currentDay: 1,
+    }).returning();
+    return userJourney;
+  }
+
+  async updateUserJourney(id: number, updates: Partial<UserJourney>): Promise<UserJourney> {
+    const [userJourney] = await db.update(userJourneys).set({
+      ...updates,
+      lastActivityAt: new Date(),
+    }).where(eq(userJourneys.id, id)).returning();
+    return userJourney;
+  }
+
+  // ===== USER JOURNEY DAYS =====
+
+  async getUserJourneyDays(userJourneyId: number): Promise<UserJourneyDay[]> {
+    return db.select().from(userJourneyDays).where(eq(userJourneyDays.userJourneyId, userJourneyId)).orderBy(userJourneyDays.dayNumber);
+  }
+
+  async getUserJourneyDay(userJourneyId: number, dayNumber: number): Promise<UserJourneyDay | undefined> {
+    const [day] = await db.select().from(userJourneyDays).where(
+      and(eq(userJourneyDays.userJourneyId, userJourneyId), eq(userJourneyDays.dayNumber, dayNumber))
+    );
+    return day;
+  }
+
+  async completeJourneyDay(userJourneyId: number, dayNumber: number, notes?: string, reflectionResponse?: string): Promise<UserJourneyDay> {
+    const existing = await this.getUserJourneyDay(userJourneyId, dayNumber);
+    if (existing) {
+      const [updated] = await db.update(userJourneyDays).set({
+        completedAt: new Date(),
+        notes: notes || existing.notes,
+        reflectionResponse: reflectionResponse || existing.reflectionResponse,
+      }).where(eq(userJourneyDays.id, existing.id)).returning();
+      return updated;
+    }
+    const [day] = await db.insert(userJourneyDays).values({
+      userJourneyId,
+      dayNumber,
+      completedAt: new Date(),
+      notes,
+      reflectionResponse,
+    }).returning();
+    return day;
+  }
+
+  // ===== STREAKS =====
+
+  async getUserStreak(userId: string): Promise<UserStreak | undefined> {
+    const [streak] = await db.select().from(userStreaks).where(eq(userStreaks.userId, userId));
+    return streak;
+  }
+
+  async updateUserStreak(userId: string, streakData: Partial<InsertUserStreak>): Promise<UserStreak> {
+    const existing = await this.getUserStreak(userId);
+    if (existing) {
+      const [updated] = await db.update(userStreaks).set(streakData).where(eq(userStreaks.userId, userId)).returning();
+      return updated;
+    }
+    const [streak] = await db.insert(userStreaks).values({
+      userId,
+      currentStreak: streakData.currentStreak || 0,
+      longestStreak: streakData.longestStreak || 0,
+      lastCompletedDate: streakData.lastCompletedDate,
+    }).returning();
+    return streak;
+  }
+
+  // ===== BADGES =====
+
+  async getBadges(): Promise<Badge[]> {
+    return db.select().from(badges);
+  }
+
+  async getBadgeByCode(code: string): Promise<Badge | undefined> {
+    const [badge] = await db.select().from(badges).where(eq(badges.code, code));
+    return badge;
+  }
+
+  async createBadge(badgeData: InsertBadge): Promise<Badge> {
+    const [badge] = await db.insert(badges).values(badgeData).returning();
+    return badge;
+  }
+
+  async getUserBadges(userId: string): Promise<UserBadge[]> {
+    return db.select().from(userBadges).where(eq(userBadges.userId, userId));
+  }
+
+  async hasUserBadge(userId: string, badgeId: number): Promise<boolean> {
+    const [existing] = await db.select().from(userBadges).where(
+      and(eq(userBadges.userId, userId), eq(userBadges.badgeId, badgeId))
+    );
+    return !!existing;
+  }
+
+  async awardBadge(userId: string, badgeId: number): Promise<UserBadge> {
+    const [userBadge] = await db.insert(userBadges).values({ userId, badgeId }).returning();
+    return userBadge;
   }
 }
 

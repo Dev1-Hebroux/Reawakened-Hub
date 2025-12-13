@@ -259,3 +259,136 @@ export const insertMissionRegistrationSchema = createInsertSchema(missionRegistr
 });
 export type InsertMissionRegistration = z.infer<typeof insertMissionRegistrationSchema>;
 export type MissionRegistration = typeof missionRegistrations.$inferSelect;
+
+// ===== DISCIPLESHIP JOURNEYS =====
+
+// Journeys - the main journey/path container
+export const journeys = pgTable("journeys", {
+  id: serial("id").primaryKey(),
+  slug: varchar("slug").notNull().unique(),
+  title: varchar("title").notNull(),
+  subtitle: varchar("subtitle"),
+  description: text("description").notNull(),
+  category: varchar("category").notNull(), // 'faith-basics', 'purpose', 'anxiety', 'relationships'
+  durationDays: integer("duration_days").notNull(),
+  level: varchar("level").notNull().default("beginner"), // 'beginner', 'intermediate', 'advanced'
+  heroImageUrl: varchar("hero_image_url"),
+  isPublished: varchar("is_published").default("true"),
+});
+
+export const insertJourneySchema = createInsertSchema(journeys).omit({
+  id: true,
+});
+export type InsertJourney = z.infer<typeof insertJourneySchema>;
+export type Journey = typeof journeys.$inferSelect;
+
+// Journey Days - each day of the journey
+export const journeyDays = pgTable("journey_days", {
+  id: serial("id").primaryKey(),
+  journeyId: integer("journey_id").notNull().references(() => journeys.id, { onDelete: 'cascade' }),
+  dayNumber: integer("day_number").notNull(),
+  title: varchar("title").notNull(),
+  summary: text("summary"),
+  estimatedMinutes: integer("estimated_minutes").default(10),
+});
+
+export const insertJourneyDaySchema = createInsertSchema(journeyDays).omit({
+  id: true,
+});
+export type InsertJourneyDay = z.infer<typeof insertJourneyDaySchema>;
+export type JourneyDay = typeof journeyDays.$inferSelect;
+
+// Journey Steps - individual content blocks within a day
+export const journeySteps = pgTable("journey_steps", {
+  id: serial("id").primaryKey(),
+  journeyDayId: integer("journey_day_id").notNull().references(() => journeyDays.id, { onDelete: 'cascade' }),
+  stepOrder: integer("step_order").notNull(),
+  stepType: varchar("step_type").notNull(), // 'scripture', 'teaching', 'reflection', 'action', 'prayer', 'video', 'audio', 'share'
+  contentJson: jsonb("content_json").notNull(), // flexible content based on type
+  mediaUrl: varchar("media_url"),
+});
+
+export const insertJourneyStepSchema = createInsertSchema(journeySteps).omit({
+  id: true,
+});
+export type InsertJourneyStep = z.infer<typeof insertJourneyStepSchema>;
+export type JourneyStep = typeof journeySteps.$inferSelect;
+
+// User Journeys - tracking user enrollment and progress
+export const userJourneys = pgTable("user_journeys", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  journeyId: integer("journey_id").notNull().references(() => journeys.id),
+  status: varchar("status").notNull().default("active"), // 'active', 'completed', 'paused', 'abandoned'
+  startedAt: timestamp("started_at").defaultNow(),
+  completedAt: timestamp("completed_at"),
+  currentDay: integer("current_day").default(1),
+  lastActivityAt: timestamp("last_activity_at").defaultNow(),
+});
+
+export const insertUserJourneySchema = createInsertSchema(userJourneys).omit({
+  id: true,
+  startedAt: true,
+  lastActivityAt: true,
+});
+export type InsertUserJourney = z.infer<typeof insertUserJourneySchema>;
+export type UserJourney = typeof userJourneys.$inferSelect;
+
+// User Journey Days - tracking completion of each day
+export const userJourneyDays = pgTable("user_journey_days", {
+  id: serial("id").primaryKey(),
+  userJourneyId: integer("user_journey_id").notNull().references(() => userJourneys.id, { onDelete: 'cascade' }),
+  dayNumber: integer("day_number").notNull(),
+  completedAt: timestamp("completed_at"),
+  notes: text("notes"),
+  reflectionResponse: text("reflection_response"),
+});
+
+export const insertUserJourneyDaySchema = createInsertSchema(userJourneyDays).omit({
+  id: true,
+});
+export type InsertUserJourneyDay = z.infer<typeof insertUserJourneyDaySchema>;
+export type UserJourneyDay = typeof userJourneyDays.$inferSelect;
+
+// User Streaks - tracking daily engagement
+export const userStreaks = pgTable("user_streaks", {
+  userId: varchar("user_id").primaryKey().references(() => users.id),
+  currentStreak: integer("current_streak").default(0),
+  longestStreak: integer("longest_streak").default(0),
+  lastCompletedDate: varchar("last_completed_date"), // YYYY-MM-DD format
+});
+
+export const insertUserStreakSchema = createInsertSchema(userStreaks);
+export type InsertUserStreak = z.infer<typeof insertUserStreakSchema>;
+export type UserStreak = typeof userStreaks.$inferSelect;
+
+// Badges - achievement definitions
+export const badges = pgTable("badges", {
+  id: serial("id").primaryKey(),
+  code: varchar("code").notNull().unique(), // 'STARTED_STRONG', 'CONSISTENT', 'MOMENTUM', 'FINISHER'
+  name: varchar("name").notNull(),
+  description: text("description").notNull(),
+  iconUrl: varchar("icon_url"),
+  criteriaJson: jsonb("criteria_json"), // e.g. { type: 'streak', value: 3 }
+});
+
+export const insertBadgeSchema = createInsertSchema(badges).omit({
+  id: true,
+});
+export type InsertBadge = z.infer<typeof insertBadgeSchema>;
+export type Badge = typeof badges.$inferSelect;
+
+// User Badges - earned badges
+export const userBadges = pgTable("user_badges", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  badgeId: integer("badge_id").notNull().references(() => badges.id),
+  awardedAt: timestamp("awarded_at").defaultNow(),
+});
+
+export const insertUserBadgeSchema = createInsertSchema(userBadges).omit({
+  id: true,
+  awardedAt: true,
+});
+export type InsertUserBadge = z.infer<typeof insertUserBadgeSchema>;
+export type UserBadge = typeof userBadges.$inferSelect;
