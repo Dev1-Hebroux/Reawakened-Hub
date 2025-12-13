@@ -98,7 +98,7 @@ export default function Home() {
 
             <div className="mt-12 text-center">
               <button className="inline-flex items-center gap-2 bg-gray-900 text-white px-8 py-4 rounded-full font-bold hover:bg-gray-800 transition-all hover:scale-105 shadow-lg">
-                <ShoppingBag className="h-5 w-5" /> Visit the Store
+                <ShoppingBag className="h-5 w-5" /> Visit the Hub
               </button>
             </div>
           </div>
