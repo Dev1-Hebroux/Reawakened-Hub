@@ -1,14 +1,20 @@
 import { motion } from "framer-motion";
 import { 
   Compass, MapPin, Clock, Users, ArrowRight, 
-  Loader2, BookOpen, Heart, Sparkles, Target
+  Loader2, BookOpen, Heart, Sparkles, Target, Calendar, Play
 } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
+import { format } from "date-fns";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import type { Journey } from "@shared/schema";
+import type { Journey, AlphaCohort } from "@shared/schema";
+
+interface AlphaCohortWithCounts extends AlphaCohort {
+  participantCount: number;
+  weekCount: number;
+}
 
 const categories = [
   { id: "all", label: "All Journeys", icon: Compass },
@@ -31,6 +37,18 @@ const categoryColors: Record<string, string> = {
   "relationships": "bg-pink-500/20 text-pink-400 border-pink-500/30",
 };
 
+const statusColors: Record<string, string> = {
+  upcoming: "bg-blue-500/20 text-blue-400 border-blue-500/30",
+  active: "bg-green-500/20 text-green-400 border-green-500/30",
+  completed: "bg-gray-500/20 text-gray-400 border-gray-500/30",
+};
+
+const statusLabels: Record<string, string> = {
+  upcoming: "Coming Soon",
+  active: "In Progress",
+  completed: "Completed",
+};
+
 export function JourneyLibrary() {
   const [activeCategory, setActiveCategory] = useState("all");
 
@@ -38,9 +56,15 @@ export function JourneyLibrary() {
     queryKey: ["/api/journeys"],
   });
 
+  const { data: alphaCohorts = [], isLoading: isLoadingCohorts } = useQuery<AlphaCohortWithCounts[]>({
+    queryKey: ["/api/alpha-cohorts"],
+  });
+
   const filteredJourneys = activeCategory === "all"
     ? journeys
     : journeys.filter(j => j.category === activeCategory);
+
+  const upcomingCohorts = alphaCohorts.filter(c => c.status === "upcoming" || c.status === "active");
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0a1628] to-[#0d1e36] text-white overflow-x-hidden">
@@ -93,8 +117,120 @@ export function JourneyLibrary() {
         </div>
       </section>
 
+      {/* Alpha Cohorts Section */}
+      {upcomingCohorts.length > 0 && (
+        <section className="px-4 sm:px-6 lg:px-8 pb-12">
+          <div className="max-w-7xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              className="mb-8"
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center">
+                  <Play className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-display font-bold text-white">Alpha Cohorts</h2>
+                  <p className="text-sm text-gray-400">Join a group journey through the Alpha Film Series</p>
+                </div>
+              </div>
+            </motion.div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {isLoadingCohorts ? (
+                <div className="col-span-full flex items-center justify-center py-12">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                </div>
+              ) : (
+                upcomingCohorts.map((cohort, i) => (
+                  <motion.div
+                    key={cohort.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.1 }}
+                    data-testid={`card-alpha-cohort-${cohort.id}`}
+                  >
+                    <Link href={`/alpha/${cohort.id}`}>
+                      <div className="group relative bg-gradient-to-br from-red-900/20 to-orange-900/20 border border-red-500/20 rounded-2xl overflow-hidden hover:border-red-500/50 transition-all cursor-pointer h-full">
+                        {cohort.heroImageUrl && (
+                          <div className="aspect-video relative overflow-hidden">
+                            <img 
+                              src={cohort.heroImageUrl} 
+                              alt={cohort.title}
+                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-[#0a1628] via-transparent to-transparent" />
+                          </div>
+                        )}
+                        
+                        <div className="p-6">
+                          <div className="flex items-center gap-2 mb-3">
+                            <span className="text-xs font-bold px-2 py-1 rounded-md bg-gradient-to-r from-red-500/20 to-orange-500/20 text-orange-400 border border-orange-500/30">
+                              Alpha Course
+                            </span>
+                            <span className={`text-xs font-medium px-2 py-1 rounded-md border ${statusColors[cohort.status] || statusColors.upcoming}`}>
+                              {statusLabels[cohort.status] || cohort.status}
+                            </span>
+                          </div>
+                          
+                          <h3 className="text-xl font-bold text-white mb-2 group-hover:text-orange-400 transition-colors">
+                            {cohort.title}
+                          </h3>
+                          
+                          {cohort.description && (
+                            <p className="text-sm text-gray-400 line-clamp-2 mb-4">
+                              {cohort.description}
+                            </p>
+                          )}
+                          
+                          <div className="flex items-center justify-between pt-4 border-t border-white/10">
+                            <div className="flex items-center gap-4 text-xs text-gray-500">
+                              <span className="flex items-center gap-1">
+                                <Calendar className="h-3.5 w-3.5" />
+                                {format(new Date(cohort.startDate), "MMM d, yyyy")}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <Users className="h-3.5 w-3.5" />
+                                {cohort.participantCount}/{cohort.capacity || 50}
+                              </span>
+                            </div>
+                            <span className="text-orange-400 text-sm font-medium flex items-center gap-1 group-hover:gap-2 transition-all">
+                              Join <ArrowRight className="h-4 w-4" />
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </Link>
+                  </motion.div>
+                ))
+              )}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Self-Paced Journeys Section */}
       <section className="px-4 sm:px-6 lg:px-8 pb-20">
         <div className="max-w-7xl mx-auto">
+          {upcomingCohorts.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              className="mb-8"
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <div className="h-10 w-10 rounded-xl bg-primary/20 flex items-center justify-center">
+                  <Compass className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-display font-bold text-white">Self-Paced Journeys</h2>
+                  <p className="text-sm text-gray-400">Go at your own pace with guided devotional paths</p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
           {isLoading ? (
             <div className="flex items-center justify-center py-20">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />

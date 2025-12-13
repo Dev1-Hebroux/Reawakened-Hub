@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
-import { insertPostSchema, insertReactionSchema, insertSparkSchema, insertSparkSubscriptionSchema, insertEventSchema, insertEventRegistrationSchema, insertBlogPostSchema, insertEmailSubscriptionSchema, insertPrayerRequestSchema, insertTestimonySchema, insertVolunteerSignupSchema, insertMissionRegistrationSchema, insertJourneySchema, insertJourneyDaySchema, insertJourneyStepSchema } from "@shared/schema";
+import { insertPostSchema, insertReactionSchema, insertSparkSchema, insertSparkSubscriptionSchema, insertEventSchema, insertEventRegistrationSchema, insertBlogPostSchema, insertEmailSubscriptionSchema, insertPrayerRequestSchema, insertTestimonySchema, insertVolunteerSignupSchema, insertMissionRegistrationSchema, insertJourneySchema, insertJourneyDaySchema, insertJourneyStepSchema, insertAlphaCohortSchema, insertAlphaCohortWeekSchema, insertAlphaCohortParticipantSchema } from "@shared/schema";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -775,6 +775,216 @@ export async function registerRoutes(
     } catch (error: any) {
       console.error("Error seeding journey:", error);
       res.status(500).json({ message: error.message || "Failed to seed journey" });
+    }
+  });
+
+  // ===== ALPHA COHORT ROUTES =====
+
+  // Get all alpha cohorts (public)
+  app.get('/api/alpha-cohorts', async (req, res) => {
+    try {
+      const status = req.query.status as string | undefined;
+      const cohorts = await storage.getAlphaCohorts(status);
+      
+      // Enrich with participant count
+      const enriched = await Promise.all(cohorts.map(async (cohort) => {
+        const participants = await storage.getAlphaCohortParticipants(cohort.id);
+        const weeks = await storage.getAlphaCohortWeeks(cohort.id);
+        return {
+          ...cohort,
+          participantCount: participants.filter(p => p.status === 'approved').length,
+          weekCount: weeks.length,
+        };
+      }));
+      
+      res.json(enriched);
+    } catch (error) {
+      console.error("Error fetching alpha cohorts:", error);
+      res.status(500).json({ message: "Failed to fetch alpha cohorts" });
+    }
+  });
+
+  // Get a single alpha cohort with weeks and facilitators
+  app.get('/api/alpha-cohorts/:id', async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const cohort = await storage.getAlphaCohort(id);
+      if (!cohort) {
+        return res.status(404).json({ message: "Alpha cohort not found" });
+      }
+      
+      const weeks = await storage.getAlphaCohortWeeks(id);
+      const participants = await storage.getAlphaCohortParticipants(id);
+      const facilitators = participants.filter(p => p.role === 'facilitator' || p.role === 'host');
+      
+      res.json({
+        ...cohort,
+        weeks,
+        facilitatorCount: facilitators.length,
+        participantCount: participants.filter(p => p.status === 'approved').length,
+      });
+    } catch (error) {
+      console.error("Error fetching alpha cohort:", error);
+      res.status(500).json({ message: "Failed to fetch alpha cohort" });
+    }
+  });
+
+  // Enroll in an alpha cohort (protected)
+  app.post('/api/alpha-cohorts/:id/enroll', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const cohortId = parseInt(req.params.id);
+      
+      // Check if cohort exists
+      const cohort = await storage.getAlphaCohort(cohortId);
+      if (!cohort) {
+        return res.status(404).json({ message: "Alpha cohort not found" });
+      }
+      
+      // Check if already enrolled
+      const existing = await storage.getAlphaCohortParticipant(cohortId, userId);
+      if (existing) {
+        return res.json(existing);
+      }
+      
+      // Check capacity
+      const participants = await storage.getAlphaCohortParticipants(cohortId);
+      const approvedCount = participants.filter(p => p.status === 'approved').length;
+      if (cohort.capacity && approvedCount >= cohort.capacity) {
+        return res.status(400).json({ message: "This cohort is full" });
+      }
+      
+      const participant = await storage.enrollInAlphaCohort(cohortId, userId);
+      res.status(201).json(participant);
+    } catch (error: any) {
+      console.error("Error enrolling in alpha cohort:", error);
+      res.status(400).json({ message: error.message || "Failed to enroll" });
+    }
+  });
+
+  // Get user's enrolled alpha cohorts (protected)
+  app.get('/api/me/alpha-cohorts', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const participations = await storage.getUserAlphaCohorts(userId);
+      
+      // Enrich with cohort details and progress
+      const enriched = await Promise.all(participations.map(async (p) => {
+        const cohort = await storage.getAlphaCohort(p.cohortId);
+        const weeks = await storage.getAlphaCohortWeeks(p.cohortId);
+        const progressRecords = await storage.getAlphaCohortWeekProgress(p.id);
+        
+        // Map progress to simplified format for frontend
+        const progress = weeks.map(w => {
+          const pr = progressRecords.find(pr => pr.weekNumber === w.weekNumber);
+          return {
+            weekNumber: w.weekNumber,
+            watched: !!pr?.watchedAt,
+            prayerCompleted: !!pr?.prayerActionCompletedAt,
+          };
+        });
+        
+        return {
+          cohort,
+          participant: p,
+          progress,
+        };
+      }));
+      
+      res.json(enriched);
+    } catch (error) {
+      console.error("Error fetching user alpha cohorts:", error);
+      res.status(500).json({ message: "Failed to fetch user alpha cohorts" });
+    }
+  });
+
+  // Get week content for participant (protected)
+  app.get('/api/alpha-cohorts/:cohortId/week/:weekNumber', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const cohortId = parseInt(req.params.cohortId);
+      const weekNumber = parseInt(req.params.weekNumber);
+      
+      const participant = await storage.getAlphaCohortParticipant(cohortId, userId);
+      if (!participant) {
+        return res.status(403).json({ message: "You are not enrolled in this cohort" });
+      }
+      
+      const cohort = await storage.getAlphaCohort(cohortId);
+      if (!cohort) {
+        return res.status(404).json({ message: "Cohort not found" });
+      }
+      
+      const weeks = await storage.getAlphaCohortWeeks(cohortId);
+      const week = weeks.find(w => w.weekNumber === weekNumber);
+      if (!week) {
+        return res.status(404).json({ message: "Week not found" });
+      }
+      
+      const allProgress = await storage.getAlphaCohortWeekProgress(participant.id);
+      const weekProgress = allProgress.find(p => p.weekNumber === weekNumber);
+      
+      res.json({
+        week,
+        cohort,
+        participant,
+        progress: weekProgress || null,
+      });
+    } catch (error) {
+      console.error("Error fetching week content:", error);
+      res.status(500).json({ message: "Failed to fetch week content" });
+    }
+  });
+
+  // Update week progress (protected)
+  app.post('/api/alpha-cohort-progress', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { participantId, weekNumber, watchedAt, discussionNotes, prayerActionCompletedAt, reflection } = req.body;
+      
+      // Verify participant belongs to user
+      const participant = await storage.getAlphaCohortParticipantById(participantId);
+      if (!participant || participant.userId !== userId) {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+      
+      // Frontend sends boolean flags, convert to dates
+      const progress = await storage.updateAlphaCohortWeekProgress(participantId, weekNumber, {
+        watchedAt: watchedAt === true ? new Date() : (watchedAt ? new Date(watchedAt) : undefined),
+        discussionNotes,
+        prayerActionCompletedAt: prayerActionCompletedAt === true ? new Date() : (prayerActionCompletedAt ? new Date(prayerActionCompletedAt) : undefined),
+        reflection,
+      });
+      
+      res.json(progress);
+    } catch (error: any) {
+      console.error("Error updating progress:", error);
+      res.status(400).json({ message: error.message || "Failed to update progress" });
+    }
+  });
+
+  // Create alpha cohort (admin)
+  app.post('/api/alpha-cohorts', isAuthenticated, async (req, res) => {
+    try {
+      const cohortData = insertAlphaCohortSchema.parse(req.body);
+      const cohort = await storage.createAlphaCohort(cohortData);
+      res.status(201).json(cohort);
+    } catch (error: any) {
+      console.error("Error creating alpha cohort:", error);
+      res.status(400).json({ message: error.message || "Failed to create cohort" });
+    }
+  });
+
+  // Add week to cohort (admin)
+  app.post('/api/alpha-cohorts/:id/weeks', isAuthenticated, async (req, res) => {
+    try {
+      const cohortId = parseInt(req.params.id);
+      const weekData = insertAlphaCohortWeekSchema.parse({ ...req.body, cohortId });
+      const week = await storage.createAlphaCohortWeek(weekData);
+      res.status(201).json(week);
+    } catch (error: any) {
+      console.error("Error creating week:", error);
+      res.status(400).json({ message: error.message || "Failed to create week" });
     }
   });
 

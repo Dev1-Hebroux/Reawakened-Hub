@@ -20,6 +20,10 @@ import {
   userStreaks,
   badges,
   userBadges,
+  alphaCohorts,
+  alphaCohortWeeks,
+  alphaCohortParticipants,
+  alphaCohortWeekProgress,
   type User,
   type UpsertUser,
   type Post,
@@ -62,6 +66,14 @@ import {
   type InsertBadge,
   type UserBadge,
   type InsertUserBadge,
+  type AlphaCohort,
+  type InsertAlphaCohort,
+  type AlphaCohortWeek,
+  type InsertAlphaCohortWeek,
+  type AlphaCohortParticipant,
+  type InsertAlphaCohortParticipant,
+  type AlphaCohortWeekProgress,
+  type InsertAlphaCohortWeekProgress,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, sql, inArray, count } from "drizzle-orm";
@@ -158,6 +170,24 @@ export interface IStorage {
   getUserBadges(userId: string): Promise<UserBadge[]>;
   hasUserBadge(userId: string, badgeId: number): Promise<boolean>;
   awardBadge(userId: string, badgeId: number): Promise<UserBadge>;
+
+  // Alpha Cohorts
+  getAlphaCohorts(status?: string): Promise<AlphaCohort[]>;
+  getAlphaCohort(id: number): Promise<AlphaCohort | undefined>;
+  createAlphaCohort(cohort: InsertAlphaCohort): Promise<AlphaCohort>;
+  getAlphaCohortWeeks(cohortId: number): Promise<AlphaCohortWeek[]>;
+  createAlphaCohortWeek(week: InsertAlphaCohortWeek): Promise<AlphaCohortWeek>;
+  
+  // Alpha Cohort Participants
+  getAlphaCohortParticipants(cohortId: number): Promise<AlphaCohortParticipant[]>;
+  getAlphaCohortParticipant(cohortId: number, userId: string): Promise<AlphaCohortParticipant | undefined>;
+  getAlphaCohortParticipantById(participantId: number): Promise<AlphaCohortParticipant | undefined>;
+  enrollInAlphaCohort(cohortId: number, userId: string, role?: string): Promise<AlphaCohortParticipant>;
+  getUserAlphaCohorts(userId: string): Promise<AlphaCohortParticipant[]>;
+  
+  // Alpha Cohort Progress
+  getAlphaCohortWeekProgress(participantId: number): Promise<AlphaCohortWeekProgress[]>;
+  updateAlphaCohortWeekProgress(participantId: number, weekNumber: number, updates: Partial<InsertAlphaCohortWeekProgress>): Promise<AlphaCohortWeekProgress>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -555,6 +585,90 @@ export class DatabaseStorage implements IStorage {
   async awardBadge(userId: string, badgeId: number): Promise<UserBadge> {
     const [userBadge] = await db.insert(userBadges).values({ userId, badgeId }).returning();
     return userBadge;
+  }
+
+  // ===== ALPHA COHORTS =====
+
+  async getAlphaCohorts(status?: string): Promise<AlphaCohort[]> {
+    if (status) {
+      return db.select().from(alphaCohorts).where(eq(alphaCohorts.status, status)).orderBy(desc(alphaCohorts.startDate));
+    }
+    return db.select().from(alphaCohorts).orderBy(desc(alphaCohorts.startDate));
+  }
+
+  async getAlphaCohort(id: number): Promise<AlphaCohort | undefined> {
+    const [cohort] = await db.select().from(alphaCohorts).where(eq(alphaCohorts.id, id));
+    return cohort;
+  }
+
+  async createAlphaCohort(cohortData: InsertAlphaCohort): Promise<AlphaCohort> {
+    const [cohort] = await db.insert(alphaCohorts).values(cohortData).returning();
+    return cohort;
+  }
+
+  async getAlphaCohortWeeks(cohortId: number): Promise<AlphaCohortWeek[]> {
+    return db.select().from(alphaCohortWeeks).where(eq(alphaCohortWeeks.cohortId, cohortId)).orderBy(alphaCohortWeeks.weekNumber);
+  }
+
+  async createAlphaCohortWeek(weekData: InsertAlphaCohortWeek): Promise<AlphaCohortWeek> {
+    const [week] = await db.insert(alphaCohortWeeks).values(weekData).returning();
+    return week;
+  }
+
+  // ===== ALPHA COHORT PARTICIPANTS =====
+
+  async getAlphaCohortParticipants(cohortId: number): Promise<AlphaCohortParticipant[]> {
+    return db.select().from(alphaCohortParticipants).where(eq(alphaCohortParticipants.cohortId, cohortId));
+  }
+
+  async getAlphaCohortParticipant(cohortId: number, userId: string): Promise<AlphaCohortParticipant | undefined> {
+    const [participant] = await db.select().from(alphaCohortParticipants).where(
+      and(eq(alphaCohortParticipants.cohortId, cohortId), eq(alphaCohortParticipants.userId, userId))
+    );
+    return participant;
+  }
+
+  async getAlphaCohortParticipantById(participantId: number): Promise<AlphaCohortParticipant | undefined> {
+    const [participant] = await db.select().from(alphaCohortParticipants).where(eq(alphaCohortParticipants.id, participantId));
+    return participant;
+  }
+
+  async enrollInAlphaCohort(cohortId: number, userId: string, role: string = "participant"): Promise<AlphaCohortParticipant> {
+    const [participant] = await db.insert(alphaCohortParticipants).values({
+      cohortId,
+      userId,
+      role,
+      status: "approved",
+    }).returning();
+    return participant;
+  }
+
+  async getUserAlphaCohorts(userId: string): Promise<AlphaCohortParticipant[]> {
+    return db.select().from(alphaCohortParticipants).where(eq(alphaCohortParticipants.userId, userId));
+  }
+
+  // ===== ALPHA COHORT PROGRESS =====
+
+  async getAlphaCohortWeekProgress(participantId: number): Promise<AlphaCohortWeekProgress[]> {
+    return db.select().from(alphaCohortWeekProgress).where(eq(alphaCohortWeekProgress.participantId, participantId)).orderBy(alphaCohortWeekProgress.weekNumber);
+  }
+
+  async updateAlphaCohortWeekProgress(participantId: number, weekNumber: number, updates: Partial<InsertAlphaCohortWeekProgress>): Promise<AlphaCohortWeekProgress> {
+    const [existing] = await db.select().from(alphaCohortWeekProgress).where(
+      and(eq(alphaCohortWeekProgress.participantId, participantId), eq(alphaCohortWeekProgress.weekNumber, weekNumber))
+    );
+    
+    if (existing) {
+      const [updated] = await db.update(alphaCohortWeekProgress).set(updates).where(eq(alphaCohortWeekProgress.id, existing.id)).returning();
+      return updated;
+    }
+    
+    const [progress] = await db.insert(alphaCohortWeekProgress).values({
+      participantId,
+      weekNumber,
+      ...updates,
+    }).returning();
+    return progress;
   }
 }
 
