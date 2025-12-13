@@ -16,6 +16,7 @@ import { JourneyDetail } from "@/pages/JourneyDetail";
 import { JourneyDayPage } from "@/pages/JourneyDay";
 import { AlphaCohortDetail } from "@/pages/AlphaCohortDetail";
 import { AlphaWeekView } from "@/pages/AlphaWeekView";
+import { MissionaryPathway } from "@/pages/MissionaryPathway";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { QuickShare } from "@/components/ui/QuickShare";
 
@@ -34,6 +35,7 @@ function Router() {
       <Route path="/journey/:userJourneyId/day/:dayNumber" component={JourneyDayPage} />
       <Route path="/alpha/:id" component={AlphaCohortDetail} />
       <Route path="/alpha/:cohortId/week/:weekNumber" component={AlphaWeekView} />
+      <Route path="/pathway" component={MissionaryPathway} />
       <Route component={NotFound} />
     </Switch>
   );
