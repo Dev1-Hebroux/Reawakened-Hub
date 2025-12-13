@@ -58,14 +58,15 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-12 relative z-20">
           <div className="bg-white rounded-[20px] shadow-xl p-8 md:p-12 grid grid-cols-2 md:grid-cols-4 gap-8 border border-gray-100">
             {[
-              { label: "Community Members", value: "10k+" },
-              { label: "Nations Reached", value: "45+" },
-              { label: "Daily Sparks", value: "500+" },
-              { label: "Mission Projects", value: "120" },
+              { label: "Our Vision", value: "10k+", subtitle: "disciples by 2030" },
+              { label: "Our Goal", value: "50+", subtitle: "nations reached" },
+              { label: "Daily", value: "365", subtitle: "sparks per year" },
+              { label: "Launching", value: "12+", subtitle: "mission projects" },
             ].map((stat, i) => (
               <div key={i} className="text-center md:text-left" data-testid={`stat-home-${stat.label.toLowerCase().replace(/\s+/g, '-')}`}>
-                <div className="text-3xl md:text-4xl font-bold text-gray-900 font-display mb-2">{stat.value}</div>
-                <div className="text-sm text-gray-500 uppercase tracking-wide font-bold">{stat.label}</div>
+                <div className="text-3xl md:text-4xl font-bold text-gray-900 font-display mb-1">{stat.value}</div>
+                <div className="text-xs text-primary font-bold mb-1">{stat.subtitle}</div>
+                <div className="text-xs text-gray-400 uppercase tracking-wide font-bold">{stat.label}</div>
               </div>
             ))}
           </div>
