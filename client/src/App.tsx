@@ -30,9 +30,11 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Toaster />
-        <Router />
-        <MobileNav />
+        <div className="dove-background min-h-screen relative">
+          <Toaster />
+          <Router />
+          <MobileNav />
+        </div>
       </TooltipProvider>
     </QueryClientProvider>
   );

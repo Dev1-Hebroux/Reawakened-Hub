@@ -60,24 +60,22 @@ export function Hero() {
           >
             <div className="inline-flex items-center space-x-2 bg-white border border-orange-100 rounded-full px-4 py-2 shadow-sm">
               <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse"></span>
-              <span className="font-bold text-xs text-orange-900 uppercase tracking-wider">A Call to Vigilance, Revival & Spiritual Awakening</span>
+              <span className="font-bold text-xs text-orange-900 uppercase tracking-wider">The movement is live</span>
             </div>
 
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-display font-bold text-gray-900 leading-[1.05] tracking-tight">
-              Raising a <br />
-              Standard & <br />
+              Faith. Real Life. <br />
               <span className="text-primary relative inline-block">
-                Building Without Walls
+                Mission.
                 <svg className="absolute -bottom-2 left-0 w-full h-3 text-orange-200 -z-10" viewBox="0 0 100 10" preserveAspectRatio="none">
                   <path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="8" fill="none" />
                 </svg>
               </span>
             </h1>
 
-            <blockquote className="text-lg md:text-xl text-gray-600 max-w-lg leading-relaxed font-medium border-l-4 border-primary pl-4 italic">
-              "I will pour out my Spirit upon all of you! Your sons and daughters will prophesy; your old men will dream dreams, and your young men see visions."
-              <span className="block text-sm text-primary font-bold mt-2 not-italic">— Joel 2:28</span>
-            </blockquote>
+            <p className="text-lg md:text-xl text-gray-600 max-w-lg leading-relaxed">
+              Reawakened is the digital hub for a generation ready to encounter Jesus, find their purpose, and change the world.
+            </p>
 
             <div className="flex flex-col sm:flex-row items-center gap-4 pt-2">
               <Button size="lg" className="bg-primary hover:bg-primary/90 text-white rounded-full px-8 h-16 text-lg font-bold shadow-xl shadow-orange-500/20 w-full sm:w-auto hover:-translate-y-1 transition-all">

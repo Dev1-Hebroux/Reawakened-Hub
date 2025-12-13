@@ -54,6 +54,48 @@
   }
 }
 
+/* Subtle Holy Spirit Dove Background Pattern */
+.dove-background {
+  position: relative;
+  z-index: 1;
+}
+
+.dove-background > * {
+  position: relative;
+  z-index: 1;
+}
+
+.dove-background::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: -1;
+  background-image: 
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 15 C35 15 25 25 25 35 C25 45 35 55 50 65 C65 55 75 45 75 35 C75 25 65 15 50 15 M30 30 Q20 25 15 35 Q20 40 30 35 M70 30 Q80 25 85 35 Q80 40 70 35 M50 20 Q45 10 50 5 Q55 10 50 20' fill='%23293a50' opacity='0.008'/%3E%3C/svg%3E");
+  background-size: 400px 400px;
+  background-repeat: repeat;
+  opacity: 0.5;
+}
+
+.dove-background::after {
+  content: '';
+  position: fixed;
+  bottom: -150px;
+  right: -150px;
+  width: 500px;
+  height: 500px;
+  pointer-events: none;
+  z-index: -1;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 100'%3E%3Ctext x='10' y='60' font-family='Space Grotesk, sans-serif' font-size='12' font-weight='bold' fill='%23293a50' opacity='0.02'%3Ereawakened%3C/text%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
+  opacity: 0.3;
+}
+
 @layer utilities {
   .text-gradient {
     @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent;
