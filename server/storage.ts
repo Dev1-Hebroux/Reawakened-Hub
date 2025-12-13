@@ -25,6 +25,14 @@ import {
   alphaCohortWeeks,
   alphaCohortParticipants,
   alphaCohortWeekProgress,
+  journeyWeeks,
+  sessionSections,
+  mentorPrompts,
+  mentorAssignments,
+  buddyPairs,
+  iWillCommitments,
+  buddyCheckIns,
+  mentorCheckInLogs,
   type User,
   type UpsertUser,
   type Post,
@@ -77,6 +85,22 @@ import {
   type InsertAlphaCohortParticipant,
   type AlphaCohortWeekProgress,
   type InsertAlphaCohortWeekProgress,
+  type JourneyWeek,
+  type InsertJourneyWeek,
+  type SessionSection,
+  type InsertSessionSection,
+  type MentorPrompt,
+  type InsertMentorPrompt,
+  type MentorAssignment,
+  type InsertMentorAssignment,
+  type BuddyPair,
+  type InsertBuddyPair,
+  type IWillCommitment,
+  type InsertIWillCommitment,
+  type BuddyCheckIn,
+  type InsertBuddyCheckIn,
+  type MentorCheckInLog,
+  type InsertMentorCheckInLog,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, sql, inArray, count } from "drizzle-orm";
@@ -198,6 +222,32 @@ export interface IStorage {
   // Alpha Cohort Progress
   getAlphaCohortWeekProgress(participantId: number): Promise<AlphaCohortWeekProgress[]>;
   updateAlphaCohortWeekProgress(participantId: number, weekNumber: number, updates: Partial<InsertAlphaCohortWeekProgress>): Promise<AlphaCohortWeekProgress>;
+
+  // Journey Weeks (8-week programs)
+  getJourneyWeeks(journeyId: number): Promise<JourneyWeek[]>;
+  getJourneyWeek(journeyId: number, weekNumber: number): Promise<JourneyWeek | undefined>;
+  createJourneyWeek(week: InsertJourneyWeek): Promise<JourneyWeek>;
+
+  // Session Sections
+  getSessionSections(journeyWeekId: number): Promise<SessionSection[]>;
+  createSessionSection(section: InsertSessionSection): Promise<SessionSection>;
+
+  // Mentor Prompts
+  getMentorPrompts(journeyWeekId: number): Promise<MentorPrompt[]>;
+  createMentorPrompt(prompt: InsertMentorPrompt): Promise<MentorPrompt>;
+
+  // I Will Commitments
+  getIWillCommitments(userJourneyId: number): Promise<IWillCommitment[]>;
+  createIWillCommitment(commitment: InsertIWillCommitment): Promise<IWillCommitment>;
+  completeIWillCommitment(id: number, reflectionNotes?: string): Promise<IWillCommitment>;
+
+  // Buddy Pairs
+  getBuddyPairs(journeyId: number): Promise<BuddyPair[]>;
+  createBuddyPair(pair: InsertBuddyPair): Promise<BuddyPair>;
+
+  // Mentor Assignments
+  getMentorAssignments(userJourneyId: number): Promise<MentorAssignment[]>;
+  createMentorAssignment(assignment: InsertMentorAssignment): Promise<MentorAssignment>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -714,6 +764,87 @@ export class DatabaseStorage implements IStorage {
       ...updates,
     }).returning();
     return progress;
+  }
+
+  // ===== JOURNEY WEEKS (8-Week Programs) =====
+
+  async getJourneyWeeks(journeyId: number): Promise<JourneyWeek[]> {
+    return db.select().from(journeyWeeks).where(eq(journeyWeeks.journeyId, journeyId)).orderBy(journeyWeeks.weekNumber);
+  }
+
+  async getJourneyWeek(journeyId: number, weekNumber: number): Promise<JourneyWeek | undefined> {
+    const [week] = await db.select().from(journeyWeeks).where(
+      and(eq(journeyWeeks.journeyId, journeyId), eq(journeyWeeks.weekNumber, weekNumber))
+    );
+    return week;
+  }
+
+  async createJourneyWeek(weekData: InsertJourneyWeek): Promise<JourneyWeek> {
+    const [week] = await db.insert(journeyWeeks).values(weekData).returning();
+    return week;
+  }
+
+  // ===== SESSION SECTIONS =====
+
+  async getSessionSections(journeyWeekId: number): Promise<SessionSection[]> {
+    return db.select().from(sessionSections).where(eq(sessionSections.journeyWeekId, journeyWeekId)).orderBy(sessionSections.sectionOrder);
+  }
+
+  async createSessionSection(sectionData: InsertSessionSection): Promise<SessionSection> {
+    const [section] = await db.insert(sessionSections).values(sectionData).returning();
+    return section;
+  }
+
+  // ===== MENTOR PROMPTS =====
+
+  async getMentorPrompts(journeyWeekId: number): Promise<MentorPrompt[]> {
+    return db.select().from(mentorPrompts).where(eq(mentorPrompts.journeyWeekId, journeyWeekId));
+  }
+
+  async createMentorPrompt(promptData: InsertMentorPrompt): Promise<MentorPrompt> {
+    const [prompt] = await db.insert(mentorPrompts).values(promptData).returning();
+    return prompt;
+  }
+
+  // ===== I WILL COMMITMENTS =====
+
+  async getIWillCommitments(userJourneyId: number): Promise<IWillCommitment[]> {
+    return db.select().from(iWillCommitments).where(eq(iWillCommitments.userJourneyId, userJourneyId)).orderBy(iWillCommitments.weekNumber);
+  }
+
+  async createIWillCommitment(commitmentData: InsertIWillCommitment): Promise<IWillCommitment> {
+    const [commitment] = await db.insert(iWillCommitments).values(commitmentData).returning();
+    return commitment;
+  }
+
+  async completeIWillCommitment(id: number, reflectionNotes?: string): Promise<IWillCommitment> {
+    const [commitment] = await db.update(iWillCommitments)
+      .set({ completedAt: new Date(), reflectionNotes })
+      .where(eq(iWillCommitments.id, id))
+      .returning();
+    return commitment;
+  }
+
+  // ===== BUDDY PAIRS =====
+
+  async getBuddyPairs(journeyId: number): Promise<BuddyPair[]> {
+    return db.select().from(buddyPairs).where(eq(buddyPairs.journeyId, journeyId));
+  }
+
+  async createBuddyPair(pairData: InsertBuddyPair): Promise<BuddyPair> {
+    const [pair] = await db.insert(buddyPairs).values(pairData).returning();
+    return pair;
+  }
+
+  // ===== MENTOR ASSIGNMENTS =====
+
+  async getMentorAssignments(userJourneyId: number): Promise<MentorAssignment[]> {
+    return db.select().from(mentorAssignments).where(eq(mentorAssignments.userJourneyId, userJourneyId));
+  }
+
+  async createMentorAssignment(assignmentData: InsertMentorAssignment): Promise<MentorAssignment> {
+    const [assignment] = await db.insert(mentorAssignments).values(assignmentData).returning();
+    return assignment;
   }
 }
 
