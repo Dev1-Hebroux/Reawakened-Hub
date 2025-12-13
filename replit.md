@@ -1,0 +1,94 @@
+# Reawakened Platform
+
+## Overview
+
+Reawakened is a digital missions platform designed to help young people (ages 15-45) encounter Jesus, grow in discipleship, and engage in global outreach. The platform functions as a "digital revival + mission movement" with the core philosophy of **Encounter → Equip → Mobilise**.
+
+The application is a full-stack TypeScript project with a React frontend and Express backend, featuring community engagement tools, daily devotional content ("Sparks"), event management, blog functionality, and mission coordination features.
+
+## User Preferences
+
+Preferred communication style: Simple, everyday language.
+
+## System Architecture
+
+### Frontend Architecture
+- **Framework**: React 18 with TypeScript
+- **Routing**: Wouter (lightweight React router)
+- **State Management**: TanStack React Query for server state
+- **Styling**: Tailwind CSS v4 with custom brand theming (deep navy primary, vibrant orange accent)
+- **UI Components**: shadcn/ui component library with Radix UI primitives
+- **Animations**: Framer Motion for page transitions and micro-interactions
+- **Fonts**: DM Sans (body) and Space Grotesk (display headings)
+- **Build Tool**: Vite with custom plugins for Replit integration
+
+### Backend Architecture
+- **Framework**: Express.js with TypeScript
+- **Database ORM**: Drizzle ORM with PostgreSQL dialect
+- **Authentication**: Replit OpenID Connect (OIDC) with Passport.js
+- **Session Management**: express-session with connect-pg-simple for PostgreSQL session storage
+- **API Pattern**: RESTful JSON APIs under `/api/*` prefix
+
+### Data Storage
+- **Database**: PostgreSQL (provisioned via Replit)
+- **Schema Location**: `shared/schema.ts` using Drizzle table definitions
+- **Key Tables**:
+  - `users` - User accounts (required for Replit Auth)
+  - `sessions` - Session storage (required for Replit Auth)
+  - `posts` - Community hub posts (mission reports, prayer requests)
+  - `reactions` - Post reactions/likes
+  - `sparks` - Daily devotional content
+  - `sparkSubscriptions` - User subscriptions to spark categories
+  - `events` - Mission events and gatherings
+  - `eventRegistrations` - Event sign-ups
+  - `blogPosts` - Blog articles
+
+### Authentication Flow
+- Uses Replit's built-in OIDC authentication
+- Session-based auth with PostgreSQL session store
+- Protected routes use `isAuthenticated` middleware
+- User data synced via `upsertUser` on login
+
+### Project Structure
+```
+├── client/           # React frontend
+│   ├── src/
+│   │   ├── components/   # UI components (layout, sections, ui)
+│   │   ├── pages/        # Route pages
+│   │   ├── hooks/        # Custom React hooks
+│   │   └── lib/          # Utilities and query client
+├── server/           # Express backend
+│   ├── routes.ts     # API route definitions
+│   ├── storage.ts    # Database operations
+│   └── replitAuth.ts # Authentication setup
+├── shared/           # Shared types and schema
+│   └── schema.ts     # Drizzle database schema
+└── migrations/       # Drizzle migration files
+```
+
+## External Dependencies
+
+### Database
+- **PostgreSQL**: Primary database via `DATABASE_URL` environment variable
+- **Drizzle Kit**: Schema migrations via `npm run db:push`
+
+### Authentication
+- **Replit OIDC**: OAuth provider at `https://replit.com/oidc`
+- **Required env vars**: `REPL_ID`, `SESSION_SECRET`, `ISSUER_URL`
+
+### Frontend Libraries
+- **@tanstack/react-query**: Data fetching and caching
+- **framer-motion**: Animation library
+- **wouter**: Client-side routing
+- **lucide-react**: Icon library
+- **sonner**: Toast notifications
+
+### UI Framework
+- **shadcn/ui**: Component system built on Radix UI
+- **Radix UI primitives**: Accessible UI components
+- **Tailwind CSS v4**: Utility-first styling with `@tailwindcss/vite` plugin
+
+### Build & Development
+- **Vite**: Frontend bundler with HMR
+- **esbuild**: Server bundling for production
+- **tsx**: TypeScript execution for development
