@@ -4,6 +4,7 @@ import { Play, Globe2, X } from "lucide-react";
 import { useState } from "react";
 import heroImage from "@assets/generated_images/young_man_praying_with_golden_light_overlay.png";
 import visionVideo from "@assets/generated_videos/holy_spirit_dove_vision_video.mp4";
+import logoImage from "@assets/1_1765584395888.png";
 
 export function Hero() {
   const [showVideo, setShowVideo] = useState(false);
@@ -48,6 +49,18 @@ export function Hero() {
       <div className="absolute top-20 left-10 w-64 h-64 bg-orange-200/30 rounded-full blur-3xl" />
       <div className="absolute bottom-20 right-10 w-96 h-96 bg-blue-200/30 rounded-full blur-3xl" />
       
+      {/* Subtle Logo Watermark */}
+      <div 
+        className="absolute bottom-10 left-1/2 -translate-x-1/2 w-[600px] h-[200px] opacity-[0.03] pointer-events-none"
+        style={{
+          backgroundImage: `url(${logoImage})`,
+          backgroundSize: 'contain',
+          backgroundRepeat: 'no-repeat',
+          backgroundPosition: 'center',
+          filter: 'grayscale(100%)',
+        }}
+      />
+      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           
@@ -60,7 +73,7 @@ export function Hero() {
           >
             <div className="inline-flex items-center space-x-2 bg-white border border-orange-100 rounded-full px-4 py-2 shadow-sm">
               <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse"></span>
-              <span className="font-bold text-xs text-orange-900 uppercase tracking-wider">The movement is live</span>
+              <span className="font-bold text-xs text-orange-900 uppercase tracking-wider">A Call to Vigilance, Revival & Spiritual Awakening!</span>
             </div>
 
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-display font-bold text-gray-900 leading-[1.05] tracking-tight">
@@ -76,6 +89,11 @@ export function Hero() {
             <p className="text-lg md:text-xl text-gray-600 max-w-lg leading-relaxed">
               Reawakened is the digital hub for a generation ready to encounter Jesus, find their purpose, and change the world.
             </p>
+
+            <blockquote className="text-base md:text-lg text-gray-600 max-w-lg leading-relaxed border-l-4 border-primary/30 pl-4 italic bg-white/50 py-3 rounded-r-lg">
+              "I will pour out my Spirit upon all of you! Your sons and daughters will prophesy; your old men will dream dreams, and your young men see visions."
+              <span className="block text-sm text-primary font-bold mt-2 not-italic">— Joel 2:28</span>
+            </blockquote>
 
             <div className="flex flex-col sm:flex-row items-center gap-4 pt-2">
               <Button size="lg" className="bg-primary hover:bg-primary/90 text-white rounded-full px-8 h-16 text-lg font-bold shadow-xl shadow-orange-500/20 w-full sm:w-auto hover:-translate-y-1 transition-all">
