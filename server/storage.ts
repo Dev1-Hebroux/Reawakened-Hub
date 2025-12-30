@@ -290,6 +290,12 @@ export interface IStorage {
   // Mentor Assignments
   getMentorAssignments(userJourneyId: number): Promise<MentorAssignment[]>;
   createMentorAssignment(assignment: InsertMentorAssignment): Promise<MentorAssignment>;
+
+  // Vision Pathway - Check-ins
+  getDailyCheckin(sessionId: number, date: string): Promise<DailyCheckin | undefined>;
+  upsertDailyCheckin(sessionId: number, date: string, data: Omit<InsertDailyCheckin, 'sessionId' | 'date'>): Promise<DailyCheckin>;
+  getWeeklyReview(sessionId: number, weekStartDate: string): Promise<WeeklyReview | undefined>;
+  upsertWeeklyReview(sessionId: number, weekStartDate: string, data: Omit<InsertWeeklyReview, 'sessionId' | 'weekStartDate'>): Promise<WeeklyReview>;
 }
 
 export class DatabaseStorage implements IStorage {

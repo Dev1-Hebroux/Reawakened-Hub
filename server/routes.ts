@@ -1442,6 +1442,32 @@ export async function registerRoutes(
     }
   });
 
+  // Get daily check-in
+  app.get('/api/vision/sessions/:id/checkin/daily/:date', isAuthenticated, async (req: any, res) => {
+    try {
+      const sessionId = parseInt(req.params.id);
+      const date = req.params.date;
+      const checkin = await storage.getDailyCheckin(sessionId, date);
+      res.json({ ok: true, data: checkin || null });
+    } catch (error) {
+      console.error("Error fetching daily checkin:", error);
+      res.status(500).json({ ok: false, error: { message: "Failed to fetch checkin" } });
+    }
+  });
+
+  // Get weekly review
+  app.get('/api/vision/sessions/:id/checkin/weekly/:weekStart', isAuthenticated, async (req: any, res) => {
+    try {
+      const sessionId = parseInt(req.params.id);
+      const weekStartDate = req.params.weekStart;
+      const review = await storage.getWeeklyReview(sessionId, weekStartDate);
+      res.json({ ok: true, data: review || null });
+    } catch (error) {
+      console.error("Error fetching weekly review:", error);
+      res.status(500).json({ ok: false, error: { message: "Failed to fetch review" } });
+    }
+  });
+
   // Daily check-in
   app.post('/api/vision/sessions/:id/checkin/daily', isAuthenticated, async (req: any, res) => {
     try {

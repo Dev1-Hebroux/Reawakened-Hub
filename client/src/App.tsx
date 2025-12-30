@@ -18,6 +18,13 @@ import { AlphaCohortDetail } from "@/pages/AlphaCohortDetail";
 import { AlphaWeekView } from "@/pages/AlphaWeekView";
 import { MissionaryPathway } from "@/pages/MissionaryPathway";
 import { JourneySession } from "@/pages/JourneySession";
+import { VisionPage } from "@/pages/Vision";
+import { WheelOfLife } from "@/pages/WheelOfLife";
+import { VisionValues } from "@/pages/VisionValues";
+import { VisionGoals } from "@/pages/VisionGoals";
+import { VisionPlan } from "@/pages/VisionPlan";
+import { VisionHabits } from "@/pages/VisionHabits";
+import { VisionCheckin } from "@/pages/VisionCheckin";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { QuickShare } from "@/components/ui/QuickShare";
 
@@ -38,6 +45,13 @@ function Router() {
       <Route path="/alpha/:id" component={AlphaCohortDetail} />
       <Route path="/alpha/:cohortId/week/:weekNumber" component={AlphaWeekView} />
       <Route path="/pathway" component={MissionaryPathway} />
+      <Route path="/vision" component={VisionPage} />
+      <Route path="/vision/:sessionId/wheel" component={WheelOfLife} />
+      <Route path="/vision/:sessionId/values" component={VisionValues} />
+      <Route path="/vision/:sessionId/goals" component={VisionGoals} />
+      <Route path="/vision/:sessionId/plan" component={VisionPlan} />
+      <Route path="/vision/:sessionId/habits" component={VisionHabits} />
+      <Route path="/vision/:sessionId/checkin" component={VisionCheckin} />
       <Route component={NotFound} />
     </Switch>
   );
