@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm';
 import {
+  boolean,
   index,
   integer,
   jsonb,
@@ -640,3 +641,261 @@ export const insertMentorCheckInLogSchema = createInsertSchema(mentorCheckInLogs
 });
 export type InsertMentorCheckInLog = z.infer<typeof insertMentorCheckInLogSchema>;
 export type MentorCheckInLog = typeof mentorCheckInLogs.$inferSelect;
+
+// ===== VISION & GOAL PATHWAY =====
+
+// Pathway Sessions - the main container for a user's vision journey
+export const pathwaySessions = pgTable("pathway_sessions", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  seasonType: varchar("season_type").notNull(), // 'new_year' | 'new_season'
+  seasonLabel: varchar("season_label"), // e.g. "2026 Reset", "Spring Reset"
+  themeWord: varchar("theme_word"), // one word theme
+  mode: varchar("mode").notNull().default("classic"), // 'classic' | 'faith'
+  status: varchar("status").notNull().default("active"), // 'active' | 'completed' | 'archived'
+  startedAt: timestamp("started_at").defaultNow(),
+  completedAt: timestamp("completed_at"),
+});
+
+export const insertPathwaySessionSchema = createInsertSchema(pathwaySessions).omit({
+  id: true,
+  startedAt: true,
+});
+export type InsertPathwaySession = z.infer<typeof insertPathwaySessionSchema>;
+export type PathwaySession = typeof pathwaySessions.$inferSelect;
+
+// Wheel of Life Entries - scoring for each life category
+export const wheelLifeEntries = pgTable("wheel_life_entries", {
+  id: serial("id").primaryKey(),
+  sessionId: integer("session_id").notNull().references(() => pathwaySessions.id, { onDelete: 'cascade' }),
+  categoryKey: varchar("category_key").notNull(), // 'health_energy', 'relationships', 'career_study', etc.
+  score: integer("score").notNull(), // 1-10
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertWheelLifeEntrySchema = createInsertSchema(wheelLifeEntries).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertWheelLifeEntry = z.infer<typeof insertWheelLifeEntrySchema>;
+export type WheelLifeEntry = typeof wheelLifeEntries.$inferSelect;
+
+// Focus Areas - user's selected priority areas from wheel
+export const focusAreas = pgTable("focus_areas", {
+  id: serial("id").primaryKey(),
+  sessionId: integer("session_id").notNull().references(() => pathwaySessions.id, { onDelete: 'cascade' }),
+  categoryKey: varchar("category_key").notNull(),
+  priority: integer("priority").default(1), // 1 = top priority, 2 = secondary
+});
+
+export const insertFocusAreaSchema = createInsertSchema(focusAreas).omit({
+  id: true,
+});
+export type InsertFocusArea = z.infer<typeof insertFocusAreaSchema>;
+export type FocusArea = typeof focusAreas.$inferSelect;
+
+// Values Selection - user's chosen values and meanings
+export const valuesSelection = pgTable("values_selection", {
+  id: serial("id").primaryKey(),
+  sessionId: integer("session_id").notNull().references(() => pathwaySessions.id, { onDelete: 'cascade' }),
+  values: jsonb("values").notNull(), // array of value strings
+  topValueMeaning: text("top_value_meaning"), // what the top value means in daily life
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertValuesSelectionSchema = createInsertSchema(valuesSelection).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertValuesSelection = z.infer<typeof insertValuesSelectionSchema>;
+export type ValuesSelection = typeof valuesSelection.$inferSelect;
+
+// Vision Statement - user's life vision and outcomes
+export const visionStatements = pgTable("vision_statements", {
+  id: serial("id").primaryKey(),
+  sessionId: integer("session_id").notNull().references(() => pathwaySessions.id, { onDelete: 'cascade' }),
+  feelings: text("feelings"), // "More focused and calm"
+  identityStatement: text("identity_statement"), // "I'm becoming someone who..."
+  topOutcomes: jsonb("top_outcomes"), // array of 3 outcomes
+  seasonStatement: text("season_statement"), // full season statement
+  faithIntention: text("faith_intention"), // optional for faith mode
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertVisionStatementSchema = createInsertSchema(visionStatements).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertVisionStatement = z.infer<typeof insertVisionStatementSchema>;
+export type VisionStatement = typeof visionStatements.$inferSelect;
+
+// Purpose Flower - Ikigai-style purpose alignment
+export const purposeFlower = pgTable("purpose_flower", {
+  id: serial("id").primaryKey(),
+  sessionId: integer("session_id").notNull().references(() => pathwaySessions.id, { onDelete: 'cascade' }),
+  passion: text("passion"), // What I love
+  strengths: text("strengths"), // What I'm good at
+  needs: text("needs"), // What the world needs
+  rewards: text("rewards"), // What I can be rewarded for
+  purposeStatement: text("purpose_statement"), // Center circle statement
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertPurposeFlowerSchema = createInsertSchema(purposeFlower).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertPurposeFlower = z.infer<typeof insertPurposeFlowerSchema>;
+export type PurposeFlower = typeof purposeFlower.$inferSelect;
+
+// Vision Goals - SMART goals
+export const visionGoals = pgTable("vision_goals", {
+  id: serial("id").primaryKey(),
+  sessionId: integer("session_id").notNull().references(() => pathwaySessions.id, { onDelete: 'cascade' }),
+  title: varchar("title").notNull(),
+  why: text("why"), // deeper reason
+  specific: text("specific"),
+  measurable: text("measurable"),
+  metricName: varchar("metric_name"),
+  metricTarget: varchar("metric_target"),
+  achievable: text("achievable"),
+  relevant: text("relevant"),
+  deadline: timestamp("deadline"),
+  firstStep: text("first_step"), // 48-hour first step
+  obstaclesPlan: text("obstacles_plan"), // if I run into X, I will...
+  status: varchar("status").notNull().default("active"), // 'active' | 'paused' | 'completed'
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertVisionGoalSchema = createInsertSchema(visionGoals).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertVisionGoal = z.infer<typeof insertVisionGoalSchema>;
+export type VisionGoal = typeof visionGoals.$inferSelect;
+
+// Goal Milestones - tracking milestones for goals
+export const goalMilestones = pgTable("goal_milestones", {
+  id: serial("id").primaryKey(),
+  goalId: integer("goal_id").notNull().references(() => visionGoals.id, { onDelete: 'cascade' }),
+  title: varchar("title").notNull(),
+  dueDate: timestamp("due_date"),
+  successCriteria: text("success_criteria"),
+  completedAt: timestamp("completed_at"),
+});
+
+export const insertGoalMilestoneSchema = createInsertSchema(goalMilestones).omit({
+  id: true,
+});
+export type InsertGoalMilestone = z.infer<typeof insertGoalMilestoneSchema>;
+export type GoalMilestone = typeof goalMilestones.$inferSelect;
+
+// 90-Day Plan
+export const ninetyDayPlans = pgTable("ninety_day_plans", {
+  id: serial("id").primaryKey(),
+  sessionId: integer("session_id").notNull().references(() => pathwaySessions.id, { onDelete: 'cascade' }),
+  focusOutcome: text("focus_outcome"), // #1 focus outcome
+  keyResults: jsonb("key_results"), // array of 3 key results
+  weeklyAnchors: jsonb("weekly_anchors"), // repeatable weekly actions
+  scheduleAnchors: jsonb("schedule_anchors"), // planning day, deep work, etc.
+  accountabilityPlan: text("accountability_plan"),
+  stuckPlan: text("stuck_plan"), // "If I get stuck, I will..."
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertNinetyDayPlanSchema = createInsertSchema(ninetyDayPlans).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertNinetyDayPlan = z.infer<typeof insertNinetyDayPlanSchema>;
+export type NinetyDayPlan = typeof ninetyDayPlans.$inferSelect;
+
+// Vision Habits - trackable habits
+export const visionHabits = pgTable("vision_habits", {
+  id: serial("id").primaryKey(),
+  sessionId: integer("session_id").notNull().references(() => pathwaySessions.id, { onDelete: 'cascade' }),
+  title: varchar("title").notNull(),
+  frequency: varchar("frequency").notNull().default("daily"), // 'daily' | 'weekly'
+  targetPerWeek: integer("target_per_week").default(7),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertVisionHabitSchema = createInsertSchema(visionHabits).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertVisionHabit = z.infer<typeof insertVisionHabitSchema>;
+export type VisionHabit = typeof visionHabits.$inferSelect;
+
+// Habit Logs - daily habit completion
+export const habitLogs = pgTable("habit_logs", {
+  id: serial("id").primaryKey(),
+  habitId: integer("habit_id").notNull().references(() => visionHabits.id, { onDelete: 'cascade' }),
+  date: varchar("date").notNull(), // YYYY-MM-DD
+  completed: boolean("completed").notNull().default(false),
+});
+
+export const insertHabitLogSchema = createInsertSchema(habitLogs).omit({
+  id: true,
+});
+export type InsertHabitLog = z.infer<typeof insertHabitLogSchema>;
+export type HabitLog = typeof habitLogs.$inferSelect;
+
+// Daily Check-ins
+export const dailyCheckins = pgTable("daily_checkins", {
+  id: serial("id").primaryKey(),
+  sessionId: integer("session_id").notNull().references(() => pathwaySessions.id, { onDelete: 'cascade' }),
+  date: varchar("date").notNull(), // YYYY-MM-DD
+  energy: integer("energy"), // 1-5 slider
+  todayFocus: text("today_focus"),
+  note: text("note"),
+  prayerNote: text("prayer_note"), // faith mode only
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertDailyCheckinSchema = createInsertSchema(dailyCheckins).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertDailyCheckin = z.infer<typeof insertDailyCheckinSchema>;
+export type DailyCheckin = typeof dailyCheckins.$inferSelect;
+
+// Weekly Reviews
+export const weeklyReviews = pgTable("weekly_reviews", {
+  id: serial("id").primaryKey(),
+  sessionId: integer("session_id").notNull().references(() => pathwaySessions.id, { onDelete: 'cascade' }),
+  weekStartDate: varchar("week_start_date").notNull(), // YYYY-MM-DD
+  win: text("win"),
+  lesson: text("lesson"),
+  obstacle: text("obstacle"),
+  adjustment: text("adjustment"),
+  nextWeekTop3: jsonb("next_week_top3"), // array of 3 priorities
+  gratitude: text("gratitude"), // faith mode
+  prayerFocus: text("prayer_focus"), // faith mode
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertWeeklyReviewSchema = createInsertSchema(weeklyReviews).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertWeeklyReview = z.infer<typeof insertWeeklyReviewSchema>;
+export type WeeklyReview = typeof weeklyReviews.$inferSelect;
+
+// Vision Exports - PDF export records
+export const visionExports = pgTable("vision_exports", {
+  id: serial("id").primaryKey(),
+  sessionId: integer("session_id").notNull().references(() => pathwaySessions.id, { onDelete: 'cascade' }),
+  exportType: varchar("export_type").notNull(), // 'booklet' | 'plan' | 'habits' | 'visionboard'
+  url: varchar("url"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertVisionExportSchema = createInsertSchema(visionExports).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertVisionExport = z.infer<typeof insertVisionExportSchema>;
+export type VisionExport = typeof visionExports.$inferSelect;

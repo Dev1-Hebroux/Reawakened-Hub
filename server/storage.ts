@@ -101,6 +101,48 @@ import {
   type InsertBuddyCheckIn,
   type MentorCheckInLog,
   type InsertMentorCheckInLog,
+  pathwaySessions,
+  wheelLifeEntries,
+  focusAreas,
+  valuesSelection,
+  visionStatements,
+  purposeFlower,
+  visionGoals,
+  goalMilestones,
+  ninetyDayPlans,
+  visionHabits,
+  habitLogs,
+  dailyCheckins,
+  weeklyReviews,
+  visionExports,
+  type PathwaySession,
+  type InsertPathwaySession,
+  type WheelLifeEntry,
+  type InsertWheelLifeEntry,
+  type FocusArea,
+  type InsertFocusArea,
+  type ValuesSelection,
+  type InsertValuesSelection,
+  type VisionStatement,
+  type InsertVisionStatement,
+  type PurposeFlower,
+  type InsertPurposeFlower,
+  type VisionGoal,
+  type InsertVisionGoal,
+  type GoalMilestone,
+  type InsertGoalMilestone,
+  type NinetyDayPlan,
+  type InsertNinetyDayPlan,
+  type VisionHabit,
+  type InsertVisionHabit,
+  type HabitLog,
+  type InsertHabitLog,
+  type DailyCheckin,
+  type InsertDailyCheckin,
+  type WeeklyReview,
+  type InsertWeeklyReview,
+  type VisionExport,
+  type InsertVisionExport,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, sql, inArray, count } from "drizzle-orm";
@@ -845,6 +887,241 @@ export class DatabaseStorage implements IStorage {
   async createMentorAssignment(assignmentData: InsertMentorAssignment): Promise<MentorAssignment> {
     const [assignment] = await db.insert(mentorAssignments).values(assignmentData).returning();
     return assignment;
+  }
+
+  // ===== VISION PATHWAY - SESSIONS =====
+
+  async getPathwaySessions(userId: string): Promise<PathwaySession[]> {
+    return db.select().from(pathwaySessions).where(eq(pathwaySessions.userId, userId)).orderBy(desc(pathwaySessions.startedAt));
+  }
+
+  async getCurrentPathwaySession(userId: string): Promise<PathwaySession | undefined> {
+    const [session] = await db.select().from(pathwaySessions)
+      .where(and(eq(pathwaySessions.userId, userId), eq(pathwaySessions.status, "active")))
+      .orderBy(desc(pathwaySessions.startedAt))
+      .limit(1);
+    return session;
+  }
+
+  async getPathwaySession(id: number): Promise<PathwaySession | undefined> {
+    const [session] = await db.select().from(pathwaySessions).where(eq(pathwaySessions.id, id));
+    return session;
+  }
+
+  async createPathwaySession(sessionData: InsertPathwaySession): Promise<PathwaySession> {
+    const [session] = await db.insert(pathwaySessions).values(sessionData).returning();
+    return session;
+  }
+
+  async updatePathwaySession(id: number, data: Partial<InsertPathwaySession>): Promise<PathwaySession> {
+    const [session] = await db.update(pathwaySessions).set(data).where(eq(pathwaySessions.id, id)).returning();
+    return session;
+  }
+
+  // ===== VISION PATHWAY - WHEEL OF LIFE =====
+
+  async getWheelEntries(sessionId: number): Promise<WheelLifeEntry[]> {
+    return db.select().from(wheelLifeEntries).where(eq(wheelLifeEntries.sessionId, sessionId));
+  }
+
+  async upsertWheelEntries(sessionId: number, entries: InsertWheelLifeEntry[]): Promise<WheelLifeEntry[]> {
+    await db.delete(wheelLifeEntries).where(eq(wheelLifeEntries.sessionId, sessionId));
+    if (entries.length === 0) return [];
+    return db.insert(wheelLifeEntries).values(entries).returning();
+  }
+
+  async getFocusAreas(sessionId: number): Promise<FocusArea[]> {
+    return db.select().from(focusAreas).where(eq(focusAreas.sessionId, sessionId)).orderBy(focusAreas.priority);
+  }
+
+  async upsertFocusAreas(sessionId: number, areas: InsertFocusArea[]): Promise<FocusArea[]> {
+    await db.delete(focusAreas).where(eq(focusAreas.sessionId, sessionId));
+    if (areas.length === 0) return [];
+    return db.insert(focusAreas).values(areas).returning();
+  }
+
+  // ===== VISION PATHWAY - VALUES =====
+
+  async getValuesSelection(sessionId: number): Promise<ValuesSelection | undefined> {
+    const [values] = await db.select().from(valuesSelection).where(eq(valuesSelection.sessionId, sessionId));
+    return values;
+  }
+
+  async upsertValuesSelection(sessionId: number, data: Omit<InsertValuesSelection, 'sessionId'>): Promise<ValuesSelection> {
+    const existing = await this.getValuesSelection(sessionId);
+    if (existing) {
+      const [updated] = await db.update(valuesSelection).set(data).where(eq(valuesSelection.sessionId, sessionId)).returning();
+      return updated;
+    }
+    const [created] = await db.insert(valuesSelection).values({ ...data, sessionId }).returning();
+    return created;
+  }
+
+  // ===== VISION PATHWAY - VISION STATEMENT =====
+
+  async getVisionStatement(sessionId: number): Promise<VisionStatement | undefined> {
+    const [vision] = await db.select().from(visionStatements).where(eq(visionStatements.sessionId, sessionId));
+    return vision;
+  }
+
+  async upsertVisionStatement(sessionId: number, data: Omit<InsertVisionStatement, 'sessionId'>): Promise<VisionStatement> {
+    const existing = await this.getVisionStatement(sessionId);
+    if (existing) {
+      const [updated] = await db.update(visionStatements).set(data).where(eq(visionStatements.sessionId, sessionId)).returning();
+      return updated;
+    }
+    const [created] = await db.insert(visionStatements).values({ ...data, sessionId }).returning();
+    return created;
+  }
+
+  // ===== VISION PATHWAY - PURPOSE FLOWER =====
+
+  async getPurposeFlower(sessionId: number): Promise<PurposeFlower | undefined> {
+    const [flower] = await db.select().from(purposeFlower).where(eq(purposeFlower.sessionId, sessionId));
+    return flower;
+  }
+
+  async upsertPurposeFlower(sessionId: number, data: Omit<InsertPurposeFlower, 'sessionId'>): Promise<PurposeFlower> {
+    const existing = await this.getPurposeFlower(sessionId);
+    if (existing) {
+      const [updated] = await db.update(purposeFlower).set(data).where(eq(purposeFlower.sessionId, sessionId)).returning();
+      return updated;
+    }
+    const [created] = await db.insert(purposeFlower).values({ ...data, sessionId }).returning();
+    return created;
+  }
+
+  // ===== VISION PATHWAY - GOALS =====
+
+  async getVisionGoals(sessionId: number): Promise<VisionGoal[]> {
+    return db.select().from(visionGoals).where(eq(visionGoals.sessionId, sessionId)).orderBy(desc(visionGoals.createdAt));
+  }
+
+  async getVisionGoal(id: number): Promise<VisionGoal | undefined> {
+    const [goal] = await db.select().from(visionGoals).where(eq(visionGoals.id, id));
+    return goal;
+  }
+
+  async createVisionGoal(goalData: InsertVisionGoal): Promise<VisionGoal> {
+    const [goal] = await db.insert(visionGoals).values(goalData).returning();
+    return goal;
+  }
+
+  async updateVisionGoal(id: number, data: Partial<InsertVisionGoal>): Promise<VisionGoal> {
+    const [goal] = await db.update(visionGoals).set(data).where(eq(visionGoals.id, id)).returning();
+    return goal;
+  }
+
+  async getGoalMilestones(goalId: number): Promise<GoalMilestone[]> {
+    return db.select().from(goalMilestones).where(eq(goalMilestones.goalId, goalId)).orderBy(goalMilestones.dueDate);
+  }
+
+  async createGoalMilestone(milestoneData: InsertGoalMilestone): Promise<GoalMilestone> {
+    const [milestone] = await db.insert(goalMilestones).values(milestoneData).returning();
+    return milestone;
+  }
+
+  async updateGoalMilestone(id: number, data: Partial<InsertGoalMilestone>): Promise<GoalMilestone> {
+    const [milestone] = await db.update(goalMilestones).set(data).where(eq(goalMilestones.id, id)).returning();
+    return milestone;
+  }
+
+  async deleteGoalMilestone(id: number): Promise<void> {
+    await db.delete(goalMilestones).where(eq(goalMilestones.id, id));
+  }
+
+  // ===== VISION PATHWAY - 90-DAY PLAN =====
+
+  async getNinetyDayPlan(sessionId: number): Promise<NinetyDayPlan | undefined> {
+    const [plan] = await db.select().from(ninetyDayPlans).where(eq(ninetyDayPlans.sessionId, sessionId));
+    return plan;
+  }
+
+  async upsertNinetyDayPlan(sessionId: number, data: Omit<InsertNinetyDayPlan, 'sessionId'>): Promise<NinetyDayPlan> {
+    const existing = await this.getNinetyDayPlan(sessionId);
+    if (existing) {
+      const [updated] = await db.update(ninetyDayPlans).set(data).where(eq(ninetyDayPlans.sessionId, sessionId)).returning();
+      return updated;
+    }
+    const [created] = await db.insert(ninetyDayPlans).values({ ...data, sessionId }).returning();
+    return created;
+  }
+
+  // ===== VISION PATHWAY - HABITS =====
+
+  async getVisionHabits(sessionId: number): Promise<VisionHabit[]> {
+    return db.select().from(visionHabits).where(eq(visionHabits.sessionId, sessionId));
+  }
+
+  async createVisionHabit(habitData: InsertVisionHabit): Promise<VisionHabit> {
+    const [habit] = await db.insert(visionHabits).values(habitData).returning();
+    return habit;
+  }
+
+  async updateVisionHabit(id: number, data: Partial<InsertVisionHabit>): Promise<VisionHabit> {
+    const [habit] = await db.update(visionHabits).set(data).where(eq(visionHabits.id, id)).returning();
+    return habit;
+  }
+
+  async deleteVisionHabit(id: number): Promise<void> {
+    await db.delete(visionHabits).where(eq(visionHabits.id, id));
+  }
+
+  async getHabitLogs(habitId: number): Promise<HabitLog[]> {
+    return db.select().from(habitLogs).where(eq(habitLogs.habitId, habitId)).orderBy(desc(habitLogs.date));
+  }
+
+  async upsertHabitLog(habitId: number, date: string, completed: boolean): Promise<HabitLog> {
+    const [existing] = await db.select().from(habitLogs).where(and(eq(habitLogs.habitId, habitId), eq(habitLogs.date, date)));
+    if (existing) {
+      const [updated] = await db.update(habitLogs).set({ completed }).where(eq(habitLogs.id, existing.id)).returning();
+      return updated;
+    }
+    const [created] = await db.insert(habitLogs).values({ habitId, date, completed }).returning();
+    return created;
+  }
+
+  // ===== VISION PATHWAY - CHECK-INS =====
+
+  async getDailyCheckin(sessionId: number, date: string): Promise<DailyCheckin | undefined> {
+    const [checkin] = await db.select().from(dailyCheckins).where(and(eq(dailyCheckins.sessionId, sessionId), eq(dailyCheckins.date, date)));
+    return checkin;
+  }
+
+  async upsertDailyCheckin(sessionId: number, date: string, data: Omit<InsertDailyCheckin, 'sessionId' | 'date'>): Promise<DailyCheckin> {
+    const existing = await this.getDailyCheckin(sessionId, date);
+    if (existing) {
+      const [updated] = await db.update(dailyCheckins).set(data).where(eq(dailyCheckins.id, existing.id)).returning();
+      return updated;
+    }
+    const [created] = await db.insert(dailyCheckins).values({ ...data, sessionId, date }).returning();
+    return created;
+  }
+
+  async getWeeklyReview(sessionId: number, weekStartDate: string): Promise<WeeklyReview | undefined> {
+    const [review] = await db.select().from(weeklyReviews).where(and(eq(weeklyReviews.sessionId, sessionId), eq(weeklyReviews.weekStartDate, weekStartDate)));
+    return review;
+  }
+
+  async upsertWeeklyReview(sessionId: number, weekStartDate: string, data: Omit<InsertWeeklyReview, 'sessionId' | 'weekStartDate'>): Promise<WeeklyReview> {
+    const existing = await this.getWeeklyReview(sessionId, weekStartDate);
+    if (existing) {
+      const [updated] = await db.update(weeklyReviews).set(data).where(eq(weeklyReviews.id, existing.id)).returning();
+      return updated;
+    }
+    const [created] = await db.insert(weeklyReviews).values({ ...data, sessionId, weekStartDate }).returning();
+    return created;
+  }
+
+  // ===== VISION PATHWAY - EXPORTS =====
+
+  async getVisionExports(sessionId: number): Promise<VisionExport[]> {
+    return db.select().from(visionExports).where(eq(visionExports.sessionId, sessionId)).orderBy(desc(visionExports.createdAt));
+  }
+
+  async createVisionExport(exportData: InsertVisionExport): Promise<VisionExport> {
+    const [exp] = await db.insert(visionExports).values(exportData).returning();
+    return exp;
   }
 }
 

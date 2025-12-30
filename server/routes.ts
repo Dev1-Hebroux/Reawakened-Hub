@@ -1107,5 +1107,366 @@ export async function registerRoutes(
     }
   });
 
+  // ===== VISION PATHWAY ROUTES =====
+
+  // Get current session
+  app.get('/api/vision/sessions/current', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const session = await storage.getCurrentPathwaySession(userId);
+      res.json({ ok: true, data: session || null });
+    } catch (error) {
+      console.error("Error fetching current session:", error);
+      res.status(500).json({ ok: false, error: { message: "Failed to fetch session" } });
+    }
+  });
+
+  // Get all sessions
+  app.get('/api/vision/sessions', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const sessions = await storage.getPathwaySessions(userId);
+      res.json({ ok: true, data: { items: sessions } });
+    } catch (error) {
+      console.error("Error fetching sessions:", error);
+      res.status(500).json({ ok: false, error: { message: "Failed to fetch sessions" } });
+    }
+  });
+
+  // Create session
+  app.post('/api/vision/sessions', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { seasonType, seasonLabel, themeWord, mode } = req.body;
+      const session = await storage.createPathwaySession({ userId, seasonType, seasonLabel, themeWord, mode, status: 'active' });
+      res.status(201).json({ ok: true, data: session });
+    } catch (error: any) {
+      console.error("Error creating session:", error);
+      res.status(400).json({ ok: false, error: { message: error.message || "Failed to create session" } });
+    }
+  });
+
+  // Update session
+  app.patch('/api/vision/sessions/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const sessionId = parseInt(req.params.id);
+      const session = await storage.updatePathwaySession(sessionId, req.body);
+      res.json({ ok: true, data: session });
+    } catch (error: any) {
+      console.error("Error updating session:", error);
+      res.status(400).json({ ok: false, error: { message: error.message || "Failed to update session" } });
+    }
+  });
+
+  // Get wheel entries
+  app.get('/api/vision/sessions/:id/wheel', isAuthenticated, async (req: any, res) => {
+    try {
+      const sessionId = parseInt(req.params.id);
+      const entries = await storage.getWheelEntries(sessionId);
+      const focusAreas = await storage.getFocusAreas(sessionId);
+      const highest = [...entries].sort((a, b) => b.score - a.score).slice(0, 2).map(e => e.categoryKey);
+      const lowest = [...entries].sort((a, b) => a.score - b.score).slice(0, 2).map(e => e.categoryKey);
+      res.json({ ok: true, data: { categories: entries, focusAreas: focusAreas.map(f => f.categoryKey), computed: { highest, lowest } } });
+    } catch (error) {
+      console.error("Error fetching wheel:", error);
+      res.status(500).json({ ok: false, error: { message: "Failed to fetch wheel" } });
+    }
+  });
+
+  // Save wheel entries
+  app.put('/api/vision/sessions/:id/wheel', isAuthenticated, async (req: any, res) => {
+    try {
+      const sessionId = parseInt(req.params.id);
+      const { categories, focusAreas: focusAreaKeys } = req.body;
+      const entries = await storage.upsertWheelEntries(sessionId, categories.map((c: any) => ({ sessionId, ...c })));
+      const areas = await storage.upsertFocusAreas(sessionId, focusAreaKeys.map((key: string, i: number) => ({ sessionId, categoryKey: key, priority: i + 1 })));
+      const highest = [...entries].sort((a, b) => b.score - a.score).slice(0, 2).map(e => e.categoryKey);
+      const lowest = [...entries].sort((a, b) => a.score - b.score).slice(0, 2).map(e => e.categoryKey);
+      res.json({ ok: true, data: { categories: entries, focusAreas: areas.map(a => a.categoryKey), computed: { highest, lowest } } });
+    } catch (error: any) {
+      console.error("Error saving wheel:", error);
+      res.status(400).json({ ok: false, error: { message: error.message || "Failed to save wheel" } });
+    }
+  });
+
+  // Get values
+  app.get('/api/vision/sessions/:id/values', isAuthenticated, async (req: any, res) => {
+    try {
+      const sessionId = parseInt(req.params.id);
+      const values = await storage.getValuesSelection(sessionId);
+      res.json({ ok: true, data: values || null });
+    } catch (error) {
+      console.error("Error fetching values:", error);
+      res.status(500).json({ ok: false, error: { message: "Failed to fetch values" } });
+    }
+  });
+
+  // Save values
+  app.put('/api/vision/sessions/:id/values', isAuthenticated, async (req: any, res) => {
+    try {
+      const sessionId = parseInt(req.params.id);
+      const values = await storage.upsertValuesSelection(sessionId, req.body);
+      res.json({ ok: true, data: values });
+    } catch (error: any) {
+      console.error("Error saving values:", error);
+      res.status(400).json({ ok: false, error: { message: error.message || "Failed to save values" } });
+    }
+  });
+
+  // Get vision statement
+  app.get('/api/vision/sessions/:id/vision', isAuthenticated, async (req: any, res) => {
+    try {
+      const sessionId = parseInt(req.params.id);
+      const vision = await storage.getVisionStatement(sessionId);
+      res.json({ ok: true, data: vision || null });
+    } catch (error) {
+      console.error("Error fetching vision:", error);
+      res.status(500).json({ ok: false, error: { message: "Failed to fetch vision" } });
+    }
+  });
+
+  // Save vision statement
+  app.put('/api/vision/sessions/:id/vision', isAuthenticated, async (req: any, res) => {
+    try {
+      const sessionId = parseInt(req.params.id);
+      const vision = await storage.upsertVisionStatement(sessionId, req.body);
+      res.json({ ok: true, data: vision });
+    } catch (error: any) {
+      console.error("Error saving vision:", error);
+      res.status(400).json({ ok: false, error: { message: error.message || "Failed to save vision" } });
+    }
+  });
+
+  // Get purpose flower
+  app.get('/api/vision/sessions/:id/purpose', isAuthenticated, async (req: any, res) => {
+    try {
+      const sessionId = parseInt(req.params.id);
+      const purpose = await storage.getPurposeFlower(sessionId);
+      res.json({ ok: true, data: purpose || null });
+    } catch (error) {
+      console.error("Error fetching purpose:", error);
+      res.status(500).json({ ok: false, error: { message: "Failed to fetch purpose" } });
+    }
+  });
+
+  // Save purpose flower
+  app.put('/api/vision/sessions/:id/purpose', isAuthenticated, async (req: any, res) => {
+    try {
+      const sessionId = parseInt(req.params.id);
+      const purpose = await storage.upsertPurposeFlower(sessionId, req.body);
+      res.json({ ok: true, data: purpose });
+    } catch (error: any) {
+      console.error("Error saving purpose:", error);
+      res.status(400).json({ ok: false, error: { message: error.message || "Failed to save purpose" } });
+    }
+  });
+
+  // Get goals
+  app.get('/api/vision/sessions/:id/goals', isAuthenticated, async (req: any, res) => {
+    try {
+      const sessionId = parseInt(req.params.id);
+      const goals = await storage.getVisionGoals(sessionId);
+      res.json({ ok: true, data: goals });
+    } catch (error) {
+      console.error("Error fetching goals:", error);
+      res.status(500).json({ ok: false, error: { message: "Failed to fetch goals" } });
+    }
+  });
+
+  // Create goal
+  app.post('/api/vision/goals', isAuthenticated, async (req: any, res) => {
+    try {
+      const goal = await storage.createVisionGoal(req.body);
+      res.status(201).json({ ok: true, data: goal });
+    } catch (error: any) {
+      console.error("Error creating goal:", error);
+      res.status(400).json({ ok: false, error: { message: error.message || "Failed to create goal" } });
+    }
+  });
+
+  // Update goal
+  app.patch('/api/vision/goals/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const goalId = parseInt(req.params.id);
+      const goal = await storage.updateVisionGoal(goalId, req.body);
+      res.json({ ok: true, data: goal });
+    } catch (error: any) {
+      console.error("Error updating goal:", error);
+      res.status(400).json({ ok: false, error: { message: error.message || "Failed to update goal" } });
+    }
+  });
+
+  // Get milestones for a goal
+  app.get('/api/vision/goals/:id/milestones', isAuthenticated, async (req: any, res) => {
+    try {
+      const goalId = parseInt(req.params.id);
+      const milestones = await storage.getGoalMilestones(goalId);
+      res.json({ ok: true, data: milestones });
+    } catch (error) {
+      console.error("Error fetching milestones:", error);
+      res.status(500).json({ ok: false, error: { message: "Failed to fetch milestones" } });
+    }
+  });
+
+  // Create milestone
+  app.post('/api/vision/milestones', isAuthenticated, async (req: any, res) => {
+    try {
+      const milestone = await storage.createGoalMilestone(req.body);
+      res.status(201).json({ ok: true, data: milestone });
+    } catch (error: any) {
+      console.error("Error creating milestone:", error);
+      res.status(400).json({ ok: false, error: { message: error.message || "Failed to create milestone" } });
+    }
+  });
+
+  // Update milestone
+  app.patch('/api/vision/milestones/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const milestone = await storage.updateGoalMilestone(id, req.body);
+      res.json({ ok: true, data: milestone });
+    } catch (error: any) {
+      console.error("Error updating milestone:", error);
+      res.status(400).json({ ok: false, error: { message: error.message || "Failed to update milestone" } });
+    }
+  });
+
+  // Delete milestone
+  app.delete('/api/vision/milestones/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteGoalMilestone(id);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting milestone:", error);
+      res.status(500).json({ ok: false, error: { message: "Failed to delete milestone" } });
+    }
+  });
+
+  // Get 90-day plan
+  app.get('/api/vision/sessions/:id/plan', isAuthenticated, async (req: any, res) => {
+    try {
+      const sessionId = parseInt(req.params.id);
+      const plan = await storage.getNinetyDayPlan(sessionId);
+      res.json({ ok: true, data: plan || null });
+    } catch (error) {
+      console.error("Error fetching plan:", error);
+      res.status(500).json({ ok: false, error: { message: "Failed to fetch plan" } });
+    }
+  });
+
+  // Save 90-day plan
+  app.put('/api/vision/sessions/:id/plan', isAuthenticated, async (req: any, res) => {
+    try {
+      const sessionId = parseInt(req.params.id);
+      const plan = await storage.upsertNinetyDayPlan(sessionId, req.body);
+      res.json({ ok: true, data: plan });
+    } catch (error: any) {
+      console.error("Error saving plan:", error);
+      res.status(400).json({ ok: false, error: { message: error.message || "Failed to save plan" } });
+    }
+  });
+
+  // Get habits
+  app.get('/api/vision/sessions/:id/habits', isAuthenticated, async (req: any, res) => {
+    try {
+      const sessionId = parseInt(req.params.id);
+      const habits = await storage.getVisionHabits(sessionId);
+      res.json({ ok: true, data: habits });
+    } catch (error) {
+      console.error("Error fetching habits:", error);
+      res.status(500).json({ ok: false, error: { message: "Failed to fetch habits" } });
+    }
+  });
+
+  // Create habit
+  app.post('/api/vision/habits', isAuthenticated, async (req: any, res) => {
+    try {
+      const habit = await storage.createVisionHabit(req.body);
+      res.status(201).json({ ok: true, data: habit });
+    } catch (error: any) {
+      console.error("Error creating habit:", error);
+      res.status(400).json({ ok: false, error: { message: error.message || "Failed to create habit" } });
+    }
+  });
+
+  // Update habit
+  app.patch('/api/vision/habits/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const habit = await storage.updateVisionHabit(id, req.body);
+      res.json({ ok: true, data: habit });
+    } catch (error: any) {
+      console.error("Error updating habit:", error);
+      res.status(400).json({ ok: false, error: { message: error.message || "Failed to update habit" } });
+    }
+  });
+
+  // Delete habit
+  app.delete('/api/vision/habits/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteVisionHabit(id);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting habit:", error);
+      res.status(500).json({ ok: false, error: { message: "Failed to delete habit" } });
+    }
+  });
+
+  // Log habit
+  app.post('/api/vision/habits/:id/log', isAuthenticated, async (req: any, res) => {
+    try {
+      const habitId = parseInt(req.params.id);
+      const { date, completed } = req.body;
+      if (typeof date !== 'string' || typeof completed !== 'boolean') {
+        return res.status(400).json({ ok: false, error: { message: "Invalid input: date must be string, completed must be boolean" } });
+      }
+      const log = await storage.upsertHabitLog(habitId, date, completed);
+      res.json({ ok: true, data: log });
+    } catch (error: any) {
+      console.error("Error logging habit:", error);
+      res.status(400).json({ ok: false, error: { message: error.message || "Failed to log habit" } });
+    }
+  });
+
+  // Get habit logs
+  app.get('/api/vision/habits/:id/logs', isAuthenticated, async (req: any, res) => {
+    try {
+      const habitId = parseInt(req.params.id);
+      const logs = await storage.getHabitLogs(habitId);
+      res.json({ ok: true, data: logs });
+    } catch (error) {
+      console.error("Error fetching habit logs:", error);
+      res.status(500).json({ ok: false, error: { message: "Failed to fetch logs" } });
+    }
+  });
+
+  // Daily check-in
+  app.post('/api/vision/sessions/:id/checkin/daily', isAuthenticated, async (req: any, res) => {
+    try {
+      const sessionId = parseInt(req.params.id);
+      const { date, ...data } = req.body;
+      const checkin = await storage.upsertDailyCheckin(sessionId, date, data);
+      res.json({ ok: true, data: checkin });
+    } catch (error: any) {
+      console.error("Error saving daily checkin:", error);
+      res.status(400).json({ ok: false, error: { message: error.message || "Failed to save checkin" } });
+    }
+  });
+
+  // Weekly review
+  app.post('/api/vision/sessions/:id/checkin/weekly', isAuthenticated, async (req: any, res) => {
+    try {
+      const sessionId = parseInt(req.params.id);
+      const { weekStartDate, ...data } = req.body;
+      const review = await storage.upsertWeeklyReview(sessionId, weekStartDate, data);
+      res.json({ ok: true, data: review });
+    } catch (error: any) {
+      console.error("Error saving weekly review:", error);
+      res.status(400).json({ ok: false, error: { message: error.message || "Failed to save review" } });
+    }
+  });
+
   return httpServer;
 }

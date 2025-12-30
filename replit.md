@@ -42,6 +42,22 @@ Preferred communication style: Simple, everyday language.
   - `events` - Mission events and gatherings
   - `eventRegistrations` - Event sign-ups
   - `blogPosts` - Blog articles
+  
+**Vision Pathway Tables** (Life Vision & Goal feature):
+  - `pathwaySessions` - Main container for user's vision journey
+  - `wheelLifeEntries` - Wheel of Life category scores (1-10)
+  - `focusAreas` - User's priority areas from wheel assessment
+  - `valuesSelection` - User's chosen values and meanings
+  - `visionStatements` - Vision, identity statements, top outcomes
+  - `purposeFlower` - Ikigai-style purpose (passion, strengths, needs, rewards)
+  - `visionGoals` - SMART goals with metrics and deadlines
+  - `goalMilestones` - Milestones for tracking goal progress
+  - `ninetyDayPlans` - 90-day action plans with key results
+  - `visionHabits` - Trackable daily/weekly habits
+  - `habitLogs` - Daily habit completion logs
+  - `dailyCheckins` - Daily energy and focus check-ins
+  - `weeklyReviews` - Weekly reflection and planning
+  - `visionExports` - PDF/export records
 
 ### Authentication Flow
 - Uses Replit's built-in OIDC authentication

@@ -29,6 +29,15 @@
   --color-accent: hsl(25 90% 60%); 
   --color-accent-foreground: hsl(0 0% 100%);
 
+  /* Extended Palette for Vision Pathway */
+  --color-lavender: hsl(252 100% 71%);
+  --color-sage: hsl(115 17% 61%);
+  --color-warm-beige: hsl(30 16% 68%);
+  --color-paper: hsl(36 33% 95%);
+  --color-ink: hsl(0 0% 16%);
+  --color-success: hsl(142 71% 45%);
+  --color-warning: hsl(38 92% 50%);
+
   --color-destructive: hsl(0 84.2% 60.2%);
   --color-destructive-foreground: hsl(0 0% 98%);
 
