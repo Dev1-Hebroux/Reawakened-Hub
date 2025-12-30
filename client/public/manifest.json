@@ -1,21 +1,27 @@
 {
   "name": "Reawakened",
   "short_name": "Reawakened",
+  "description": "A digital revival movement - Encounter Jesus, grow in discipleship, and engage in global outreach.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#f97316",
-  "description": "A digital online hub and community focused on faith, purpose, discipleship, and global outreach.",
+  "background_color": "#293a50",
+  "theme_color": "#293a50",
+  "orientation": "portrait-primary",
+  "scope": "/",
   "icons": [
     {
       "src": "/favicon.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "/favicon.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     }
-  ]
+  ],
+  "categories": ["lifestyle", "education", "social"],
+  "prefer_related_applications": false
 }
