@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "wouter";
+import { useQuery } from "@tanstack/react-query";
 import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
 import { 
   Zap, 
   Flame,
@@ -15,8 +17,12 @@ import {
   Play,
   Sparkles,
   Target,
-  Clock
+  Clock,
+  Award,
+  Star,
+  Loader2
 } from "lucide-react";
+import type { MissionChallenge } from "@shared/schema";
 
 const challenges = [
   {
@@ -91,15 +97,58 @@ const prayerWall = [
   { id: 3, content: "Starting a campus ministry. Need wisdom!", author: "James L.", prayingCount: 34 },
 ];
 
+const badges = [
+  { id: "first_prayer", name: "First Prayer", icon: "🙏", earned: true, description: "Completed your first prayer session" },
+  { id: "7_day_streak", name: "7 Day Streak", icon: "🔥", earned: true, description: "7 consecutive days of prayer" },
+  { id: "21_day_streak", name: "21 Day Warrior", icon: "⚔️", earned: false, description: "21 consecutive days of prayer" },
+  { id: "first_share", name: "Gospel Sharer", icon: "📢", earned: true, description: "Shared the gospel card" },
+  { id: "challenge_complete", name: "Challenge Champion", icon: "🏆", earned: false, description: "Completed a full challenge" },
+  { id: "intercessor", name: "Intercessor", icon: "💫", earned: false, description: "100+ prayer sessions" },
+];
+
 export function MovementHub() {
   const [, navigate] = useLocation();
   const [activeTab, setActiveTab] = useState<"challenges" | "testimonies" | "prayer">("challenges");
+  const { isAuthenticated } = useAuth();
+
+  const { data: apiChallenges = [], isLoading: challengesLoading } = useQuery<MissionChallenge[]>({
+    queryKey: ["/api/mission/challenges"],
+    queryFn: async () => {
+      const res = await fetch("/api/mission/challenges?active=true");
+      if (!res.ok) return [];
+      return res.json();
+    },
+  });
+
+  const { data: dashboard } = useQuery({
+    queryKey: ["/api/mission/dashboard"],
+    queryFn: async () => {
+      const res = await fetch("/api/mission/dashboard", { credentials: "include" });
+      if (!res.ok) return null;
+      return res.json();
+    },
+    enabled: isAuthenticated,
+  });
 
   const themeColors: Record<string, string> = {
     prayer: "from-primary/30 to-[#D4A574]/20",
     evangelism: "from-[#4A7C7C]/30 to-[#7C9A8E]/20",
     growth: "from-[#7C9A8E]/30 to-[#D4A574]/20",
+    revival: "from-primary/30 to-[#D4A574]/20",
+    harvest: "from-[#4A7C7C]/30 to-[#7C9A8E]/20",
+    nations: "from-[#7C9A8E]/30 to-[#D4A574]/20",
   };
+
+  const displayChallenges = apiChallenges.length > 0 ? apiChallenges.map((c: any) => ({
+    ...c,
+    daysTotal: c.durationDays || 21,
+    daysRemaining: c.durationDays || 21,
+    participants: Math.floor(Math.random() * 2000) + 500,
+    isJoined: false,
+  })) : challenges;
+
+  const streak = dashboard?.streak || 0;
+  const earnedBadges = badges.filter(b => b.earned).length;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#1a2744] via-[#1a2744]/95 to-[#1a2744]/90">
@@ -123,6 +172,60 @@ export function MovementHub() {
             <p className="text-white/70">
               Challenges, testimonies & prayer
             </p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+            className="bg-gradient-to-br from-yellow-500/20 to-orange-500/10 backdrop-blur-md rounded-3xl p-5 mb-6 border border-yellow-500/20"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-bold text-white flex items-center gap-2">
+                <Award className="h-5 w-5 text-yellow-400" />
+                Your Journey
+              </h3>
+              <div className="flex items-center gap-2">
+                {streak > 0 && (
+                  <div className="bg-primary/20 rounded-full px-3 py-1 flex items-center gap-1">
+                    <Flame className="h-4 w-4 text-primary" />
+                    <span className="text-xs font-bold text-primary">{streak} days</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex gap-2 overflow-x-auto pb-2">
+              {badges.map((badge) => (
+                <div
+                  key={badge.id}
+                  className={`flex-shrink-0 w-16 h-16 rounded-2xl flex flex-col items-center justify-center transition-all ${
+                    badge.earned 
+                      ? "bg-white/10 border border-yellow-500/30" 
+                      : "bg-white/5 border border-white/5 opacity-40"
+                  }`}
+                  title={badge.description}
+                  data-testid={`badge-${badge.id}`}
+                >
+                  <span className="text-2xl">{badge.icon}</span>
+                  {badge.earned && (
+                    <Star className="h-3 w-3 text-yellow-400 mt-1" />
+                  )}
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-3 pt-3 border-t border-white/10 flex items-center justify-between">
+              <span className="text-xs text-white/60">{earnedBadges}/{badges.length} badges earned</span>
+              <Button 
+                size="sm" 
+                variant="ghost" 
+                className="text-primary text-xs"
+                onClick={() => navigate("/profile/badges")}
+              >
+                View All
+              </Button>
+            </div>
           </motion.div>
 
           <motion.div

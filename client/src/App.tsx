@@ -42,6 +42,8 @@ import { PrayHub } from "@/pages/PrayHub";
 import { MissionsHub } from "@/pages/MissionsHub";
 import { GiveHub } from "@/pages/GiveHub";
 import { MovementHub } from "@/pages/MovementHub";
+import { MissionOnboarding } from "@/pages/MissionOnboarding";
+import { DigitalActions } from "@/pages/DigitalActions";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { QuickShare } from "@/components/ui/QuickShare";
 
@@ -88,6 +90,8 @@ function Router() {
       <Route path="/vision/:sessionId/tools/group-labs" component={GroupLabs} />
       <Route path="/pray" component={PrayHub} />
       <Route path="/missions" component={MissionsHub} />
+      <Route path="/missions/action/:type" component={DigitalActions} />
+      <Route path="/mission/onboarding" component={MissionOnboarding} />
       <Route path="/give" component={GiveHub} />
       <Route path="/movement" component={MovementHub} />
       <Route component={NotFound} />
