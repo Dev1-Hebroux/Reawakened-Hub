@@ -11,8 +11,9 @@ import { Input } from "@/components/ui/input";
 import { 
   Compass, Target, Sparkles, Calendar, CheckCircle2, 
   ArrowRight, Mountain, Heart, Flame, Star, ChevronRight,
-  Zap, TrendingUp, Award
+  Zap, TrendingUp, Award, Play, Users, Trophy, Clock
 } from "lucide-react";
+
 
 const STAGE_COLORS = {
   reflect: { bg: "from-violet-500 to-purple-600", light: "bg-violet-100", text: "text-violet-600", ring: "ring-violet-400" },
@@ -102,169 +103,289 @@ export function VisionPage() {
     );
   }
 
+  const stats = [
+    { label: "Journeys Started", value: "2.5k+", icon: Play },
+    { label: "Goals Achieved", value: "8.2k", icon: Trophy },
+    { label: "Habits Built", value: "15k+", icon: Flame },
+    { label: "Active Users", value: "1.2k", icon: Users },
+  ];
+
   return (
-    <>
+    <div className="min-h-screen bg-[#0a1628] text-white font-sans">
       <Navbar />
-      <main className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-cyan-50 overflow-hidden">
-        <section className="relative py-20 px-4">
-          <div className="absolute inset-0 overflow-hidden">
-            <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-violet-400/20 to-purple-400/20 rounded-full blur-3xl" />
-            <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-cyan-400/20 to-blue-400/20 rounded-full blur-3xl" />
-          </div>
-          
-          <div className="max-w-4xl mx-auto text-center relative z-10">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
+      
+      {/* Cinematic Hero Section */}
+      <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <div className="absolute inset-0 bg-gradient-to-br from-violet-900/40 via-purple-900/30 to-cyan-900/40" />
+          <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-violet-500/20 rounded-full blur-[120px]" />
+          <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-cyan-500/20 rounded-full blur-[120px]" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-purple-600/10 rounded-full blur-[150px]" />
+        </div>
+        
+        <div className="relative z-10 max-w-7xl mx-auto px-4 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            <motion.div 
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 text-white px-5 py-2.5 rounded-full mb-8"
             >
-              <motion.div 
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: 0.2 }}
-                className="inline-flex items-center gap-2 bg-gradient-to-r from-violet-500 to-purple-600 text-white px-5 py-2.5 rounded-full mb-8 shadow-lg shadow-violet-200"
-              >
-                <Zap className="w-4 h-4" />
-                <span className="text-sm font-semibold">Life Vision & Goals</span>
-              </motion.div>
-              
-              <h1 className="text-5xl md:text-6xl font-display font-bold mb-6">
-                <span className="bg-gradient-to-r from-violet-600 via-purple-600 to-cyan-600 bg-clip-text text-transparent">
-                  Design Your Best
-                </span>
-                <br />
-                <span className="text-slate-800">Season Yet</span>
-              </h1>
-              
-              <p className="text-lg text-slate-600 mb-10 max-w-2xl mx-auto leading-relaxed">
-                An interactive journey to discover your purpose, set meaningful goals, 
-                and build habits that stick. Whether you're starting fresh or realigning, 
-                this is your space to dream, plan, and grow.
-              </p>
-              
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-              >
+              <Sparkles className="w-4 h-4 text-violet-300" />
+              <span className="text-sm font-semibold">Life Vision & Goals Pathway</span>
+            </motion.div>
+            
+            <h1 className="text-5xl md:text-7xl lg:text-8xl font-display font-bold mb-6 tracking-tight leading-[0.9]" data-testid="text-vision-title">
+              Design Your
+              <br />
+              <span className="bg-gradient-to-r from-violet-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
+                Best Season Yet
+              </span>
+            </h1>
+            
+            <p className="text-lg md:text-xl text-gray-300 mb-10 max-w-2xl mx-auto leading-relaxed">
+              An interactive journey to discover your purpose, set meaningful goals, 
+              and build habits that transform your life.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                 <Button 
                   size="lg" 
                   onClick={() => setShowOnboarding(true)}
-                  className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white px-8 py-6 text-lg rounded-2xl shadow-xl shadow-violet-200 gap-3"
+                  className="bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white px-8 py-6 text-lg rounded-full shadow-xl shadow-violet-500/30 gap-3"
                   data-testid="button-start-vision"
                 >
                   Start Your Vision Journey 
                   <ArrowRight className="w-5 h-5" />
                 </Button>
               </motion.div>
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                <Button 
+                  variant="outline" 
+                  size="lg"
+                  className="border-white/20 text-white hover:bg-white/10 px-8 py-6 rounded-full text-lg backdrop-blur-sm"
+                >
+                  <Play className="w-5 h-5 mr-2" /> Watch Preview
+                </Button>
+              </motion.div>
+            </div>
+          </motion.div>
+        </div>
+        
+        {/* Animated scroll indicator */}
+        <motion.div 
+          className="absolute bottom-8 left-1/2 -translate-x-1/2"
+          animate={{ y: [0, 10, 0] }}
+          transition={{ duration: 2, repeat: Infinity }}
+        >
+          <div className="w-6 h-10 rounded-full border-2 border-white/30 flex items-start justify-center p-1">
+            <div className="w-1.5 h-3 bg-white/60 rounded-full" />
+          </div>
+        </motion.div>
+      </section>
+
+      {/* Stats Bar */}
+      <section className="bg-white relative z-20 -mt-16 max-w-5xl mx-4 md:mx-auto rounded-2xl shadow-2xl p-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          {stats.map((stat, i) => (
+            <motion.div 
+              key={i} 
+              className="text-center"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1 }}
+            >
+              <div className="flex justify-center mb-3">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500/10 to-purple-500/10 flex items-center justify-center">
+                  <stat.icon className="w-6 h-6 text-violet-600" />
+                </div>
+              </div>
+              <div className="text-3xl md:text-4xl font-display font-bold text-gray-900 mb-1">{stat.value}</div>
+              <div className="text-sm text-gray-500 font-medium">{stat.label}</div>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+      {/* Interactive Journey Roadmap */}
+      <section className="py-24 px-4 bg-gradient-to-b from-white to-gray-50">
+        <div className="max-w-6xl mx-auto">
+          <motion.div 
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <div className="inline-flex items-center gap-2 bg-violet-100 text-violet-600 px-4 py-2 rounded-full text-sm font-bold mb-6">
+              <Target className="h-4 w-4" /> Your Path to Purpose
+            </div>
+            <h2 className="text-4xl md:text-5xl font-display font-bold text-gray-900 mb-4">
+              The 5-Stage Vision Pathway
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              A proven framework that transforms dreams into daily action
+            </p>
+          </motion.div>
+          
+          {/* Visual Journey Path */}
+          <div className="relative">
+            {/* Connecting line */}
+            <div className="hidden lg:block absolute top-1/2 left-0 right-0 h-2 bg-gradient-to-r from-violet-200 via-emerald-200 via-orange-200 to-pink-200 -translate-y-1/2 rounded-full" />
+            
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-6 lg:gap-4">
+              {STAGES.map((stage, i) => {
+                const colors = STAGE_COLORS[stage.key as keyof typeof STAGE_COLORS];
+                return (
+                  <motion.div
+                    key={stage.key}
+                    initial={{ opacity: 0, y: 40 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: i * 0.15 }}
+                    className="relative z-10"
+                  >
+                    <motion.div 
+                      whileHover={{ y: -10, scale: 1.03 }}
+                      className="bg-white rounded-3xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 border border-gray-100"
+                    >
+                      <div className="flex flex-col items-center text-center">
+                        <div className="relative mb-4">
+                          <div className={`absolute -inset-3 bg-gradient-to-br ${colors.bg} rounded-2xl blur-xl opacity-30`} />
+                          <motion.div 
+                            whileHover={{ rotate: 5 }}
+                            className={`relative w-20 h-20 rounded-2xl bg-gradient-to-br ${colors.bg} flex items-center justify-center shadow-lg`}
+                          >
+                            <stage.icon className="w-10 h-10 text-white" />
+                          </motion.div>
+                        </div>
+                        <span className={`text-xs font-bold ${colors.text} mb-2`}>Stage {i + 1}</span>
+                        <h3 className="font-bold text-xl text-gray-900 mb-2">{stage.label}</h3>
+                        <p className="text-sm text-gray-500">{stage.desc}</p>
+                      </div>
+                    </motion.div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Mode Selection Cards */}
+      <section className="py-20 px-4 bg-gradient-to-br from-gray-50 to-violet-50/30">
+        <div className="max-w-5xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <h2 className="text-3xl md:text-4xl font-display font-bold text-gray-900 mb-4">
+              Choose Your Approach
+            </h2>
+            <p className="text-lg text-gray-600">
+              Two powerful modes to suit your journey
+            </p>
+          </motion.div>
+          
+          <div className="grid md:grid-cols-2 gap-8">
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              whileHover={{ y: -8 }}
+              className="group cursor-pointer"
+            >
+              <div className="bg-white rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 border border-gray-100">
+                <div className="h-2 bg-gradient-to-r from-violet-500 to-purple-600" />
+                <div className="p-8">
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                      <Compass className="w-8 h-8 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-bold text-gray-900">Classic Mode</h3>
+                      <p className="text-violet-600 font-medium">Personal Growth Focus</p>
+                    </div>
+                  </div>
+                  <p className="text-gray-600 leading-relaxed mb-6">
+                    Focus on life design, goal-setting, and personal growth using 
+                    proven frameworks like Wheel of Life and Ikigai purpose discovery.
+                  </p>
+                  <ul className="space-y-3">
+                    {["Wheel of Life Assessment", "SMART Goals Framework", "90-Day Action Plans", "Habit Tracking"].map((item, i) => (
+                      <li key={i} className="flex items-center gap-3 text-gray-700">
+                        <div className="w-2 h-2 rounded-full bg-violet-500" />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </motion.div>
+            
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              whileHover={{ y: -8 }}
+              className="group cursor-pointer"
+            >
+              <div className="bg-white rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 border border-gray-100">
+                <div className="h-2 bg-gradient-to-r from-amber-400 to-orange-500" />
+                <div className="p-8">
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                      <Sparkles className="w-8 h-8 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-bold text-gray-900">Faith & Reflection</h3>
+                      <p className="text-orange-600 font-medium">Spiritual Integration</p>
+                    </div>
+                  </div>
+                  <p className="text-gray-600 leading-relaxed mb-6">
+                    Includes prayer prompts, Scripture reflections, and spiritual 
+                    dimensions woven throughout every stage of your journey.
+                  </p>
+                  <ul className="space-y-3">
+                    {["Biblical Foundations", "Prayer & Reflection Prompts", "Purpose Aligned with Faith", "Spiritual Growth Tracking"].map((item, i) => (
+                      <li key={i} className="flex items-center gap-3 text-gray-700">
+                        <div className="w-2 h-2 rounded-full bg-orange-500" />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
             </motion.div>
           </div>
-        </section>
-
-        <section className="py-20 px-4 relative">
-          <div className="max-w-5xl mx-auto">
-            <motion.h2 
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              className="text-3xl font-display font-bold text-center mb-4"
+          
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mt-12"
+          >
+            <Button 
+              size="lg" 
+              onClick={() => setShowOnboarding(true)}
+              className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white px-10 py-6 text-lg rounded-full shadow-xl"
+              data-testid="button-start-vision-bottom"
             >
-              <span className="bg-gradient-to-r from-violet-600 to-cyan-600 bg-clip-text text-transparent">
-                The 5-Stage Pathway
-              </span>
-            </motion.h2>
-            <p className="text-center text-slate-500 mb-12 max-w-lg mx-auto">
-              A proven framework to transform your dreams into daily action
-            </p>
-            
-            <div className="relative">
-              <div className="hidden md:block absolute top-1/2 left-0 right-0 h-1 bg-gradient-to-r from-violet-200 via-emerald-200 to-pink-200 -translate-y-1/2 rounded-full" />
-              
-              <div className="grid md:grid-cols-5 gap-6">
-                {STAGES.map((stage, i) => {
-                  const colors = STAGE_COLORS[stage.key as keyof typeof STAGE_COLORS];
-                  return (
-                    <motion.div
-                      key={stage.key}
-                      initial={{ opacity: 0, y: 30 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: i * 0.1 }}
-                      className="text-center relative z-10"
-                    >
-                      <motion.div 
-                        whileHover={{ scale: 1.1, rotate: 5 }}
-                        className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${colors.bg} mx-auto flex items-center justify-center mb-4 shadow-lg`}
-                      >
-                        <stage.icon className="w-10 h-10 text-white" />
-                      </motion.div>
-                      <h3 className={`font-bold text-lg ${colors.text}`}>{stage.label}</h3>
-                      <p className="text-sm text-slate-500 mt-1">{stage.desc}</p>
-                    </motion.div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="py-16 px-4">
-          <div className="max-w-4xl mx-auto">
-            <div className="grid md:grid-cols-2 gap-8">
-              <motion.div
-                initial={{ opacity: 0, x: -30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                whileHover={{ y: -5 }}
-              >
-                <Card className="border-0 shadow-xl bg-white/70 backdrop-blur-sm hover:shadow-2xl transition-all duration-300 overflow-hidden">
-                  <div className="h-2 bg-gradient-to-r from-violet-500 to-purple-600" />
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-3 text-xl">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg">
-                        <Compass className="w-6 h-6 text-white" />
-                      </div>
-                      Classic Mode
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-slate-600 leading-relaxed">
-                      Focus on life design, goal-setting, and personal growth using 
-                      proven frameworks like Wheel of Life and Ikigai.
-                    </p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-              
-              <motion.div
-                initial={{ opacity: 0, x: 30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                whileHover={{ y: -5 }}
-              >
-                <Card className="border-0 shadow-xl bg-white/70 backdrop-blur-sm hover:shadow-2xl transition-all duration-300 overflow-hidden">
-                  <div className="h-2 bg-gradient-to-r from-amber-400 to-orange-500" />
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-3 text-xl">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg">
-                        <Sparkles className="w-6 h-6 text-white" />
-                      </div>
-                      Faith & Reflection
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-slate-600 leading-relaxed">
-                      Includes prayer prompts, Scripture reflections, and spiritual 
-                      dimensions woven throughout the journey.
-                    </p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            </div>
-          </div>
-        </section>
-      </main>
+              Begin Your Journey Today
+              <ArrowRight className="w-5 h-5 ml-2" />
+            </Button>
+          </motion.div>
+        </div>
+      </section>
       <Footer />
-    </>
+    </div>
   );
 }
 
@@ -658,48 +779,184 @@ function VisionDashboard({ session }: { session: any }) {
     },
   ];
 
+  // Calculate overall progress based on tracked stages only
+  // Only count stages we can actually verify completion for
+  const trackedSteps = [
+    { name: "Wheel of Life", completed: hasWheel },
+    { name: "SMART Goals", completed: hasGoals },
+    { name: "Habits", completed: hasHabits },
+  ];
+  const completedSteps = trackedSteps.filter(s => s.completed).length;
+  const totalTrackedSteps = trackedSteps.length;
+  const progressPercent = Math.round((completedSteps / totalTrackedSteps) * 100);
+  
+
   return (
-    <>
+    <div className="min-h-screen bg-[#0a1628] text-white font-sans">
       <Navbar />
-      <main className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-cyan-50 py-8 px-4">
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-violet-300/20 to-purple-300/20 rounded-full blur-3xl" />
-          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-cyan-300/20 to-blue-300/20 rounded-full blur-3xl" />
+      
+      {/* Dashboard Hero */}
+      <section className="relative pt-24 pb-16 overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <div className="absolute inset-0 bg-gradient-to-br from-violet-900/40 via-purple-900/30 to-cyan-900/40" />
+          <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-violet-500/20 rounded-full blur-[100px]" />
+          <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-cyan-500/20 rounded-full blur-[100px]" />
         </div>
         
-        <div className="max-w-5xl mx-auto relative z-10">
+        <div className="max-w-6xl mx-auto px-4 relative z-10">
           <motion.div 
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-4"
+            className="flex flex-col md:flex-row md:items-center justify-between gap-6"
           >
             <div>
-              <h1 className="text-4xl font-display font-bold">
-                <span className="bg-gradient-to-r from-violet-600 via-purple-600 to-cyan-600 bg-clip-text text-transparent">
+              <motion.div whileHover={{ scale: 1.05 }} className="inline-block mb-4">
+                {session.mode === "faith" ? (
+                  <span className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-400 to-orange-500 text-white px-5 py-2.5 rounded-full shadow-lg font-semibold text-sm">
+                    <Sparkles className="w-4 h-4" /> Faith & Reflection Mode
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 text-white px-5 py-2.5 rounded-full font-semibold text-sm">
+                    <Compass className="w-4 h-4" /> Classic Mode
+                  </span>
+                )}
+              </motion.div>
+              <h1 className="text-4xl md:text-5xl font-display font-bold mb-3">
+                <span className="bg-gradient-to-r from-violet-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
                   {session.seasonLabel || "My Vision Journey"}
                 </span>
               </h1>
               {session.themeWord && (
-                <div className="flex items-center gap-2 mt-3">
-                  <span className="text-slate-500">Theme:</span>
-                  <span className="px-4 py-1.5 bg-gradient-to-r from-violet-500 to-purple-600 text-white rounded-full font-semibold text-sm shadow-md">
+                <div className="flex items-center gap-3">
+                  <span className="text-gray-400">Theme Word:</span>
+                  <span className="px-4 py-2 bg-gradient-to-r from-violet-500 to-purple-600 text-white rounded-full font-bold text-sm shadow-lg">
                     {session.themeWord}
                   </span>
                 </div>
               )}
             </div>
             
-            <motion.div whileHover={{ scale: 1.05 }}>
-              {session.mode === "faith" ? (
-                <span className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-400 to-orange-500 text-white px-5 py-2.5 rounded-full shadow-lg font-semibold">
-                  <Sparkles className="w-4 h-4" /> Faith Mode
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-2 bg-gradient-to-r from-violet-500 to-purple-600 text-white px-5 py-2.5 rounded-full shadow-lg font-semibold">
-                  <Compass className="w-4 h-4" /> Classic Mode
-                </span>
-              )}
+            {/* Progress Ring */}
+            <motion.div 
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="relative"
+            >
+              <div className="w-32 h-32 relative">
+                <svg className="w-full h-full transform -rotate-90">
+                  <circle
+                    cx="64"
+                    cy="64"
+                    r="56"
+                    fill="none"
+                    stroke="rgba(255,255,255,0.1)"
+                    strokeWidth="8"
+                  />
+                  <motion.circle
+                    cx="64"
+                    cy="64"
+                    r="56"
+                    fill="none"
+                    stroke="url(#progressGradient)"
+                    strokeWidth="8"
+                    strokeLinecap="round"
+                    strokeDasharray={`${2 * Math.PI * 56}`}
+                    initial={{ strokeDashoffset: 2 * Math.PI * 56 }}
+                    animate={{ strokeDashoffset: 2 * Math.PI * 56 * (1 - progressPercent / 100) }}
+                    transition={{ duration: 1.5, ease: "easeOut" }}
+                  />
+                  <defs>
+                    <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#8B5CF6" />
+                      <stop offset="100%" stopColor="#06B6D4" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span className="text-3xl font-bold text-white">{progressPercent}%</span>
+                  <span className="text-xs text-gray-400">Complete</span>
+                </div>
+              </div>
             </motion.div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Quick Stats Bar with Dynamic Widgets */}
+      <section className="bg-white relative z-20 -mt-8 max-w-5xl mx-4 md:mx-auto rounded-2xl shadow-2xl p-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <motion.div 
+            className="text-center"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <div className="flex justify-center mb-2">
+              <div className="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center">
+                <Target className="w-5 h-5 text-violet-600" />
+              </div>
+            </div>
+            <div className="text-3xl font-bold text-violet-600">{goals?.length || 0}</div>
+            <div className="text-xs text-gray-500 font-medium">Goals Set</div>
+          </motion.div>
+          
+          <motion.div 
+            className="text-center"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <div className="flex justify-center mb-2">
+              <div className="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center">
+                <Flame className="w-5 h-5 text-orange-500" />
+              </div>
+            </div>
+            <div className="text-3xl font-bold text-orange-500">{habits?.length || 0}</div>
+            <div className="text-xs text-gray-500 font-medium">Habits Tracking</div>
+          </motion.div>
+          
+          <motion.div 
+            className="text-center"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <div className="flex justify-center mb-2">
+              <div className="w-10 h-10 rounded-xl bg-cyan-100 flex items-center justify-center">
+                <TrendingUp className="w-5 h-5 text-cyan-600" />
+              </div>
+            </div>
+            <div className="text-3xl font-bold text-cyan-600">{progressPercent}%</div>
+            <div className="text-xs text-gray-500 font-medium">Progress</div>
+          </motion.div>
+          
+          <motion.div 
+            className="text-center"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            <div className="flex justify-center mb-2">
+              <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
+                <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+              </div>
+            </div>
+            <div className="text-3xl font-bold text-emerald-500">{completedSteps}/{totalTrackedSteps}</div>
+            <div className="text-xs text-gray-500 font-medium">Steps Done</div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Journey Cards */}
+      <section className="py-16 px-4 bg-gradient-to-b from-white to-gray-50">
+        <div className="max-w-6xl mx-auto">
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="mb-10"
+          >
+            <h2 className="text-2xl font-display font-bold text-gray-900 mb-2">Your Vision Pathway</h2>
+            <p className="text-gray-500">Continue your journey through each stage</p>
           </motion.div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -709,50 +966,52 @@ function VisionDashboard({ session }: { session: any }) {
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
-                whileHover={{ y: -8, scale: 1.02 }}
-                className="cursor-pointer"
+                whileHover={{ y: -8 }}
+                className="cursor-pointer group"
                 onClick={() => navigate(`/vision/${session.id}/${card.route}`)}
                 data-testid={`card-${card.id}`}
               >
-                <Card className={`h-full border-0 shadow-xl bg-white/80 backdrop-blur-sm hover:shadow-2xl transition-all duration-300 overflow-hidden rounded-2xl ${
+                <div className={`h-full bg-white rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 border border-gray-100 ${
                   card.completed ? "ring-2 ring-emerald-400" : ""
                 }`}>
-                  <div className={`h-1.5 bg-gradient-to-r ${card.gradient}`} />
-                  <CardHeader className="pb-2">
-                    <div className={`inline-flex items-center gap-1.5 bg-gradient-to-r ${card.gradient} text-white px-3 py-1 rounded-full mb-3 text-xs font-semibold shadow-md w-fit`}>
+                  <div className={`h-2 bg-gradient-to-r ${card.gradient}`} />
+                  <div className="p-6">
+                    <div className={`inline-flex items-center gap-1.5 bg-gradient-to-r ${card.gradient} text-white px-3 py-1.5 rounded-full mb-4 text-xs font-bold shadow-md`}>
                       <Zap className="w-3 h-3" />
                       {card.stage}
                     </div>
-                    <CardTitle className="flex items-center gap-4">
-                      <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${card.gradient} flex items-center justify-center shadow-lg`}>
-                        <card.icon className="w-7 h-7 text-white" />
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${card.gradient} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}>
+                        <card.icon className="w-8 h-8 text-white" />
                       </div>
-                      <span className="text-lg font-bold text-slate-800">{card.title}</span>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-slate-500">{card.desc}</p>
-                    {card.completed && (
-                      <motion.div 
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        className="flex items-center gap-2 mt-4"
-                      >
-                        <div className="w-6 h-6 rounded-full bg-gradient-to-br from-emerald-400 to-green-500 flex items-center justify-center shadow-md">
+                      <div>
+                        <h3 className="text-xl font-bold text-gray-900">{card.title}</h3>
+                        <p className="text-sm text-gray-500">{card.desc}</p>
+                      </div>
+                    </div>
+                    {card.completed ? (
+                      <div className="flex items-center gap-2 pt-4 border-t border-gray-100">
+                        <div className="w-6 h-6 rounded-full bg-gradient-to-br from-emerald-400 to-green-500 flex items-center justify-center">
                           <CheckCircle2 className="w-4 h-4 text-white" />
                         </div>
                         <span className="text-emerald-600 font-semibold text-sm">In Progress</span>
-                      </motion.div>
+                        <ArrowRight className="w-4 h-4 ml-auto text-gray-400 group-hover:text-gray-600 group-hover:translate-x-1 transition-all" />
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 pt-4 border-t border-gray-100">
+                        <span className="text-gray-400 text-sm">Start this step</span>
+                        <ArrowRight className="w-4 h-4 ml-auto text-gray-400 group-hover:text-gray-600 group-hover:translate-x-1 transition-all" />
+                      </div>
                     )}
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </motion.div>
             ))}
           </div>
         </div>
-      </main>
+      </section>
       <Footer />
-    </>
+    </div>
   );
 }
 
