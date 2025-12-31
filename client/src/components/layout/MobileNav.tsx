@@ -1,18 +1,8 @@
 import { Link, useLocation } from "wouter";
-import { Home, Globe, Flame, Users, BookOpen, Menu } from "lucide-react";
-import { useState, useEffect } from "react";
+import { Home, Globe, Flame, Users, BookOpen } from "lucide-react";
 
 export function MobileNav() {
   const [location] = useLocation();
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   const navItems = [
     { icon: Home, label: "Home", href: "/" },
@@ -23,8 +13,8 @@ export function MobileNav() {
   ];
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-lg border-t border-gray-100 pb-safe pt-2">
-      <div className="flex justify-around items-center px-2 pb-2">
+    <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-lg border-t border-gray-200 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
+      <div className="flex justify-around items-center px-2 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
         {navItems.map((item) => {
           const isActive = location === item.href;
           return (

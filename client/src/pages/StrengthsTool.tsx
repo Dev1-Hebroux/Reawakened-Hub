@@ -104,12 +104,34 @@ export function StrengthsTool() {
   };
 
   const handleNext = () => {
+    // Ensure current strength has a rating saved (default to 5 if not set)
+    if (!ratings.has(currentStrength.key)) {
+      setRatings(prev => {
+        const next = new Map(prev);
+        next.set(currentStrength.key, 5);
+        return next;
+      });
+    }
+    
     if (currentIndex + 1 >= CHARACTER_STRENGTHS.length) {
-      const sorted = Array.from(ratings.entries())
+      // Ensure all strengths have ratings before sorting
+      const finalRatings = new Map(ratings);
+      if (!finalRatings.has(currentStrength.key)) {
+        finalRatings.set(currentStrength.key, 5);
+      }
+      // If some strengths weren't rated, give them a default rating of 5
+      CHARACTER_STRENGTHS.forEach(s => {
+        if (!finalRatings.has(s.key)) {
+          finalRatings.set(s.key, 5);
+        }
+      });
+      
+      const sorted = Array.from(finalRatings.entries())
         .sort((a, b) => b[1] - a[1])
-        .slice(0, 10)
+        .slice(0, 12)
         .map(([key]) => key);
       setTop5(sorted.slice(0, 5));
+      setRatings(finalRatings);
       setStep("top5");
     } else {
       setCurrentIndex(prev => prev + 1);
@@ -302,8 +324,8 @@ export function StrengthsTool() {
           </span>
         </div>
 
-        <div className="space-y-2 mb-6">
-          {sortedByRating.slice(0, 12).map((key) => {
+        <div className="space-y-2 mb-6 max-h-[50vh] overflow-y-auto">
+          {sortedByRating.map((key) => {
             const strength = CHARACTER_STRENGTHS.find(s => s.key === key)!;
             const Icon = strength.icon;
             const isSelected = top5.includes(key);
