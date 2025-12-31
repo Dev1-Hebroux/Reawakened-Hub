@@ -28,35 +28,48 @@ const shareCards = [
     title: "Hope in Jesus", 
     message: "There's hope even in the darkest times. Jesus loves you and has a plan for your life. Want to discover more?",
     theme: "hope",
-    color: "from-blue-500 to-purple-600"
+    color: "from-blue-500 to-purple-600",
+    verse: "Jeremiah 29:11"
   },
   { 
     id: 2, 
     title: "You Are Loved", 
     message: "No matter what you've done or where you've been, God's love for you is unconditional. You are valued and precious.",
     theme: "love",
-    color: "from-pink-500 to-rose-600"
+    color: "from-pink-500 to-rose-600",
+    verse: "Romans 8:38-39"
   },
   { 
     id: 3, 
     title: "New Beginning", 
     message: "Today can be the start of something beautiful. Jesus offers forgiveness, freedom, and a fresh start.",
     theme: "new_life",
-    color: "from-green-500 to-teal-600"
+    color: "from-green-500 to-teal-600",
+    verse: "2 Corinthians 5:17"
   },
   { 
     id: 4, 
     title: "Peace in the Storm", 
     message: "Anxiety doesn't have to define you. There's a peace that surpasses understanding available to you through Christ.",
     theme: "peace",
-    color: "from-cyan-500 to-blue-600"
+    color: "from-cyan-500 to-blue-600",
+    verse: "Philippians 4:6-7"
+  },
+  { 
+    id: 5, 
+    title: "Never Alone", 
+    message: "In your darkest moments, you're never alone. God promises to be with you through every storm and valley.",
+    theme: "presence",
+    color: "from-indigo-500 to-violet-600",
+    verse: "Isaiah 41:10"
   },
 ];
 
 const inviteTemplates = [
-  { id: 1, message: "Hey! I've joined a movement of young people making global impact for Jesus. Would you like to check it out?" },
-  { id: 2, message: "I've been part of this amazing community focused on prayer, missions, and discipleship. Think you'd love it!" },
-  { id: 3, message: "Want to join me in praying for unreached people groups? There's this cool platform called Reawakened..." },
+  { id: 1, message: "Hey! I've joined a movement of young people making global impact for Jesus. Would you like to check it out?", context: "For friends" },
+  { id: 2, message: "I've been part of this amazing community focused on prayer, missions, and discipleship. Think you'd love it!", context: "For church friends" },
+  { id: 3, message: "Want to join me in praying for unreached people groups? There's this cool platform called Reawakened...", context: "For prayer partners" },
+  { id: 4, message: "I found this app that helps young Christians pray for global missions together. Join our prayer room?", context: "For youth group" },
 ];
 
 export function DigitalActions() {
@@ -184,36 +197,53 @@ export function DigitalActions() {
                     onClick={() => setSelectedCard(card.id)}
                     data-testid={`share-card-${card.id}`}
                   >
-                    <h3 className="font-bold text-white text-lg mb-2">{card.title}</h3>
+                    <div className="flex items-start justify-between mb-2">
+                      <h3 className="font-bold text-white text-lg">{card.title}</h3>
+                      <span className="text-[10px] text-white/60 bg-white/10 px-2 py-0.5 rounded-full">{card.verse}</span>
+                    </div>
                     <p className="text-white/90 text-sm mb-4">{card.message}</p>
                     
                     {selectedCard === card.id && (
                       <motion.div 
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="flex gap-2 pt-2 border-t border-white/20"
+                        className="pt-3 border-t border-white/20"
                       >
-                        <Button 
-                          size="sm" 
-                          className="bg-white/20 hover:bg-white/30 text-white"
-                          onClick={(e) => { e.stopPropagation(); handleShare("whatsapp", card); }}
-                        >
-                          WhatsApp
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          className="bg-white/20 hover:bg-white/30 text-white"
-                          onClick={(e) => { e.stopPropagation(); handleShare("twitter", card); }}
-                        >
-                          X/Twitter
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          className="bg-white/20 hover:bg-white/30 text-white"
-                          onClick={(e) => { e.stopPropagation(); handleShare("copy", card); }}
-                        >
-                          {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-                        </Button>
+                        <p className="text-xs text-white/60 mb-2">Share via:</p>
+                        <div className="flex flex-wrap gap-2">
+                          <Button 
+                            size="sm" 
+                            className="bg-green-600 hover:bg-green-700 text-white"
+                            onClick={(e) => { e.stopPropagation(); handleShare("whatsapp", card); }}
+                            disabled={logActionMutation.isPending}
+                          >
+                            WhatsApp
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            className="bg-black hover:bg-gray-800 text-white"
+                            onClick={(e) => { e.stopPropagation(); handleShare("twitter", card); }}
+                            disabled={logActionMutation.isPending}
+                          >
+                            X
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                            onClick={(e) => { e.stopPropagation(); handleShare("facebook", card); }}
+                            disabled={logActionMutation.isPending}
+                          >
+                            Facebook
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            className="bg-white/20 hover:bg-white/30 text-white"
+                            onClick={(e) => { e.stopPropagation(); handleShare("copy", card); }}
+                            disabled={logActionMutation.isPending}
+                          >
+                            {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                          </Button>
+                        </div>
                       </motion.div>
                     )}
                   </motion.div>
@@ -290,8 +320,11 @@ export function DigitalActions() {
                       }}
                       data-testid={`invite-template-${template.id}`}
                     >
+                      <p className="text-[10px] text-white/40 uppercase tracking-wider mb-1">{template.context}</p>
                       <p className="text-white/80 text-sm">{template.message}</p>
-                      <p className="text-xs text-primary mt-2">Tap to copy</p>
+                      <p className="text-xs text-primary mt-2 flex items-center gap-1">
+                        <Copy className="h-3 w-3" /> Tap to copy
+                      </p>
                     </div>
                   ))}
                 </div>

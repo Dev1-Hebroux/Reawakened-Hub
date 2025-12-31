@@ -106,6 +106,12 @@ const badges = [
   { id: "intercessor", name: "Intercessor", icon: "💫", earned: false, description: "100+ prayer sessions" },
 ];
 
+const leaderboardPreview = [
+  { rank: 1, name: "Maria S.", points: 2450, streak: 45 },
+  { rank: 2, name: "David K.", points: 2180, streak: 32 },
+  { rank: 3, name: "Sarah L.", points: 1950, streak: 28 },
+];
+
 export function MovementHub() {
   const [, navigate] = useLocation();
   const [activeTab, setActiveTab] = useState<"challenges" | "testimonies" | "prayer">("challenges");
@@ -232,6 +238,49 @@ export function MovementHub() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.08 }}
+            className="bg-white/10 backdrop-blur-md rounded-3xl p-5 mb-6 border border-white/10"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-bold text-white flex items-center gap-2">
+                <Trophy className="h-5 w-5 text-yellow-400" />
+                Top Intercessors
+              </h3>
+              <span className="text-xs text-white/50">This Week</span>
+            </div>
+            <div className="space-y-2">
+              {leaderboardPreview.map((user, i) => (
+                <div 
+                  key={user.rank}
+                  className={`flex items-center justify-between p-3 rounded-xl ${
+                    i === 0 ? "bg-yellow-500/10 border border-yellow-500/20" : "bg-white/5"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`h-8 w-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                      i === 0 ? "bg-yellow-500 text-white" : 
+                      i === 1 ? "bg-gray-300 text-gray-700" : 
+                      "bg-orange-400 text-white"
+                    }`}>
+                      {user.rank}
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-white">{user.name}</p>
+                      <p className="text-[10px] text-white/50">{user.streak} day streak</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-primary">{user.points.toLocaleString()}</p>
+                    <p className="text-[10px] text-white/50">points</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
             className="bg-white/10 backdrop-blur-md rounded-3xl p-4 mb-6 border border-white/10"
           >
@@ -303,13 +352,18 @@ export function MovementHub() {
                 exit={{ opacity: 0, x: 20 }}
                 className="space-y-4"
               >
-                {displayChallenges.map((challenge, i) => (
+                {challengesLoading ? (
+                  <div className="flex flex-col items-center justify-center py-12">
+                    <Loader2 className="h-8 w-8 text-primary animate-spin mb-3" />
+                    <p className="text-white/50 text-sm">Loading challenges...</p>
+                  </div>
+                ) : displayChallenges.map((challenge, i) => (
                   <motion.div
                     key={challenge.id}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.1 }}
-                    className={`bg-gradient-to-br ${themeColors[challenge.theme]} backdrop-blur-md rounded-3xl p-5 border border-white/10`}
+                    className={`bg-gradient-to-br ${themeColors[challenge.theme] || themeColors.prayer} backdrop-blur-md rounded-3xl p-5 border border-white/10`}
                   >
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-2">
