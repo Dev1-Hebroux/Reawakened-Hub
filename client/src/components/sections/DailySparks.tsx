@@ -2,10 +2,10 @@ import { useRef } from "react";
 import { motion } from "framer-motion";
 import { Play, Heart, ArrowRight } from "lucide-react";
 
-import identityImg from "@assets/14_1767182385478.png";
-import believeImg from "@assets/23_1767182385482.png";
-import hearingImg from "@assets/18_1767182385480.png";
-import boldnessImg from "@assets/19_1767182385480.png";
+import identityImg from "@assets/generated_images/identity_in_chaos_abstract.png";
+import believeImg from "@assets/generated_images/why_i_believe_abstract.png";
+import hearingImg from "@assets/generated_images/hearing_god's_voice_abstract.png";
+import boldnessImg from "@assets/generated_images/boldness_at_work_abstract.png";
 
 const sparks = [
   { id: 1, title: "Identity in Chaos", author: "Abraham", views: "12k", category: "Faith", image: identityImg },
