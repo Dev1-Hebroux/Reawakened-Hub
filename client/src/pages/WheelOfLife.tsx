@@ -8,17 +8,17 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, ArrowRight, Check, Target, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Target, Sparkles, CircleDot } from "lucide-react";
 
 const WHEEL_CATEGORIES = [
-  { key: "health_energy", label: "Health & Energy", color: "#22c55e", gradient: "from-green-400 to-emerald-500" },
-  { key: "relationships", label: "Relationships", color: "#ef4444", gradient: "from-red-400 to-rose-500" },
-  { key: "career_study", label: "Career / Study", color: "#3b82f6", gradient: "from-blue-400 to-indigo-500" },
-  { key: "finances", label: "Finances", color: "#eab308", gradient: "from-yellow-400 to-amber-500" },
-  { key: "personal_growth", label: "Personal Growth", color: "#8b5cf6", gradient: "from-violet-400 to-purple-500" },
-  { key: "fun_recreation", label: "Fun & Recreation", color: "#f97316", gradient: "from-orange-400 to-red-500" },
-  { key: "physical_environment", label: "Physical Environment", color: "#14b8a6", gradient: "from-teal-400 to-cyan-500" },
-  { key: "spirituality", label: "Spirituality / Purpose", color: "#ec4899", gradient: "from-pink-400 to-rose-500" },
+  { key: "health_energy", label: "Health & Energy", emoji: "💪", color: "#5B8C5A" },
+  { key: "relationships", label: "Relationships", emoji: "❤️", color: "#C17767" },
+  { key: "career_study", label: "Career / Study", emoji: "💼", color: "#4A7C7C" },
+  { key: "finances", label: "Finances", emoji: "💰", color: "#B8976E" },
+  { key: "personal_growth", label: "Personal Growth", emoji: "🌱", color: "#7C9A8E" },
+  { key: "fun_recreation", label: "Fun & Recreation", emoji: "🎉", color: "#D4A574" },
+  { key: "physical_environment", label: "Physical Environment", emoji: "🏠", color: "#6B8E8E" },
+  { key: "spirituality", label: "Spirituality / Purpose", emoji: "✨", color: "#9B8AA6" },
 ];
 
 export function WheelOfLife() {
@@ -92,11 +92,11 @@ export function WheelOfLife() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-violet-50 via-white to-purple-50">
+      <div className="min-h-screen flex items-center justify-center bg-[#FAF8F5]">
         <motion.div 
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          className="w-12 h-12 rounded-full border-4 border-violet-200 border-t-violet-600"
+          className="w-12 h-12 rounded-full border-4 border-[#E8E4DE] border-t-[#7C9A8E]"
         />
       </div>
     );
@@ -105,17 +105,12 @@ export function WheelOfLife() {
   return (
     <>
       <Navbar />
-      <main className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-purple-50 py-8 px-4 relative overflow-hidden">
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-violet-300/20 to-purple-300/20 rounded-full blur-3xl" />
-          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-fuchsia-300/20 to-violet-300/20 rounded-full blur-3xl" />
-        </div>
-        
-        <div className="max-w-4xl mx-auto relative z-10">
+      <main className="min-h-screen bg-[#FAF8F5] py-8 px-4">
+        <div className="max-w-4xl mx-auto">
           <Button 
             variant="ghost" 
             onClick={() => navigate(`/vision`)} 
-            className="mb-4 hover:bg-violet-100" 
+            className="mb-4 text-[#5A5A5A] hover:bg-[#E8E4DE] hover:text-[#3A3A3A]" 
             data-testid="button-back-dashboard"
           >
             <ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard
@@ -126,17 +121,15 @@ export function WheelOfLife() {
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-10"
           >
-            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-violet-500 to-purple-600 text-white px-4 py-2 rounded-full mb-4 shadow-lg">
-              <Target className="w-4 h-4" />
-              <span className="text-sm font-semibold">Stage 1: Reflect</span>
+            <div className="inline-flex items-center gap-2 bg-[#7C9A8E] text-white px-4 py-2 rounded-full mb-4">
+              <CircleDot className="w-4 h-4" />
+              <span className="text-sm font-medium">Stage 1: Reflect</span>
             </div>
-            <h1 className="text-4xl font-display font-bold mb-3">
-              <span className="bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">
-                Wheel of Life
-              </span>
+            <h1 className="text-3xl md:text-4xl font-display font-bold mb-3 text-[#2C3E2D]">
+              Wheel of Life
             </h1>
-            <p className="text-slate-600 max-w-lg mx-auto">
-              Rate your satisfaction in each area from 1 (low) to 10 (thriving)
+            <p className="text-[#6B7B6E] max-w-lg mx-auto">
+              Rate your satisfaction in each area from 1 (needs attention) to 10 (thriving)
             </p>
           </motion.div>
 
@@ -150,19 +143,43 @@ export function WheelOfLife() {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.05 }}
                   >
-                    <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm overflow-hidden hover:shadow-xl transition-shadow">
-                      <div className={`h-1.5 bg-gradient-to-r ${cat.gradient}`} />
-                      <CardHeader className="pb-2">
+                    <Card className="border border-[#E8E4DE] shadow-sm bg-white rounded-2xl overflow-hidden hover:shadow-md transition-shadow">
+                      <CardHeader className="pb-2 bg-[#FDFCFA]">
                         <CardTitle className="text-lg flex items-center gap-3">
-                          <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${cat.gradient} flex items-center justify-center shadow-md`}>
-                            <span className="text-white font-bold text-sm">{scores[cat.key] || 5}</span>
+                          <div 
+                            className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
+                            style={{ backgroundColor: `${cat.color}15` }}
+                          >
+                            {cat.emoji}
                           </div>
-                          <span className="text-slate-800">{cat.label}</span>
+                          <div className="flex-1">
+                            <span className="text-[#2C3E2D] font-semibold">{cat.label}</span>
+                            <div className="flex items-center gap-2 mt-1">
+                              <div 
+                                className="h-2 rounded-full flex-1 bg-[#E8E4DE]"
+                                style={{ maxWidth: "120px" }}
+                              >
+                                <div 
+                                  className="h-full rounded-full transition-all duration-300"
+                                  style={{ 
+                                    width: `${(scores[cat.key] || 5) * 10}%`,
+                                    backgroundColor: cat.color 
+                                  }}
+                                />
+                              </div>
+                              <span 
+                                className="text-lg font-bold w-8 text-center"
+                                style={{ color: cat.color }}
+                              >
+                                {scores[cat.key] || 5}
+                              </span>
+                            </div>
+                          </div>
                         </CardTitle>
                       </CardHeader>
-                      <CardContent className="pb-5">
+                      <CardContent className="pb-5 pt-3">
                         <div className="flex items-center gap-4 mb-4">
-                          <span className="text-sm text-slate-400 font-medium w-4">1</span>
+                          <span className="text-xs text-[#8B9B8E] font-medium w-4">1</span>
                           <Slider
                             value={[scores[cat.key] || 5]}
                             onValueChange={([val]) => setScores({ ...scores, [cat.key]: val })}
@@ -172,13 +189,13 @@ export function WheelOfLife() {
                             className="flex-1"
                             data-testid={`slider-${cat.key}`}
                           />
-                          <span className="text-sm text-slate-400 font-medium w-6">10</span>
+                          <span className="text-xs text-[#8B9B8E] font-medium w-6">10</span>
                         </div>
                         <Textarea
-                          placeholder="Optional notes..."
+                          placeholder="Reflect on this area... What's going well? What needs attention?"
                           value={notes[cat.key] || ""}
                           onChange={(e) => setNotes({ ...notes, [cat.key]: e.target.value })}
-                          className="text-sm border-slate-200 focus:border-violet-400 focus:ring-violet-100 rounded-xl"
+                          className="text-sm border-[#E8E4DE] focus:border-[#7C9A8E] focus:ring-[#7C9A8E]/20 rounded-xl bg-[#FDFCFA] placeholder:text-[#B0BAB3]"
                           rows={2}
                           data-testid={`notes-${cat.key}`}
                         />
@@ -192,10 +209,14 @@ export function WheelOfLife() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.5 }}
-                className="mt-10 text-center"
+                className="mt-10"
               >
-                <h3 className="text-lg font-semibold text-slate-700 mb-4">Your Life Balance</h3>
-                <RadarChart scores={scores} categories={WHEEL_CATEGORIES} />
+                <Card className="border border-[#E8E4DE] shadow-sm bg-white rounded-2xl p-6">
+                  <h3 className="text-lg font-semibold text-[#2C3E2D] mb-4 text-center">Your Life Balance</h3>
+                  <div className="flex justify-center">
+                    <RadarChart scores={scores} categories={WHEEL_CATEGORIES} />
+                  </div>
+                </Card>
               </motion.div>
 
               <div className="flex justify-end mt-10">
@@ -203,7 +224,7 @@ export function WheelOfLife() {
                   <Button 
                     onClick={() => setStep("focus")} 
                     disabled={!allScored} 
-                    className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 shadow-lg rounded-xl px-6"
+                    className="bg-[#7C9A8E] hover:bg-[#6B8B7E] text-white shadow-sm rounded-xl px-6"
                     data-testid="button-next-focus"
                   >
                     Select Focus Areas <ArrowRight className="w-4 h-4 ml-2" />
@@ -215,20 +236,17 @@ export function WheelOfLife() {
 
           {step === "focus" && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-              <Card className="mb-8 border-0 shadow-xl bg-white/80 backdrop-blur-sm rounded-2xl overflow-hidden">
-                <div className="h-1.5 bg-gradient-to-r from-violet-500 via-purple-500 to-fuchsia-500" />
-                <CardHeader>
-                  <CardTitle className="text-xl">
-                    <span className="bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">
-                      Choose Your Focus Areas
-                    </span>
+              <Card className="mb-8 border border-[#E8E4DE] shadow-sm bg-white rounded-2xl overflow-hidden">
+                <CardHeader className="bg-[#FDFCFA] border-b border-[#E8E4DE]">
+                  <CardTitle className="text-xl text-[#2C3E2D]">
+                    Choose Your Focus Areas
                   </CardTitle>
-                  <p className="text-slate-500 mt-1">
+                  <p className="text-[#6B7B6E] mt-1">
                     Select up to 3 areas to prioritize this season. 
-                    <span className="text-amber-600 font-medium"> Your lowest-scoring areas are highlighted.</span>
+                    <span className="text-[#C17767] font-medium"> Your lowest-scoring areas are highlighted.</span>
                   </p>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="pt-6">
                   <div className="grid md:grid-cols-2 gap-3">
                     {WHEEL_CATEGORIES.map((cat) => {
                       const isLow = lowestTwo.includes(cat.key);
@@ -236,38 +254,49 @@ export function WheelOfLife() {
                       return (
                         <motion.button
                           key={cat.key}
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
+                          whileHover={{ scale: 1.01 }}
+                          whileTap={{ scale: 0.99 }}
                           onClick={() => toggleFocus(cat.key)}
                           className={`p-4 rounded-xl border-2 text-left transition-all flex items-center gap-3 ${
                             isSelected
-                              ? "border-violet-400 bg-gradient-to-br from-violet-50 to-purple-50 shadow-md"
+                              ? "border-[#7C9A8E] bg-[#7C9A8E]/10"
                               : isLow
-                                ? "border-amber-300 bg-gradient-to-br from-amber-50 to-orange-50"
-                                : "border-slate-200 bg-white hover:border-violet-300"
+                                ? "border-[#C17767]/50 bg-[#C17767]/5"
+                                : "border-[#E8E4DE] bg-white hover:border-[#7C9A8E]/50"
                           }`}
                           data-testid={`focus-${cat.key}`}
                         >
-                          <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${cat.gradient} flex items-center justify-center shadow-md`}>
+                          <div 
+                            className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
+                            style={{ backgroundColor: isSelected ? `${cat.color}20` : `${cat.color}10` }}
+                          >
                             {isSelected ? (
-                              <Check className="w-5 h-5 text-white" />
+                              <Check className="w-6 h-6" style={{ color: cat.color }} />
                             ) : (
-                              <span className="text-white font-bold text-sm">{scores[cat.key] || 5}</span>
+                              cat.emoji
                             )}
                           </div>
-                          <div>
-                            <span className="font-semibold text-slate-700">{cat.label}</span>
-                            {isLow && !isSelected && (
-                              <span className="block text-xs text-amber-600 font-medium">Needs attention</span>
-                            )}
+                          <div className="flex-1">
+                            <span className="font-semibold text-[#2C3E2D]">{cat.label}</span>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <span className="text-sm font-medium" style={{ color: cat.color }}>
+                                Score: {scores[cat.key] || 5}/10
+                              </span>
+                              {isLow && !isSelected && (
+                                <span className="text-xs text-[#C17767] font-medium bg-[#C17767]/10 px-2 py-0.5 rounded-full">
+                                  Needs attention
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </motion.button>
                       );
                     })}
                   </div>
-                  <p className="text-center text-sm text-slate-500 mt-6">
-                    Selected: <span className="font-semibold text-violet-600">{selectedFocus.length}/3</span>
-                  </p>
+                  <div className="text-center mt-6 py-3 bg-[#FDFCFA] rounded-xl border border-[#E8E4DE]">
+                    <span className="text-[#6B7B6E]">Selected: </span>
+                    <span className="font-bold text-[#7C9A8E]">{selectedFocus.length}/3</span>
+                  </div>
                 </CardContent>
               </Card>
 
@@ -275,7 +304,7 @@ export function WheelOfLife() {
                 <Button 
                   variant="ghost" 
                   onClick={() => setStep("assess")}
-                  className="hover:bg-violet-100"
+                  className="text-[#5A5A5A] hover:bg-[#E8E4DE]"
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" /> Back
                 </Button>
@@ -283,7 +312,7 @@ export function WheelOfLife() {
                   <Button
                     onClick={() => saveWheel.mutate()}
                     disabled={selectedFocus.length === 0 || saveWheel.isPending}
-                    className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 shadow-lg rounded-xl px-6"
+                    className="bg-[#7C9A8E] hover:bg-[#6B8B7E] text-white shadow-sm rounded-xl px-6"
                     data-testid="button-save-wheel"
                   >
                     {saveWheel.isPending ? "Saving..." : "Continue to Values"} <ArrowRight className="w-4 h-4 ml-2" />
@@ -302,7 +331,7 @@ export function WheelOfLife() {
 function RadarChart({ scores, categories }: { scores: Record<string, number>; categories: typeof WHEEL_CATEGORIES }) {
   const centerX = 150;
   const centerY = 150;
-  const maxRadius = 120;
+  const maxRadius = 110;
   const numPoints = categories.length;
 
   const getPoint = (index: number, value: number) => {
@@ -319,66 +348,63 @@ function RadarChart({ scores, categories }: { scores: Record<string, number>; ca
   const pathD = dataPoints.map((p, i) => (i === 0 ? `M ${p.x} ${p.y}` : `L ${p.x} ${p.y}`)).join(" ") + " Z";
 
   return (
-    <div className="inline-block p-6 bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl">
-      <svg width="300" height="300" viewBox="0 0 300 300">
-        <defs>
-          <linearGradient id="chartGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.4" />
-            <stop offset="100%" stopColor="#d946ef" stopOpacity="0.4" />
-          </linearGradient>
-        </defs>
-        
-        {gridLevels.map((level) => {
-          const points = categories.map((_, i) => getPoint(i, level));
-          const d = points.map((p, i) => (i === 0 ? `M ${p.x} ${p.y}` : `L ${p.x} ${p.y}`)).join(" ") + " Z";
-          return <path key={level} d={d} fill="none" stroke="#e2e8f0" strokeWidth="1" />;
-        })}
+    <svg width="300" height="300" viewBox="0 0 300 300">
+      <defs>
+        <linearGradient id="sageGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#7C9A8E" stopOpacity="0.3" />
+          <stop offset="100%" stopColor="#4A7C7C" stopOpacity="0.3" />
+        </linearGradient>
+      </defs>
+      
+      {gridLevels.map((level) => {
+        const points = categories.map((_, i) => getPoint(i, level));
+        const d = points.map((p, i) => (i === 0 ? `M ${p.x} ${p.y}` : `L ${p.x} ${p.y}`)).join(" ") + " Z";
+        return <path key={level} d={d} fill="none" stroke="#E8E4DE" strokeWidth="1" />;
+      })}
 
-        {categories.map((cat, i) => {
-          const outerPoint = getPoint(i, 10);
-          const labelPoint = getPoint(i, 12);
-          return (
-            <g key={cat.key}>
-              <line x1={centerX} y1={centerY} x2={outerPoint.x} y2={outerPoint.y} stroke="#e2e8f0" strokeWidth="1" />
-              <text
-                x={labelPoint.x}
-                y={labelPoint.y}
-                textAnchor="middle"
-                dominantBaseline="middle"
-                className="text-[10px] fill-slate-500 font-medium"
-              >
-                {cat.label.split(" ")[0]}
-              </text>
-            </g>
-          );
-        })}
+      {categories.map((cat, i) => {
+        const outerPoint = getPoint(i, 10);
+        const labelPoint = getPoint(i, 12.5);
+        return (
+          <g key={cat.key}>
+            <line x1={centerX} y1={centerY} x2={outerPoint.x} y2={outerPoint.y} stroke="#E8E4DE" strokeWidth="1" />
+            <text
+              x={labelPoint.x}
+              y={labelPoint.y}
+              textAnchor="middle"
+              dominantBaseline="middle"
+              className="text-[9px] fill-[#6B7B6E] font-medium"
+            >
+              {cat.emoji}
+            </text>
+          </g>
+        );
+      })}
 
-        <motion.path
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          d={pathD}
-          fill="url(#chartGradient)"
-          stroke="url(#chartGradient)"
-          strokeWidth="3"
+      <motion.path
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        d={pathD}
+        fill="url(#sageGradient)"
+        stroke="#7C9A8E"
+        strokeWidth="2"
+      />
+
+      {dataPoints.map((point, i) => (
+        <motion.circle
+          key={categories[i].key}
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: i * 0.05 }}
+          cx={point.x}
+          cy={point.y}
+          r="6"
+          fill={categories[i].color}
+          stroke="white"
+          strokeWidth="2"
         />
-
-        {dataPoints.map((point, i) => (
-          <motion.circle
-            key={categories[i].key}
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: i * 0.05 }}
-            cx={point.x}
-            cy={point.y}
-            r="6"
-            fill={categories[i].color}
-            stroke="white"
-            strokeWidth="2"
-            className="drop-shadow-md"
-          />
-        ))}
-      </svg>
-    </div>
+      ))}
+    </svg>
   );
 }
 

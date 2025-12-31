@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { ArrowLeft, Plus, Flame, Check, X, Trash2, Zap, Award, TrendingUp } from "lucide-react";
+import { ArrowLeft, Plus, Flame, Check, Trash2, Zap, TrendingUp, Calendar } from "lucide-react";
 
 const getLast7Days = () => {
   const days = [];
@@ -31,6 +31,10 @@ const getDayLabel = (dateStr: string) => {
   if (dateStr === today.toISOString().split("T")[0]) return "Today";
   if (dateStr === yesterday.toISOString().split("T")[0]) return "Yest";
   return date.toLocaleDateString("en-US", { weekday: "short" }).slice(0, 3);
+};
+
+const getDayNumber = (dateStr: string) => {
+  return new Date(dateStr).getDate();
 };
 
 export function VisionHabits() {
@@ -87,11 +91,11 @@ export function VisionHabits() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 via-white to-amber-50">
+      <div className="min-h-screen flex items-center justify-center bg-[#FAF8F5]">
         <motion.div 
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          className="w-12 h-12 rounded-full border-4 border-orange-200 border-t-orange-600"
+          className="w-12 h-12 rounded-full border-4 border-[#E8E4DE] border-t-[#D4A574]"
         />
       </div>
     );
@@ -100,17 +104,12 @@ export function VisionHabits() {
   return (
     <>
       <Navbar />
-      <main className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50 py-8 px-4 relative overflow-hidden">
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-orange-300/20 to-amber-300/20 rounded-full blur-3xl" />
-          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-yellow-300/20 to-orange-300/20 rounded-full blur-3xl" />
-        </div>
-        
-        <div className="max-w-4xl mx-auto relative z-10">
+      <main className="min-h-screen bg-[#FAF8F5] py-8 px-4">
+        <div className="max-w-4xl mx-auto">
           <Button 
             variant="ghost" 
             onClick={() => navigate(`/vision`)} 
-            className="mb-4 hover:bg-orange-100" 
+            className="mb-4 text-[#5A5A5A] hover:bg-[#E8E4DE]" 
             data-testid="button-back-dashboard"
           >
             <ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard
@@ -122,54 +121,52 @@ export function VisionHabits() {
             className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4"
           >
             <div>
-              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white px-3 py-1.5 rounded-full mb-3 shadow-md text-xs">
-                <Flame className="w-3 h-3" />
-                <span className="font-semibold">Stage 4: Practice</span>
+              <div className="inline-flex items-center gap-2 bg-[#D4A574] text-white px-4 py-2 rounded-full mb-3">
+                <Flame className="w-4 h-4" />
+                <span className="text-sm font-medium">Stage 4: Practice</span>
               </div>
-              <h1 className="text-2xl md:text-3xl font-bold">
-                <span className="bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
-                  Habit Tracker
-                </span>
+              <h1 className="text-3xl md:text-4xl font-display font-bold text-[#2C3E2D]">
+                Habit Tracker
               </h1>
-              <p className="text-sm text-slate-600 mt-1">Build daily habits that support your goals</p>
+              <p className="text-[#6B7B6E] mt-2">Build daily habits that support your goals</p>
             </div>
             
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                   <Button 
-                    className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 shadow-lg rounded-xl"
+                    className="bg-[#D4A574] hover:bg-[#C49464] text-white rounded-xl"
                     data-testid="button-add-habit"
                   >
                     <Plus className="w-4 h-4 mr-2" /> Add Habit
                   </Button>
                 </motion.div>
               </DialogTrigger>
-              <DialogContent className="rounded-2xl border-0 shadow-2xl">
+              <DialogContent className="bg-[#FAF8F5] border-[#E8E4DE]">
                 <DialogHeader>
-                  <DialogTitle className="text-xl bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
+                  <DialogTitle className="text-xl text-[#2C3E2D]">
                     Create New Habit
                   </DialogTitle>
                 </DialogHeader>
                 <div className="space-y-5 mt-4">
                   <div>
-                    <Label htmlFor="habitTitle" className="text-slate-600 font-medium">Habit Name</Label>
+                    <Label htmlFor="habitTitle" className="text-[#2C3E2D] font-medium">Habit Name</Label>
                     <Input
                       id="habitTitle"
                       value={habitForm.title}
                       onChange={(e) => setHabitForm({ ...habitForm, title: e.target.value })}
                       placeholder="e.g., Morning meditation"
-                      className="mt-2 rounded-xl border-slate-200 focus:border-orange-400 focus:ring-orange-100"
+                      className="mt-2 border-[#E8E4DE] focus:border-[#D4A574] bg-white"
                       data-testid="input-habit-title"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="frequency" className="text-slate-600 font-medium">Frequency</Label>
+                    <Label htmlFor="frequency" className="text-[#2C3E2D] font-medium">Frequency</Label>
                     <Select
                       value={habitForm.frequency}
                       onValueChange={(value) => setHabitForm({ ...habitForm, frequency: value })}
                     >
-                      <SelectTrigger className="mt-2 rounded-xl border-slate-200" data-testid="select-frequency">
+                      <SelectTrigger className="mt-2 border-[#E8E4DE] bg-white" data-testid="select-frequency">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -180,7 +177,7 @@ export function VisionHabits() {
                   </div>
                   {habitForm.frequency === "weekly" && (
                     <div>
-                      <Label htmlFor="targetPerWeek" className="text-slate-600 font-medium">Times per week</Label>
+                      <Label htmlFor="targetPerWeek" className="text-[#2C3E2D] font-medium">Times per week</Label>
                       <Input
                         id="targetPerWeek"
                         type="number"
@@ -188,7 +185,7 @@ export function VisionHabits() {
                         max={7}
                         value={habitForm.targetPerWeek}
                         onChange={(e) => setHabitForm({ ...habitForm, targetPerWeek: parseInt(e.target.value) })}
-                        className="mt-2 rounded-xl border-slate-200"
+                        className="mt-2 border-[#E8E4DE] bg-white"
                         data-testid="input-target-per-week"
                       />
                     </div>
@@ -196,7 +193,7 @@ export function VisionHabits() {
                   <Button
                     onClick={() => createHabit.mutate()}
                     disabled={!habitForm.title || createHabit.isPending}
-                    className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 rounded-xl shadow-lg"
+                    className="w-full bg-[#D4A574] hover:bg-[#C49464] text-white rounded-xl"
                     data-testid="button-save-habit"
                   >
                     {createHabit.isPending ? "Creating..." : "Create Habit"}
@@ -211,19 +208,19 @@ export function VisionHabits() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
             >
-              <Card className="text-center py-16 border-0 shadow-xl bg-white/80 backdrop-blur-sm rounded-2xl">
+              <Card className="text-center py-16 border border-[#E8E4DE] bg-white rounded-2xl">
                 <CardContent>
-                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-orange-100 to-amber-100 mx-auto mb-6 flex items-center justify-center">
-                    <Flame className="w-10 h-10 text-orange-400" />
+                  <div className="w-20 h-20 rounded-2xl bg-[#D4A574]/10 mx-auto mb-6 flex items-center justify-center">
+                    <Flame className="w-10 h-10 text-[#D4A574]" />
                   </div>
-                  <h3 className="text-xl font-bold text-slate-700 mb-2">No habits yet</h3>
-                  <p className="text-slate-500 mb-6 max-w-sm mx-auto">
+                  <h3 className="text-xl font-bold text-[#2C3E2D] mb-2">No habits yet</h3>
+                  <p className="text-[#6B7B6E] mb-6 max-w-sm mx-auto">
                     Add habits to track your daily progress and build momentum
                   </p>
                   <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                     <Button 
                       onClick={() => setIsDialogOpen(true)}
-                      className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 rounded-xl shadow-lg"
+                      className="bg-[#D4A574] hover:bg-[#C49464] text-white rounded-xl"
                     >
                       <Plus className="w-4 h-4 mr-2" /> Create Your First Habit
                     </Button>
@@ -234,7 +231,7 @@ export function VisionHabits() {
           )}
 
           <AnimatePresence>
-            <div className="grid gap-4">
+            <div className="space-y-4">
               {habits?.map((habit: any, i: number) => (
                 <HabitCard 
                   key={habit.id} 
@@ -280,7 +277,7 @@ function HabitCard({
 
   const toggleLog = useMutation({
     mutationFn: async ({ date, completed }: { date: string; completed: boolean }) => {
-      const res = await fetch(`/api/vision/habits/${habit.id}/logs`, {
+      const res = await fetch(`/api/vision/habits/${habit.id}/log`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -305,17 +302,16 @@ function HabitCard({
       exit={{ opacity: 0, x: -100 }}
       transition={{ delay: index * 0.05 }}
     >
-      <Card className="border-0 shadow-xl bg-white/80 backdrop-blur-sm rounded-2xl overflow-hidden hover:shadow-2xl transition-shadow">
-        <div className="h-1.5 bg-gradient-to-r from-orange-500 to-amber-500" />
-        <CardContent className="pt-5">
-          <div className="flex items-start justify-between mb-4">
+      <Card className="border border-[#E8E4DE] bg-white rounded-2xl overflow-hidden hover:shadow-md transition-shadow">
+        <CardContent className="p-0">
+          <div className="flex items-center justify-between p-4 bg-[#FDFCFA] border-b border-[#E8E4DE]">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center shadow-lg">
-                <Flame className="w-6 h-6 text-white" />
+              <div className="w-10 h-10 rounded-xl bg-[#D4A574] flex items-center justify-center">
+                <Flame className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h3 className="font-bold text-lg text-slate-800">{habit.title}</h3>
-                <p className="text-sm text-slate-500 capitalize">{habit.frequency}</p>
+                <h3 className="font-bold text-[#2C3E2D]">{habit.title}</h3>
+                <p className="text-xs text-[#6B7B6E] capitalize">{habit.frequency}</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -323,17 +319,17 @@ function HabitCard({
                 <motion.div 
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
-                  className="flex items-center gap-1.5 bg-gradient-to-r from-amber-400 to-orange-500 text-white px-3 py-1.5 rounded-full shadow-md"
+                  className="flex items-center gap-1.5 bg-[#D4A574] text-white px-3 py-1.5 rounded-full text-sm"
                 >
-                  <Zap className="w-4 h-4" />
-                  <span className="font-bold text-sm">{streak} day streak</span>
+                  <Zap className="w-3 h-3" />
+                  <span className="font-bold">{streak} day streak</span>
                 </motion.div>
               )}
               <Button 
                 variant="ghost" 
                 size="sm" 
                 onClick={onDelete}
-                className="text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl"
+                className="text-[#8B9B8E] hover:text-[#C17767] hover:bg-[#C17767]/10 rounded-lg"
                 data-testid={`button-delete-habit-${habit.id}`}
               >
                 <Trash2 className="w-4 h-4" />
@@ -341,49 +337,55 @@ function HabitCard({
             </div>
           </div>
 
-          <div className="flex items-center justify-between bg-slate-50 rounded-2xl p-4">
-            {last7Days.map((date) => {
-              const isCompleted = logMap.get(date);
-              const isToday = date === new Date().toISOString().split("T")[0];
-              return (
-                <motion.button
-                  key={date}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => toggleLog.mutate({ date, completed: !isCompleted })}
-                  className={`flex flex-col items-center gap-1.5 transition-all ${isToday ? "scale-110" : ""}`}
-                  data-testid={`habit-${habit.id}-day-${date}`}
-                >
-                  <span className={`text-xs font-medium ${isToday ? "text-orange-600" : "text-slate-400"}`}>
-                    {getDayLabel(date)}
-                  </span>
-                  <div
-                    className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all shadow-sm ${
-                      isCompleted
-                        ? "bg-gradient-to-br from-emerald-400 to-green-500 text-white shadow-md"
-                        : isToday
-                          ? "bg-gradient-to-br from-orange-100 to-amber-100 text-orange-400 ring-2 ring-orange-300"
-                          : "bg-white text-slate-300 border border-slate-200"
-                    }`}
+          <div className="p-4">
+            <div className="grid grid-cols-7 gap-2">
+              {last7Days.map((date) => {
+                const isCompleted = logMap.get(date);
+                const isToday = date === new Date().toISOString().split("T")[0];
+                return (
+                  <motion.button
+                    key={date}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => toggleLog.mutate({ date, completed: !isCompleted })}
+                    className="flex flex-col items-center gap-1"
+                    data-testid={`habit-${habit.id}-day-${date}`}
                   >
-                    {isCompleted ? <Check className="w-5 h-5" /> : <X className="w-4 h-4" />}
-                  </div>
-                </motion.button>
-              );
-            })}
-          </div>
-
-          <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-100">
-            <div className="flex items-center gap-2 text-sm text-slate-500">
-              <TrendingUp className="w-4 h-4" />
-              <span>{completedCount}/7 this week</span>
+                    <span className={`text-xs font-medium ${isToday ? "text-[#D4A574]" : "text-[#8B9B8E]"}`}>
+                      {getDayLabel(date)}
+                    </span>
+                    <div
+                      className={`w-10 h-10 rounded-xl flex items-center justify-center font-medium transition-all ${
+                        isCompleted
+                          ? "bg-[#5B8C5A] text-white"
+                          : isToday
+                            ? "bg-[#D4A574]/10 text-[#D4A574] border-2 border-[#D4A574]"
+                            : "bg-[#F5F3EF] text-[#8B9B8E] border border-[#E8E4DE]"
+                      }`}
+                    >
+                      {isCompleted ? (
+                        <Check className="w-5 h-5" />
+                      ) : (
+                        <span className="text-sm">{getDayNumber(date)}</span>
+                      )}
+                    </div>
+                  </motion.button>
+                );
+              })}
             </div>
-            <div className="w-32 h-2 bg-slate-100 rounded-full overflow-hidden">
-              <motion.div 
-                initial={{ width: 0 }}
-                animate={{ width: `${(completedCount / 7) * 100}%` }}
-                className="h-full bg-gradient-to-r from-orange-500 to-amber-500 rounded-full"
-              />
+
+            <div className="flex items-center justify-between mt-4 pt-4 border-t border-[#E8E4DE]">
+              <div className="flex items-center gap-2 text-sm text-[#6B7B6E]">
+                <TrendingUp className="w-4 h-4" />
+                <span>{completedCount}/7 this week</span>
+              </div>
+              <div className="w-32 h-2 bg-[#E8E4DE] rounded-full overflow-hidden">
+                <motion.div 
+                  initial={{ width: 0 }}
+                  animate={{ width: `${(completedCount / 7) * 100}%` }}
+                  className="h-full bg-[#5B8C5A] rounded-full"
+                />
+              </div>
             </div>
           </div>
         </CardContent>

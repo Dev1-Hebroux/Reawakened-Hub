@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, ArrowRight, Calendar, Target, Plus, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Calendar, Target, Plus, X, Clock, Users } from "lucide-react";
 
 export function VisionPlan() {
   const { sessionId } = useParams();
@@ -85,11 +85,11 @@ export function VisionPlan() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 via-white to-amber-50">
+      <div className="min-h-screen flex items-center justify-center bg-[#FAF8F5]">
         <motion.div 
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          className="w-12 h-12 rounded-full border-4 border-orange-200 border-t-orange-600"
+          className="w-12 h-12 rounded-full border-4 border-[#E8E4DE] border-t-[#6B8E8E]"
         />
       </div>
     );
@@ -98,17 +98,12 @@ export function VisionPlan() {
   return (
     <>
       <Navbar />
-      <main className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50 py-8 px-4 relative overflow-hidden">
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-orange-300/20 to-amber-300/20 rounded-full blur-3xl" />
-          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-yellow-300/20 to-orange-300/20 rounded-full blur-3xl" />
-        </div>
-        
-        <div className="max-w-4xl mx-auto relative z-10">
+      <main className="min-h-screen bg-[#FAF8F5] py-8 px-4">
+        <div className="max-w-4xl mx-auto">
           <Button 
             variant="ghost" 
             onClick={() => navigate(`/vision`)} 
-            className="mb-4 hover:bg-orange-100" 
+            className="mb-4 text-[#5A5A5A] hover:bg-[#E8E4DE]" 
             data-testid="button-back-dashboard"
           >
             <ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard
@@ -119,30 +114,28 @@ export function VisionPlan() {
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-10"
           >
-            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white px-4 py-2 rounded-full mb-4 shadow-lg">
+            <div className="inline-flex items-center gap-2 bg-[#6B8E8E] text-white px-4 py-2 rounded-full mb-4">
               <Calendar className="w-4 h-4" />
-              <span className="text-sm font-semibold">Stage 4: Practice</span>
+              <span className="text-sm font-medium">Stage 4: Practice</span>
             </div>
-            <h1 className="text-4xl font-display font-bold mb-3">
-              <span className="bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
-                90-Day Plan
-              </span>
+            <h1 className="text-3xl md:text-4xl font-display font-bold mb-3 text-[#2C3E2D]">
+              90-Day Plan
             </h1>
-            <p className="text-slate-600 max-w-lg mx-auto">
+            <p className="text-[#6B7B6E] max-w-lg mx-auto">
               Break down your vision into actionable steps for the next 90 days
             </p>
           </motion.div>
 
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Target className="w-5 h-5 text-accent" />
+            <Card className="border border-[#E8E4DE] bg-white rounded-2xl overflow-hidden">
+              <CardHeader className="bg-[#7C9A8E]/10 border-b border-[#E8E4DE]">
+                <CardTitle className="flex items-center gap-2 text-[#2C3E2D]">
+                  <Target className="w-5 h-5 text-[#7C9A8E]" />
                   #1 Focus Outcome
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground mb-3">
+              <CardContent className="pt-6">
+                <p className="text-sm text-[#6B7B6E] mb-4 italic">
                   If you could only achieve ONE thing in the next 90 days, what would have the biggest impact?
                 </p>
                 <Textarea
@@ -150,29 +143,31 @@ export function VisionPlan() {
                   onChange={(e) => setPlan({ ...plan, focusOutcome: e.target.value })}
                   placeholder="By the end of 90 days, I will have..."
                   rows={3}
+                  className="border-[#E8E4DE] focus:border-[#7C9A8E] bg-[#FDFCFA]"
                   data-testid="input-focus-outcome"
                 />
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>3 Key Results</CardTitle>
+            <Card className="border border-[#E8E4DE] bg-white rounded-2xl overflow-hidden">
+              <CardHeader className="bg-[#4A7C7C]/10 border-b border-[#E8E4DE]">
+                <CardTitle className="text-[#2C3E2D]">3 Key Results</CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground mb-3">
+              <CardContent className="pt-6">
+                <p className="text-sm text-[#6B7B6E] mb-4 italic">
                   What 3 measurable outcomes will prove you've achieved your focus?
                 </p>
                 <div className="space-y-3">
                   {plan.keyResults.map((result, i) => (
-                    <div key={i} className="flex items-center gap-2">
-                      <span className="w-6 h-6 rounded-full bg-accent/20 flex items-center justify-center text-sm font-medium text-accent">
+                    <div key={i} className="flex items-center gap-3">
+                      <span className="w-8 h-8 rounded-lg bg-[#4A7C7C] flex items-center justify-center text-sm font-bold text-white">
                         {i + 1}
                       </span>
                       <Input
                         value={result}
                         onChange={(e) => updateKeyResult(i, e.target.value)}
                         placeholder={`Key result ${i + 1}...`}
+                        className="border-[#E8E4DE] focus:border-[#4A7C7C] bg-[#FDFCFA]"
                         data-testid={`input-key-result-${i}`}
                       />
                     </div>
@@ -181,15 +176,15 @@ export function VisionPlan() {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="w-5 h-5 text-[hsl(var(--color-warning))]" />
+            <Card className="border border-[#E8E4DE] bg-white rounded-2xl overflow-hidden">
+              <CardHeader className="bg-[#D4A574]/10 border-b border-[#E8E4DE]">
+                <CardTitle className="flex items-center gap-2 text-[#2C3E2D]">
+                  <Calendar className="w-5 h-5 text-[#D4A574]" />
                   Weekly Anchors
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground mb-3">
+              <CardContent className="pt-6">
+                <p className="text-sm text-[#6B7B6E] mb-4 italic">
                   What repeatable actions will you do every week?
                 </p>
                 <div className="space-y-2">
@@ -199,30 +194,44 @@ export function VisionPlan() {
                         value={anchor}
                         onChange={(e) => updateWeeklyAnchor(i, e.target.value)}
                         placeholder="e.g., Review goals every Sunday"
+                        className="border-[#E8E4DE] focus:border-[#D4A574] bg-[#FDFCFA]"
                         data-testid={`input-weekly-anchor-${i}`}
                       />
                       {plan.weeklyAnchors.length > 1 && (
-                        <Button variant="ghost" size="sm" onClick={() => removeWeeklyAnchor(i)}>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => removeWeeklyAnchor(i)}
+                          className="text-[#8B9B8E] hover:text-[#C17767] hover:bg-[#C17767]/10"
+                        >
                           <X className="w-4 h-4" />
                         </Button>
                       )}
                     </div>
                   ))}
-                  <Button variant="outline" size="sm" onClick={addWeeklyAnchor}>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={addWeeklyAnchor}
+                    className="border-[#D4A574] text-[#D4A574] hover:bg-[#D4A574]/10"
+                  >
                     <Plus className="w-4 h-4 mr-1" /> Add Anchor
                   </Button>
                 </div>
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Schedule Anchors</CardTitle>
+            <Card className="border border-[#E8E4DE] bg-white rounded-2xl overflow-hidden">
+              <CardHeader className="bg-[#6B8E8E]/10 border-b border-[#E8E4DE]">
+                <CardTitle className="flex items-center gap-2 text-[#2C3E2D]">
+                  <Clock className="w-5 h-5 text-[#6B8E8E]" />
+                  Schedule Anchors
+                </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-6">
                 <div className="grid md:grid-cols-3 gap-4">
-                  <div>
-                    <Label htmlFor="planningDay">Weekly Planning Day</Label>
+                  <div className="bg-[#FDFCFA] p-4 rounded-xl border border-[#E8E4DE]">
+                    <Label htmlFor="planningDay" className="text-[#2C3E2D] font-medium">Weekly Planning Day</Label>
                     <Input
                       id="planningDay"
                       value={plan.scheduleAnchors.planningDay}
@@ -233,11 +242,12 @@ export function VisionPlan() {
                         })
                       }
                       placeholder="e.g., Sunday evening"
+                      className="mt-2 border-[#E8E4DE] focus:border-[#6B8E8E] bg-white"
                       data-testid="input-planning-day"
                     />
                   </div>
-                  <div>
-                    <Label htmlFor="deepWork">Deep Work Time</Label>
+                  <div className="bg-[#FDFCFA] p-4 rounded-xl border border-[#E8E4DE]">
+                    <Label htmlFor="deepWork" className="text-[#2C3E2D] font-medium">Deep Work Time</Label>
                     <Input
                       id="deepWork"
                       value={plan.scheduleAnchors.deepWorkTime}
@@ -248,11 +258,12 @@ export function VisionPlan() {
                         })
                       }
                       placeholder="e.g., 6-8am daily"
+                      className="mt-2 border-[#E8E4DE] focus:border-[#6B8E8E] bg-white"
                       data-testid="input-deep-work"
                     />
                   </div>
-                  <div>
-                    <Label htmlFor="reviewDay">Weekly Review Day</Label>
+                  <div className="bg-[#FDFCFA] p-4 rounded-xl border border-[#E8E4DE]">
+                    <Label htmlFor="reviewDay" className="text-[#2C3E2D] font-medium">Weekly Review Day</Label>
                     <Input
                       id="reviewDay"
                       value={plan.scheduleAnchors.reviewDay}
@@ -263,6 +274,7 @@ export function VisionPlan() {
                         })
                       }
                       placeholder="e.g., Friday afternoon"
+                      className="mt-2 border-[#E8E4DE] focus:border-[#6B8E8E] bg-white"
                       data-testid="input-review-day"
                     />
                   </div>
@@ -270,30 +282,35 @@ export function VisionPlan() {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Accountability & Obstacles</CardTitle>
+            <Card className="border border-[#E8E4DE] bg-white rounded-2xl overflow-hidden">
+              <CardHeader className="bg-[#5B8C5A]/10 border-b border-[#E8E4DE]">
+                <CardTitle className="flex items-center gap-2 text-[#2C3E2D]">
+                  <Users className="w-5 h-5 text-[#5B8C5A]" />
+                  Accountability & Obstacles
+                </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="pt-6 space-y-4">
                 <div>
-                  <Label htmlFor="accountability">Who will hold me accountable?</Label>
+                  <Label htmlFor="accountability" className="text-[#2C3E2D] font-medium">Who will hold me accountable?</Label>
                   <Textarea
                     id="accountability"
                     value={plan.accountabilityPlan}
                     onChange={(e) => setPlan({ ...plan, accountabilityPlan: e.target.value })}
                     placeholder="e.g., Weekly check-in with my mentor..."
                     rows={2}
+                    className="mt-2 border-[#E8E4DE] focus:border-[#5B8C5A] bg-[#FDFCFA]"
                     data-testid="input-accountability"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="stuck">If I get stuck, I will...</Label>
+                  <Label htmlFor="stuck" className="text-[#2C3E2D] font-medium">If I get stuck, I will...</Label>
                   <Textarea
                     id="stuck"
                     value={plan.stuckPlan}
                     onChange={(e) => setPlan({ ...plan, stuckPlan: e.target.value })}
                     placeholder="e.g., Reach out to my accountability partner..."
                     rows={2}
+                    className="mt-2 border-[#E8E4DE] focus:border-[#5B8C5A] bg-[#FDFCFA]"
                     data-testid="input-stuck-plan"
                   />
                 </div>
@@ -304,29 +321,27 @@ export function VisionPlan() {
               <Button 
                 variant="ghost" 
                 onClick={() => navigate(`/vision/${sessionId}/goals`)}
-                className="hover:bg-orange-100"
+                className="text-[#5A5A5A] hover:bg-[#E8E4DE]"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" /> Goals
               </Button>
-              <div className="flex gap-2">
+              <div className="flex gap-3">
                 <Button
                   variant="outline"
                   onClick={() => savePlan.mutate()}
                   disabled={savePlan.isPending}
-                  className="border-orange-300 hover:bg-orange-50"
+                  className="border-[#7C9A8E] text-[#7C9A8E] hover:bg-[#7C9A8E]/10"
                   data-testid="button-save-plan"
                 >
                   {savePlan.isPending ? "Saving..." : "Save Plan"}
                 </Button>
-                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <Button 
-                    onClick={() => navigate(`/vision/${sessionId}/habits`)} 
-                    className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 shadow-lg"
-                    data-testid="button-to-habits"
-                  >
-                    Habits <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
-                </motion.div>
+                <Button 
+                  onClick={() => navigate(`/vision/${sessionId}/habits`)} 
+                  className="bg-[#7C9A8E] hover:bg-[#6B8B7E] text-white rounded-xl"
+                  data-testid="button-to-habits"
+                >
+                  Habits <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
               </div>
             </div>
           </motion.div>
