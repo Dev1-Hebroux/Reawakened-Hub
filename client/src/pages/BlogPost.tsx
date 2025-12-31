@@ -6,7 +6,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import type { BlogPost } from "@shared/schema";
 
-import defaultImg from "@assets/generated_images/open_bible_on_a_cafe_table_with_coffee.png";
+const defaultImg = "https://images.unsplash.com/photo-1504052434569-70ad5836ab65?auto=format&fit=crop&q=80&w=800";
 
 function formatDate(date: Date | string | null) {
   if (!date) return "";

@@ -3,11 +3,11 @@ import { ArrowRight, X, Mail, Loader2, CheckCircle2 } from "lucide-react";
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
-import img1 from "@assets/generated_images/group_of_friends_hiking_a_mountain_trail.png";
-import img2 from "@assets/generated_images/young_people_at_a_coffee_shop_bible_study.png";
-import img3 from "@assets/generated_images/outdoor_acoustic_worship_session.png";
-import img4 from "@assets/generated_images/volunteers_packing_food_boxes.png";
-import img5 from "@assets/generated_images/urban_street_portrait_of_stylish_youth.png";
+const img1 = "https://images.unsplash.com/photo-1551632811-561732d1e306?auto=format&fit=crop&q=80&w=400";
+const img2 = "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&q=80&w=400";
+const img3 = "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?auto=format&fit=crop&q=80&w=400";
+const img4 = "https://images.unsplash.com/photo-1593113598332-cd288d649433?auto=format&fit=crop&q=80&w=400";
+const img5 = "https://images.unsplash.com/photo-1523580494863-6f3031224c94?auto=format&fit=crop&q=80&w=400";
 
 // Duplicate images to create a seamless loop
 const images = [img1, img2, img3, img4, img5, img1, img2, img3, img4, img5];

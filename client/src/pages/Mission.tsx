@@ -20,11 +20,11 @@ import { PrayerRequestModal, TestimonyModal, VolunteerModal, MissionTripModal } 
 import { COMMUNITY_LINKS } from "@/lib/config";
 import type { Event, EventRegistration, Testimony } from "@shared/schema";
 
-import heroBg from "@assets/generated_images/global_mission_map_concept.png";
-import outreachImg from "@assets/generated_images/youth_outreach_event.png";
-import hubImg from "@assets/generated_images/modern_tech_innovation_hub.png";
-import trainingImg from "@assets/generated_images/mentorship_and_training_workshop.png";
-import apiImg from "@assets/generated_images/digital_api_connectivity_abstract.png";
+const heroBg = "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=1200";
+const outreachImg = "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&q=80&w=600";
+const hubImg = "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&q=80&w=600";
+const trainingImg = "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&q=80&w=600";
+const apiImg = "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&q=80&w=600";
 
 const defaultEventImages = [outreachImg, hubImg, trainingImg];
 
