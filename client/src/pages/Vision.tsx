@@ -189,199 +189,141 @@ export function VisionPage() {
         </motion.div>
       </section>
 
-      {/* Stats Bar */}
-      <section className="bg-white relative z-20 -mt-16 max-w-5xl mx-4 md:mx-auto rounded-2xl shadow-2xl p-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+      {/* Compact Stats Bar */}
+      <section className="bg-white relative z-20 -mt-12 max-w-md md:max-w-2xl mx-4 md:mx-auto rounded-2xl shadow-xl p-4 md:p-6">
+        <div className="grid grid-cols-2 gap-4">
           {stats.map((stat, i) => (
-            <motion.div 
-              key={i} 
-              className="text-center"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-            >
-              <div className="flex justify-center mb-3">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500/10 to-purple-500/10 flex items-center justify-center">
-                  <stat.icon className="w-6 h-6 text-violet-600" />
+            <div key={i} className="text-center py-2">
+              <div className="flex justify-center mb-2">
+                <div className="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center">
+                  <stat.icon className="w-5 h-5 text-violet-600" />
                 </div>
               </div>
-              <div className="text-3xl md:text-4xl font-display font-bold text-gray-900 mb-1">{stat.value}</div>
-              <div className="text-sm text-gray-500 font-medium">{stat.label}</div>
-            </motion.div>
+              <div className="text-2xl md:text-3xl font-bold text-gray-900">{stat.value}</div>
+              <div className="text-xs text-gray-500">{stat.label}</div>
+            </div>
           ))}
         </div>
       </section>
 
-      {/* Interactive Journey Roadmap */}
-      <section className="py-24 px-4 bg-gradient-to-b from-white to-gray-50">
-        <div className="max-w-6xl mx-auto">
-          <motion.div 
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <div className="inline-flex items-center gap-2 bg-violet-100 text-violet-600 px-4 py-2 rounded-full text-sm font-bold mb-6">
-              <Target className="h-4 w-4" /> Your Path to Purpose
+      {/* Compact Journey Roadmap */}
+      <section className="py-12 md:py-16 px-4 bg-gradient-to-b from-white to-gray-50">
+        <div className="max-w-lg mx-auto">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center gap-2 bg-violet-100 text-violet-600 px-3 py-1.5 rounded-full text-xs font-bold mb-4">
+              <Target className="h-3 w-3" /> Your Path to Purpose
             </div>
-            <h2 className="text-4xl md:text-5xl font-display font-bold text-gray-900 mb-4">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
               The 5-Stage Vision Pathway
             </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            <p className="text-sm text-gray-600">
               A proven framework that transforms dreams into daily action
             </p>
-          </motion.div>
+          </div>
           
-          {/* Visual Journey Path */}
-          <div className="relative">
-            {/* Connecting line */}
-            <div className="hidden lg:block absolute top-1/2 left-0 right-0 h-2 bg-gradient-to-r from-violet-200 via-emerald-200 via-orange-200 to-pink-200 -translate-y-1/2 rounded-full" />
-            
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-6 lg:gap-4">
-              {STAGES.map((stage, i) => {
-                const colors = STAGE_COLORS[stage.key as keyof typeof STAGE_COLORS];
-                return (
-                  <motion.div
-                    key={stage.key}
-                    initial={{ opacity: 0, y: 40 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: i * 0.15 }}
-                    className="relative z-10"
-                  >
-                    <motion.div 
-                      whileHover={{ y: -10, scale: 1.03 }}
-                      className="bg-white rounded-3xl p-6 shadow-xl hover:shadow-2xl transition-all duration-300 border border-gray-100"
-                    >
-                      <div className="flex flex-col items-center text-center">
-                        <div className="relative mb-4">
-                          <div className={`absolute -inset-3 bg-gradient-to-br ${colors.bg} rounded-2xl blur-xl opacity-30`} />
-                          <motion.div 
-                            whileHover={{ rotate: 5 }}
-                            className={`relative w-20 h-20 rounded-2xl bg-gradient-to-br ${colors.bg} flex items-center justify-center shadow-lg`}
-                          >
-                            <stage.icon className="w-10 h-10 text-white" />
-                          </motion.div>
-                        </div>
-                        <span className={`text-xs font-bold ${colors.text} mb-2`}>Stage {i + 1}</span>
-                        <h3 className="font-bold text-xl text-gray-900 mb-2">{stage.label}</h3>
-                        <p className="text-sm text-gray-500">{stage.desc}</p>
-                      </div>
-                    </motion.div>
-                  </motion.div>
-                );
-              })}
-            </div>
+          {/* Vertical Stacked Cards */}
+          <div className="space-y-4">
+            {STAGES.map((stage, i) => {
+              const colors = STAGE_COLORS[stage.key as keyof typeof STAGE_COLORS];
+              return (
+                <div
+                  key={stage.key}
+                  className="bg-white rounded-2xl p-4 shadow-md border border-gray-100"
+                >
+                  <div className="flex flex-col items-center text-center">
+                    <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${colors.bg} flex items-center justify-center shadow-md mb-3`}>
+                      <stage.icon className="w-7 h-7 text-white" />
+                    </div>
+                    <span className={`text-xs font-bold ${colors.text} mb-1`}>Stage {i + 1}</span>
+                    <h3 className="font-bold text-lg text-gray-900">{stage.label}</h3>
+                    <p className="text-xs text-gray-500">{stage.desc}</p>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* Mode Selection Cards */}
-      <section className="py-20 px-4 bg-gradient-to-br from-gray-50 to-violet-50/30">
-        <div className="max-w-5xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="text-center mb-12"
-          >
-            <h2 className="text-3xl md:text-4xl font-display font-bold text-gray-900 mb-4">
+      {/* Compact Mode Selection */}
+      <section className="py-12 px-4 bg-gradient-to-br from-gray-50 to-violet-50/30">
+        <div className="max-w-lg mx-auto">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
               Choose Your Approach
             </h2>
-            <p className="text-lg text-gray-600">
+            <p className="text-sm text-gray-600">
               Two powerful modes to suit your journey
             </p>
-          </motion.div>
-          
-          <div className="grid md:grid-cols-2 gap-8">
-            <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              whileHover={{ y: -8 }}
-              className="group cursor-pointer"
-            >
-              <div className="bg-white rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 border border-gray-100">
-                <div className="h-2 bg-gradient-to-r from-violet-500 to-purple-600" />
-                <div className="p-8">
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                      <Compass className="w-8 h-8 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="text-2xl font-bold text-gray-900">Classic Mode</h3>
-                      <p className="text-violet-600 font-medium">Personal Growth Focus</p>
-                    </div>
-                  </div>
-                  <p className="text-gray-600 leading-relaxed mb-6">
-                    Focus on life design, goal-setting, and personal growth using 
-                    proven frameworks like Wheel of Life and Ikigai purpose discovery.
-                  </p>
-                  <ul className="space-y-3">
-                    {["Wheel of Life Assessment", "SMART Goals Framework", "90-Day Action Plans", "Habit Tracking"].map((item, i) => (
-                      <li key={i} className="flex items-center gap-3 text-gray-700">
-                        <div className="w-2 h-2 rounded-full bg-violet-500" />
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </motion.div>
-            
-            <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              whileHover={{ y: -8 }}
-              className="group cursor-pointer"
-            >
-              <div className="bg-white rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 border border-gray-100">
-                <div className="h-2 bg-gradient-to-r from-amber-400 to-orange-500" />
-                <div className="p-8">
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                      <Sparkles className="w-8 h-8 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="text-2xl font-bold text-gray-900">Faith & Reflection</h3>
-                      <p className="text-orange-600 font-medium">Spiritual Integration</p>
-                    </div>
-                  </div>
-                  <p className="text-gray-600 leading-relaxed mb-6">
-                    Includes prayer prompts, Scripture reflections, and spiritual 
-                    dimensions woven throughout every stage of your journey.
-                  </p>
-                  <ul className="space-y-3">
-                    {["Biblical Foundations", "Prayer & Reflection Prompts", "Purpose Aligned with Faith", "Spiritual Growth Tracking"].map((item, i) => (
-                      <li key={i} className="flex items-center gap-3 text-gray-700">
-                        <div className="w-2 h-2 rounded-full bg-orange-500" />
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </motion.div>
           </div>
           
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mt-12"
-          >
+          <div className="space-y-4">
+            {/* Classic Mode Card */}
+            <div className="bg-white rounded-2xl overflow-hidden shadow-md border border-gray-100">
+              <div className="h-1.5 bg-gradient-to-r from-violet-500 to-purple-600" />
+              <div className="p-5">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-md">
+                    <Compass className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900">Classic Mode</h3>
+                    <p className="text-xs text-violet-600 font-medium">Personal Growth Focus</p>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-600 mb-4">
+                  Focus on life design, goal-setting, and personal growth using proven frameworks like Wheel of Life and Ikigai purpose discovery.
+                </p>
+                <ul className="space-y-1.5">
+                  {["Wheel of Life Assessment", "SMART Goals Framework", "90-Day Action Plans", "Habit Tracking"].map((item, i) => (
+                    <li key={i} className="flex items-center gap-2 text-sm text-gray-700">
+                      <div className="w-1.5 h-1.5 rounded-full bg-violet-500" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+            
+            {/* Faith Mode Card */}
+            <div className="bg-white rounded-2xl overflow-hidden shadow-md border-l-4 border-l-orange-400 border border-gray-100">
+              <div className="p-5">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-md">
+                    <Heart className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900">Faith & Reflection</h3>
+                    <p className="text-xs text-orange-600 font-medium">Spiritual Integration</p>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-600 mb-4">
+                  Includes prayer prompts, Scripture reflections, and spiritual dimensions woven throughout every stage of your journey.
+                </p>
+                <ul className="space-y-1.5">
+                  {["Biblical Foundations", "Prayer & Reflection Prompts", "Purpose Aligned with Faith", "Spiritual Growth Tracking"].map((item, i) => (
+                    <li key={i} className="flex items-center gap-2 text-sm text-gray-700">
+                      <div className="w-1.5 h-1.5 rounded-full bg-orange-500" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+          
+          {/* Full-width CTA */}
+          <div className="mt-8">
             <Button 
               size="lg" 
               onClick={() => setShowOnboarding(true)}
-              className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white px-10 py-6 text-lg rounded-full shadow-xl"
+              className="w-full bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white py-4 text-base rounded-full shadow-lg"
               data-testid="button-start-vision-bottom"
             >
               Begin Your Journey Today
               <ArrowRight className="w-5 h-5 ml-2" />
             </Button>
-          </motion.div>
+          </div>
         </div>
       </section>
       <Footer />
@@ -466,7 +408,7 @@ function OnboardingFlow({
               <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${
                 mode === "faith" ? "bg-gradient-to-br from-amber-400 to-orange-500 shadow-lg" : "bg-slate-100"
               }`}>
-                <Sparkles className={`w-7 h-7 ${mode === "faith" ? "text-white" : "text-slate-400"}`} />
+                <Heart className={`w-7 h-7 ${mode === "faith" ? "text-white" : "text-slate-400"}`} />
               </div>
               <div>
                 <span className={`font-bold text-lg ${mode === "faith" ? "text-amber-700" : "text-slate-700"}`}>Faith & Reflection</span>
@@ -812,7 +754,7 @@ function VisionDashboard({ session }: { session: any }) {
               <motion.div whileHover={{ scale: 1.05 }} className="inline-block mb-4">
                 {session.mode === "faith" ? (
                   <span className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-400 to-orange-500 text-white px-5 py-2.5 rounded-full shadow-lg font-semibold text-sm">
-                    <Sparkles className="w-4 h-4" /> Faith & Reflection Mode
+                    <Heart className="w-4 h-4" /> Faith & Reflection Mode
                   </span>
                 ) : (
                   <span className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 text-white px-5 py-2.5 rounded-full font-semibold text-sm">

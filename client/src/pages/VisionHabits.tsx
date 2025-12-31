@@ -119,19 +119,19 @@ export function VisionHabits() {
           <motion.div 
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-4"
+            className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4"
           >
             <div>
-              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white px-4 py-2 rounded-full mb-4 shadow-lg">
-                <Flame className="w-4 h-4" />
-                <span className="text-sm font-semibold">Stage 4: Practice</span>
+              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white px-3 py-1.5 rounded-full mb-3 shadow-md text-xs">
+                <Flame className="w-3 h-3" />
+                <span className="font-semibold">Stage 4: Practice</span>
               </div>
-              <h1 className="text-4xl font-display font-bold">
+              <h1 className="text-2xl md:text-3xl font-bold">
                 <span className="bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
                   Habit Tracker
                 </span>
               </h1>
-              <p className="text-slate-600 mt-2">Build daily habits that support your goals</p>
+              <p className="text-sm text-slate-600 mt-1">Build daily habits that support your goals</p>
             </div>
             
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
