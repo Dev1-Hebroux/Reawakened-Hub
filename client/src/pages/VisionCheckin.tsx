@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Slider } from "@/components/ui/slider";
 import { ArrowLeft, Sun, Calendar, Sparkles, Check } from "lucide-react";
+import { AICoachPanel, IntroGuide } from "@/components/AICoachPanel";
 
 const getToday = () => new Date().toISOString().split("T")[0];
 const getWeekStart = () => {
@@ -24,6 +25,8 @@ export function VisionCheckin() {
   const { sessionId } = useParams();
   const [, navigate] = useLocation();
   const [activeTab, setActiveTab] = useState("daily");
+  const today = getToday();
+  const weekStart = getWeekStart();
 
   const { data: session } = useQuery({
     queryKey: [`/api/vision/sessions/${sessionId}`],
@@ -34,7 +37,35 @@ export function VisionCheckin() {
     },
   });
 
+  const { data: dailyCheckin } = useQuery({
+    queryKey: [`/api/vision/sessions/${sessionId}/checkin/daily/${today}`],
+    queryFn: async () => {
+      const res = await fetch(`/api/vision/sessions/${sessionId}/checkin/daily/${today}`, {
+        credentials: "include",
+      });
+      if (!res.ok) return null;
+      return (await res.json()).data;
+    },
+  });
+
+  const { data: weeklyReview } = useQuery({
+    queryKey: [`/api/vision/sessions/${sessionId}/review/weekly/${weekStart}`],
+    queryFn: async () => {
+      const res = await fetch(`/api/vision/sessions/${sessionId}/review/weekly/${weekStart}`, {
+        credentials: "include",
+      });
+      if (!res.ok) return null;
+      return (await res.json()).data;
+    },
+  });
+
   const isFaithMode = session?.mode === "faith";
+  const checkinData = {
+    today,
+    weekStart,
+    dailyCheckin: dailyCheckin || null,
+    weeklyReview: weeklyReview || null,
+  };
 
   return (
     <>
@@ -53,7 +84,7 @@ export function VisionCheckin() {
           <motion.div 
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-10"
+            className="text-center mb-6"
           >
             <div className="inline-flex items-center gap-2 bg-[#C17767] text-white px-4 py-2 rounded-full mb-4">
               <Sparkles className="w-4 h-4" />
@@ -66,6 +97,33 @@ export function VisionCheckin() {
               Stay on track with daily focus and weekly reviews
             </p>
           </motion.div>
+
+          <IntroGuide
+            title="Check-ins"
+            description="Regular reflection is the key to growth. Daily check-ins help you stay focused, while weekly reviews let you celebrate wins, learn from challenges, and adjust your approach for the week ahead."
+            benefits={[
+              "Start each day with clarity on your top priority",
+              "Track your energy patterns over time",
+              "Celebrate wins and learn from setbacks weekly",
+              "Stay aligned with your bigger vision"
+            ]}
+            howToUse={[
+              "Complete a quick daily check-in each morning",
+              "Rate your energy and set your main focus",
+              "Do a weekly review every Sunday to reflect",
+              "Use AI Coach for deeper weekly insights"
+            ]}
+          />
+
+          <div className="flex justify-center mb-6">
+            <AICoachPanel
+              sessionId={sessionId!}
+              tool="checkin"
+              data={checkinData}
+              title="Weekly Summary"
+              description="Get AI-powered insights on your week"
+            />
+          </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="grid w-full grid-cols-2 mb-8 bg-white p-1.5 rounded-2xl shadow-sm border border-[#E8E4DE]">

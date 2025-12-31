@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ArrowLeft, Plus, Flame, Check, Trash2, Zap, TrendingUp, Calendar } from "lucide-react";
+import { AICoachPanel, IntroGuide } from "@/components/AICoachPanel";
 
 const getLast7Days = () => {
   const days = [];
@@ -118,19 +119,43 @@ export function VisionHabits() {
           <motion.div 
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4"
+            className="text-center mb-6"
           >
-            <div>
-              <div className="inline-flex items-center gap-2 bg-[#D4A574] text-white px-4 py-2 rounded-full mb-3">
-                <Flame className="w-4 h-4" />
-                <span className="text-sm font-medium">Stage 4: Practice</span>
-              </div>
-              <h1 className="text-3xl md:text-4xl font-display font-bold text-[#2C3E2D]">
-                Habit Tracker
-              </h1>
-              <p className="text-[#6B7B6E] mt-2">Build daily habits that support your goals</p>
+            <div className="inline-flex items-center gap-2 bg-[#D4A574] text-white px-4 py-2 rounded-full mb-3">
+              <Flame className="w-4 h-4" />
+              <span className="text-sm font-medium">Stage 4: Practice</span>
             </div>
-            
+            <h1 className="text-3xl md:text-4xl font-display font-bold text-[#2C3E2D]">
+              Habit Tracker
+            </h1>
+            <p className="text-[#6B7B6E] mt-2">Build daily habits that support your goals</p>
+          </motion.div>
+
+          <IntroGuide
+            title="Habit Tracker"
+            description="Lasting change comes from small, consistent actions. This tracker helps you build and maintain daily habits that compound over time, turning your goals into sustainable lifestyle changes."
+            benefits={[
+              "Build consistency with visual streak tracking",
+              "See your progress at a glance with the weekly view",
+              "Stay motivated with completion percentages",
+              "Identify patterns in your habit performance"
+            ]}
+            howToUse={[
+              "Create habits that support your SMART goals",
+              "Check off each habit daily as you complete them",
+              "Watch your streaks grow with consistent effort",
+              "Review your patterns with AI Coach insights"
+            ]}
+          />
+
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
+            <AICoachPanel
+              sessionId={sessionId!}
+              tool="habits"
+              data={{ habits: habits || [] }}
+              title="Habit Insights"
+              description="Analyze your habit patterns and get tips"
+            />
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
@@ -201,7 +226,7 @@ export function VisionHabits() {
                 </div>
               </DialogContent>
             </Dialog>
-          </motion.div>
+          </div>
 
           {habits?.length === 0 && (
             <motion.div

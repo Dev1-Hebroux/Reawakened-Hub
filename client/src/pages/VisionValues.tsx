@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, ArrowRight, Heart, Sparkles, X, Check } from "lucide-react";
+import { AICoachPanel, IntroGuide } from "@/components/AICoachPanel";
 
 const VALUE_OPTIONS = [
   "Family", "Faith", "Freedom", "Growth", "Adventure", "Creativity", "Service",
@@ -146,7 +147,7 @@ export function VisionValues() {
           <motion.div 
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-10"
+            className="text-center mb-6"
           >
             <div className="inline-flex items-center gap-2 bg-[#9B8AA6] text-white px-4 py-2 rounded-full mb-4">
               <Heart className="w-4 h-4" />
@@ -161,6 +162,33 @@ export function VisionValues() {
                 : "Discover where your passions, strengths, and impact align"}
             </p>
           </motion.div>
+
+          <IntroGuide
+            title="Values & Purpose"
+            description="Your core values are the guiding principles that shape your decisions and actions. The Purpose Flower (Ikigai) helps you discover where your passions, strengths, world needs, and rewards intersect - revealing your unique purpose."
+            benefits={[
+              "Gain clarity on what truly matters to you",
+              "Make decisions that align with your authentic self",
+              "Discover your unique purpose at the intersection of 4 key areas",
+              "Create a personal purpose statement to guide your life"
+            ]}
+            howToUse={[
+              "Select up to 5 core values that resonate deeply with you",
+              "Reflect on what your top value means in daily life",
+              "Complete the Purpose Flower to explore your Ikigai",
+              "Craft a purpose statement that captures your calling"
+            ]}
+          />
+
+          <div className="flex justify-center mb-6">
+            <AICoachPanel
+              sessionId={sessionId!}
+              tool="values"
+              data={{ values: selectedValues, topValueMeaning, ...purpose }}
+              title="Purpose Guidance"
+              description="Get help articulating your values and purpose"
+            />
+          </div>
 
           {step === "values" && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>

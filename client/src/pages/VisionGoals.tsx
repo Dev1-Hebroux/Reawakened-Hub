@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ArrowLeft, ArrowRight, Plus, Target, CheckCircle2, Edit2, Trash2, Calendar, TrendingUp } from "lucide-react";
+import { AICoachPanel, IntroGuide } from "@/components/AICoachPanel";
 
 const SMART_LETTERS = [
   { letter: "S", label: "Specific", placeholder: "What exactly will you achieve? Be precise.", color: "#7C9A8E" },
@@ -183,18 +184,43 @@ export function VisionGoals() {
           <motion.div 
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4"
+            className="text-center mb-6"
           >
-            <div>
-              <div className="inline-flex items-center gap-2 bg-[#4A7C7C] text-white px-4 py-2 rounded-full mb-3">
-                <Target className="w-4 h-4" />
-                <span className="text-sm font-medium">Stage 3: Plan</span>
-              </div>
-              <h1 className="text-3xl md:text-4xl font-display font-bold text-[#2C3E2D]">
-                SMART Goals
-              </h1>
-              <p className="text-[#6B7B6E] mt-2">Set specific, measurable goals for this season</p>
+            <div className="inline-flex items-center gap-2 bg-[#4A7C7C] text-white px-4 py-2 rounded-full mb-3">
+              <Target className="w-4 h-4" />
+              <span className="text-sm font-medium">Stage 3: Plan</span>
             </div>
+            <h1 className="text-3xl md:text-4xl font-display font-bold text-[#2C3E2D]">
+              SMART Goals
+            </h1>
+            <p className="text-[#6B7B6E] mt-2">Set specific, measurable goals for this season</p>
+          </motion.div>
+
+          <IntroGuide
+            title="SMART Goals"
+            description="SMART is a proven framework for setting goals that are clear and achievable. Each letter stands for Specific, Measurable, Achievable, Relevant, and Time-bound - ensuring your goals have the structure needed for success."
+            benefits={[
+              "Transform vague dreams into concrete action plans",
+              "Know exactly how to measure your progress",
+              "Set realistic goals you can actually achieve",
+              "Stay motivated with clear deadlines"
+            ]}
+            howToUse={[
+              "Click 'Add Goal' to create a new SMART goal",
+              "Fill in each section: what, why, and the SMART criteria",
+              "Set a specific deadline and first action step",
+              "Review and adjust as you make progress"
+            ]}
+          />
+
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
+            <AICoachPanel
+              sessionId={sessionId!}
+              tool="goals"
+              data={{ goals: goals || [] }}
+              title="Goal Coaching"
+              description="Get feedback on your SMART goals"
+            />
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
@@ -360,7 +386,7 @@ export function VisionGoals() {
                 </div>
               </DialogContent>
             </Dialog>
-          </motion.div>
+          </div>
 
           {activeGoals.length === 0 && completedGoals.length === 0 && (
             <Card className="text-center py-16 border border-[#E8E4DE] bg-white rounded-2xl">

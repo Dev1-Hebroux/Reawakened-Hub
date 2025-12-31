@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, ArrowRight, Calendar, Target, Plus, X, Clock, Users } from "lucide-react";
+import { AICoachPanel, IntroGuide } from "@/components/AICoachPanel";
 
 export function VisionPlan() {
   const { sessionId } = useParams();
@@ -112,7 +113,7 @@ export function VisionPlan() {
           <motion.div 
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-10"
+            className="text-center mb-6"
           >
             <div className="inline-flex items-center gap-2 bg-[#6B8E8E] text-white px-4 py-2 rounded-full mb-4">
               <Calendar className="w-4 h-4" />
@@ -125,6 +126,33 @@ export function VisionPlan() {
               Break down your vision into actionable steps for the next 90 days
             </p>
           </motion.div>
+
+          <IntroGuide
+            title="90-Day Plan"
+            description="A 90-day sprint is the perfect timeframe - long enough to make meaningful progress, short enough to stay focused. This plan breaks your biggest goal into key results and weekly anchors that keep you on track."
+            benefits={[
+              "Transform big goals into manageable quarterly sprints",
+              "Create measurable key results to track progress",
+              "Build weekly rhythms that create consistency",
+              "Plan for obstacles before they derail you"
+            ]}
+            howToUse={[
+              "Define your #1 focus outcome for the next 90 days",
+              "Set 3 key results that prove you've achieved it",
+              "Establish weekly anchors and schedule blocks",
+              "Plan your accountability and what to do when stuck"
+            ]}
+          />
+
+          <div className="flex justify-center mb-6">
+            <AICoachPanel
+              sessionId={sessionId!}
+              tool="plan"
+              data={plan}
+              title="90-Day Strategy"
+              description="Get guidance on your quarterly action plan"
+            />
+          </div>
 
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
             <Card className="border border-[#E8E4DE] bg-white rounded-2xl overflow-hidden">

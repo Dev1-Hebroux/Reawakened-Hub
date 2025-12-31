@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
+import { getAICoachInsights, type AICoachRequest } from "./ai-service";
 import { insertPostSchema, insertReactionSchema, insertSparkSchema, insertSparkReactionSchema, insertSparkSubscriptionSchema, insertEventSchema, insertEventRegistrationSchema, insertBlogPostSchema, insertEmailSubscriptionSchema, insertPrayerRequestSchema, insertTestimonySchema, insertVolunteerSignupSchema, insertMissionRegistrationSchema, insertJourneySchema, insertJourneyDaySchema, insertJourneyStepSchema, insertAlphaCohortSchema, insertAlphaCohortWeekSchema, insertAlphaCohortParticipantSchema } from "@shared/schema";
 
 export async function registerRoutes(
@@ -1491,6 +1492,47 @@ export async function registerRoutes(
     } catch (error: any) {
       console.error("Error saving weekly review:", error);
       res.status(400).json({ ok: false, error: { message: error.message || "Failed to save review" } });
+    }
+  });
+
+  // ===== AI COACH ROUTE =====
+  app.post('/api/vision/sessions/:id/ai/analyze', isAuthenticated, async (req: any, res) => {
+    try {
+      const sessionId = parseInt(req.params.id);
+      const { tool, data } = req.body as { tool: AICoachRequest['tool']; data: Record<string, any> };
+      
+      if (!tool || !data) {
+        return res.status(400).json({ ok: false, error: { message: "Missing tool or data" } });
+      }
+
+      const session = await storage.getPathwaySession(sessionId);
+      if (!session) {
+        return res.status(404).json({ ok: false, error: { message: "Session not found" } });
+      }
+
+      const focusAreas = await storage.getFocusAreas(sessionId);
+      const values = await storage.getValuesSelection(sessionId);
+      const vision = await storage.getVisionStatement(sessionId);
+
+      const sessionContext = {
+        seasonLabel: session.seasonLabel || undefined,
+        themeWord: session.themeWord || undefined,
+        focusAreas: focusAreas.map(f => f.categoryKey),
+        values: values?.chosenValues || [],
+        purposeStatement: vision?.purposeStatement || undefined,
+      };
+
+      const insights = await getAICoachInsights({
+        tool,
+        mode: (session.mode as "classic" | "faith") || "classic",
+        data,
+        sessionContext,
+      });
+
+      res.json({ ok: true, data: insights });
+    } catch (error: any) {
+      console.error("Error getting AI insights:", error);
+      res.status(500).json({ ok: false, error: { message: error.message || "Failed to get AI insights" } });
     }
   });
 

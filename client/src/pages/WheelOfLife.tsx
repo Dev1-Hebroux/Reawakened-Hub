@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, ArrowRight, Check, Target, Sparkles, CircleDot } from "lucide-react";
+import { AICoachPanel, IntroGuide } from "@/components/AICoachPanel";
 
 const WHEEL_CATEGORIES = [
   { key: "health_energy", label: "Health & Energy", emoji: "💪", color: "#5B8C5A" },
@@ -119,7 +120,7 @@ export function WheelOfLife() {
           <motion.div 
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-10"
+            className="text-center mb-6"
           >
             <div className="inline-flex items-center gap-2 bg-[#7C9A8E] text-white px-4 py-2 rounded-full mb-4">
               <CircleDot className="w-4 h-4" />
@@ -132,6 +133,33 @@ export function WheelOfLife() {
               Rate your satisfaction in each area from 1 (needs attention) to 10 (thriving)
             </p>
           </motion.div>
+
+          <IntroGuide
+            title="Wheel of Life"
+            description="The Wheel of Life is a powerful coaching tool that helps you visualize how balanced your life is across 8 key areas. By rating each area, you'll identify where you're thriving and where you need to focus your energy."
+            benefits={[
+              "Gain clarity on your current life balance",
+              "Identify areas that need the most attention",
+              "Make intentional choices about where to invest your time",
+              "Track progress over time as you grow"
+            ]}
+            howToUse={[
+              "Rate each life area from 1 (needs work) to 10 (thriving)",
+              "Add notes to capture your thoughts on each area",
+              "Review the radar chart to see your balance visually",
+              "Select up to 3 focus areas for this season"
+            ]}
+          />
+
+          <div className="flex justify-end mb-4">
+            <AICoachPanel
+              sessionId={sessionId!}
+              tool="wheel"
+              data={{ scores, notes, focusAreas: selectedFocus }}
+              title="Life Balance Analysis"
+              description="Get insights on your wheel scores and focus areas"
+            />
+          </div>
 
           {step === "assess" && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
