@@ -46,7 +46,7 @@ export function DailySparks() {
                   alt={spark.title} 
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#1a2744]/60 via-transparent to-transparent opacity-60" />
                 
                 <div className="absolute top-4 left-4 bg-white/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
                   <span className="text-xs font-bold text-white">{spark.category}</span>

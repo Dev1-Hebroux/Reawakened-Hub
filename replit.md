@@ -133,3 +133,29 @@ Preferred communication style: Simple, everyday language.
 - **Vite**: Frontend bundler with HMR
 - **esbuild**: Server bundling for production
 - **tsx**: TypeScript execution for development
+
+## Brand Assets
+
+### Logo Files (HD/4K)
+All logos stored in `attached_assets/`:
+
+**Dark Logo** (for light backgrounds):
+- `Reawakened_Logo_1_new_1767191127649.png` - Primary HD dark logo (1024x1024)
+- `Reawakened_Logo-05_1767191127650.jpg` - JPG version
+
+**Light Logo** (for dark backgrounds):
+- `8_1767191207405.png` - White text on dark background
+- `9_1767191207410.png` - Alternative white version
+- `10_1767191207411.png` - Alternative white version
+
+**Dark Blue Background Versions**:
+- `1_1767191238762.png` - Dark on navy background
+- `2_1767191238762.png` - Alternative dark on navy
+
+### Brand Colors
+- **Navy Blue**: #1a2744 (dark overlays, gradients)
+- **Sage Green**: #7C9A8E
+- **Cream**: #FAF8F5
+- **Muted Teal**: #4A7C7C
+- **Beige**: #D4A574
+- **Primary Orange**: (defined in Tailwind config)

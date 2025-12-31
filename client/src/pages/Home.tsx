@@ -90,7 +90,7 @@ export default function Home() {
             <div className="grid md:grid-cols-3 gap-8">
               <div className="group relative h-[400px] rounded-[30px] overflow-hidden cursor-pointer">
                 <img src={outreachImg} alt="Community Outreach" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#1a2744]/80 via-transparent to-transparent" />
                 <div className="absolute bottom-0 left-0 p-8">
                    <h3 className="text-2xl font-bold text-white mb-2">Community Gear</h3>
                    <button className="flex items-center gap-2 text-white/80 hover:text-white font-medium group-hover:gap-3 transition-all" data-testid="button-merch-community">
@@ -101,7 +101,7 @@ export default function Home() {
 
               <div className="group relative h-[400px] rounded-[30px] overflow-hidden cursor-pointer md:-mt-8">
                 <img src={capImg} alt="Signature Cap" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#1a2744]/80 via-transparent to-transparent" />
                 <div className="absolute bottom-0 left-0 p-8">
                    <span className="bg-primary text-white text-xs font-bold px-3 py-1 rounded-full mb-3 inline-block">BESTSELLER</span>
                    <h3 className="text-2xl font-bold text-white mb-2">Signature Caps</h3>
@@ -113,7 +113,7 @@ export default function Home() {
 
               <div className="group relative h-[400px] rounded-[30px] overflow-hidden cursor-pointer">
                 <img src={hoodieImg} alt="Worship Hoodies" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#1a2744]/80 via-transparent to-transparent" />
                 <div className="absolute bottom-0 left-0 p-8">
                    <h3 className="text-2xl font-bold text-white mb-2">Revival Hoodies</h3>
                    <button className="flex items-center gap-2 text-white/80 hover:text-white font-medium group-hover:gap-3 transition-all" data-testid="button-merch-hoodies">
