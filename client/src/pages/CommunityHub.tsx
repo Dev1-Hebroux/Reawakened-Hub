@@ -1,17 +1,27 @@
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   Heart, MessageCircle, Share2, MapPin, 
   Video, Image as ImageIcon, Send, Globe,
   Users, Flame, Bell, Search, MoreHorizontal,
-  Phone, Video as VideoIcon, Mic, CheckCircle2, Loader2
+  Phone, Video as VideoIcon, Mic, CheckCircle2, Loader2, X, ChevronLeft, ChevronRight
 } from "lucide-react";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { toast } from "sonner";
 import type { Post, User } from "@shared/schema";
+import { Navbar } from "@/components/layout/Navbar";
+import { Footer } from "@/components/layout/Footer";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import mapBg from "@assets/generated_images/digital_map_of_the_world_with_glowing_connections.png";
 import userAvatar from "@assets/generated_images/diverse_group_taking_a_selfie.png"; 
 import feedImg from "@assets/generated_images/hands_typing_on_a_phone_with_bible_in_background.png";
@@ -20,11 +30,11 @@ import storyImg from "@assets/generated_images/young_woman_speaking_passionately
 type PostWithUser = Post & { user: User; reactionCount?: number };
 
 const stories = [
-  { id: 1, name: "Your Story", img: userAvatar, isUser: true },
-  { id: 2, name: "Sarah J.", img: storyImg, hasUnseen: true },
-  { id: 3, name: "Mission UK", img: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&q=80&w=200", hasUnseen: true },
-  { id: 4, name: "Prayer Team", img: "https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&q=80&w=200", hasUnseen: false },
-  { id: 5, name: "Revival Now", img: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&q=80&w=200", hasUnseen: true },
+  { id: 1, name: "Your Story", img: userAvatar, isUser: true, route: null, action: "create" },
+  { id: 2, name: "Sarah J.", img: storyImg, hasUnseen: true, route: null, action: "view" },
+  { id: 3, name: "Mission Hub", img: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&q=80&w=200", hasUnseen: true, route: "/mission" },
+  { id: 4, name: "Prayer Team", img: "https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&q=80&w=200", hasUnseen: false, action: "prayer" },
+  { id: 5, name: "Revival Now", img: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&q=80&w=200", hasUnseen: true, route: "/group-labs" },
 ];
 
 const groups = [
@@ -34,12 +44,76 @@ const groups = [
 ];
 
 export function CommunityHub() {
+  const [, navigate] = useLocation();
   const [postFilter, setPostFilter] = useState<"all" | "mission" | "prayer">("all");
   const [newPostContent, setNewPostContent] = useState("");
   const [newPostType, setNewPostType] = useState<"mission" | "prayer">("mission");
+  const [viewingStory, setViewingStory] = useState<typeof stories[0] | null>(null);
+  const [storyIndex, setStoryIndex] = useState(0);
+  const [isListening, setIsListening] = useState(false);
   
   const { user, isAuthenticated } = useAuth() as { user: User | null; isAuthenticated: boolean; isLoading: boolean };
   const queryClient = useQueryClient();
+
+  const handleStoryClick = (story: typeof stories[0]) => {
+    if (story.route) {
+      navigate(story.route);
+    } else if (story.action === "create") {
+      toast.info("Story creation coming soon!");
+    } else if (story.action === "view") {
+      setViewingStory(story);
+      setStoryIndex(stories.findIndex(s => s.id === story.id));
+    } else if (story.action === "prayer") {
+      setPostFilter("prayer");
+      toast.success("Showing prayer requests");
+    }
+  };
+
+  const handleStoryAdvance = () => {
+    if (storyIndex < stories.length - 1) {
+      const nextStory = stories[storyIndex + 1];
+      if (nextStory.route) {
+        setViewingStory(null);
+        setTimeout(() => navigate(nextStory.route!), 100);
+      } else {
+        setStoryIndex(storyIndex + 1);
+        setViewingStory(nextStory);
+      }
+    } else {
+      setViewingStory(null);
+    }
+  };
+
+  const handleVoiceInput = () => {
+    const SpeechRecognitionClass = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    
+    if (!SpeechRecognitionClass) {
+      toast.error("Voice input not supported in this browser");
+      return;
+    }
+    
+    try {
+      const recognition = new SpeechRecognitionClass();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = 'en-US';
+      
+      recognition.onstart = () => setIsListening(true);
+      recognition.onend = () => setIsListening(false);
+      recognition.onerror = () => {
+        setIsListening(false);
+        toast.error("Voice recognition error");
+      };
+      recognition.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setNewPostContent(prev => prev + (prev ? ' ' : '') + transcript);
+      };
+      
+      recognition.start();
+    } catch (error) {
+      toast.error("Voice input not available");
+    }
+  };
 
   // Fetch posts
   const { data: posts = [], isLoading } = useQuery<PostWithUser[]>({
@@ -125,9 +199,71 @@ export function CommunityHub() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-16 pb-24 md:pt-20 md:pb-12">
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6">
+    <div className="min-h-screen bg-[#FAF8F5] flex flex-col">
+      <Navbar />
+      <main className="flex-1 pt-20 pb-24 md:pb-12">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6">
+
+            {/* Story Viewing Modal */}
+            <AnimatePresence>
+              {viewingStory && (
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center"
+                  onClick={handleStoryAdvance}
+                >
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); setViewingStory(null); }}
+                    className="absolute top-4 right-4 p-2 text-white hover:bg-white/20 rounded-full z-50"
+                  >
+                    <X className="h-6 w-6" />
+                  </button>
+                  
+                  <div className="absolute top-4 left-4 flex items-center gap-3 z-50">
+                    <div className="h-10 w-10 rounded-full overflow-hidden border-2 border-white">
+                      <img src={viewingStory.img} alt={viewingStory.name} className="w-full h-full object-cover" />
+                    </div>
+                    <span className="text-white font-medium">{viewingStory.name}</span>
+                  </div>
+
+                  <div className="absolute top-16 left-4 right-4 flex gap-1 z-50">
+                    {stories.filter(s => !s.isUser).map((_, i) => (
+                      <div 
+                        key={i}
+                        className={`h-0.5 flex-1 rounded-full ${i <= storyIndex - 1 ? 'bg-white' : i === storyIndex - 1 ? 'bg-white' : 'bg-white/30'}`}
+                      />
+                    ))}
+                  </div>
+
+                  <motion.div
+                    key={viewingStory.id}
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="max-w-md w-full mx-4"
+                  >
+                    <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-[#7C9A8E] to-[#4A7C7C] aspect-[9/16] flex items-center justify-center">
+                      <img 
+                        src={viewingStory.img} 
+                        alt={viewingStory.name} 
+                        className="absolute inset-0 w-full h-full object-cover opacity-30"
+                      />
+                      <div className="relative z-10 text-center p-6">
+                        <h3 className="text-2xl font-bold text-white mb-2">{viewingStory.name}'s Story</h3>
+                        <p className="text-white/80 text-sm">Tap to continue to post details</p>
+                      </div>
+                    </div>
+                  </motion.div>
+
+                  <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-white/60 text-xs flex items-center gap-2">
+                    <span>Tap to advance</span>
+                    <ChevronRight className="h-4 w-4" />
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           
           {/* Left Sidebar - Navigation & Profile (20%) */}
           <div className="hidden lg:block lg:col-span-3 space-y-6">
@@ -193,21 +329,26 @@ export function CommunityHub() {
             <div className="bg-white rounded-2xl md:rounded-[30px] p-3 md:p-6 shadow-sm border border-gray-100 overflow-x-auto scrollbar-hide snap-x snap-mandatory">
               <div className="flex gap-3 md:gap-4">
                 {stories.map((story) => (
-                  <div key={story.id} className="flex flex-col items-center gap-1.5 cursor-pointer group snap-start flex-shrink-0">
-                    <div className={`h-14 w-14 md:h-16 md:w-16 rounded-full p-[2px] ${story.isUser ? 'border-2 border-dashed border-gray-300' : story.hasUnseen ? 'bg-gradient-to-tr from-primary to-yellow-500' : 'border-2 border-gray-200'}`}>
+                  <button 
+                    key={story.id} 
+                    onClick={() => handleStoryClick(story)}
+                    className="flex flex-col items-center gap-1.5 cursor-pointer group snap-start flex-shrink-0 bg-transparent border-0"
+                    data-testid={`story-${story.id}`}
+                  >
+                    <div className={`h-14 w-14 md:h-16 md:w-16 rounded-full p-[2px] transition-transform group-hover:scale-105 group-active:scale-95 ${story.isUser ? 'border-2 border-dashed border-gray-300' : story.hasUnseen ? 'bg-gradient-to-tr from-[#7C9A8E] to-[#D4A574]' : 'border-2 border-gray-200'}`}>
                       <div className="h-full w-full rounded-full overflow-hidden border-2 border-white relative">
                         <img src={story.img} alt={story.name} className="w-full h-full object-cover" />
                         {story.isUser && (
                           <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
                             <div className="bg-white rounded-full p-1">
-                              <MoreHorizontal className="h-3 w-3 text-primary" />
+                              <MoreHorizontal className="h-3 w-3 text-[#7C9A8E]" />
                             </div>
                           </div>
                         )}
                       </div>
                     </div>
-                    <span className="text-[10px] md:text-xs font-medium text-gray-600 group-hover:text-primary max-w-[60px] truncate text-center">{story.name}</span>
-                  </div>
+                    <span className="text-[10px] md:text-xs font-medium text-gray-600 group-hover:text-[#7C9A8E] max-w-[60px] truncate text-center">{story.name}</span>
+                  </button>
                 ))}
               </div>
             </div>
@@ -245,38 +386,48 @@ export function CommunityHub() {
 
             {/* Create Post */}
             <div className="bg-white rounded-2xl md:rounded-[30px] p-4 md:p-6 shadow-sm border border-gray-100">
-              <div className="flex gap-3 mb-3">
-                <div className="h-9 w-9 md:h-10 md:w-10 rounded-full overflow-hidden bg-gray-100 flex-shrink-0">
+              <div className="flex gap-3 mb-4">
+                <div className="h-10 w-10 md:h-12 md:w-12 rounded-full overflow-hidden bg-gray-100 flex-shrink-0">
                   <img 
                     src={user?.profileImageUrl || userAvatar} 
                     alt={user?.firstName || "User"} 
                     className="w-full h-full object-cover" 
                   />
                 </div>
-                <textarea
-                  data-testid="input-create-post"
-                  value={newPostContent}
-                  onChange={(e) => setNewPostContent(e.target.value)}
-                  placeholder="Share a testimony, prayer request, or mission update..." 
-                  className="flex-1 bg-gray-50 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none min-h-[50px]"
-                  rows={2}
-                />
+                <div className="flex-1 relative">
+                  <textarea
+                    data-testid="input-create-post"
+                    value={newPostContent}
+                    onChange={(e) => setNewPostContent(e.target.value)}
+                    placeholder="Share a testimony, prayer request, or mission update..." 
+                    className="w-full bg-gray-50 rounded-2xl px-4 py-3 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-[#7C9A8E]/30 resize-none min-h-[100px]"
+                    rows={4}
+                  />
+                  <button
+                    onClick={handleVoiceInput}
+                    className={`absolute right-3 top-3 p-2 rounded-full transition-colors ${isListening ? 'bg-red-100 text-red-500 animate-pulse' : 'bg-gray-100 text-gray-500 hover:bg-[#7C9A8E]/10 hover:text-[#7C9A8E]'}`}
+                    data-testid="button-voice-input"
+                    title="Voice to text"
+                  >
+                    <Mic className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
-              <div className="flex flex-col sm:flex-row gap-2 sm:justify-between sm:items-center border-t border-gray-50 pt-3">
-                <select
-                  data-testid="select-post-type"
-                  value={newPostType}
-                  onChange={(e) => setNewPostType(e.target.value as "mission" | "prayer")}
-                  className="text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/20 w-full sm:w-auto"
-                >
-                  <option value="mission">Mission</option>
-                  <option value="prayer">Prayer</option>
-                </select>
+              <div className="flex flex-col sm:flex-row gap-3 sm:justify-between sm:items-center border-t border-gray-100 pt-4">
+                <Select value={newPostType} onValueChange={(value) => setNewPostType(value as "mission" | "prayer")}>
+                  <SelectTrigger className="w-full sm:w-[140px] border-gray-200 rounded-xl" data-testid="select-post-type">
+                    <SelectValue placeholder="Post type" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-white border border-gray-200 rounded-xl shadow-lg">
+                    <SelectItem value="mission" className="cursor-pointer">Mission</SelectItem>
+                    <SelectItem value="prayer" className="cursor-pointer">Prayer</SelectItem>
+                  </SelectContent>
+                </Select>
                 <button 
                   data-testid="button-submit-post"
                   onClick={handleCreatePost}
                   disabled={createPostMutation.isPending || !newPostContent.trim()}
-                  className="bg-primary text-white px-5 py-2.5 rounded-full hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm font-medium w-full sm:w-auto"
+                  className="bg-[#7C9A8E] text-white px-6 py-3 rounded-full hover:bg-[#6B8B7E] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm font-medium w-full sm:w-auto"
                 >
                   {createPostMutation.isPending ? (
                     <>
@@ -464,8 +615,10 @@ export function CommunityHub() {
 
           </div>
 
+          </div>
         </div>
-      </div>
+      </main>
+      <Footer />
     </div>
   );
 }

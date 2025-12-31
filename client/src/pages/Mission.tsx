@@ -75,6 +75,41 @@ const stats = [
   { label: "API Integrations", value: "∞" }
 ];
 
+const missionStories = [
+  {
+    id: 1,
+    name: "Sarah M.",
+    location: "Kenya",
+    image: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&q=80&w=200",
+    story: "Through the outreach in Nairobi, I found Jesus and now lead a youth group of 50 young people. God is moving powerfully!",
+    tag: "Transformed Life"
+  },
+  {
+    id: 2,
+    name: "David K.",
+    location: "Philippines",
+    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200",
+    story: "The discipleship program changed everything. I went from struggling with purpose to planting 3 churches in my community.",
+    tag: "Church Planter"
+  },
+  {
+    id: 3,
+    name: "Grace O.",
+    location: "Nigeria",
+    image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=200",
+    story: "I was trained in the Innovation Hub and now run a tech startup that employs 12 young believers. Kingdom impact through business!",
+    tag: "Entrepreneur"
+  },
+  {
+    id: 4,
+    name: "James L.",
+    location: "UK",
+    image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200",
+    story: "After attending Alpha, I rededicated my life to Christ. Now I'm serving as a volunteer leader helping others find their faith.",
+    tag: "Alpha Graduate"
+  }
+];
+
 const eventTypes = ["All", "outreach", "prayer-night", "tech-hub", "discipleship"];
 const eventTypeLabels: Record<string, string> = {
   "All": "All Events",
@@ -504,6 +539,63 @@ export function MissionPage() {
                 </div>
               </motion.div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Mission Stories / Testimonials */}
+      <section className="py-24 px-4 bg-gradient-to-br from-[#7C9A8E]/10 to-[#4A7C7C]/10">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16">
+            <span className="text-[#7C9A8E] font-bold tracking-wider uppercase text-sm">Stories of Transformation</span>
+            <h2 className="text-4xl font-display font-bold text-gray-900 mt-2 mb-4">
+              Lives Changed Around the World
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Real stories from real people whose lives have been transformed through our mission.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {missionStories.map((story, i) => (
+              <motion.div
+                key={story.id}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className="bg-white rounded-3xl p-6 shadow-lg hover:shadow-xl transition-all duration-300"
+                data-testid={`card-story-${story.id}`}
+              >
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="h-14 w-14 rounded-full overflow-hidden border-2 border-[#7C9A8E]">
+                    <img src={story.image} alt={story.name} className="w-full h-full object-cover" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-gray-900">{story.name}</h4>
+                    <div className="flex items-center gap-1 text-sm text-gray-500">
+                      <MapPin className="h-3 w-3" />
+                      {story.location}
+                    </div>
+                  </div>
+                </div>
+                <p className="text-gray-600 text-sm leading-relaxed mb-4">"{story.story}"</p>
+                <span className="inline-block px-3 py-1 bg-[#7C9A8E]/10 text-[#7C9A8E] text-xs font-bold rounded-full">
+                  {story.tag}
+                </span>
+              </motion.div>
+            ))}
+          </div>
+
+          <div className="mt-12 text-center">
+            <Button 
+              onClick={() => setTestimonyModalOpen(true)}
+              className="bg-[#7C9A8E] hover:bg-[#6B8B7E] text-white rounded-full px-8 py-6 text-lg font-bold"
+              data-testid="button-share-story"
+            >
+              <Heart className="h-5 w-5 mr-2" />
+              Share Your Story
+            </Button>
           </div>
         </div>
       </section>
