@@ -12,14 +12,15 @@ export function Hero() {
 
   return (
     <section className="relative min-h-[90vh] flex items-center pt-24 pb-12 overflow-hidden">
-      {/* Background Image with Gradient Overlay */}
+      {/* Background Image with Rich Gradient Overlay */}
       <div className="absolute inset-0 z-0">
         <img 
           src={heroBgImage} 
           alt="Sunrise with cross" 
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#FFF8F3]/95 via-[#FFF8F3]/80 to-[#FFF8F3]/60" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#7C9A8E]/20 via-[#D4A574]/15 to-[#4A7C7C]/20" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#FFF8F3]/90 via-[#FFF8F3]/70 to-transparent" />
       </div>
       
       {/* Video Modal */}
@@ -56,9 +57,10 @@ export function Hero() {
         )}
       </AnimatePresence>
 
-      {/* Decorative Circles */}
-      <div className="absolute top-20 left-10 w-64 h-64 bg-orange-200/30 rounded-full blur-3xl" />
-      <div className="absolute bottom-20 right-10 w-96 h-96 bg-blue-200/30 rounded-full blur-3xl" />
+      {/* Decorative Circles - More Vibrant */}
+      <div className="absolute top-10 left-10 w-80 h-80 bg-gradient-to-br from-[#D4A574]/40 to-orange-300/30 rounded-full blur-3xl" />
+      <div className="absolute bottom-10 right-10 w-96 h-96 bg-gradient-to-tl from-[#7C9A8E]/40 to-[#4A7C7C]/30 rounded-full blur-3xl" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-[#D4A574]/10 via-transparent to-[#7C9A8E]/10 rounded-full blur-3xl" />
       
       {/* Subtle Logo Watermark */}
       <div 

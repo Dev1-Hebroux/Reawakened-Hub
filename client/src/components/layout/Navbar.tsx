@@ -44,7 +44,7 @@ export function Navbar() {
                 <img 
                   src={currentLogo} 
                   alt="The Reawakened One" 
-                  className="h-10 w-auto object-contain transition-all duration-300"
+                  className="h-12 md:h-14 w-auto object-contain transition-all duration-300 drop-shadow-lg"
                 />
               </div>
             </Link>

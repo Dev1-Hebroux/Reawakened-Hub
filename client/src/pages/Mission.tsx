@@ -79,34 +79,34 @@ const missionStories = [
   {
     id: 1,
     name: "Sarah M.",
-    location: "Kenya",
+    location: "UK",
     image: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&q=80&w=200",
-    story: "Through the outreach in Nairobi, I found Jesus and now lead a youth group of 50 young people. God is moving powerfully!",
+    story: "Through the outreach to my Uni, I found Jesus and now looking forward to getting discipled!",
     tag: "Transformed Life"
   },
   {
     id: 2,
     name: "David K.",
-    location: "Philippines",
+    location: "Nigeria",
     image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200",
-    story: "The discipleship program changed everything. I went from struggling with purpose to planting 3 churches in my community.",
-    tag: "Church Planter"
+    story: "The discipleship program changed everything. I went from struggling with purpose to starting my community.",
+    tag: "Youth Leader"
   },
   {
     id: 3,
     name: "Grace O.",
-    location: "Nigeria",
+    location: "Manchester",
     image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=200",
-    story: "I was trained in the Innovation Hub and now run a tech startup that employs 12 young believers. Kingdom impact through business!",
+    story: "I was trained in the Innovation Hub and now run gainfully employed and started a side hustle. Kingdom impact through business!",
     tag: "Entrepreneur"
   },
   {
     id: 4,
-    name: "James L.",
+    name: "James",
     location: "UK",
     image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200",
     story: "After attending Alpha, I rededicated my life to Christ. Now I'm serving as a volunteer leader helping others find their faith.",
-    tag: "Alpha Graduate"
+    tag: "Alpha Participant"
   }
 ];
 
