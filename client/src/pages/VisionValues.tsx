@@ -126,22 +126,42 @@ export function VisionValues() {
   return (
     <>
       <Navbar />
-      <main className="min-h-screen bg-gradient-to-b from-[hsl(var(--color-paper))] to-white py-8 px-4">
-        <div className="max-w-4xl mx-auto">
-          <Button variant="ghost" onClick={() => navigate(`/vision`)} className="mb-4" data-testid="button-back-dashboard">
+      <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50 py-8 px-4 relative overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-blue-300/20 to-cyan-300/20 rounded-full blur-3xl" />
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-indigo-300/20 to-blue-300/20 rounded-full blur-3xl" />
+        </div>
+        
+        <div className="max-w-4xl mx-auto relative z-10">
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate(`/vision`)} 
+            className="mb-4 hover:bg-blue-100" 
+            data-testid="button-back-dashboard"
+          >
             <ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard
           </Button>
 
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-display font-bold text-primary mb-2">
-              {step === "values" ? "Your Core Values" : "Purpose Flower"}
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center mb-10"
+          >
+            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-4 py-2 rounded-full mb-4 shadow-lg">
+              <Heart className="w-4 h-4" />
+              <span className="text-sm font-semibold">Stage 2: Align</span>
+            </div>
+            <h1 className="text-4xl font-display font-bold mb-3">
+              <span className="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
+                {step === "values" ? "Your Core Values" : "Purpose Flower"}
+              </span>
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-slate-600 max-w-lg mx-auto">
               {step === "values"
                 ? "Select up to 5 values that guide your life"
                 : "Discover where your passions, strengths, and impact align"}
             </p>
-          </div>
+          </motion.div>
 
           {step === "values" && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
@@ -316,16 +336,23 @@ export function VisionValues() {
               </Card>
 
               <div className="flex justify-between">
-                <Button variant="ghost" onClick={() => setStep("values")}>
+                <Button 
+                  variant="ghost" 
+                  onClick={() => setStep("values")}
+                  className="hover:bg-blue-100"
+                >
                   <ArrowLeft className="w-4 h-4 mr-2" /> Back to Values
                 </Button>
-                <Button
-                  onClick={() => savePurpose.mutate()}
-                  disabled={savePurpose.isPending}
-                  data-testid="button-save-purpose"
-                >
-                  {savePurpose.isPending ? "Saving..." : "Continue to Goals"} <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
+                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                  <Button
+                    onClick={() => savePurpose.mutate()}
+                    disabled={savePurpose.isPending}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 shadow-lg"
+                    data-testid="button-save-purpose"
+                  >
+                    {savePurpose.isPending ? "Saving..." : "Continue to Goals"} <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </motion.div>
               </div>
             </motion.div>
           )}

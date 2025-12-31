@@ -6,20 +6,28 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { 
   Compass, Target, Sparkles, Calendar, CheckCircle2, 
-  ArrowRight, Mountain, Heart, Flame, Star, ChevronRight
+  ArrowRight, Mountain, Heart, Flame, Star, ChevronRight,
+  Zap, TrendingUp, Award
 } from "lucide-react";
 
+const STAGE_COLORS = {
+  reflect: { bg: "from-violet-500 to-purple-600", light: "bg-violet-100", text: "text-violet-600", ring: "ring-violet-400" },
+  align: { bg: "from-blue-500 to-cyan-500", light: "bg-blue-100", text: "text-blue-600", ring: "ring-blue-400" },
+  plan: { bg: "from-emerald-500 to-teal-500", light: "bg-emerald-100", text: "text-emerald-600", ring: "ring-emerald-400" },
+  practice: { bg: "from-orange-500 to-amber-500", light: "bg-orange-100", text: "text-orange-600", ring: "ring-orange-400" },
+  review: { bg: "from-pink-500 to-rose-500", light: "bg-pink-100", text: "text-pink-600", ring: "ring-pink-400" },
+};
+
 const STAGES = [
-  { key: "reflect", label: "Reflect", icon: Compass, color: "bg-[hsl(var(--color-lavender))]" },
-  { key: "align", label: "Align", icon: Heart, color: "bg-[hsl(var(--color-sage))]" },
-  { key: "plan", label: "Plan", icon: Target, color: "bg-[hsl(var(--color-accent))]" },
-  { key: "practice", label: "Practice", icon: Flame, color: "bg-[hsl(var(--color-warning))]" },
-  { key: "review", label: "Review", icon: Star, color: "bg-[hsl(var(--color-success))]" },
+  { key: "reflect", label: "Reflect", icon: Compass, desc: "Assess where you are" },
+  { key: "align", label: "Align", icon: Heart, desc: "Clarify your values" },
+  { key: "plan", label: "Plan", icon: Target, desc: "Set SMART goals" },
+  { key: "practice", label: "Practice", icon: Flame, desc: "Build daily habits" },
+  { key: "review", label: "Review", icon: Star, desc: "Track & adjust" },
 ];
 
 export function VisionPage() {
@@ -61,8 +69,12 @@ export function VisionPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse text-primary">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-violet-50 via-white to-cyan-50">
+        <motion.div 
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          className="w-12 h-12 rounded-full border-4 border-violet-200 border-t-violet-600"
+        />
       </div>
     );
   }
@@ -93,65 +105,104 @@ export function VisionPage() {
   return (
     <>
       <Navbar />
-      <main className="min-h-screen bg-gradient-to-b from-[hsl(var(--color-paper))] to-white">
-        <section className="py-20 px-4">
-          <div className="max-w-4xl mx-auto text-center">
+      <main className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-cyan-50 overflow-hidden">
+        <section className="relative py-20 px-4">
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-violet-400/20 to-purple-400/20 rounded-full blur-3xl" />
+            <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-cyan-400/20 to-blue-400/20 rounded-full blur-3xl" />
+          </div>
+          
+          <div className="max-w-4xl mx-auto text-center relative z-10">
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
+              transition={{ duration: 0.8 }}
             >
-              <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full mb-6">
-                <Mountain className="w-4 h-4" />
-                <span className="text-sm font-medium">Life Vision & Goals</span>
-              </div>
-              <h1 className="text-4xl md:text-5xl font-display font-bold text-primary mb-6">
-                Design Your Best Season Yet
+              <motion.div 
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                className="inline-flex items-center gap-2 bg-gradient-to-r from-violet-500 to-purple-600 text-white px-5 py-2.5 rounded-full mb-8 shadow-lg shadow-violet-200"
+              >
+                <Zap className="w-4 h-4" />
+                <span className="text-sm font-semibold">Life Vision & Goals</span>
+              </motion.div>
+              
+              <h1 className="text-5xl md:text-6xl font-display font-bold mb-6">
+                <span className="bg-gradient-to-r from-violet-600 via-purple-600 to-cyan-600 bg-clip-text text-transparent">
+                  Design Your Best
+                </span>
+                <br />
+                <span className="text-slate-800">Season Yet</span>
               </h1>
-              <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
+              
+              <p className="text-lg text-slate-600 mb-10 max-w-2xl mx-auto leading-relaxed">
                 An interactive journey to discover your purpose, set meaningful goals, 
                 and build habits that stick. Whether you're starting fresh or realigning, 
                 this is your space to dream, plan, and grow.
               </p>
-              <Button 
-                size="lg" 
-                onClick={() => setShowOnboarding(true)}
-                className="gap-2"
-                data-testid="button-start-vision"
+              
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
               >
-                Start Your Vision Journey <ArrowRight className="w-4 h-4" />
-              </Button>
+                <Button 
+                  size="lg" 
+                  onClick={() => setShowOnboarding(true)}
+                  className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white px-8 py-6 text-lg rounded-2xl shadow-xl shadow-violet-200 gap-3"
+                  data-testid="button-start-vision"
+                >
+                  Start Your Vision Journey 
+                  <ArrowRight className="w-5 h-5" />
+                </Button>
+              </motion.div>
             </motion.div>
           </div>
         </section>
 
-        <section className="py-16 px-4 bg-white">
+        <section className="py-20 px-4 relative">
           <div className="max-w-5xl mx-auto">
-            <h2 className="text-2xl font-display font-bold text-center text-primary mb-12">
-              The 5-Stage Pathway
-            </h2>
-            <div className="grid md:grid-cols-5 gap-4">
-              {STAGES.map((stage, i) => (
-                <motion.div
-                  key={stage.key}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.1 }}
-                  className="text-center"
-                >
-                  <div className={`w-16 h-16 rounded-full ${stage.color} mx-auto flex items-center justify-center mb-3`}>
-                    <stage.icon className="w-8 h-8 text-white" />
-                  </div>
-                  <h3 className="font-semibold text-primary">{stage.label}</h3>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {stage.key === "reflect" && "Assess where you are"}
-                    {stage.key === "align" && "Clarify your values"}
-                    {stage.key === "plan" && "Set SMART goals"}
-                    {stage.key === "practice" && "Build daily habits"}
-                    {stage.key === "review" && "Track & adjust"}
-                  </p>
-                </motion.div>
-              ))}
+            <motion.h2 
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              className="text-3xl font-display font-bold text-center mb-4"
+            >
+              <span className="bg-gradient-to-r from-violet-600 to-cyan-600 bg-clip-text text-transparent">
+                The 5-Stage Pathway
+              </span>
+            </motion.h2>
+            <p className="text-center text-slate-500 mb-12 max-w-lg mx-auto">
+              A proven framework to transform your dreams into daily action
+            </p>
+            
+            <div className="relative">
+              <div className="hidden md:block absolute top-1/2 left-0 right-0 h-1 bg-gradient-to-r from-violet-200 via-emerald-200 to-pink-200 -translate-y-1/2 rounded-full" />
+              
+              <div className="grid md:grid-cols-5 gap-6">
+                {STAGES.map((stage, i) => {
+                  const colors = STAGE_COLORS[stage.key as keyof typeof STAGE_COLORS];
+                  return (
+                    <motion.div
+                      key={stage.key}
+                      initial={{ opacity: 0, y: 30 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: i * 0.1 }}
+                      className="text-center relative z-10"
+                    >
+                      <motion.div 
+                        whileHover={{ scale: 1.1, rotate: 5 }}
+                        className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${colors.bg} mx-auto flex items-center justify-center mb-4 shadow-lg`}
+                      >
+                        <stage.icon className="w-10 h-10 text-white" />
+                      </motion.div>
+                      <h3 className={`font-bold text-lg ${colors.text}`}>{stage.label}</h3>
+                      <p className="text-sm text-slate-500 mt-1">{stage.desc}</p>
+                    </motion.div>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </section>
@@ -159,34 +210,55 @@ export function VisionPage() {
         <section className="py-16 px-4">
           <div className="max-w-4xl mx-auto">
             <div className="grid md:grid-cols-2 gap-8">
-              <Card className="border-2 hover:border-primary/30 transition-colors">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Compass className="w-5 h-5 text-accent" />
-                    Classic Mode
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Focus on life design, goal-setting, and personal growth using 
-                    proven frameworks like Wheel of Life and Ikigai.
-                  </p>
-                </CardContent>
-              </Card>
-              <Card className="border-2 hover:border-accent/30 transition-colors">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Sparkles className="w-5 h-5 text-accent" />
-                    Faith & Reflection Mode
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Includes prayer prompts, Scripture reflections, and spiritual 
-                    dimensions woven throughout the journey.
-                  </p>
-                </CardContent>
-              </Card>
+              <motion.div
+                initial={{ opacity: 0, x: -30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                whileHover={{ y: -5 }}
+              >
+                <Card className="border-0 shadow-xl bg-white/70 backdrop-blur-sm hover:shadow-2xl transition-all duration-300 overflow-hidden">
+                  <div className="h-2 bg-gradient-to-r from-violet-500 to-purple-600" />
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-3 text-xl">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg">
+                        <Compass className="w-6 h-6 text-white" />
+                      </div>
+                      Classic Mode
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-slate-600 leading-relaxed">
+                      Focus on life design, goal-setting, and personal growth using 
+                      proven frameworks like Wheel of Life and Ikigai.
+                    </p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+              
+              <motion.div
+                initial={{ opacity: 0, x: 30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                whileHover={{ y: -5 }}
+              >
+                <Card className="border-0 shadow-xl bg-white/70 backdrop-blur-sm hover:shadow-2xl transition-all duration-300 overflow-hidden">
+                  <div className="h-2 bg-gradient-to-r from-amber-400 to-orange-500" />
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-3 text-xl">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg">
+                        <Sparkles className="w-6 h-6 text-white" />
+                      </div>
+                      Faith & Reflection
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-slate-600 leading-relaxed">
+                      Includes prayer prompts, Scripture reflections, and spiritual 
+                      dimensions woven throughout the journey.
+                    </p>
+                  </CardContent>
+                </Card>
+              </motion.div>
             </div>
           </div>
         </section>
@@ -223,90 +295,136 @@ function OnboardingFlow({
   onComplete: () => void;
   isSubmitting: boolean;
 }) {
+  const themeColors = ["from-violet-500 to-purple-600", "from-blue-500 to-cyan-500", "from-emerald-500 to-teal-500", "from-orange-500 to-amber-500", "from-pink-500 to-rose-500", "from-indigo-500 to-blue-600", "from-teal-500 to-green-500", "from-rose-500 to-pink-600"];
+  const themeWords = ["Focus", "Growth", "Courage", "Peace", "Purpose", "Joy", "Discipline", "Freedom"];
+  
   const steps = [
     {
       title: "Choose Your Mode",
+      subtitle: "How would you like to approach this journey?",
       content: (
-        <div className="space-y-6">
-          <p className="text-muted-foreground text-center">
-            How would you like to approach this journey?
-          </p>
-          <div className="grid gap-4">
-            <button
-              onClick={() => setMode("classic")}
-              className={`p-6 rounded-xl border-2 text-left transition-all ${
-                mode === "classic" ? "border-primary bg-primary/5" : "border-border hover:border-primary/30"
-              }`}
-              data-testid="button-mode-classic"
-            >
-              <div className="flex items-center gap-3 mb-2">
-                <Compass className="w-6 h-6 text-primary" />
-                <span className="font-semibold text-primary">Classic</span>
+        <div className="space-y-4">
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setMode("classic")}
+            className={`w-full p-6 rounded-2xl border-2 text-left transition-all ${
+              mode === "classic" 
+                ? "border-violet-400 bg-gradient-to-br from-violet-50 to-purple-50 shadow-lg" 
+                : "border-slate-200 hover:border-violet-300 bg-white"
+            }`}
+            data-testid="button-mode-classic"
+          >
+            <div className="flex items-center gap-4">
+              <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${
+                mode === "classic" ? "bg-gradient-to-br from-violet-500 to-purple-600 shadow-lg" : "bg-slate-100"
+              }`}>
+                <Compass className={`w-7 h-7 ${mode === "classic" ? "text-white" : "text-slate-400"}`} />
               </div>
-              <p className="text-sm text-muted-foreground">
-                Life design focused on goals, habits, and personal growth
-              </p>
-            </button>
-            <button
-              onClick={() => setMode("faith")}
-              className={`p-6 rounded-xl border-2 text-left transition-all ${
-                mode === "faith" ? "border-accent bg-accent/5" : "border-border hover:border-accent/30"
-              }`}
-              data-testid="button-mode-faith"
-            >
-              <div className="flex items-center gap-3 mb-2">
-                <Sparkles className="w-6 h-6 text-accent" />
-                <span className="font-semibold text-accent">Faith & Reflection</span>
+              <div>
+                <span className={`font-bold text-lg ${mode === "classic" ? "text-violet-700" : "text-slate-700"}`}>Classic</span>
+                <p className="text-sm text-slate-500 mt-1">
+                  Life design focused on goals, habits, and personal growth
+                </p>
               </div>
-              <p className="text-sm text-muted-foreground">
-                Includes prayer prompts and Scripture throughout the journey
-              </p>
-            </button>
-          </div>
+            </div>
+          </motion.button>
+          
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setMode("faith")}
+            className={`w-full p-6 rounded-2xl border-2 text-left transition-all ${
+              mode === "faith" 
+                ? "border-amber-400 bg-gradient-to-br from-amber-50 to-orange-50 shadow-lg" 
+                : "border-slate-200 hover:border-amber-300 bg-white"
+            }`}
+            data-testid="button-mode-faith"
+          >
+            <div className="flex items-center gap-4">
+              <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${
+                mode === "faith" ? "bg-gradient-to-br from-amber-400 to-orange-500 shadow-lg" : "bg-slate-100"
+              }`}>
+                <Sparkles className={`w-7 h-7 ${mode === "faith" ? "text-white" : "text-slate-400"}`} />
+              </div>
+              <div>
+                <span className={`font-bold text-lg ${mode === "faith" ? "text-amber-700" : "text-slate-700"}`}>Faith & Reflection</span>
+                <p className="text-sm text-slate-500 mt-1">
+                  Includes prayer prompts and Scripture throughout the journey
+                </p>
+              </div>
+            </div>
+          </motion.button>
         </div>
       ),
     },
     {
       title: "What Season Is This?",
+      subtitle: "Name this season of your life",
       content: (
         <div className="space-y-6">
-          <p className="text-muted-foreground text-center">
-            Name this season of your life
-          </p>
-          <div className="grid gap-4">
-            <button
+          <div className="grid gap-3">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => {
                 setSeasonType("new_year");
                 setSeasonLabel("2025 Reset");
               }}
-              className={`p-4 rounded-xl border-2 text-left transition-all ${
-                seasonType === "new_year" ? "border-primary bg-primary/5" : "border-border hover:border-primary/30"
+              className={`p-5 rounded-2xl border-2 text-left transition-all ${
+                seasonType === "new_year" 
+                  ? "border-emerald-400 bg-gradient-to-br from-emerald-50 to-teal-50 shadow-lg" 
+                  : "border-slate-200 hover:border-emerald-300 bg-white"
               }`}
               data-testid="button-season-newyear"
             >
-              <span className="font-semibold text-primary">New Year Reset</span>
-            </button>
-            <button
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                  seasonType === "new_year" ? "bg-gradient-to-br from-emerald-500 to-teal-500" : "bg-slate-100"
+                }`}>
+                  <Star className={`w-5 h-5 ${seasonType === "new_year" ? "text-white" : "text-slate-400"}`} />
+                </div>
+                <span className={`font-semibold ${seasonType === "new_year" ? "text-emerald-700" : "text-slate-700"}`}>
+                  New Year Reset
+                </span>
+              </div>
+            </motion.button>
+            
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => {
                 setSeasonType("new_season");
                 setSeasonLabel("Spring Reset");
               }}
-              className={`p-4 rounded-xl border-2 text-left transition-all ${
-                seasonType === "new_season" ? "border-primary bg-primary/5" : "border-border hover:border-primary/30"
+              className={`p-5 rounded-2xl border-2 text-left transition-all ${
+                seasonType === "new_season" 
+                  ? "border-cyan-400 bg-gradient-to-br from-cyan-50 to-blue-50 shadow-lg" 
+                  : "border-slate-200 hover:border-cyan-300 bg-white"
               }`}
               data-testid="button-season-new"
             >
-              <span className="font-semibold text-primary">New Season / Fresh Start</span>
-            </button>
+              <div className="flex items-center gap-3">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                  seasonType === "new_season" ? "bg-gradient-to-br from-cyan-500 to-blue-500" : "bg-slate-100"
+                }`}>
+                  <TrendingUp className={`w-5 h-5 ${seasonType === "new_season" ? "text-white" : "text-slate-400"}`} />
+                </div>
+                <span className={`font-semibold ${seasonType === "new_season" ? "text-cyan-700" : "text-slate-700"}`}>
+                  New Season / Fresh Start
+                </span>
+              </div>
+            </motion.button>
           </div>
+          
           <div>
-            <Label htmlFor="seasonLabel">Season Name</Label>
+            <Label htmlFor="seasonLabel" className="text-slate-600 font-medium">Season Name</Label>
             <Input
               id="seasonLabel"
               value={seasonLabel}
               onChange={(e) => setSeasonLabel(e.target.value)}
               placeholder="e.g., 2025 Reset, Spring Renewal"
-              className="mt-2"
+              className="mt-2 rounded-xl border-slate-200 focus:border-violet-400 focus:ring-violet-100"
               data-testid="input-season-label"
             />
           </div>
@@ -315,33 +433,35 @@ function OnboardingFlow({
     },
     {
       title: "Pick a Theme Word",
+      subtitle: "Choose one word to anchor your season (optional)",
       content: (
         <div className="space-y-6">
-          <p className="text-muted-foreground text-center">
-            Choose one word to anchor your season (optional)
-          </p>
-          <div className="flex flex-wrap gap-2 justify-center">
-            {["Focus", "Growth", "Courage", "Peace", "Purpose", "Joy", "Discipline", "Freedom"].map((word) => (
-              <button
+          <div className="flex flex-wrap gap-3 justify-center">
+            {themeWords.map((word, i) => (
+              <motion.button
                 key={word}
+                whileHover={{ scale: 1.08, rotate: 2 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => setThemeWord(word)}
-                className={`px-4 py-2 rounded-full border transition-all ${
-                  themeWord === word ? "border-accent bg-accent text-white" : "border-border hover:border-accent"
+                className={`px-5 py-3 rounded-xl font-semibold transition-all ${
+                  themeWord === word 
+                    ? `bg-gradient-to-r ${themeColors[i]} text-white shadow-lg` 
+                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                 }`}
                 data-testid={`button-theme-${word.toLowerCase()}`}
               >
                 {word}
-              </button>
+              </motion.button>
             ))}
           </div>
           <div>
-            <Label htmlFor="themeWord">Or type your own</Label>
+            <Label htmlFor="themeWord" className="text-slate-600 font-medium">Or type your own</Label>
             <Input
               id="themeWord"
               value={themeWord}
               onChange={(e) => setThemeWord(e.target.value)}
               placeholder="Your theme word..."
-              className="mt-2"
+              className="mt-2 rounded-xl border-slate-200 focus:border-violet-400 focus:ring-violet-100"
               data-testid="input-theme-word"
             />
           </div>
@@ -351,53 +471,74 @@ function OnboardingFlow({
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[hsl(var(--color-paper))] to-white flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-cyan-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-20 w-72 h-72 bg-gradient-to-br from-violet-300/30 to-purple-300/30 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 right-20 w-72 h-72 bg-gradient-to-br from-cyan-300/30 to-blue-300/30 rounded-full blur-3xl" />
+      </div>
+      
       <motion.div
-        className="max-w-md w-full"
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
+        className="max-w-md w-full relative z-10"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
       >
-        <Card className="shadow-xl">
-          <CardHeader className="text-center pb-2">
-            <div className="flex justify-center mb-4">
+        <Card className="shadow-2xl border-0 bg-white/80 backdrop-blur-xl rounded-3xl overflow-hidden">
+          <div className="h-2 bg-gradient-to-r from-violet-500 via-purple-500 to-cyan-500" />
+          <CardHeader className="text-center pb-2 pt-8">
+            <div className="flex justify-center mb-6">
               {steps.map((_, i) => (
-                <div
+                <motion.div
                   key={i}
-                  className={`w-3 h-3 rounded-full mx-1 transition-colors ${
-                    i === step ? "bg-primary" : i < step ? "bg-primary/50" : "bg-border"
+                  className={`w-12 h-2 rounded-full mx-1 transition-all duration-300 ${
+                    i === step 
+                      ? "bg-gradient-to-r from-violet-500 to-purple-600" 
+                      : i < step 
+                        ? "bg-violet-300" 
+                        : "bg-slate-200"
                   }`}
+                  animate={{ scale: i === step ? 1.1 : 1 }}
                 />
               ))}
             </div>
-            <CardTitle className="text-xl">{steps[step].title}</CardTitle>
+            <CardTitle className="text-2xl bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">
+              {steps[step].title}
+            </CardTitle>
+            <p className="text-slate-500 mt-2">{steps[step].subtitle}</p>
           </CardHeader>
-          <CardContent className="pt-4">
+          <CardContent className="pt-6 px-8 pb-8">
             <AnimatePresence mode="wait">
               <motion.div
                 key={step}
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
               >
                 {steps[step].content}
               </motion.div>
             </AnimatePresence>
-            <div className="flex justify-between mt-8">
+            <div className="flex justify-between mt-10">
               <Button
                 variant="ghost"
                 onClick={() => setStep(Math.max(0, step - 1))}
                 disabled={step === 0}
+                className="text-slate-500 hover:text-slate-700"
               >
                 Back
               </Button>
               {step < steps.length - 1 ? (
-                <Button onClick={() => setStep(step + 1)} data-testid="button-next-step">
+                <Button 
+                  onClick={() => setStep(step + 1)} 
+                  className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 rounded-xl px-6"
+                  data-testid="button-next-step"
+                >
                   Next <ChevronRight className="w-4 h-4 ml-1" />
                 </Button>
               ) : (
                 <Button 
                   onClick={onComplete} 
                   disabled={isSubmitting}
+                  className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 rounded-xl px-6 shadow-lg"
                   data-testid="button-begin-journey"
                 >
                   {isSubmitting ? "Creating..." : "Begin Journey"} <ArrowRight className="w-4 h-4 ml-1" />
@@ -448,156 +589,165 @@ function VisionDashboard({ session }: { session: any }) {
   const hasGoals = goals?.length > 0;
   const hasHabits = habits?.length > 0;
 
+  const dashboardCards = [
+    {
+      id: "wheel",
+      title: "Wheel of Life",
+      icon: Target,
+      gradient: "from-violet-500 to-purple-600",
+      lightBg: "from-violet-50 to-purple-50",
+      desc: hasWheel ? "View & update your life assessment" : "Assess 8 areas of your life",
+      completed: hasWheel,
+      route: "wheel",
+      stage: "Stage 1: Reflect",
+    },
+    {
+      id: "values",
+      title: "Values & Purpose",
+      icon: Heart,
+      gradient: "from-blue-500 to-cyan-500",
+      lightBg: "from-blue-50 to-cyan-50",
+      desc: "Discover what matters most to you",
+      completed: false,
+      route: "values",
+      stage: "Stage 2: Align",
+    },
+    {
+      id: "goals",
+      title: "SMART Goals",
+      icon: Target,
+      gradient: "from-emerald-500 to-teal-500",
+      lightBg: "from-emerald-50 to-teal-50",
+      desc: hasGoals ? `${goals.length} goal${goals.length > 1 ? "s" : ""} set` : "Set meaningful, measurable goals",
+      completed: hasGoals,
+      route: "goals",
+      stage: "Stage 3: Plan",
+    },
+    {
+      id: "plan",
+      title: "90-Day Plan",
+      icon: Calendar,
+      gradient: "from-orange-500 to-amber-500",
+      lightBg: "from-orange-50 to-amber-50",
+      desc: "Break down your goals into action",
+      completed: false,
+      route: "plan",
+      stage: "Stage 3: Plan",
+    },
+    {
+      id: "habits",
+      title: "Habit Tracker",
+      icon: Flame,
+      gradient: "from-orange-500 to-amber-500",
+      lightBg: "from-orange-50 to-amber-50",
+      desc: hasHabits ? `${habits.length} habit${habits.length > 1 ? "s" : ""} tracking` : "Build daily habits that stick",
+      completed: hasHabits,
+      route: "habits",
+      stage: "Stage 4: Practice",
+    },
+    {
+      id: "checkin",
+      title: "Check-ins",
+      icon: CheckCircle2,
+      gradient: "from-pink-500 to-rose-500",
+      lightBg: "from-pink-50 to-rose-50",
+      desc: "Daily focus & weekly reviews",
+      completed: false,
+      route: "checkin",
+      stage: "Stage 5: Review",
+    },
+  ];
+
   return (
     <>
       <Navbar />
-      <main className="min-h-screen bg-gradient-to-b from-[hsl(var(--color-paper))] to-white py-8 px-4">
-        <div className="max-w-5xl mx-auto">
-          <div className="flex items-center justify-between mb-8">
+      <main className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-cyan-50 py-8 px-4">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-violet-300/20 to-purple-300/20 rounded-full blur-3xl" />
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-cyan-300/20 to-blue-300/20 rounded-full blur-3xl" />
+        </div>
+        
+        <div className="max-w-5xl mx-auto relative z-10">
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-4"
+          >
             <div>
-              <h1 className="text-3xl font-display font-bold text-primary">
-                {session.seasonLabel || "My Vision Journey"}
+              <h1 className="text-4xl font-display font-bold">
+                <span className="bg-gradient-to-r from-violet-600 via-purple-600 to-cyan-600 bg-clip-text text-transparent">
+                  {session.seasonLabel || "My Vision Journey"}
+                </span>
               </h1>
               {session.themeWord && (
-                <p className="text-accent font-medium mt-1">Theme: {session.themeWord}</p>
+                <div className="flex items-center gap-2 mt-3">
+                  <span className="text-slate-500">Theme:</span>
+                  <span className="px-4 py-1.5 bg-gradient-to-r from-violet-500 to-purple-600 text-white rounded-full font-semibold text-sm shadow-md">
+                    {session.themeWord}
+                  </span>
+                </div>
               )}
             </div>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            
+            <motion.div whileHover={{ scale: 1.05 }}>
               {session.mode === "faith" ? (
-                <span className="flex items-center gap-1 bg-accent/10 text-accent px-3 py-1 rounded-full">
-                  <Sparkles className="w-3 h-3" /> Faith Mode
+                <span className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-400 to-orange-500 text-white px-5 py-2.5 rounded-full shadow-lg font-semibold">
+                  <Sparkles className="w-4 h-4" /> Faith Mode
                 </span>
               ) : (
-                <span className="flex items-center gap-1 bg-primary/10 text-primary px-3 py-1 rounded-full">
-                  <Compass className="w-3 h-3" /> Classic Mode
+                <span className="inline-flex items-center gap-2 bg-gradient-to-r from-violet-500 to-purple-600 text-white px-5 py-2.5 rounded-full shadow-lg font-semibold">
+                  <Compass className="w-4 h-4" /> Classic Mode
                 </span>
               )}
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Card 
-              className={`cursor-pointer hover:shadow-lg transition-shadow ${hasWheel ? "border-green-200 bg-green-50/50" : ""}`}
-              onClick={() => navigate(`/vision/${session.id}/wheel`)}
-              data-testid="card-wheel-of-life"
-            >
-              <CardHeader className="pb-2">
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <div className="w-10 h-10 rounded-full bg-[hsl(var(--color-lavender))]/20 flex items-center justify-center">
-                    <Target className="w-5 h-5 text-[hsl(var(--color-lavender))]" />
-                  </div>
-                  Wheel of Life
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  {hasWheel ? "View & update your life assessment" : "Assess 8 areas of your life"}
-                </p>
-                {hasWheel && <CheckCircle2 className="w-5 h-5 text-green-500 mt-2" />}
-              </CardContent>
-            </Card>
-
-            <Card 
-              className="cursor-pointer hover:shadow-lg transition-shadow"
-              onClick={() => navigate(`/vision/${session.id}/values`)}
-              data-testid="card-values"
-            >
-              <CardHeader className="pb-2">
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <div className="w-10 h-10 rounded-full bg-[hsl(var(--color-sage))]/20 flex items-center justify-center">
-                    <Heart className="w-5 h-5 text-[hsl(var(--color-sage))]" />
-                  </div>
-                  Values & Purpose
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  Discover what matters most to you
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card 
-              className={`cursor-pointer hover:shadow-lg transition-shadow ${hasGoals ? "border-green-200 bg-green-50/50" : ""}`}
-              onClick={() => navigate(`/vision/${session.id}/goals`)}
-              data-testid="card-goals"
-            >
-              <CardHeader className="pb-2">
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center">
-                    <Target className="w-5 h-5 text-accent" />
-                  </div>
-                  SMART Goals
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  {hasGoals ? `${goals.length} goal${goals.length > 1 ? "s" : ""} set` : "Set meaningful, measurable goals"}
-                </p>
-                {hasGoals && <CheckCircle2 className="w-5 h-5 text-green-500 mt-2" />}
-              </CardContent>
-            </Card>
-
-            <Card 
-              className="cursor-pointer hover:shadow-lg transition-shadow"
-              onClick={() => navigate(`/vision/${session.id}/plan`)}
-              data-testid="card-plan"
-            >
-              <CardHeader className="pb-2">
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <div className="w-10 h-10 rounded-full bg-[hsl(var(--color-warning))]/20 flex items-center justify-center">
-                    <Calendar className="w-5 h-5 text-[hsl(var(--color-warning))]" />
-                  </div>
-                  90-Day Plan
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  Break down your goals into action
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card 
-              className={`cursor-pointer hover:shadow-lg transition-shadow ${hasHabits ? "border-green-200 bg-green-50/50" : ""}`}
-              onClick={() => navigate(`/vision/${session.id}/habits`)}
-              data-testid="card-habits"
-            >
-              <CardHeader className="pb-2">
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <div className="w-10 h-10 rounded-full bg-[hsl(var(--color-success))]/20 flex items-center justify-center">
-                    <Flame className="w-5 h-5 text-[hsl(var(--color-success))]" />
-                  </div>
-                  Habit Tracker
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  {hasHabits ? `${habits.length} habit${habits.length > 1 ? "s" : ""} tracking` : "Build daily habits that stick"}
-                </p>
-                {hasHabits && <CheckCircle2 className="w-5 h-5 text-green-500 mt-2" />}
-              </CardContent>
-            </Card>
-
-            <Card 
-              className="cursor-pointer hover:shadow-lg transition-shadow"
-              onClick={() => navigate(`/vision/${session.id}/checkin`)}
-              data-testid="card-checkin"
-            >
-              <CardHeader className="pb-2">
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                    <CheckCircle2 className="w-5 h-5 text-primary" />
-                  </div>
-                  Check-ins
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  Daily focus & weekly reviews
-                </p>
-              </CardContent>
-            </Card>
+            {dashboardCards.map((card, i) => (
+              <motion.div
+                key={card.id}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.1 }}
+                whileHover={{ y: -8, scale: 1.02 }}
+                className="cursor-pointer"
+                onClick={() => navigate(`/vision/${session.id}/${card.route}`)}
+                data-testid={`card-${card.id}`}
+              >
+                <Card className={`h-full border-0 shadow-xl bg-white/80 backdrop-blur-sm hover:shadow-2xl transition-all duration-300 overflow-hidden rounded-2xl ${
+                  card.completed ? "ring-2 ring-emerald-400" : ""
+                }`}>
+                  <div className={`h-1.5 bg-gradient-to-r ${card.gradient}`} />
+                  <CardHeader className="pb-2">
+                    <div className={`inline-flex items-center gap-1.5 bg-gradient-to-r ${card.gradient} text-white px-3 py-1 rounded-full mb-3 text-xs font-semibold shadow-md w-fit`}>
+                      <Zap className="w-3 h-3" />
+                      {card.stage}
+                    </div>
+                    <CardTitle className="flex items-center gap-4">
+                      <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${card.gradient} flex items-center justify-center shadow-lg`}>
+                        <card.icon className="w-7 h-7 text-white" />
+                      </div>
+                      <span className="text-lg font-bold text-slate-800">{card.title}</span>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-slate-500">{card.desc}</p>
+                    {card.completed && (
+                      <motion.div 
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="flex items-center gap-2 mt-4"
+                      >
+                        <div className="w-6 h-6 rounded-full bg-gradient-to-br from-emerald-400 to-green-500 flex items-center justify-center shadow-md">
+                          <CheckCircle2 className="w-4 h-4 text-white" />
+                        </div>
+                        <span className="text-emerald-600 font-semibold text-sm">In Progress</span>
+                      </motion.div>
+                    )}
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
           </div>
         </div>
       </main>

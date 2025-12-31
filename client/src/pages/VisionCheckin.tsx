@@ -40,25 +40,55 @@ export function VisionCheckin() {
   return (
     <>
       <Navbar />
-      <main className="min-h-screen bg-gradient-to-b from-[hsl(var(--color-paper))] to-white py-8 px-4">
-        <div className="max-w-4xl mx-auto">
-          <Button variant="ghost" onClick={() => navigate(`/vision`)} className="mb-4" data-testid="button-back-dashboard">
+      <main className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-rose-50 py-8 px-4 relative overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-pink-300/20 to-rose-300/20 rounded-full blur-3xl" />
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-fuchsia-300/20 to-pink-300/20 rounded-full blur-3xl" />
+        </div>
+        
+        <div className="max-w-4xl mx-auto relative z-10">
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate(`/vision`)} 
+            className="mb-4 hover:bg-pink-100" 
+            data-testid="button-back-dashboard"
+          >
             <ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard
           </Button>
 
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-display font-bold text-primary mb-2">Check-ins</h1>
-            <p className="text-muted-foreground">
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center mb-10"
+          >
+            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-pink-500 to-rose-500 text-white px-4 py-2 rounded-full mb-4 shadow-lg">
+              <Sparkles className="w-4 h-4" />
+              <span className="text-sm font-semibold">Stage 5: Review</span>
+            </div>
+            <h1 className="text-4xl font-display font-bold mb-3">
+              <span className="bg-gradient-to-r from-pink-600 to-rose-600 bg-clip-text text-transparent">
+                Check-ins
+              </span>
+            </h1>
+            <p className="text-slate-600 max-w-lg mx-auto">
               Stay on track with daily focus and weekly reviews
             </p>
-          </div>
+          </motion.div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-2 mb-8">
-              <TabsTrigger value="daily" className="flex items-center gap-2" data-testid="tab-daily">
+            <TabsList className="grid w-full grid-cols-2 mb-8 bg-white/80 backdrop-blur-sm p-1.5 rounded-2xl shadow-lg border-0">
+              <TabsTrigger 
+                value="daily" 
+                className="flex items-center gap-2 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-pink-400 data-[state=active]:to-rose-500 data-[state=active]:text-white data-[state=active]:shadow-md" 
+                data-testid="tab-daily"
+              >
                 <Sun className="w-4 h-4" /> Daily Check-in
               </TabsTrigger>
-              <TabsTrigger value="weekly" className="flex items-center gap-2" data-testid="tab-weekly">
+              <TabsTrigger 
+                value="weekly" 
+                className="flex items-center gap-2 rounded-xl data-[state=active]:bg-gradient-to-r data-[state=active]:from-rose-500 data-[state=active]:to-fuchsia-500 data-[state=active]:text-white data-[state=active]:shadow-md" 
+                data-testid="tab-weekly"
+              >
                 <Calendar className="w-4 h-4" /> Weekly Review
               </TabsTrigger>
             </TabsList>

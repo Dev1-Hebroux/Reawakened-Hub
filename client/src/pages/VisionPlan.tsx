@@ -85,8 +85,12 @@ export function VisionPlan() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse text-primary">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 via-white to-amber-50">
+        <motion.div 
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          className="w-12 h-12 rounded-full border-4 border-orange-200 border-t-orange-600"
+        />
       </div>
     );
   }
@@ -94,18 +98,40 @@ export function VisionPlan() {
   return (
     <>
       <Navbar />
-      <main className="min-h-screen bg-gradient-to-b from-[hsl(var(--color-paper))] to-white py-8 px-4">
-        <div className="max-w-4xl mx-auto">
-          <Button variant="ghost" onClick={() => navigate(`/vision`)} className="mb-4" data-testid="button-back-dashboard">
+      <main className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50 py-8 px-4 relative overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-orange-300/20 to-amber-300/20 rounded-full blur-3xl" />
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-yellow-300/20 to-orange-300/20 rounded-full blur-3xl" />
+        </div>
+        
+        <div className="max-w-4xl mx-auto relative z-10">
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate(`/vision`)} 
+            className="mb-4 hover:bg-orange-100" 
+            data-testid="button-back-dashboard"
+          >
             <ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard
           </Button>
 
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-display font-bold text-primary mb-2">90-Day Plan</h1>
-            <p className="text-muted-foreground">
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center mb-10"
+          >
+            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white px-4 py-2 rounded-full mb-4 shadow-lg">
+              <Calendar className="w-4 h-4" />
+              <span className="text-sm font-semibold">Stage 4: Practice</span>
+            </div>
+            <h1 className="text-4xl font-display font-bold mb-3">
+              <span className="bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent">
+                90-Day Plan
+              </span>
+            </h1>
+            <p className="text-slate-600 max-w-lg mx-auto">
               Break down your vision into actionable steps for the next 90 days
             </p>
-          </div>
+          </motion.div>
 
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
             <Card>
@@ -275,7 +301,11 @@ export function VisionPlan() {
             </Card>
 
             <div className="flex justify-between">
-              <Button variant="ghost" onClick={() => navigate(`/vision/${sessionId}/goals`)}>
+              <Button 
+                variant="ghost" 
+                onClick={() => navigate(`/vision/${sessionId}/goals`)}
+                className="hover:bg-orange-100"
+              >
                 <ArrowLeft className="w-4 h-4 mr-2" /> Goals
               </Button>
               <div className="flex gap-2">
@@ -283,13 +313,20 @@ export function VisionPlan() {
                   variant="outline"
                   onClick={() => savePlan.mutate()}
                   disabled={savePlan.isPending}
+                  className="border-orange-300 hover:bg-orange-50"
                   data-testid="button-save-plan"
                 >
                   {savePlan.isPending ? "Saving..." : "Save Plan"}
                 </Button>
-                <Button onClick={() => navigate(`/vision/${sessionId}/habits`)} data-testid="button-to-habits">
-                  Habits <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
+                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                  <Button 
+                    onClick={() => navigate(`/vision/${sessionId}/habits`)} 
+                    className="bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 shadow-lg"
+                    data-testid="button-to-habits"
+                  >
+                    Habits <ArrowRight className="w-4 h-4 ml-2" />
+                  </Button>
+                </motion.div>
               </div>
             </div>
           </motion.div>

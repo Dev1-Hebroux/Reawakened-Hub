@@ -145,8 +145,12 @@ export function VisionGoals() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse text-primary">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-white to-teal-50">
+        <motion.div 
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          className="w-12 h-12 rounded-full border-4 border-emerald-200 border-t-emerald-600"
+        />
       </div>
     );
   }
@@ -157,24 +161,52 @@ export function VisionGoals() {
   return (
     <>
       <Navbar />
-      <main className="min-h-screen bg-gradient-to-b from-[hsl(var(--color-paper))] to-white py-8 px-4">
-        <div className="max-w-4xl mx-auto">
-          <Button variant="ghost" onClick={() => navigate(`/vision`)} className="mb-4" data-testid="button-back-dashboard">
+      <main className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 py-8 px-4 relative overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-emerald-300/20 to-teal-300/20 rounded-full blur-3xl" />
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-br from-cyan-300/20 to-blue-300/20 rounded-full blur-3xl" />
+        </div>
+        
+        <div className="max-w-4xl mx-auto relative z-10">
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate(`/vision`)} 
+            className="mb-4 hover:bg-emerald-100" 
+            data-testid="button-back-dashboard"
+          >
             <ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard
           </Button>
 
-          <div className="flex items-center justify-between mb-8">
+          <motion.div 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-4"
+          >
             <div>
-              <h1 className="text-3xl font-display font-bold text-primary mb-2">SMART Goals</h1>
-              <p className="text-muted-foreground">Set specific, measurable goals for this season</p>
+              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-4 py-2 rounded-full mb-4 shadow-lg">
+                <Target className="w-4 h-4" />
+                <span className="text-sm font-semibold">Stage 3: Plan</span>
+              </div>
+              <h1 className="text-4xl font-display font-bold">
+                <span className="bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+                  SMART Goals
+                </span>
+              </h1>
+              <p className="text-slate-600 mt-2">Set specific, measurable goals for this season</p>
             </div>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
-                <Button onClick={() => { setEditingGoal(null); resetForm(); }} data-testid="button-add-goal">
-                  <Plus className="w-4 h-4 mr-2" /> Add Goal
-                </Button>
+                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                  <Button 
+                    onClick={() => { setEditingGoal(null); resetForm(); }} 
+                    className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 shadow-lg rounded-xl"
+                    data-testid="button-add-goal"
+                  >
+                    <Plus className="w-4 h-4 mr-2" /> Add Goal
+                  </Button>
+                </motion.div>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border-0 shadow-2xl">
                 <DialogHeader>
                   <DialogTitle>{editingGoal ? "Edit Goal" : "Create New Goal"}</DialogTitle>
                 </DialogHeader>
@@ -288,7 +320,7 @@ export function VisionGoals() {
                 </div>
               </DialogContent>
             </Dialog>
-          </div>
+          </motion.div>
 
           {activeGoals.length === 0 && completedGoals.length === 0 && (
             <Card className="text-center py-12">
