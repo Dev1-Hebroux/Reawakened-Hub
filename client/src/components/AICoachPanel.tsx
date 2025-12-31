@@ -7,7 +7,7 @@ import { Sparkles, ChevronDown, ChevronUp, Lightbulb, Target, Heart, BookOpen, X
 
 interface AICoachPanelProps {
   sessionId: string | number;
-  tool: "wheel" | "values" | "goals" | "plan" | "habits" | "checkin";
+  tool: "wheel" | "values" | "goals" | "plan" | "habits" | "checkin" | "wdep" | "strengths" | "styles" | "eq" | "sca";
   data: Record<string, any>;
   title?: string;
   description?: string;

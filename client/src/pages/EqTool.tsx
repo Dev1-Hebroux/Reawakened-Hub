@@ -11,6 +11,7 @@ import {
   ArrowRight, BookOpen, Lightbulb, Eye, Users, Brain, Shield,
   Zap, Target, Star, Clock, Activity
 } from "lucide-react";
+import { AICoachPanel } from "@/components/AICoachPanel";
 
 const EQ_DOMAINS = [
   {
@@ -381,6 +382,23 @@ export function EqTool() {
               </Card>
             );
           })}
+        </div>
+
+        <div className="flex justify-center mb-6">
+          <AICoachPanel
+            sessionId={sessionId!}
+            tool="eq"
+            data={{
+              scores: {
+                selfAwareness: scores.get("self_awareness")?.score || 0,
+                selfManagement: scores.get("self_management")?.score || 0,
+                socialAwareness: scores.get("social_awareness")?.score || 0,
+                relationshipManagement: scores.get("relationship_management")?.score || 0,
+              },
+            }}
+            title="EQ Insights"
+            description="Develop your emotional intelligence"
+          />
         </div>
 
         <Card className="bg-gradient-to-br from-[#7C9A8E]/10 to-[#D4A574]/10 border-none mb-6">

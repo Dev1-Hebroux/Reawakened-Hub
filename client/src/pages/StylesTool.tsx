@@ -10,6 +10,7 @@ import {
   ArrowRight, BookOpen, Lightbulb, MessageCircle, Zap,
   Heart, Shield, Target, Crown, Star, Clock
 } from "lucide-react";
+import { AICoachPanel } from "@/components/AICoachPanel";
 
 const STYLE_PROFILES = [
   {
@@ -456,6 +457,25 @@ export function StylesTool() {
               </CardContent>
             </Card>
           )}
+
+          <div className="flex justify-center mb-6">
+            <AICoachPanel
+              sessionId={sessionId!}
+              tool="styles"
+              data={{
+                primaryStyle: primaryProfile?.name,
+                secondaryStyle: secondaryProfile?.name,
+                scores: {
+                  driver: styleScores.driver || 0,
+                  influencer: styleScores.expressive || 0,
+                  supporter: styleScores.amiable || 0,
+                  analyzer: styleScores.analytical || 0,
+                },
+              }}
+              title="Style Insights"
+              description="Learn to leverage your style"
+            />
+          </div>
 
           <Button
             onClick={() => navigate(`/vision/${sessionId}/growth`)}

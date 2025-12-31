@@ -3,7 +3,7 @@ import OpenAI from "openai";
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export interface AICoachRequest {
-  tool: "wheel" | "values" | "goals" | "plan" | "habits" | "checkin";
+  tool: "wheel" | "values" | "goals" | "plan" | "habits" | "checkin" | "wdep" | "strengths" | "styles" | "eq" | "sca";
   mode: "classic" | "faith";
   data: Record<string, any>;
   sessionContext?: {
@@ -182,6 +182,140 @@ Please provide:
 3. Celebration of wins and progress
 4. Strategic advice for next week
 5. Personalized encouragement
+`,
+
+  wdep: (data, context) => `
+Analyze this person's WDEP (Reality Therapy) exercise and provide coaching insights.
+WDEP is based on Choice Theory by William Glasser.
+
+W - WANTS (What do they really want?):
+${data.want || "Not yet defined"}
+
+D - DOING (What are they currently doing?):
+${data.doing || "Not yet defined"}
+
+E - EVALUATION (Is what they're doing helping?):
+${data.evaluate || "Not yet evaluated"}
+
+P - PLAN (What's their new plan?):
+${data.plan || "Not yet planned"}
+
+EXPERIMENT (7-day action):
+${data.experiment || "Not yet set"}
+
+${context.focusAreas ? `Their focus areas: ${context.focusAreas.join(", ")}` : ""}
+${context.themeWord ? `Theme word: ${context.themeWord}` : ""}
+
+Please provide:
+1. Insights on the gap between their wants and current behaviors
+2. Assessment of their self-evaluation honesty
+3. Feedback on their plan's likelihood of success
+4. Suggestions to make their 7-day experiment more effective
+5. Encouragement for taking ownership of their choices
+`,
+
+  strengths: (data, context) => `
+Analyze this person's character strengths discovery and help them apply their strengths.
+
+TOP 5 STRENGTHS SELECTED:
+${(data.topStrengths || []).map((s: any, i: number) => `${i + 1}. ${s.name}${s.meaning ? ` - "${s.meaning}"` : ""}`).join("\n")}
+
+${data.allStrengths ? `
+ALL STRENGTHS RATED:
+${data.allStrengths.map((s: any) => `- ${s.name}: ${s.rating || "Not rated"}`).join("\n")}
+` : ""}
+
+${context.focusAreas ? `Their focus areas: ${context.focusAreas.join(", ")}` : ""}
+${context.purposeStatement ? `Their purpose: ${context.purposeStatement}` : ""}
+
+Based on the VIA Character Strengths framework, please provide:
+1. Insights on their unique strengths combination
+2. How their top strengths work together synergistically
+3. Practical ways to use each strength daily
+4. How to leverage their strengths for their goals/focus areas
+5. Watch-outs (potential overuse of certain strengths)
+6. Encouragement about their character
+`,
+
+  styles: (data, context) => `
+Analyze this person's communication and behavioral style results and provide insights.
+
+PRIMARY STYLE: ${data.primaryStyle || "Not determined"}
+SECONDARY STYLE: ${data.secondaryStyle || "Not determined"}
+
+STYLE SCORES:
+- Driver (D): ${data.scores?.driver || 0}
+- Influencer (I): ${data.scores?.influencer || 0}
+- Supporter (S): ${data.scores?.supporter || 0}
+- Analyzer (C): ${data.scores?.analyzer || 0}
+
+${data.quizAnswers ? `
+NOTABLE RESPONSES:
+${Object.entries(data.quizAnswers).slice(0, 5).map(([q, a]) => `- Q${q}: ${a}`).join("\n")}
+` : ""}
+
+${context.focusAreas ? `Their focus areas: ${context.focusAreas.join(", ")}` : ""}
+
+Based on the DISC-inspired 4 Styles framework, please provide:
+1. What their style combination reveals about them
+2. Their natural strengths in communication and work
+3. Potential blind spots to be aware of
+4. How to flex their style when working with others
+5. Tips for their style when facing stress or conflict
+6. Encouragement about their unique contribution
+`,
+
+  eq: (data, context) => `
+Analyze this person's Emotional Intelligence assessment and provide development insights.
+
+EQ DOMAIN SCORES (1-10 scale):
+- Self-Awareness: ${data.scores?.selfAwareness || "Not assessed"}
+- Self-Management: ${data.scores?.selfManagement || "Not assessed"}
+- Social Awareness: ${data.scores?.socialAwareness || "Not assessed"}
+- Relationship Management: ${data.scores?.relationshipManagement || "Not assessed"}
+
+SELECTED PRACTICES:
+${(data.selectedPractices || []).map((p: any) => `- ${p.name} (${p.domain})`).join("\n") || "None selected yet"}
+
+${data.reflections ? `
+SELF-REFLECTIONS:
+${Object.entries(data.reflections).map(([domain, reflection]) => `- ${domain}: ${reflection}`).join("\n")}
+` : ""}
+
+${context.focusAreas ? `Their focus areas: ${context.focusAreas.join(", ")}` : ""}
+
+Based on the Daniel Goleman EQ framework, please provide:
+1. Analysis of their EQ profile balance
+2. Their strongest EQ domain and how to leverage it
+3. Priority area for development and why
+4. Specific micro-practices for their growth areas
+5. How EQ connects to their life goals
+6. Encouragement about their emotional growth journey
+`,
+
+  sca: (data, context) => `
+Analyze this person's Self-Concordant Action (Motivation Booster) exercise.
+
+ACTIVITY BEING BOOSTED: ${data.activity || "Not specified"}
+
+BASELINE MOTIVATION (before exercise): ${data.baselineMotivation || "Not rated"}/10
+
+FOCUS LIST (Reasons this matters):
+${(data.focusList || []).map((item: any, i: number) => `${i + 1}. ${item.reason}${item.rating ? ` (Impact: ${item.rating}/10)` : ""}`).join("\n") || "Not created yet"}
+
+FINAL MOTIVATION (after exercise): ${data.finalMotivation || "Not rated"}/10
+MOTIVATION CHANGE: ${data.finalMotivation && data.baselineMotivation ? `+${data.finalMotivation - data.baselineMotivation}` : "N/A"}
+
+${context.values ? `Their core values: ${context.values.join(", ")}` : ""}
+${context.purposeStatement ? `Their purpose: ${context.purposeStatement}` : ""}
+
+Based on Self-Concordance Theory (aligned with intrinsic motivation), please provide:
+1. Analysis of why their motivation increased (or didn't)
+2. Which reasons are most powerful and why
+3. Suggestions for additional intrinsic motivators
+4. How to maintain this motivation over time
+5. Connections between this activity and their deeper purpose
+6. Encouragement to take action now
 `,
 };
 

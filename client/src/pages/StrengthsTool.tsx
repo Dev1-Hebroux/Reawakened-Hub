@@ -14,6 +14,7 @@ import {
   Heart, Shield, Users, Brain, Zap, Eye, Target, Compass,
   Flame, Palette, Smile, ThumbsUp, Scale, Clock, Leaf
 } from "lucide-react";
+import { AICoachPanel } from "@/components/AICoachPanel";
 
 const CHARACTER_STRENGTHS = [
   { key: "creativity", name: "Creativity", icon: Palette, category: "Wisdom", desc: "Thinking of novel ways to do things" },
@@ -399,6 +400,25 @@ export function StrengthsTool() {
             </Card>
           );
         })}
+      </div>
+
+      <div className="flex justify-center mb-6">
+        <AICoachPanel
+          sessionId={sessionId!}
+          tool="strengths"
+          data={{
+            topStrengths: top5.map((key, i) => ({
+              name: CHARACTER_STRENGTHS.find(s => s.key === key)?.name,
+              rating: ratings.get(key),
+            })),
+            allStrengths: Array.from(ratings.entries()).map(([key, rating]) => ({
+              name: CHARACTER_STRENGTHS.find(s => s.key === key)?.name,
+              rating,
+            })),
+          }}
+          title="Strengths Insights"
+          description="Discover how to use your strengths"
+        />
       </div>
 
       <div className="space-y-3">

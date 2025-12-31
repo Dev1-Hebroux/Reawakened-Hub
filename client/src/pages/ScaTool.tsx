@@ -12,6 +12,7 @@ import {
   ArrowRight, BookOpen, Lightbulb, Target, Star, Plus, X,
   Flame, TrendingUp, Clock, Activity, GripVertical
 } from "lucide-react";
+import { AICoachPanel } from "@/components/AICoachPanel";
 
 interface FocusItem {
   id: string;
@@ -560,6 +561,24 @@ export function ScaTool() {
                 </CardContent>
               </Card>
             ))}
+          </div>
+
+          <div className="flex justify-center mb-6">
+            <AICoachPanel
+              sessionId={sessionId!}
+              tool="sca"
+              data={{
+                activity: focusItems[0]?.title || "Focus List",
+                focusList: focusItems.map(f => ({
+                  reason: f.title,
+                  rating: f.startMotivation,
+                })),
+                baselineMotivation: 5,
+                finalMotivation: Math.max(...focusItems.map(f => f.startMotivation)),
+              }}
+              title="Motivation Insights"
+              description="Deepen your intrinsic drive"
+            />
           </div>
 
           <Button

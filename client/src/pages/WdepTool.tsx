@@ -14,6 +14,7 @@ import {
   Scale, Map, Rocket, CheckCircle2, Sparkles, Calendar,
   Lightbulb, ArrowRight, BookOpen, Clock, Star, Zap
 } from "lucide-react";
+import { AICoachPanel } from "@/components/AICoachPanel";
 
 const STEPS = [
   { key: "intro", label: "Introduction", icon: Sparkles, color: "from-[#7C9A8E] to-[#6B8B7E]" },
@@ -508,6 +509,27 @@ export function WdepTool() {
           placeholder="Who will help keep you on track? How will you check in?"
           className="min-h-[60px] bg-white border-[#E8E4DE] rounded-xl"
           data-testid="input-accountability"
+        />
+      </div>
+
+      <div className="flex justify-center mb-6">
+        <AICoachPanel
+          sessionId={sessionId!}
+          tool="wdep"
+          data={{
+            want: data.wants.deepWant,
+            doing: [
+              data.doing.totalBehavior.acting,
+              data.doing.totalBehavior.thinking,
+              data.doing.totalBehavior.feeling,
+              data.doing.totalBehavior.physiology,
+            ].filter(Boolean).join(". "),
+            evaluate: `Getting closer: ${data.evaluation.gettingCloser}/10. Helpfulness: ${data.evaluation.helpfulness}/10. Insights: ${data.evaluation.insights}`,
+            plan: `Start now: ${data.plan.startNowAction}. Timeline: ${data.plan.timeline}. Accountability: ${data.plan.accountability}`,
+            experiment: data.plan.startNowAction,
+          }}
+          title="Reality Check Insights"
+          description="AI coaching for your plan"
         />
       </div>
 
