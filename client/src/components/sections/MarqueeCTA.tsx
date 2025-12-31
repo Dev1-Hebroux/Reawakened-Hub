@@ -61,7 +61,7 @@ export function MarqueeCTA() {
   };
 
   return (
-    <section className="py-24 bg-white overflow-hidden relative">
+    <section className="py-24 bg-gradient-to-b from-white via-white to-[#1a2744]/5 overflow-hidden relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12 flex flex-col md:flex-row justify-between items-end gap-6">
         <div>
           <span className="text-primary font-bold tracking-wider uppercase text-sm">Join the Movement</span>

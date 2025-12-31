@@ -58,7 +58,7 @@ export default function Home() {
         <Hero />
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-12 relative z-20">
-          <div className="bg-white rounded-[20px] shadow-xl p-8 md:p-12 grid grid-cols-2 md:grid-cols-4 gap-8 border border-gray-100">
+          <div className="bg-white rounded-[20px] shadow-xl p-8 md:p-12 grid grid-cols-2 md:grid-cols-4 gap-8 border border-[#1a2744]/10 ring-1 ring-[#1a2744]/5">
             {[
               { label: "Our Vision", value: "10k+", subtitle: "disciples by 2030" },
               { label: "Our Goal", value: "50+", subtitle: "nations reached" },

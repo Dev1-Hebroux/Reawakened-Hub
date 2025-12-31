@@ -35,7 +35,7 @@ export function Navbar() {
   const currentLogo = showDarkNav ? logoDark : logoLight;
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-white/95 backdrop-blur-md shadow-sm py-4' : 'bg-[#1a2744] py-6'}`}>
+    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-white/95 backdrop-blur-md shadow-sm py-4' : 'bg-gradient-to-b from-[#1a2744] via-[#1a2744]/70 to-transparent py-6'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
           <div className="flex-shrink-0">
@@ -44,7 +44,7 @@ export function Navbar() {
                 <img 
                   src={currentLogo} 
                   alt="The Reawakened One" 
-                  className="h-12 md:h-14 w-auto object-contain transition-all duration-300 drop-shadow-lg"
+                  className="h-16 md:h-20 w-auto object-contain transition-all duration-300 drop-shadow-lg"
                 />
               </div>
             </Link>
