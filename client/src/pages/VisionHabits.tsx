@@ -10,8 +10,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { ArrowLeft, Plus, Flame, Check, Trash2, Zap, TrendingUp, Calendar } from "lucide-react";
+import { ArrowLeft, Plus, Flame, Check, Trash2, Zap, TrendingUp, Calendar, Lightbulb, ArrowRight as ArrowRightIcon } from "lucide-react";
 import { AICoachPanel, IntroGuide } from "@/components/AICoachPanel";
+import { ToolLink } from "@/components/ToolLink";
 
 const getLast7Days = () => {
   const days = [];
@@ -269,6 +270,10 @@ export function VisionHabits() {
               ))}
             </div>
           </AnimatePresence>
+
+          {habits?.length > 0 && (
+            <StreakBreakMotivation habits={habits} sessionId={sessionId!} />
+          )}
         </div>
       </main>
       <Footer />
@@ -431,6 +436,49 @@ function calculateStreak(logs: any[], last7Days: string[]): number {
     }
   }
   return streak;
+}
+
+function StreakBreakMotivation({ habits, sessionId }: { habits: any[]; sessionId: string }) {
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayStr = yesterday.toISOString().split("T")[0];
+  const twoDaysAgo = new Date();
+  twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+  const twoDaysAgoStr = twoDaysAgo.toISOString().split("T")[0];
+
+  const dailyHabits = habits.filter((h: any) => h.frequency === "daily");
+
+  const { data: allLogs } = useQuery({
+    queryKey: ["/api/vision/habits/logs/recent", dailyHabits.map((h: any) => h.id).join(",")],
+    queryFn: async () => {
+      const logsPromises = dailyHabits.map(async (habit: any) => {
+        const res = await fetch(`/api/vision/habits/${habit.id}/logs`, { credentials: "include" });
+        if (!res.ok) return { habitId: habit.id, logs: [] };
+        const data = await res.json();
+        return { habitId: habit.id, logs: data.data || [] };
+      });
+      return Promise.all(logsPromises);
+    },
+    enabled: dailyHabits.length > 0,
+  });
+
+  const hasStreakBreak = allLogs?.some((habitData: any) => {
+    const completedLogs = habitData.logs.filter((l: any) => l.completed);
+    if (completedLogs.length === 0) return false;
+    
+    const twoDaysAgoLog = habitData.logs.find((l: any) => l.date === twoDaysAgoStr);
+    const yesterdayLog = habitData.logs.find((l: any) => l.date === yesterdayStr);
+    
+    return twoDaysAgoLog?.completed && !yesterdayLog?.completed;
+  });
+
+  if (!hasStreakBreak) return null;
+
+  return (
+    <div className="mt-6">
+      <ToolLink tool="sca" context="streak-break" />
+    </div>
+  );
 }
 
 export default VisionHabits;

@@ -10,8 +10,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { ArrowLeft, ArrowRight, Plus, Target, CheckCircle2, Edit2, Trash2, Calendar, TrendingUp } from "lucide-react";
+import { ArrowLeft, ArrowRight, Plus, Target, CheckCircle2, Edit2, Trash2, Calendar, TrendingUp, Lightbulb } from "lucide-react";
 import { AICoachPanel, IntroGuide } from "@/components/AICoachPanel";
+import { ToolLink } from "@/components/ToolLink";
 
 const SMART_LETTERS = [
   { letter: "S", label: "Specific", placeholder: "What exactly will you achieve? Be precise.", color: "#7C9A8E" },
@@ -406,6 +407,12 @@ export function VisionGoals() {
                 </Button>
               </CardContent>
             </Card>
+          )}
+
+          {activeGoals.length > 0 && (
+            <div className="mt-6">
+              <ToolLink tool="wdep" context="goal-stuck" />
+            </div>
           )}
 
           <AnimatePresence>

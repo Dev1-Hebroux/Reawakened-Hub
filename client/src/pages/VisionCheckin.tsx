@@ -10,8 +10,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Slider } from "@/components/ui/slider";
-import { ArrowLeft, Sun, Calendar, Sparkles, Check } from "lucide-react";
+import { ArrowLeft, Sun, Calendar, Sparkles, Check, Lightbulb, ArrowRight } from "lucide-react";
 import { AICoachPanel, IntroGuide } from "@/components/AICoachPanel";
+import { ToolLinkCompact } from "@/components/ToolLink";
 
 const getToday = () => new Date().toISOString().split("T")[0];
 const getWeekStart = () => {
@@ -429,6 +430,11 @@ function WeeklyReview({ sessionId, isFaithMode }: { sessionId: string; isFaithMo
                 className="mt-2 border-[#E8E4DE] focus:border-[#C17767] bg-[#FDFCFA]"
                 data-testid={`input-weekly-${q.key}`}
               />
+              {q.key === "obstacle" && obstacle && (
+                <div className="mt-2">
+                  <ToolLinkCompact tool="wdep" label="Work through obstacles with WDEP" sessionId={sessionId} />
+                </div>
+              )}
             </div>
           ))}
 
