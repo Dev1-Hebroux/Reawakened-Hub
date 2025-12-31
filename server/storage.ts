@@ -35,6 +35,15 @@ import {
   mentorCheckInLogs,
   dailyReflections,
   reflectionLogs,
+  coachProfiles,
+  sessionSlots,
+  sessionBookings,
+  sessionFollowUps,
+  feedbackCampaigns,
+  feedbackInvites,
+  feedbackAnswers,
+  feedbackSelfAssessment,
+  feedbackAggregates,
   type User,
   type UpsertUser,
   type Post,
@@ -103,6 +112,24 @@ import {
   type InsertBuddyCheckIn,
   type MentorCheckInLog,
   type InsertMentorCheckInLog,
+  type CoachProfile,
+  type InsertCoachProfile,
+  type SessionSlot,
+  type InsertSessionSlot,
+  type SessionBooking,
+  type InsertSessionBooking,
+  type SessionFollowUp,
+  type InsertSessionFollowUp,
+  type FeedbackCampaign,
+  type InsertFeedbackCampaign,
+  type FeedbackInvite,
+  type InsertFeedbackInvite,
+  type FeedbackAnswer,
+  type InsertFeedbackAnswer,
+  type FeedbackSelfAssessment,
+  type InsertFeedbackSelfAssessment,
+  type FeedbackAggregate,
+  type InsertFeedbackAggregate,
   pathwaySessions,
   wheelLifeEntries,
   focusAreas,
@@ -1811,6 +1838,175 @@ export class DatabaseStorage implements IStorage {
       engagedAt: new Date(),
     }).returning();
     return log;
+  }
+
+  // ===== SESSION BOOKING =====
+
+  async getCoachProfile(userId: string): Promise<CoachProfile | undefined> {
+    const [profile] = await db.select().from(coachProfiles).where(eq(coachProfiles.userId, userId));
+    return profile;
+  }
+
+  async getCoachProfileById(id: number): Promise<CoachProfile | undefined> {
+    const [profile] = await db.select().from(coachProfiles).where(eq(coachProfiles.id, id));
+    return profile;
+  }
+
+  async getAllActiveCoaches(): Promise<CoachProfile[]> {
+    return db.select().from(coachProfiles).where(eq(coachProfiles.isActive, true));
+  }
+
+  async createCoachProfile(data: InsertCoachProfile): Promise<CoachProfile> {
+    const [profile] = await db.insert(coachProfiles).values(data).returning();
+    return profile;
+  }
+
+  async updateCoachProfile(id: number, data: Partial<CoachProfile>): Promise<CoachProfile> {
+    const [profile] = await db.update(coachProfiles).set(data).where(eq(coachProfiles.id, id)).returning();
+    return profile;
+  }
+
+  async getAvailableSlots(coachId: number): Promise<SessionSlot[]> {
+    const now = new Date();
+    return db.select().from(sessionSlots)
+      .where(and(
+        eq(sessionSlots.coachId, coachId),
+        eq(sessionSlots.isBooked, false),
+        sql`${sessionSlots.startTime} > ${now}`
+      ))
+      .orderBy(sessionSlots.startTime);
+  }
+
+  async createSessionSlot(data: InsertSessionSlot): Promise<SessionSlot> {
+    const [slot] = await db.insert(sessionSlots).values(data).returning();
+    return slot;
+  }
+
+  async updateSessionSlot(id: number, data: Partial<SessionSlot>): Promise<SessionSlot> {
+    const [slot] = await db.update(sessionSlots).set(data).where(eq(sessionSlots.id, id)).returning();
+    return slot;
+  }
+
+  async getSessionBooking(id: number): Promise<SessionBooking | undefined> {
+    const [booking] = await db.select().from(sessionBookings).where(eq(sessionBookings.id, id));
+    return booking;
+  }
+
+  async getUserSessionBookings(userId: string): Promise<SessionBooking[]> {
+    return db.select().from(sessionBookings)
+      .where(eq(sessionBookings.userId, userId))
+      .orderBy(desc(sessionBookings.createdAt));
+  }
+
+  async getCoachSessionBookings(coachId: number): Promise<SessionBooking[]> {
+    return db.select().from(sessionBookings)
+      .where(eq(sessionBookings.coachId, coachId))
+      .orderBy(desc(sessionBookings.createdAt));
+  }
+
+  async createSessionBooking(data: InsertSessionBooking): Promise<SessionBooking> {
+    const [booking] = await db.insert(sessionBookings).values(data).returning();
+    if (data.slotId) {
+      await db.update(sessionSlots).set({ isBooked: true }).where(eq(sessionSlots.id, data.slotId));
+    }
+    return booking;
+  }
+
+  async updateSessionBooking(id: number, data: Partial<SessionBooking>): Promise<SessionBooking> {
+    const [booking] = await db.update(sessionBookings).set(data).where(eq(sessionBookings.id, id)).returning();
+    return booking;
+  }
+
+  async createSessionFollowUp(data: InsertSessionFollowUp): Promise<SessionFollowUp> {
+    const [followUp] = await db.insert(sessionFollowUps).values(data).returning();
+    return followUp;
+  }
+
+  async getSessionFollowUps(bookingId: number): Promise<SessionFollowUp[]> {
+    return db.select().from(sessionFollowUps)
+      .where(eq(sessionFollowUps.bookingId, bookingId))
+      .orderBy(desc(sessionFollowUps.createdAt));
+  }
+
+  // ===== MINI-360 FEEDBACK =====
+
+  async getFeedbackCampaign(id: number): Promise<FeedbackCampaign | undefined> {
+    const [campaign] = await db.select().from(feedbackCampaigns).where(eq(feedbackCampaigns.id, id));
+    return campaign;
+  }
+
+  async getUserFeedbackCampaigns(userId: string): Promise<FeedbackCampaign[]> {
+    return db.select().from(feedbackCampaigns)
+      .where(eq(feedbackCampaigns.userId, userId))
+      .orderBy(desc(feedbackCampaigns.createdAt));
+  }
+
+  async createFeedbackCampaign(data: InsertFeedbackCampaign): Promise<FeedbackCampaign> {
+    const [campaign] = await db.insert(feedbackCampaigns).values(data).returning();
+    return campaign;
+  }
+
+  async updateFeedbackCampaign(id: number, data: Partial<FeedbackCampaign>): Promise<FeedbackCampaign> {
+    const [campaign] = await db.update(feedbackCampaigns).set(data).where(eq(feedbackCampaigns.id, id)).returning();
+    return campaign;
+  }
+
+  async getFeedbackInvite(id: number): Promise<FeedbackInvite | undefined> {
+    const [invite] = await db.select().from(feedbackInvites).where(eq(feedbackInvites.id, id));
+    return invite;
+  }
+
+  async getFeedbackInviteByToken(token: string): Promise<FeedbackInvite | undefined> {
+    const [invite] = await db.select().from(feedbackInvites).where(eq(feedbackInvites.token, token));
+    return invite;
+  }
+
+  async getCampaignInvites(campaignId: number): Promise<FeedbackInvite[]> {
+    return db.select().from(feedbackInvites)
+      .where(eq(feedbackInvites.campaignId, campaignId));
+  }
+
+  async createFeedbackInvite(data: InsertFeedbackInvite): Promise<FeedbackInvite> {
+    const [invite] = await db.insert(feedbackInvites).values(data).returning();
+    return invite;
+  }
+
+  async updateFeedbackInvite(id: number, data: Partial<FeedbackInvite>): Promise<FeedbackInvite> {
+    const [invite] = await db.update(feedbackInvites).set(data).where(eq(feedbackInvites.id, id)).returning();
+    return invite;
+  }
+
+  async createFeedbackAnswer(data: InsertFeedbackAnswer): Promise<FeedbackAnswer> {
+    const [answer] = await db.insert(feedbackAnswers).values(data).returning();
+    return answer;
+  }
+
+  async getCampaignAnswers(campaignId: number): Promise<FeedbackAnswer[]> {
+    return db.select().from(feedbackAnswers)
+      .where(eq(feedbackAnswers.campaignId, campaignId));
+  }
+
+  async createFeedbackSelfAssessment(data: InsertFeedbackSelfAssessment): Promise<FeedbackSelfAssessment> {
+    const [assessment] = await db.insert(feedbackSelfAssessment).values(data).returning();
+    return assessment;
+  }
+
+  async getCampaignSelfAssessment(campaignId: number, userId: string): Promise<FeedbackSelfAssessment[]> {
+    return db.select().from(feedbackSelfAssessment)
+      .where(and(
+        eq(feedbackSelfAssessment.campaignId, campaignId),
+        eq(feedbackSelfAssessment.userId, userId)
+      ));
+  }
+
+  async createFeedbackAggregate(data: InsertFeedbackAggregate): Promise<FeedbackAggregate> {
+    const [aggregate] = await db.insert(feedbackAggregates).values(data).returning();
+    return aggregate;
+  }
+
+  async getCampaignAggregates(campaignId: number): Promise<FeedbackAggregate[]> {
+    return db.select().from(feedbackAggregates)
+      .where(eq(feedbackAggregates.campaignId, campaignId));
   }
 }
 

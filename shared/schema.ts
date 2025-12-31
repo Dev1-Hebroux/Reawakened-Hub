@@ -1428,6 +1428,77 @@ export const insertSafeguardingReportSchema = createInsertSchema(safeguardingRep
 export type InsertSafeguardingReport = z.infer<typeof insertSafeguardingReportSchema>;
 export type SafeguardingReport = typeof safeguardingReports.$inferSelect;
 
+// ===== SESSION BOOKING (Coaching/Mentoring Sessions) =====
+
+// Coach/mentor profiles
+export const coachProfiles = pgTable("coach_profiles", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id).unique(),
+  displayName: varchar("display_name").notNull(),
+  bio: text("bio"),
+  specialties: text("specialties").array(), // areas of expertise
+  sessionTypes: text("session_types").array(), // 'one-on-one', 'group', 'workshop'
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertCoachProfileSchema = createInsertSchema(coachProfiles).omit({ id: true, createdAt: true });
+export type InsertCoachProfile = z.infer<typeof insertCoachProfileSchema>;
+export type CoachProfile = typeof coachProfiles.$inferSelect;
+
+// Available time slots
+export const sessionSlots = pgTable("session_slots", {
+  id: serial("id").primaryKey(),
+  coachId: integer("coach_id").notNull().references(() => coachProfiles.id, { onDelete: 'cascade' }),
+  startTime: timestamp("start_time").notNull(),
+  endTime: timestamp("end_time").notNull(),
+  isBooked: boolean("is_booked").default(false),
+  sessionType: varchar("session_type").default("one-on-one"), // 'one-on-one', 'group'
+  maxParticipants: integer("max_participants").default(1),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertSessionSlotSchema = createInsertSchema(sessionSlots).omit({ id: true, createdAt: true });
+export type InsertSessionSlot = z.infer<typeof insertSessionSlotSchema>;
+export type SessionSlot = typeof sessionSlots.$inferSelect;
+
+// Session booking requests
+export const sessionBookings = pgTable("session_bookings", {
+  id: serial("id").primaryKey(),
+  sessionId: integer("session_id").references(() => pathwaySessions.id, { onDelete: 'set null' }),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  slotId: integer("slot_id").references(() => sessionSlots.id, { onDelete: 'set null' }),
+  coachId: integer("coach_id").references(() => coachProfiles.id, { onDelete: 'set null' }),
+  status: varchar("status").notNull().default("requested"), // 'requested', 'confirmed', 'completed', 'cancelled', 'no-show'
+  topic: varchar("topic"), // what they want to discuss
+  goals: text("goals"), // what they hope to achieve
+  preferredTimes: text("preferred_times").array(), // if no specific slot selected
+  notes: text("notes"), // user notes
+  coachNotes: text("coach_notes"), // private coach notes
+  meetingLink: varchar("meeting_link"), // zoom/meet link
+  completedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertSessionBookingSchema = createInsertSchema(sessionBookings).omit({ id: true, createdAt: true });
+export type InsertSessionBooking = z.infer<typeof insertSessionBookingSchema>;
+export type SessionBooking = typeof sessionBookings.$inferSelect;
+
+// Session follow-up notes
+export const sessionFollowUps = pgTable("session_follow_ups", {
+  id: serial("id").primaryKey(),
+  bookingId: integer("booking_id").notNull().references(() => sessionBookings.id, { onDelete: 'cascade' }),
+  authorId: varchar("author_id").notNull().references(() => users.id),
+  content: text("content").notNull(),
+  isPrivate: boolean("is_private").default(false), // coach-only notes
+  actionItems: text("action_items").array(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertSessionFollowUpSchema = createInsertSchema(sessionFollowUps).omit({ id: true, createdAt: true });
+export type InsertSessionFollowUp = z.infer<typeof insertSessionFollowUpSchema>;
+export type SessionFollowUp = typeof sessionFollowUps.$inferSelect;
+
 // ===== DAILY REFLECTIONS =====
 
 // Daily reflection prompts (admin-created content pool)
