@@ -2,11 +2,16 @@ import { useRef } from "react";
 import { motion } from "framer-motion";
 import { Play, Heart, ArrowRight } from "lucide-react";
 
+import identityImg from "@assets/17_1767182385479.png";
+import believeImg from "@assets/16_1767182385479.png";
+import hearingImg from "@assets/6_1767182385473.png";
+import boldnessImg from "@assets/19_1767182385480.png";
+
 const sparks = [
-  { id: 1, title: "Identity in Chaos", author: "Abraham", views: "12k", category: "Faith", image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=600" },
-  { id: 2, title: "Why I Believe", author: "Josh", views: "8.5k", category: "Testimony", image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=600" },
-  { id: 3, title: "Hearing God's Voice", author: "Abraham", views: "45k", category: "Teaching", image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=600" },
-  { id: 4, title: "Boldness at Work", author: "Sarah", views: "15k", category: "Lifestyle", image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=600" },
+  { id: 1, title: "Identity in Chaos", author: "Abraham", views: "12k", category: "Faith", image: identityImg },
+  { id: 2, title: "Why I Believe", author: "Josh", views: "8.5k", category: "Testimony", image: believeImg },
+  { id: 3, title: "Hearing God's Voice", author: "Abraham", views: "45k", category: "Teaching", image: hearingImg },
+  { id: 4, title: "Boldness at Work", author: "Sarah", views: "15k", category: "Lifestyle", image: boldnessImg },
 ];
 
 export function DailySparks() {
