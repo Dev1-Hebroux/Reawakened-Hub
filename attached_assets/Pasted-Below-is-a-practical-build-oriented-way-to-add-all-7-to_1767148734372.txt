@@ -1,0 +1,535 @@
+Below is a practical, build-oriented way to add **all 7 tools** to reawakened.one in a way that feels **young-adult friendly**, **non-clinical**, and **affordable/free where possible**—with a clear “level-up” path from your current basics into more sophisticated leadership development.
+
+I’ll start with what to introduce first (so you don’t overwhelm new users), then do a **deep dive per tool** including: (1) lightweight version, (2) advanced version, (3) solo workflow, (4) 1:1 + group session workflow, and (5) platform capabilities needed.
+
+---
+
+## What to introduce first (2–3 tools) without overwhelming users
+
+You already have strong “foundation tools” (Wheel of Life + SMART/90-day plan + habits). So the best next additions are the ones that feel **fun, self-discovery-based, and immediately useful** for relationships, study/career, and confidence.
+
+### Introduce first (Phase 2 “Personal Growth+”)
+
+1. **Strengths discovery (VIA-style)** – very engaging and positive, works for teens/young adults, easy to apply daily. ([viacharacter.org][1])
+2. **Communication styles (DISC-inspired “4 Styles”)** – improves relationships fast; highly relevant for Gen Z workplace, friendships, family. ([Discprofile.com][2])
+3. **EQ micro-skills check (Self-awareness → Relationship skills)** – a simple skills-based tracker feels practical and non-clinical. ([Psychology Today][3])
+
+### Add later (Phase 3 “Leadership+”)
+
+4. **360 feedback (Mini-360)** – powerful, but heavier; best after users have traction and maturity. ([Leadership Academy][4])
+
+You can still “show” the existence of all tools in a Library, but gate them by **readiness** so the journey stays light.
+
+---
+
+## Your “Scale-Up Path” (so it feels natural)
+
+Think tiers, not pressure:
+
+* **Tier 0: Foundations (Free / default)**
+
+  * Wheel of Life, Vision, SMART goals, 90-day plan, habits, weekly review. ([PositivePsychology.com][5])
+
+* **Tier 1: Personal Growth+ (Self-discovery)**
+
+  * Strengths, Communication Styles, EQ micro-skills.
+
+* **Tier 2: Leadership+ (For influence + teams)**
+
+  * 360 feedback, deeper EQ, leadership frameworks.
+
+* **Tier 3: Supported Sessions (Optional)**
+
+  * Users request a 1:1 or group “Lab” to go deeper with a coach/facilitator.
+
+You can label Tier 3 as “Get support” rather than “buy coaching,” to keep it ministry-friendly.
+
+---
+
+# Deep dive: Each tool (simplified + advanced + solo + sessions + platform capabilities)
+
+## Tool 1) Wheel of Life (Balance + focus)
+
+**Why it works:** Quick clarity. Widely used in coaching for assessing life areas and setting priorities. ([PositivePsychology.com][5])
+
+### Lightweight (platform-native)
+
+* 8–10 categories max
+* Sliders 1–10
+* Auto-insights: “Your lowest 2 areas are… pick one focus.”
+* “1 tiny action” per low area
+
+### Advanced (Leadership use)
+
+* Add “role-based wheels” (Student / Early career / Entrepreneur)
+* Add “before/after” trend view monthly
+
+### Solo workflow (on-platform)
+
+1. Score wheel (3 minutes)
+2. Choose 1–2 focus areas
+3. System suggests 3 goal options + user picks one
+4. Add one weekly anchor
+5. Dashboard tracks improvements month-to-month
+
+### 1:1 session workflow
+
+* Pre-work: complete wheel + write 3 lines of reflection
+* In session: interpret patterns, choose one “keystone” change
+* Post: export “Focus Plan” PDF + set 2-week check-in
+
+### Group session workflow (60–75 mins)
+
+* Individual scoring (10)
+* Small breakout: “What’s one area you want to strengthen?”
+* Group teach: “keystone habit concept”
+* Everyone leaves with 1 shared commitment + buddy check-in
+
+### Platform capabilities
+
+* Radar chart
+* Category templates by persona
+* Monthly re-score prompts
+* PDF export page (snapshot + plan)
+
+---
+
+## Tool 2) SMART Goals (plus “Key Results” thinking)
+
+SMART goals are a common goal framework (Specific, Measurable, Achievable, Relevant, Time-bound). ([Atlassian][6])
+
+### Lightweight (platform-native)
+
+* “Goal statement” + 3 Key Results (OKR-lite)
+* “Next step in 48 hours”
+* “If I fail, I restart like this…”
+
+### Advanced
+
+* Goal library by life area
+* Milestone timelines
+* “Evidence” upload (links, screenshots)
+
+### Solo workflow
+
+1. Pick one focus goal
+2. Define 3 Key Results
+3. Add milestones
+4. Add 1–3 habits that support it
+5. Weekly review updates progress
+
+### 1:1 session workflow
+
+* Coach reviews goal quality (clarity, realism)
+* Turn vague goals into measurable Key Results
+* Identify blockers and contingency plan
+
+### Group session workflow
+
+* Teach SMART in 8 minutes
+* Pair exercise: rewrite each other’s goals
+* Everyone leaves with a real plan
+
+### Platform capabilities
+
+* Goal templates
+* Progress tracking + streaks
+* Weekly review integration
+* Export: 90-day plan PDF
+
+---
+
+## Tool 3) GROW Coaching Model (self-coaching + guided coaching)
+
+GROW is a widely used coaching structure: Goal → Reality → Options → Will/Way Forward. ([Performance Consultants][7])
+
+### Lightweight (platform-native)
+
+Turn GROW into a weekly “Reset” flow:
+
+* **G:** What matters this week?
+* **R:** What’s real right now?
+* **O:** What could I do?
+* **W:** What will I do (top 3)?
+
+### Advanced
+
+* Add “decision GROW” (for major choices)
+* Add “conflict GROW” (relationships)
+
+### Solo workflow
+
+* Weekly Review is literally a GROW flow
+* User chooses next week priorities and commits
+
+### 1:1 session workflow (perfect structure)
+
+* Coach runs GROW live
+* Captures actions in-session
+* Sets next check-in date
+
+### Group session workflow
+
+* Group topic (e.g., “consistency”)
+* Breakouts run mini-GROW
+* Whole group share 1 commitment
+
+### Platform capabilities
+
+* “Run a GROW session” guided screen (solo)
+* Coach notes + action capture
+* Auto-generated recap + reminder
+
+---
+
+## Tool 4) Strengths (teen/young-adult friendly)
+
+### Best lightweight option (free or low-cost)
+
+**VIA Strengths Survey** is a popular strengths approach and offers a free survey experience on VIA’s site. ([viacharacter.org][1])
+
+**Why it’s Gen Z friendly:** it’s positive, identity-building, and feels like “finding your edge,” not “fixing what’s wrong.”
+
+### Advanced option (paid, well-known)
+
+**Gallup CliftonStrengths Top 5** is a common paid strengths assessment (published pricing is often around $24.99 for Top 5). ([Gallup.com][8])
+
+### How to simplify for the platform (without licensing issues)
+
+You have three good implementation choices:
+
+**Option A (Fast + free): “Strengths Cards” self-rating**
+
+* Users rate 24 strengths cards: “This sounds like me” → 1–5
+* Output: Top 5 strengths + “how to use them this week”
+* No external dependency
+
+**Option B (Bring-your-results):**
+
+* User takes VIA or CliftonStrengths elsewhere
+* They paste their Top 5 into reawakened.one
+* Platform generates a “Strengths Action Plan”
+
+**Option C (Optional integration):**
+
+* Integrate a paid assessment later if you choose licensing
+
+### Solo workflow
+
+1. Discover Top 5 strengths
+2. “Strengths in action” planner:
+
+   * How I’ll use Strength #1 this week
+   * How it helps my goal
+   * Watch-outs (overuse)
+3. Weekly review: “Where did my strengths show up?”
+
+### 1:1 session workflow (high impact)
+
+* Pre-work: strengths selected + 2 examples of when they used them
+* Session:
+
+  * connect strengths to career direction
+  * build “strength habits” (e.g., Curiosity → 20 min learning sprint)
+* Post: PDF “Strength Map” + next steps
+
+### Group session workflow
+
+* Everyone shares one strength and one way it helps others
+* Pair exercise: “strengths appreciation” (very community-building)
+* Finish with 7-day “use one strength daily” challenge
+
+### Platform capabilities
+
+* Strength cards / quiz
+* Strength-to-goal mapping
+* Strength habits suggestions
+* Export: Strengths Action Plan PDF
+
+---
+
+## Tool 5) DISC / Communication Styles (young-adult friendly version)
+
+DISC is commonly described as four behavioural styles (Dominance, Influence, Steadiness, Conscientiousness). ([Discprofile.com][2])
+
+### Important implementation note (practical)
+
+“DiSC” is trademarked in some commercial contexts. You can avoid licensing issues by building a **DISC-inspired “4 Communication Styles”** quiz that teaches the value without copying proprietary reports.
+
+### Lightweight (platform-native “4 Styles”)
+
+* Short quiz (12–20 questions)
+* Output:
+
+  * Your top style + secondary style
+  * How you communicate when calm
+  * What happens under stress
+  * How to work with other styles
+
+### Low-cost/free external options (optional “bring your results”)
+
+There are free DISC tests on various sites (useful for individuals), but for the platform, you’ll usually want an internal version to control quality and privacy. ([123test][9])
+
+### Solo workflow
+
+1. Take quiz
+2. Read your “Style Playbook” (1 page)
+3. Choose:
+
+   * one communication habit to practice this week
+4. Weekly review:
+
+   * “Where did my style help me?”
+   * “Where did it get in my way?”
+
+### 1:1 session workflow
+
+* Pre-work: quiz + one conflict scenario
+* Session: coach helps them adapt style to context (work, family, dating, friendships)
+* Post: “Difficult Conversations Script” personalised to their style
+
+### Group session workflow (very popular)
+
+* Everyone identifies their style
+* Activity: “How I want people to communicate with me”
+* Practice: role-play a simple scenario (feedback, boundaries, teamwork)
+
+### Platform capabilities
+
+* Quiz engine + style profiles
+* “Work with X style” mini-guides
+* Scenario practice prompts
+* Export: Style Playbook PDF
+
+---
+
+## Tool 6) Emotional Intelligence (EQ) (skills-based, non-clinical)
+
+EQ tools are widely used in leadership development; formal tools include EQ-i 2.0 / EQ 360 (paid), while many free quizzes exist for personal learning. ([Multi-Health Systems (MHS)][10])
+
+### Lightweight (platform-native “EQ Skills Check”)
+
+Keep it simple and skills-based:
+
+* Self-awareness
+* Self-management
+* Social awareness
+* Relationship management
+
+Each gets:
+
+* 5-item check-in score
+* one practice exercise for the week
+
+### Free/low-cost options (optional)
+
+* Psychology Today EI test (positioned as non-diagnostic). ([Psychology Today][3])
+* IHHP free EQ quiz. ([The Last Eight Percent][11])
+
+### Advanced option (paid)
+
+* EQ-i 2.0 / EQ 360 for deeper leadership coaching contexts. ([Multi-Health Systems (MHS)][10])
+
+### Solo workflow
+
+1. Take EQ skills check (5 mins)
+2. Pick one skill to practice weekly
+3. Daily: “emotion label” + “what I needed” prompt
+4. Weekly review: “one relationship win” + “one repair”
+
+### 1:1 session workflow
+
+* Pre-work: EQ check + one recurring situation (conflict, anxiety, motivation dip)
+* Session:
+
+  * identify triggers
+  * teach one regulation technique (simple and practical)
+  * plan one relational action
+* Post: 7-day practice plan + reflection prompts
+
+### Group session workflow
+
+* Short teaching: “name it to tame it” style emotional clarity
+* Pair practice: active listening
+* Group commitment: “one repair conversation this week”
+
+### Platform capabilities
+
+* EQ check-in module
+* Practice library (short exercises)
+* Weekly reflection prompts
+* Export: EQ Growth Plan PDF
+
+---
+
+## Tool 7) 360 Feedback (Mini-360 for young adults)
+
+360 feedback is designed to gather confidential perceptions from others (managers, peers, direct reports) to highlight strengths and development areas. ([Leadership Academy][4])
+
+### Lightweight (platform-native “Mini-360”)
+
+For Gen Z, keep it safe and simple:
+
+* Invite 3–5 people max
+* Anonymous by default (optional named feedback)
+* Short form (8–12 questions)
+* Emphasis on strengths + one growth area
+* Strong safeguarding: consent, boundaries, “no abuse” reporting
+
+### Advanced (enterprise-grade)
+
+CCL Benchmarks/Skillscope style 360s exist, but they’re usually organisation-driven and paid. ([CCL][12])
+
+### Solo workflow
+
+1. User chooses “who to invite”
+2. System sends secure feedback forms
+3. Platform aggregates into:
+
+   * Top strengths themes
+   * Top growth themes
+   * “Do more / Do less / Keep doing” summary
+4. User creates one 30-day behaviour goal
+
+### 1:1 session workflow (best use of 360)
+
+* Pre-work: user invites raters + completes self-rating
+* Session:
+
+  * coach helps interpret feedback without shame
+  * identify one growth behaviour
+  * create a practice plan and follow-up message
+* Post: “My 30-day leadership experiment” PDF
+
+### Group workflow (for cohorts / circles)
+
+* Optional; usually best once users are 18+ and stable
+* Group norms are essential:
+
+  * confidentiality
+  * kindness
+  * no public sharing of raw feedback
+* Each person shares only their chosen takeaway and action
+
+### Platform capabilities
+
+* Invite system (email links, expiring tokens)
+* Anonymous aggregation engine
+* Feedback moderation/reporting
+* Coaching notes + action plan generator
+* Export: 360 Summary + 30-day experiment PDF
+
+---
+
+# How “request a 1:1 or group session” should work (workflows + features)
+
+## 1) User-facing flow (simple and non-salesy)
+
+**CTA wording:** “Want support with this?” / “Explore this with a coach?” / “Join a workshop”
+
+### Step-by-step
+
+1. Choose format:
+
+   * “1:1 session”
+   * “Group Lab (60–90 mins)”
+2. Choose topic:
+
+   * Strengths / Communication / EQ / 360 / Goals / Direction
+3. Quick intake form (2 minutes):
+
+   * “What do you want help with?”
+   * “What would success look like?”
+   * “Any context we should know?”
+4. Choose time (or request callback)
+5. Confirmation:
+
+   * “You’re booked. Here’s your short pre-work.”
+
+## 2) Coach/facilitator flow (what your team needs)
+
+* Coach dashboard shows:
+
+  * user’s pathway summary
+  * completed tools + results
+  * goal, habits, last check-in
+* Session template auto-loads (agenda + prompts)
+* Coach records:
+
+  * insights
+  * action items
+  * next check-in date
+* After session:
+
+  * platform sends recap + next steps + export PDF
+
+## 3) Group Lab flow (repeatable, high-impact)
+
+For each tool, create a “Lab kit”:
+
+* 10-minute teaching
+* 15-minute personal work
+* 20-minute breakout discussion
+* 10-minute action plan
+* 5-minute close + encouragement
+
+---
+
+# Platform capabilities you should add to support “advanced tools”
+
+Here’s the practical feature set to make this scalable:
+
+## Core capabilities (needed for all advanced tools)
+
+* **Assessment/quiz engine** (multi-question, scoring, saved results)
+* **Template library** (workflows, prompts, session agendas)
+* **Coach dashboard** (summary + notes + action plan)
+* **Scheduling integration** (Calendly/Cal.com style)
+* **Exports** (PDF generator per tool)
+* **Reminders** (email + in-app; optional push later)
+* **Privacy & consent** (especially for 360 invites)
+
+## Special capabilities (for 360 specifically)
+
+* Invite links with token security
+* Anonymous aggregation
+* Abuse reporting + moderation workflow
+* “Under 18” restrictions (recommended)
+
+  * 360 enabled only for 18+ OR requires stricter safeguards
+
+---
+
+# How to keep it subtly ministry-friendly (without excluding seekers)
+
+* Default language stays inclusive (“meaning, values, direction”).
+* Faith features are **optional** and user-controlled.
+* In Faith mode, avoid assumptions; keep invitational tone:
+
+  * “If faith is part of your journey…”
+  * “Optional: prayer reflection…”
+
+This keeps the platform welcoming while still aligned with reawakened.one’s heart.
+
+---
+
+## If you want, I can turn this into build assets your team will love
+
+1. A **Tiered product roadmap** (Phase 2–3–4) with estimated scope by feature
+2. A **data model + API contracts** for each new tool (Strengths, 4 Styles, EQ, Mini-360)
+3. **Full scripts** for: 1:1 sessions and group labs (minute-by-minute facilitation guides)
+
+If you tell me whether you want the advanced tools released as **separate “tracks”** (e.g., Personal Growth Track vs Leadership Track) or as a single “Tool Library,” I’ll structure the rollout in the cleanest way.
+
+[1]: https://www.viacharacter.org/?utm_source=chatgpt.com "VIA Character Strengths Survey & Character Reports"
+[2]: https://www.discprofile.com/disc-styles?utm_source=chatgpt.com "The DiSC Styles"
+[3]: https://www.psychologytoday.com/gb/tests/personality/emotional-intelligence-test?utm_source=chatgpt.com "Emotional Intelligence Test / Quiz"
+[4]: https://www.leadershipacademy.nhs.uk/healthcare-leadership-model/360-degree-feedback-tool-2/?utm_source=chatgpt.com "360 Degree Feedback Tool"
+[5]: https://positivepsychology.com/wheel-of-life-coaching/?utm_source=chatgpt.com "The Wheel of Life: How to Apply It in Coaching"
+[6]: https://www.atlassian.com/blog/productivity/how-to-write-smart-goals?utm_source=chatgpt.com "How to write SMART goals (with examples)"
+[7]: https://www.performanceconsultants.com/resources/the-grow-model/?utm_source=chatgpt.com "A Complete Guide to the GROW Coaching Model"
+[8]: https://www.gallup.com/cliftonstrengths/en/253868/popular-cliftonstrengths-assessment-products.aspx?utm_source=chatgpt.com "Compare CliftonStrengths Assessment Options | EN"
+[9]: https://www.123test.com/disc-personality-test/?utm_source=chatgpt.com "DISC Personality Test. Free DISC Assessment for Everyone"
+[10]: https://mhs.com/eq-i-2-0/?utm_source=chatgpt.com "EQ-i 2.0 - Multi-Health Systems (MHS)"
+[11]: https://ihhp.com/free-eq-quiz/?utm_source=chatgpt.com "Test Your Emotional Intelligence With Our Free EQ Quiz"
+[12]: https://www.ccl.org/leadership-solutions/leadership-development-tools/leadership-assessments/benchmarks-360-assessments/?utm_source=chatgpt.com "Benchmarks® 360 Degree Assessments"

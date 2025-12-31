@@ -18,11 +18,11 @@ import {
 
 
 const STAGE_COLORS = {
-  reflect: { bg: "from-violet-500 to-purple-600", light: "bg-violet-100", text: "text-violet-600", ring: "ring-violet-400" },
-  align: { bg: "from-blue-500 to-cyan-500", light: "bg-blue-100", text: "text-blue-600", ring: "ring-blue-400" },
-  plan: { bg: "from-emerald-500 to-teal-500", light: "bg-emerald-100", text: "text-emerald-600", ring: "ring-emerald-400" },
-  practice: { bg: "from-orange-500 to-amber-500", light: "bg-orange-100", text: "text-orange-600", ring: "ring-orange-400" },
-  review: { bg: "from-pink-500 to-rose-500", light: "bg-pink-100", text: "text-pink-600", ring: "ring-pink-400" },
+  reflect: { bg: "from-[#7C9A8E] to-[#6B8B7E]", light: "bg-[#7C9A8E]/10", text: "text-[#7C9A8E]", ring: "ring-[#7C9A8E]" },
+  align: { bg: "from-[#9B8AA6] to-[#8A7995]", light: "bg-[#9B8AA6]/10", text: "text-[#9B8AA6]", ring: "ring-[#9B8AA6]" },
+  plan: { bg: "from-[#4A7C7C] to-[#3A6C6C]", light: "bg-[#4A7C7C]/10", text: "text-[#4A7C7C]", ring: "ring-[#4A7C7C]" },
+  practice: { bg: "from-[#D4A574] to-[#C49464]", light: "bg-[#D4A574]/10", text: "text-[#D4A574]", ring: "ring-[#D4A574]" },
+  review: { bg: "from-[#C17767] to-[#B16657]", light: "bg-[#C17767]/10", text: "text-[#C17767]", ring: "ring-[#C17767]" },
 };
 
 const STAGES = [
@@ -73,11 +73,11 @@ export function VisionPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-violet-50 via-white to-cyan-50">
+      <div className="min-h-screen flex items-center justify-center bg-[#FAF8F5]">
         <motion.div 
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          className="w-12 h-12 rounded-full border-4 border-violet-200 border-t-violet-600"
+          className="w-12 h-12 rounded-full border-4 border-[#E8E4DE] border-t-[#7C9A8E]"
         />
       </div>
     );
@@ -117,19 +117,19 @@ export function VisionPage() {
       icon: Compass, 
       title: "Discover Your Purpose", 
       desc: "Use the Wheel of Life and Ikigai frameworks to find clarity on what matters most.",
-      gradient: "from-violet-500 to-purple-600"
+      gradient: "from-[#7C9A8E] to-[#6B8B7E]"
     },
     { 
       icon: Target, 
       title: "Set Meaningful Goals", 
       desc: "Create SMART goals with real deadlines and measurable outcomes.",
-      gradient: "from-blue-500 to-cyan-500"
+      gradient: "from-[#4A7C7C] to-[#3A6C6C]"
     },
     { 
       icon: Flame, 
       title: "Build Lasting Habits", 
       desc: "Track daily habits and build consistency with streak tracking and accountability.",
-      gradient: "from-orange-500 to-amber-500"
+      gradient: "from-[#D4A574] to-[#C49464]"
     },
   ];
 
@@ -161,22 +161,22 @@ export function VisionPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0a1628] text-white font-sans">
+    <div className="min-h-screen bg-[#FAF8F5] font-sans">
       <Navbar />
       
       {/* Demo Modal */}
       <Dialog open={showDemoModal} onOpenChange={setShowDemoModal}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-[#0f1d32] border-white/10 text-white">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-[#FAF8F5] border-[#E8E4DE] text-[#2C3E2D]">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-white flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
+            <DialogTitle className="text-2xl font-bold text-[#2C3E2D] flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#7C9A8E] to-[#6B8B7E] flex items-center justify-center">
                 <Play className="w-5 h-5 text-white" />
               </div>
               Vision & Goal Frameworks
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 mt-4">
-            <p className="text-gray-300 text-sm">
+            <p className="text-[#6B7B6E] text-sm">
               Discover proven frameworks for designing your best season, with biblical principles woven throughout.
             </p>
             {demoFrameworks.map((framework, i) => (
@@ -185,16 +185,16 @@ export function VisionPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
-                className="bg-white/5 border border-white/10 rounded-xl p-4"
+                className="bg-white border border-[#E8E4DE] rounded-xl p-4"
               >
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center flex-shrink-0">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#7C9A8E] to-[#6B8B7E] flex items-center justify-center flex-shrink-0">
                     <framework.icon className="w-6 h-6 text-white" />
                   </div>
                   <div className="flex-1">
-                    <h4 className="font-bold text-white mb-1">{framework.title}</h4>
-                    <p className="text-sm text-gray-300 mb-2">{framework.desc}</p>
-                    <div className="flex items-center gap-2 text-xs text-amber-400">
+                    <h4 className="font-bold text-[#2C3E2D] mb-1">{framework.title}</h4>
+                    <p className="text-sm text-[#6B7B6E] mb-2">{framework.desc}</p>
+                    <div className="flex items-center gap-2 text-xs text-[#D4A574]">
                       <BookOpen className="w-3 h-3" />
                       <span className="italic">{framework.biblical}</span>
                     </div>
@@ -207,7 +207,7 @@ export function VisionPage() {
                 setShowDemoModal(false);
                 setShowOnboarding(true);
               }}
-              className="w-full bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white py-3 rounded-full mt-4"
+              className="w-full bg-[#7C9A8E] hover:bg-[#6B8B7E] text-white py-3 rounded-full mt-4"
             >
               Start Your Journey <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
@@ -215,12 +215,12 @@ export function VisionPage() {
         </DialogContent>
       </Dialog>
       
-      {/* Dark Gradient Hero */}
-      <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden pt-20">
+      {/* Warm Hero Section */}
+      <section className="relative min-h-[70vh] flex items-center justify-center overflow-hidden pt-20 pb-12">
         <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-violet-900/40 via-purple-900/30 to-cyan-900/40" />
-          <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-violet-500/15 rounded-full blur-[100px]" />
-          <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-cyan-500/15 rounded-full blur-[100px]" />
+          <div className="absolute inset-0 bg-gradient-to-br from-[#7C9A8E]/10 via-[#FAF8F5] to-[#D4A574]/10" />
+          <div className="absolute top-0 left-1/4 w-[300px] md:w-[500px] h-[300px] md:h-[500px] bg-[#7C9A8E]/10 rounded-full blur-[100px]" />
+          <div className="absolute bottom-0 right-1/4 w-[200px] md:w-[400px] h-[200px] md:h-[400px] bg-[#D4A574]/10 rounded-full blur-[100px]" />
         </div>
         
         <div className="relative z-10 max-w-3xl mx-auto px-4 text-center">
@@ -233,28 +233,28 @@ export function VisionPage() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.1 }}
-              className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 text-white px-4 py-2 rounded-full mb-6"
+              className="inline-flex items-center gap-2 bg-[#7C9A8E]/10 border border-[#7C9A8E]/30 text-[#7C9A8E] px-4 py-2 rounded-full mb-6"
             >
-              <Sparkles className="w-4 h-4 text-violet-300" />
+              <Sparkles className="w-4 h-4 text-[#7C9A8E]" />
               <span className="text-sm font-medium">Life Vision & Goals Pathway</span>
             </motion.div>
             
-            <h1 className="text-4xl md:text-6xl font-display font-bold mb-4 tracking-tight leading-tight" data-testid="text-vision-title">
+            <h1 className="text-3xl md:text-5xl lg:text-6xl font-display font-bold mb-4 tracking-tight leading-tight text-[#2C3E2D]" data-testid="text-vision-title">
               Design Your
-              <span className="bg-gradient-to-r from-violet-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent"> Best Season</span>
+              <span className="text-[#7C9A8E]"> Best Season</span>
             </h1>
             
-            <p className="text-base md:text-lg text-gray-300 mb-8 max-w-xl mx-auto leading-relaxed">
+            <p className="text-base md:text-lg text-[#6B7B6E] mb-8 max-w-xl mx-auto leading-relaxed">
               An interactive journey to discover your purpose, set meaningful goals, 
               and build habits that transform your life.
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <div className="flex flex-col gap-3 justify-center">
               <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                 <Button 
                   size="lg" 
                   onClick={() => setShowOnboarding(true)}
-                  className="bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white px-6 py-5 text-base rounded-full shadow-xl shadow-violet-500/25 gap-2"
+                  className="w-full sm:w-auto bg-[#7C9A8E] hover:bg-[#6B8B7E] text-white px-8 py-6 text-base rounded-full shadow-lg gap-2"
                   data-testid="button-start-vision"
                 >
                   Start Your Vision Journey 
@@ -266,7 +266,7 @@ export function VisionPage() {
                   variant="outline" 
                   size="lg"
                   onClick={() => setShowDemoModal(true)}
-                  className="border-white/20 text-white hover:bg-white/10 px-6 py-5 rounded-full text-base backdrop-blur-sm"
+                  className="w-full sm:w-auto border-[#7C9A8E] text-[#7C9A8E] hover:bg-[#7C9A8E]/10 px-8 py-6 rounded-full text-base"
                   data-testid="button-watch-demo"
                 >
                   <Play className="w-4 h-4 mr-2" /> Watch Demo
@@ -278,19 +278,19 @@ export function VisionPage() {
       </section>
 
       {/* Trust Badges */}
-      <section className="py-8 px-4 bg-[#0a1628]">
+      <section className="py-6 px-4 bg-[#FAF8F5]">
         <div className="max-w-2xl mx-auto">
-          <div className="flex flex-wrap justify-center gap-4">
+          <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-3">
             {trustBadges.map((badge, i) => (
               <motion.div 
                 key={i}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 + i * 0.1 }}
-                className="flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2.5 rounded-full"
+                className="flex items-center justify-center gap-2 bg-white border border-[#E8E4DE] px-4 py-3 rounded-full"
               >
-                <badge.icon className="w-4 h-4 text-violet-400" />
-                <span className="text-sm text-gray-300 font-medium">{badge.label}</span>
+                <badge.icon className="w-4 h-4 text-[#7C9A8E]" />
+                <span className="text-sm text-[#2C3E2D] font-medium">{badge.label}</span>
               </motion.div>
             ))}
           </div>
@@ -298,31 +298,31 @@ export function VisionPage() {
       </section>
 
       {/* Why This Pathway Section */}
-      <section className="py-16 px-4 bg-gradient-to-b from-[#0a1628] to-[#0f1d32]">
+      <section className="py-12 px-4 bg-white">
         <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-10">
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl md:text-3xl font-bold text-[#2C3E2D] mb-2">
               What You'll Discover
             </h2>
-            <p className="text-gray-400">
+            <p className="text-[#6B7B6E]">
               Transform dreams into daily action with proven frameworks
             </p>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {whyCards.map((card, i) => (
               <motion.div 
                 key={i}
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 + i * 0.1 }}
-                className="bg-white/5 border border-white/10 rounded-2xl p-6 text-center hover:bg-white/10 transition-colors"
+                className="bg-[#FAF8F5] border border-[#E8E4DE] rounded-2xl p-6 text-center hover:shadow-md transition-all"
               >
-                <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${card.gradient} flex items-center justify-center mx-auto mb-4 shadow-lg`}>
+                <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${card.gradient} flex items-center justify-center mx-auto mb-4 shadow-md`}>
                   <card.icon className="w-7 h-7 text-white" />
                 </div>
-                <h3 className="font-bold text-lg text-white mb-2">{card.title}</h3>
-                <p className="text-sm text-gray-400">{card.desc}</p>
+                <h3 className="font-bold text-lg text-[#2C3E2D] mb-2">{card.title}</h3>
+                <p className="text-sm text-[#6B7B6E]">{card.desc}</p>
               </motion.div>
             ))}
           </div>
@@ -330,25 +330,25 @@ export function VisionPage() {
       </section>
 
       {/* 5-Stage Journey Timeline */}
-      <section className="py-16 px-4 bg-[#0f1d32]">
+      <section className="py-12 px-4 bg-[#FAF8F5]">
         <div className="max-w-lg mx-auto">
-          <div className="text-center mb-10">
-            <div className="inline-flex items-center gap-2 bg-violet-500/20 text-violet-300 px-3 py-1.5 rounded-full text-xs font-bold mb-4">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center gap-2 bg-[#7C9A8E]/10 text-[#7C9A8E] px-3 py-1.5 rounded-full text-xs font-bold mb-4">
               <Target className="h-3 w-3" /> Your Path to Purpose
             </div>
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
+            <h2 className="text-2xl md:text-3xl font-bold text-[#2C3E2D] mb-2">
               The 5-Stage Pathway
             </h2>
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-[#6B7B6E]">
               A proven framework for intentional living
             </p>
           </div>
           
           {/* Vertical Timeline */}
           <div className="relative">
-            <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-gradient-to-b from-violet-500 via-blue-500 via-emerald-500 via-orange-500 to-pink-500" />
+            <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-gradient-to-b from-[#7C9A8E] via-[#9B8AA6] via-[#4A7C7C] via-[#D4A574] to-[#C17767]" />
             
-            <div className="space-y-6">
+            <div className="space-y-4">
               {STAGES.map((stage, i) => {
                 const colors = STAGE_COLORS[stage.key as keyof typeof STAGE_COLORS];
                 return (
@@ -359,13 +359,13 @@ export function VisionPage() {
                     transition={{ delay: 0.3 + i * 0.1 }}
                     className="flex items-center gap-4 pl-0"
                   >
-                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${colors.bg} flex items-center justify-center shadow-lg relative z-10`}>
+                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${colors.bg} flex items-center justify-center shadow-md relative z-10`}>
                       <stage.icon className="w-6 h-6 text-white" />
                     </div>
-                    <div className="flex-1 bg-white/5 border border-white/10 rounded-xl p-4">
+                    <div className="flex-1 bg-white border border-[#E8E4DE] rounded-xl p-4">
                       <span className={`text-xs font-bold ${colors.text}`}>Stage {i + 1}</span>
-                      <h3 className="font-bold text-white">{stage.label}</h3>
-                      <p className="text-xs text-gray-400">{stage.desc}</p>
+                      <h3 className="font-bold text-[#2C3E2D]">{stage.label}</h3>
+                      <p className="text-xs text-[#6B7B6E]">{stage.desc}</p>
                     </div>
                   </motion.div>
                 );
@@ -375,37 +375,37 @@ export function VisionPage() {
         </div>
       </section>
 
-      {/* Mode Selection - Dark Theme */}
-      <section className="py-16 px-4 bg-gradient-to-b from-[#0f1d32] to-[#0a1628]">
+      {/* Mode Selection */}
+      <section className="py-12 px-4 bg-white">
         <div className="max-w-2xl mx-auto">
-          <div className="text-center mb-10">
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl md:text-3xl font-bold text-[#2C3E2D] mb-2">
               Choose Your Approach
             </h2>
-            <p className="text-gray-400">
+            <p className="text-[#6B7B6E]">
               Two powerful modes to suit your journey
             </p>
           </div>
           
-          <div className="grid md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Classic Mode */}
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-5 hover:bg-white/10 transition-colors">
+            <div className="bg-[#FAF8F5] border border-[#E8E4DE] rounded-2xl p-5 hover:shadow-md transition-all">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#7C9A8E] to-[#6B8B7E] flex items-center justify-center shadow-md">
                   <Compass className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-white">Classic</h3>
-                  <p className="text-xs text-violet-400">Personal Growth</p>
+                  <h3 className="font-bold text-[#2C3E2D]">Classic</h3>
+                  <p className="text-xs text-[#7C9A8E]">Personal Growth</p>
                 </div>
               </div>
-              <p className="text-sm text-gray-400 mb-4">
+              <p className="text-sm text-[#6B7B6E] mb-4">
                 Focus on life design using Wheel of Life, Ikigai, and SMART goals.
               </p>
               <ul className="space-y-2">
                 {["Wheel of Life", "SMART Goals", "90-Day Plans", "Habit Tracking"].map((item, i) => (
-                  <li key={i} className="flex items-center gap-2 text-sm text-gray-300">
-                    <CheckCircle2 className="w-4 h-4 text-violet-400" />
+                  <li key={i} className="flex items-center gap-2 text-sm text-[#2C3E2D]">
+                    <CheckCircle2 className="w-4 h-4 text-[#7C9A8E]" />
                     {item}
                   </li>
                 ))}
@@ -413,23 +413,23 @@ export function VisionPage() {
             </div>
             
             {/* Faith Mode */}
-            <div className="bg-white/5 border border-amber-500/30 rounded-2xl p-5 hover:bg-white/10 transition-colors">
+            <div className="bg-[#FAF8F5] border-2 border-[#D4A574]/30 rounded-2xl p-5 hover:shadow-md transition-all">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#D4A574] to-[#C49464] flex items-center justify-center shadow-md">
                   <Heart className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-white">Faith & Reflection</h3>
-                  <p className="text-xs text-amber-400">Spiritual Integration</p>
+                  <h3 className="font-bold text-[#2C3E2D]">Faith & Reflection</h3>
+                  <p className="text-xs text-[#D4A574]">Spiritual Integration</p>
                 </div>
               </div>
-              <p className="text-sm text-gray-400 mb-4">
+              <p className="text-sm text-[#6B7B6E] mb-4">
                 Includes prayer prompts and Scripture woven throughout.
               </p>
               <ul className="space-y-2">
                 {["Biblical Foundations", "Prayer Prompts", "Faith-Aligned Purpose", "Spiritual Growth"].map((item, i) => (
-                  <li key={i} className="flex items-center gap-2 text-sm text-gray-300">
-                    <CheckCircle2 className="w-4 h-4 text-amber-400" />
+                  <li key={i} className="flex items-center gap-2 text-sm text-[#2C3E2D]">
+                    <CheckCircle2 className="w-4 h-4 text-[#D4A574]" />
                     {item}
                   </li>
                 ))}
@@ -440,25 +440,25 @@ export function VisionPage() {
       </section>
 
       {/* Testimonial */}
-      <section className="py-16 px-4 bg-[#0a1628]">
+      <section className="py-12 px-4 bg-[#FAF8F5]">
         <div className="max-w-2xl mx-auto">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-gradient-to-br from-violet-500/10 to-purple-500/10 border border-white/10 rounded-2xl p-8 text-center"
+            className="bg-white border border-[#E8E4DE] rounded-2xl p-6 md:p-8 text-center"
           >
-            <Quote className="w-10 h-10 text-violet-400 mx-auto mb-4 opacity-50" />
-            <p className="text-lg text-gray-200 italic mb-6">
+            <Quote className="w-10 h-10 text-[#7C9A8E] mx-auto mb-4 opacity-50" />
+            <p className="text-base md:text-lg text-[#2C3E2D] italic mb-6">
               "This pathway helped me finally get clarity on my purpose and set goals that actually stick. 
               The faith integration made it feel like more than just another planning tool."
             </p>
             <div className="flex items-center justify-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#7C9A8E] to-[#6B8B7E] flex items-center justify-center">
                 <span className="text-white font-bold text-sm">JM</span>
               </div>
               <div className="text-left">
-                <p className="font-semibold text-white text-sm">James M.</p>
-                <p className="text-xs text-gray-400">Completed the Vision Pathway</p>
+                <p className="font-semibold text-[#2C3E2D] text-sm">James M.</p>
+                <p className="text-xs text-[#6B7B6E]">Completed the Vision Pathway</p>
               </div>
             </div>
           </motion.div>
@@ -466,18 +466,18 @@ export function VisionPage() {
       </section>
 
       {/* Final CTA */}
-      <section className="py-16 px-4 bg-gradient-to-t from-[#0f1d32] to-[#0a1628]">
+      <section className="py-12 px-4 bg-white">
         <div className="max-w-lg mx-auto text-center">
-          <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
+          <h2 className="text-2xl md:text-3xl font-bold text-[#2C3E2D] mb-4">
             Ready to Design Your Best Season?
           </h2>
-          <p className="text-gray-400 mb-8">
+          <p className="text-[#6B7B6E] mb-8">
             Start your vision journey today and transform your dreams into reality.
           </p>
           <Button 
             size="lg" 
             onClick={() => setShowOnboarding(true)}
-            className="w-full sm:w-auto bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white px-8 py-5 text-base rounded-full shadow-xl shadow-violet-500/25"
+            className="w-full bg-[#7C9A8E] hover:bg-[#6B8B7E] text-white px-8 py-6 text-base rounded-full shadow-lg"
             data-testid="button-start-vision-bottom"
           >
             Begin Your Journey Today
@@ -517,7 +517,7 @@ function OnboardingFlow({
   onComplete: () => void;
   isSubmitting: boolean;
 }) {
-  const themeColors = ["from-violet-500 to-purple-600", "from-blue-500 to-cyan-500", "from-emerald-500 to-teal-500", "from-orange-500 to-amber-500", "from-pink-500 to-rose-500", "from-indigo-500 to-blue-600", "from-teal-500 to-green-500", "from-rose-500 to-pink-600"];
+  const themeColors = ["from-[#7C9A8E] to-[#6B8B7E]", "from-[#4A7C7C] to-[#3A6C6C]", "from-[#9B8AA6] to-[#8A7995]", "from-[#D4A574] to-[#C49464]", "from-[#C17767] to-[#B16657]", "from-[#6B8E8E] to-[#5A7D7D]", "from-[#8A9B7E] to-[#798A6D]", "from-[#B07E6E] to-[#9F6D5D]"];
   const themeWords = ["Focus", "Growth", "Courage", "Peace", "Purpose", "Joy", "Discipline", "Freedom"];
   
   const steps = [
@@ -530,22 +530,22 @@ function OnboardingFlow({
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => setMode("classic")}
-            className={`w-full p-6 rounded-2xl border-2 text-left transition-all ${
+            className={`w-full p-5 rounded-2xl border-2 text-left transition-all ${
               mode === "classic" 
-                ? "border-violet-400 bg-gradient-to-br from-violet-50 to-purple-50 shadow-lg" 
-                : "border-slate-200 hover:border-violet-300 bg-white"
+                ? "border-[#7C9A8E] bg-[#7C9A8E]/10 shadow-lg" 
+                : "border-[#E8E4DE] hover:border-[#7C9A8E]/50 bg-white"
             }`}
             data-testid="button-mode-classic"
           >
             <div className="flex items-center gap-4">
-              <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${
-                mode === "classic" ? "bg-gradient-to-br from-violet-500 to-purple-600 shadow-lg" : "bg-slate-100"
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                mode === "classic" ? "bg-gradient-to-br from-[#7C9A8E] to-[#6B8B7E] shadow-md" : "bg-[#E8E4DE]"
               }`}>
-                <Compass className={`w-7 h-7 ${mode === "classic" ? "text-white" : "text-slate-400"}`} />
+                <Compass className={`w-6 h-6 ${mode === "classic" ? "text-white" : "text-[#6B7B6E]"}`} />
               </div>
               <div>
-                <span className={`font-bold text-lg ${mode === "classic" ? "text-violet-700" : "text-slate-700"}`}>Classic</span>
-                <p className="text-sm text-slate-500 mt-1">
+                <span className={`font-bold text-base ${mode === "classic" ? "text-[#7C9A8E]" : "text-[#2C3E2D]"}`}>Classic</span>
+                <p className="text-sm text-[#6B7B6E] mt-1">
                   Life design focused on goals, habits, and personal growth
                 </p>
               </div>
@@ -556,22 +556,22 @@ function OnboardingFlow({
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => setMode("faith")}
-            className={`w-full p-6 rounded-2xl border-2 text-left transition-all ${
+            className={`w-full p-5 rounded-2xl border-2 text-left transition-all ${
               mode === "faith" 
-                ? "border-amber-400 bg-gradient-to-br from-amber-50 to-orange-50 shadow-lg" 
-                : "border-slate-200 hover:border-amber-300 bg-white"
+                ? "border-[#D4A574] bg-[#D4A574]/10 shadow-lg" 
+                : "border-[#E8E4DE] hover:border-[#D4A574]/50 bg-white"
             }`}
             data-testid="button-mode-faith"
           >
             <div className="flex items-center gap-4">
-              <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${
-                mode === "faith" ? "bg-gradient-to-br from-amber-400 to-orange-500 shadow-lg" : "bg-slate-100"
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                mode === "faith" ? "bg-gradient-to-br from-[#D4A574] to-[#C49464] shadow-md" : "bg-[#E8E4DE]"
               }`}>
-                <Heart className={`w-7 h-7 ${mode === "faith" ? "text-white" : "text-slate-400"}`} />
+                <Heart className={`w-6 h-6 ${mode === "faith" ? "text-white" : "text-[#6B7B6E]"}`} />
               </div>
               <div>
-                <span className={`font-bold text-lg ${mode === "faith" ? "text-amber-700" : "text-slate-700"}`}>Faith & Reflection</span>
-                <p className="text-sm text-slate-500 mt-1">
+                <span className={`font-bold text-base ${mode === "faith" ? "text-[#D4A574]" : "text-[#2C3E2D]"}`}>Faith & Reflection</span>
+                <p className="text-sm text-[#6B7B6E] mt-1">
                   Includes prayer prompts and Scripture throughout the journey
                 </p>
               </div>
@@ -593,20 +593,20 @@ function OnboardingFlow({
                 setSeasonType("new_year");
                 setSeasonLabel("2025 Reset");
               }}
-              className={`p-5 rounded-2xl border-2 text-left transition-all ${
+              className={`p-4 rounded-xl border-2 text-left transition-all ${
                 seasonType === "new_year" 
-                  ? "border-emerald-400 bg-gradient-to-br from-emerald-50 to-teal-50 shadow-lg" 
-                  : "border-slate-200 hover:border-emerald-300 bg-white"
+                  ? "border-[#7C9A8E] bg-[#7C9A8E]/10 shadow-md" 
+                  : "border-[#E8E4DE] hover:border-[#7C9A8E]/50 bg-white"
               }`}
               data-testid="button-season-newyear"
             >
               <div className="flex items-center gap-3">
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                  seasonType === "new_year" ? "bg-gradient-to-br from-emerald-500 to-teal-500" : "bg-slate-100"
+                  seasonType === "new_year" ? "bg-gradient-to-br from-[#7C9A8E] to-[#6B8B7E]" : "bg-[#E8E4DE]"
                 }`}>
-                  <Star className={`w-5 h-5 ${seasonType === "new_year" ? "text-white" : "text-slate-400"}`} />
+                  <Star className={`w-5 h-5 ${seasonType === "new_year" ? "text-white" : "text-[#6B7B6E]"}`} />
                 </div>
-                <span className={`font-semibold ${seasonType === "new_year" ? "text-emerald-700" : "text-slate-700"}`}>
+                <span className={`font-semibold ${seasonType === "new_year" ? "text-[#7C9A8E]" : "text-[#2C3E2D]"}`}>
                   New Year Reset
                 </span>
               </div>
@@ -619,20 +619,20 @@ function OnboardingFlow({
                 setSeasonType("new_season");
                 setSeasonLabel("Spring Reset");
               }}
-              className={`p-5 rounded-2xl border-2 text-left transition-all ${
+              className={`p-4 rounded-xl border-2 text-left transition-all ${
                 seasonType === "new_season" 
-                  ? "border-cyan-400 bg-gradient-to-br from-cyan-50 to-blue-50 shadow-lg" 
-                  : "border-slate-200 hover:border-cyan-300 bg-white"
+                  ? "border-[#4A7C7C] bg-[#4A7C7C]/10 shadow-md" 
+                  : "border-[#E8E4DE] hover:border-[#4A7C7C]/50 bg-white"
               }`}
               data-testid="button-season-new"
             >
               <div className="flex items-center gap-3">
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                  seasonType === "new_season" ? "bg-gradient-to-br from-cyan-500 to-blue-500" : "bg-slate-100"
+                  seasonType === "new_season" ? "bg-gradient-to-br from-[#4A7C7C] to-[#3A6C6C]" : "bg-[#E8E4DE]"
                 }`}>
-                  <TrendingUp className={`w-5 h-5 ${seasonType === "new_season" ? "text-white" : "text-slate-400"}`} />
+                  <TrendingUp className={`w-5 h-5 ${seasonType === "new_season" ? "text-white" : "text-[#6B7B6E]"}`} />
                 </div>
-                <span className={`font-semibold ${seasonType === "new_season" ? "text-cyan-700" : "text-slate-700"}`}>
+                <span className={`font-semibold ${seasonType === "new_season" ? "text-[#4A7C7C]" : "text-[#2C3E2D]"}`}>
                   New Season / Fresh Start
                 </span>
               </div>
@@ -640,13 +640,13 @@ function OnboardingFlow({
           </div>
           
           <div>
-            <Label htmlFor="seasonLabel" className="text-slate-600 font-medium">Season Name</Label>
+            <Label htmlFor="seasonLabel" className="text-[#6B7B6E] font-medium">Season Name</Label>
             <Input
               id="seasonLabel"
               value={seasonLabel}
               onChange={(e) => setSeasonLabel(e.target.value)}
               placeholder="e.g., 2025 Reset, Spring Renewal"
-              className="mt-2 rounded-xl border-slate-200 focus:border-violet-400 focus:ring-violet-100"
+              className="mt-2 rounded-xl border-[#E8E4DE] focus:border-[#7C9A8E] focus:ring-[#7C9A8E]/20"
               data-testid="input-season-label"
             />
           </div>
@@ -658,17 +658,17 @@ function OnboardingFlow({
       subtitle: "Choose one word to anchor your season (optional)",
       content: (
         <div className="space-y-6">
-          <div className="flex flex-wrap gap-3 justify-center">
+          <div className="flex flex-wrap gap-2 justify-center">
             {themeWords.map((word, i) => (
               <motion.button
                 key={word}
-                whileHover={{ scale: 1.08, rotate: 2 }}
+                whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setThemeWord(word)}
-                className={`px-5 py-3 rounded-xl font-semibold transition-all ${
+                className={`px-4 py-2.5 rounded-xl font-semibold text-sm transition-all ${
                   themeWord === word 
-                    ? `bg-gradient-to-r ${themeColors[i]} text-white shadow-lg` 
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    ? `bg-gradient-to-r ${themeColors[i]} text-white shadow-md` 
+                    : "bg-[#E8E4DE] text-[#2C3E2D] hover:bg-[#D4D0CA]"
                 }`}
                 data-testid={`button-theme-${word.toLowerCase()}`}
               >
@@ -677,13 +677,13 @@ function OnboardingFlow({
             ))}
           </div>
           <div>
-            <Label htmlFor="themeWord" className="text-slate-600 font-medium">Or type your own</Label>
+            <Label htmlFor="themeWord" className="text-[#6B7B6E] font-medium">Or type your own</Label>
             <Input
               id="themeWord"
               value={themeWord}
               onChange={(e) => setThemeWord(e.target.value)}
               placeholder="Your theme word..."
-              className="mt-2 rounded-xl border-slate-200 focus:border-violet-400 focus:ring-violet-100"
+              className="mt-2 rounded-xl border-[#E8E4DE] focus:border-[#7C9A8E] focus:ring-[#7C9A8E]/20"
               data-testid="input-theme-word"
             />
           </div>
@@ -693,10 +693,10 @@ function OnboardingFlow({
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-violet-50 via-white to-cyan-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#FAF8F5] flex items-center justify-center p-4">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-20 w-72 h-72 bg-gradient-to-br from-violet-300/30 to-purple-300/30 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 right-20 w-72 h-72 bg-gradient-to-br from-cyan-300/30 to-blue-300/30 rounded-full blur-3xl" />
+        <div className="absolute top-20 left-10 md:left-20 w-48 md:w-72 h-48 md:h-72 bg-[#7C9A8E]/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-20 right-10 md:right-20 w-48 md:w-72 h-48 md:h-72 bg-[#D4A574]/10 rounded-full blur-3xl" />
       </div>
       
       <motion.div
@@ -704,30 +704,30 @@ function OnboardingFlow({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <Card className="shadow-2xl border-0 bg-white/80 backdrop-blur-xl rounded-3xl overflow-hidden">
-          <div className="h-2 bg-gradient-to-r from-violet-500 via-purple-500 to-cyan-500" />
-          <CardHeader className="text-center pb-2 pt-8">
-            <div className="flex justify-center mb-6">
+        <Card className="shadow-xl border border-[#E8E4DE] bg-white rounded-2xl overflow-hidden">
+          <div className="h-1.5 bg-gradient-to-r from-[#7C9A8E] via-[#4A7C7C] to-[#D4A574]" />
+          <CardHeader className="text-center pb-2 pt-6">
+            <div className="flex justify-center mb-4">
               {steps.map((_, i) => (
                 <motion.div
                   key={i}
-                  className={`w-12 h-2 rounded-full mx-1 transition-all duration-300 ${
+                  className={`w-10 h-1.5 rounded-full mx-1 transition-all duration-300 ${
                     i === step 
-                      ? "bg-gradient-to-r from-violet-500 to-purple-600" 
+                      ? "bg-[#7C9A8E]" 
                       : i < step 
-                        ? "bg-violet-300" 
-                        : "bg-slate-200"
+                        ? "bg-[#7C9A8E]/50" 
+                        : "bg-[#E8E4DE]"
                   }`}
                   animate={{ scale: i === step ? 1.1 : 1 }}
                 />
               ))}
             </div>
-            <CardTitle className="text-2xl bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">
+            <CardTitle className="text-xl text-[#2C3E2D]">
               {steps[step].title}
             </CardTitle>
-            <p className="text-slate-500 mt-2">{steps[step].subtitle}</p>
+            <p className="text-[#6B7B6E] mt-2 text-sm">{steps[step].subtitle}</p>
           </CardHeader>
-          <CardContent className="pt-6 px-8 pb-8">
+          <CardContent className="pt-4 px-5 pb-6">
             <AnimatePresence mode="wait">
               <motion.div
                 key={step}
@@ -739,19 +739,19 @@ function OnboardingFlow({
                 {steps[step].content}
               </motion.div>
             </AnimatePresence>
-            <div className="flex justify-between mt-10">
+            <div className="flex justify-between mt-8">
               <Button
                 variant="ghost"
                 onClick={() => setStep(Math.max(0, step - 1))}
                 disabled={step === 0}
-                className="text-slate-500 hover:text-slate-700"
+                className="text-[#6B7B6E] hover:text-[#2C3E2D] hover:bg-[#E8E4DE]"
               >
                 Back
               </Button>
               {step < steps.length - 1 ? (
                 <Button 
                   onClick={() => setStep(step + 1)} 
-                  className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 rounded-xl px-6"
+                  className="bg-[#7C9A8E] hover:bg-[#6B8B7E] rounded-xl px-6 py-5"
                   data-testid="button-next-step"
                 >
                   Next <ChevronRight className="w-4 h-4 ml-1" />
@@ -760,7 +760,7 @@ function OnboardingFlow({
                 <Button 
                   onClick={onComplete} 
                   disabled={isSubmitting}
-                  className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 rounded-xl px-6 shadow-lg"
+                  className="bg-[#7C9A8E] hover:bg-[#6B8B7E] rounded-xl px-6 py-5 shadow-md"
                   data-testid="button-begin-journey"
                 >
                   {isSubmitting ? "Creating..." : "Begin Journey"} <ArrowRight className="w-4 h-4 ml-1" />
@@ -816,8 +816,8 @@ function VisionDashboard({ session }: { session: any }) {
       id: "wheel",
       title: "Wheel of Life",
       icon: Target,
-      gradient: "from-violet-500 to-purple-600",
-      lightBg: "from-violet-50 to-purple-50",
+      gradient: "from-[#7C9A8E] to-[#6B8B7E]",
+      lightBg: "from-[#7C9A8E]/10 to-[#6B8B7E]/10",
       desc: hasWheel ? "View & update your life assessment" : "Assess 8 areas of your life",
       completed: hasWheel,
       route: "wheel",
@@ -827,8 +827,8 @@ function VisionDashboard({ session }: { session: any }) {
       id: "values",
       title: "Values & Purpose",
       icon: Heart,
-      gradient: "from-blue-500 to-cyan-500",
-      lightBg: "from-blue-50 to-cyan-50",
+      gradient: "from-[#9B8AA6] to-[#8A7995]",
+      lightBg: "from-[#9B8AA6]/10 to-[#8A7995]/10",
       desc: "Discover what matters most to you",
       completed: false,
       route: "values",
@@ -838,8 +838,8 @@ function VisionDashboard({ session }: { session: any }) {
       id: "goals",
       title: "SMART Goals",
       icon: Target,
-      gradient: "from-emerald-500 to-teal-500",
-      lightBg: "from-emerald-50 to-teal-50",
+      gradient: "from-[#4A7C7C] to-[#3A6C6C]",
+      lightBg: "from-[#4A7C7C]/10 to-[#3A6C6C]/10",
       desc: hasGoals ? `${goals.length} goal${goals.length > 1 ? "s" : ""} set` : "Set meaningful, measurable goals",
       completed: hasGoals,
       route: "goals",
@@ -849,8 +849,8 @@ function VisionDashboard({ session }: { session: any }) {
       id: "plan",
       title: "90-Day Plan",
       icon: Calendar,
-      gradient: "from-orange-500 to-amber-500",
-      lightBg: "from-orange-50 to-amber-50",
+      gradient: "from-[#6B8E8E] to-[#5A7D7D]",
+      lightBg: "from-[#6B8E8E]/10 to-[#5A7D7D]/10",
       desc: "Break down your goals into action",
       completed: false,
       route: "plan",
@@ -860,8 +860,8 @@ function VisionDashboard({ session }: { session: any }) {
       id: "habits",
       title: "Habit Tracker",
       icon: Flame,
-      gradient: "from-orange-500 to-amber-500",
-      lightBg: "from-orange-50 to-amber-50",
+      gradient: "from-[#D4A574] to-[#C49464]",
+      lightBg: "from-[#D4A574]/10 to-[#C49464]/10",
       desc: hasHabits ? `${habits.length} habit${habits.length > 1 ? "s" : ""} tracking` : "Build daily habits that stick",
       completed: hasHabits,
       route: "habits",
@@ -871,8 +871,8 @@ function VisionDashboard({ session }: { session: any }) {
       id: "checkin",
       title: "Check-ins",
       icon: CheckCircle2,
-      gradient: "from-pink-500 to-rose-500",
-      lightBg: "from-pink-50 to-rose-50",
+      gradient: "from-[#C17767] to-[#B16657]",
+      lightBg: "from-[#C17767]/10 to-[#B16657]/10",
       desc: "Daily focus & weekly reviews",
       completed: false,
       route: "checkin",
@@ -892,89 +892,85 @@ function VisionDashboard({ session }: { session: any }) {
   const progressPercent = Math.round((completedSteps / totalTrackedSteps) * 100);
 
   return (
-    <div className="min-h-screen bg-[#0a1628] text-white font-sans">
+    <div className="min-h-screen bg-[#FAF8F5] font-sans">
       <Navbar />
       
       {/* Dashboard Hero */}
-      <section className="relative pt-24 pb-16 overflow-hidden">
+      <section className="relative pt-20 pb-8 overflow-hidden">
         <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-violet-900/40 via-purple-900/30 to-cyan-900/40" />
-          <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-violet-500/20 rounded-full blur-[100px]" />
-          <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-cyan-500/20 rounded-full blur-[100px]" />
+          <div className="absolute inset-0 bg-gradient-to-br from-[#7C9A8E]/10 via-[#FAF8F5] to-[#D4A574]/10" />
+          <div className="absolute top-0 left-1/4 w-[200px] md:w-[400px] h-[200px] md:h-[400px] bg-[#7C9A8E]/10 rounded-full blur-[100px]" />
+          <div className="absolute bottom-0 right-1/4 w-[150px] md:w-[300px] h-[150px] md:h-[300px] bg-[#D4A574]/10 rounded-full blur-[100px]" />
         </div>
         
-        <div className="max-w-6xl mx-auto px-4 relative z-10">
+        <div className="max-w-lg mx-auto px-4 relative z-10">
           <motion.div 
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col md:flex-row md:items-center justify-between gap-6"
+            className="text-center"
           >
-            <div>
-              <motion.div whileHover={{ scale: 1.05 }} className="inline-block mb-4">
-                {session.mode === "faith" ? (
-                  <span className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-400 to-orange-500 text-white px-5 py-2.5 rounded-full shadow-lg font-semibold text-sm">
-                    <Heart className="w-4 h-4" /> Faith & Reflection Mode
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 text-white px-5 py-2.5 rounded-full font-semibold text-sm">
-                    <Compass className="w-4 h-4" /> Classic Mode
-                  </span>
-                )}
-              </motion.div>
-              <h1 className="text-4xl md:text-5xl font-display font-bold mb-3">
-                <span className="bg-gradient-to-r from-violet-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
-                  {session.seasonLabel || "My Vision Journey"}
+            <motion.div whileHover={{ scale: 1.02 }} className="inline-block mb-4">
+              {session.mode === "faith" ? (
+                <span className="inline-flex items-center gap-2 bg-gradient-to-r from-[#D4A574] to-[#C49464] text-white px-4 py-2 rounded-full shadow-md font-semibold text-sm">
+                  <Heart className="w-4 h-4" /> Faith & Reflection Mode
                 </span>
-              </h1>
-              {session.themeWord && (
-                <div className="flex items-center gap-3">
-                  <span className="text-gray-400">Theme Word:</span>
-                  <span className="px-4 py-2 bg-gradient-to-r from-violet-500 to-purple-600 text-white rounded-full font-bold text-sm shadow-lg">
-                    {session.themeWord}
-                  </span>
-                </div>
+              ) : (
+                <span className="inline-flex items-center gap-2 bg-[#7C9A8E]/10 border border-[#7C9A8E]/30 text-[#7C9A8E] px-4 py-2 rounded-full font-semibold text-sm">
+                  <Compass className="w-4 h-4" /> Classic Mode
+                </span>
               )}
-            </div>
+            </motion.div>
+            <h1 className="text-2xl md:text-4xl font-display font-bold mb-3 text-[#2C3E2D]">
+              {session.seasonLabel || "My Vision Journey"}
+            </h1>
+            {session.themeWord && (
+              <div className="flex items-center justify-center gap-2 mb-4">
+                <span className="text-[#6B7B6E] text-sm">Theme Word:</span>
+                <span className="px-3 py-1.5 bg-[#9B8AA6] text-white rounded-full font-bold text-sm shadow-sm">
+                  {session.themeWord}
+                </span>
+              </div>
+            )}
             
             {/* Progress Ring */}
             <motion.div 
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="relative"
+              className="flex justify-center mt-4"
             >
-              <div className="w-32 h-32 relative">
+              <div className="w-28 h-28 relative">
                 <svg className="w-full h-full transform -rotate-90">
                   <circle
-                    cx="64"
-                    cy="64"
-                    r="56"
+                    cx="56"
+                    cy="56"
+                    r="48"
                     fill="none"
-                    stroke="rgba(255,255,255,0.1)"
+                    stroke="#E8E4DE"
                     strokeWidth="8"
                   />
                   <motion.circle
-                    cx="64"
-                    cy="64"
-                    r="56"
+                    cx="56"
+                    cy="56"
+                    r="48"
                     fill="none"
                     stroke="url(#progressGradient)"
                     strokeWidth="8"
                     strokeLinecap="round"
-                    strokeDasharray={`${2 * Math.PI * 56}`}
-                    initial={{ strokeDashoffset: 2 * Math.PI * 56 }}
-                    animate={{ strokeDashoffset: 2 * Math.PI * 56 * (1 - progressPercent / 100) }}
+                    strokeDasharray={`${2 * Math.PI * 48}`}
+                    initial={{ strokeDashoffset: 2 * Math.PI * 48 }}
+                    animate={{ strokeDashoffset: 2 * Math.PI * 48 * (1 - progressPercent / 100) }}
                     transition={{ duration: 1.5, ease: "easeOut" }}
                   />
                   <defs>
                     <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" stopColor="#8B5CF6" />
-                      <stop offset="100%" stopColor="#06B6D4" />
+                      <stop offset="0%" stopColor="#7C9A8E" />
+                      <stop offset="100%" stopColor="#4A7C7C" />
                     </linearGradient>
                   </defs>
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-3xl font-bold text-white">{progressPercent}%</span>
-                  <span className="text-xs text-gray-400">Complete</span>
+                  <span className="text-2xl font-bold text-[#2C3E2D]">{progressPercent}%</span>
+                  <span className="text-xs text-[#6B7B6E]">Complete</span>
                 </div>
               </div>
             </motion.div>
@@ -983,121 +979,121 @@ function VisionDashboard({ session }: { session: any }) {
       </section>
 
       {/* Quick Stats Bar with Dynamic Widgets */}
-      <section className="bg-white relative z-20 -mt-8 max-w-5xl mx-4 md:mx-auto rounded-2xl shadow-2xl p-6">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+      <section className="bg-white relative z-20 max-w-lg mx-4 md:mx-auto rounded-2xl shadow-lg border border-[#E8E4DE] p-4 mt-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <motion.div 
-            className="text-center"
+            className="text-center p-2"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
           >
-            <div className="flex justify-center mb-2">
-              <div className="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center">
-                <Target className="w-5 h-5 text-violet-600" />
+            <div className="flex justify-center mb-1">
+              <div className="w-8 h-8 rounded-lg bg-[#4A7C7C]/10 flex items-center justify-center">
+                <Target className="w-4 h-4 text-[#4A7C7C]" />
               </div>
             </div>
-            <div className="text-3xl font-bold text-violet-600">{goals?.length || 0}</div>
-            <div className="text-xs text-gray-500 font-medium">Goals Set</div>
+            <div className="text-xl font-bold text-[#4A7C7C]">{goals?.length || 0}</div>
+            <div className="text-[10px] text-[#6B7B6E] font-medium">Goals</div>
           </motion.div>
           
           <motion.div 
-            className="text-center"
+            className="text-center p-2"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <div className="flex justify-center mb-2">
-              <div className="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center">
-                <Flame className="w-5 h-5 text-orange-500" />
+            <div className="flex justify-center mb-1">
+              <div className="w-8 h-8 rounded-lg bg-[#D4A574]/10 flex items-center justify-center">
+                <Flame className="w-4 h-4 text-[#D4A574]" />
               </div>
             </div>
-            <div className="text-3xl font-bold text-orange-500">{habits?.length || 0}</div>
-            <div className="text-xs text-gray-500 font-medium">Habits Tracking</div>
+            <div className="text-xl font-bold text-[#D4A574]">{habits?.length || 0}</div>
+            <div className="text-[10px] text-[#6B7B6E] font-medium">Habits</div>
           </motion.div>
           
           <motion.div 
-            className="text-center"
+            className="text-center p-2"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
           >
-            <div className="flex justify-center mb-2">
-              <div className="w-10 h-10 rounded-xl bg-cyan-100 flex items-center justify-center">
-                <TrendingUp className="w-5 h-5 text-cyan-600" />
+            <div className="flex justify-center mb-1">
+              <div className="w-8 h-8 rounded-lg bg-[#7C9A8E]/10 flex items-center justify-center">
+                <TrendingUp className="w-4 h-4 text-[#7C9A8E]" />
               </div>
             </div>
-            <div className="text-3xl font-bold text-cyan-600">{progressPercent}%</div>
-            <div className="text-xs text-gray-500 font-medium">Progress</div>
+            <div className="text-xl font-bold text-[#7C9A8E]">{progressPercent}%</div>
+            <div className="text-[10px] text-[#6B7B6E] font-medium">Progress</div>
           </motion.div>
           
           <motion.div 
-            className="text-center"
+            className="text-center p-2"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
           >
-            <div className="flex justify-center mb-2">
-              <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
-                <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+            <div className="flex justify-center mb-1">
+              <div className="w-8 h-8 rounded-lg bg-[#7C9A8E]/10 flex items-center justify-center">
+                <CheckCircle2 className="w-4 h-4 text-[#7C9A8E]" />
               </div>
             </div>
-            <div className="text-3xl font-bold text-emerald-500">{completedSteps}/{totalTrackedSteps}</div>
-            <div className="text-xs text-gray-500 font-medium">Steps Done</div>
+            <div className="text-xl font-bold text-[#7C9A8E]">{completedSteps}/{totalTrackedSteps}</div>
+            <div className="text-[10px] text-[#6B7B6E] font-medium">Done</div>
           </motion.div>
         </div>
       </section>
 
       {/* Journey Progress Summary */}
-      <section className="py-8 px-4 bg-white">
+      <section className="py-6 px-4 bg-[#FAF8F5]">
         <div className="max-w-lg mx-auto">
-          <h3 className="text-lg font-bold text-gray-900 mb-4">Journey Progress</h3>
-          <div className="bg-gradient-to-r from-violet-50 to-purple-50 rounded-2xl p-4">
+          <h3 className="text-base font-bold text-[#2C3E2D] mb-3">Journey Progress</h3>
+          <div className="bg-white border border-[#E8E4DE] rounded-xl p-4">
             <div className="space-y-3">
               {trackedSteps.map((step, i) => (
                 <div key={step.name} className="flex items-center gap-3">
                   <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
                     step.completed 
-                      ? 'bg-gradient-to-br from-emerald-400 to-green-500' 
-                      : 'bg-gray-200'
+                      ? 'bg-[#7C9A8E]' 
+                      : 'bg-[#E8E4DE]'
                   }`}>
                     {step.completed ? (
                       <CheckCircle2 className="w-4 h-4 text-white" />
                     ) : (
-                      <span className="text-xs text-gray-500">{i + 1}</span>
+                      <span className="text-xs text-[#6B7B6E]">{i + 1}</span>
                     )}
                   </div>
-                  <span className={`flex-1 text-sm ${step.completed ? 'text-gray-900 font-medium' : 'text-gray-500'}`}>
+                  <span className={`flex-1 text-sm ${step.completed ? 'text-[#2C3E2D] font-medium' : 'text-[#6B7B6E]'}`}>
                     {step.name}
                   </span>
-                  <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
+                  <div className="w-20 h-1.5 bg-[#E8E4DE] rounded-full overflow-hidden">
                     <motion.div 
                       initial={{ width: 0 }}
                       animate={{ width: step.completed ? '100%' : '0%' }}
                       transition={{ delay: i * 0.2, duration: 0.5 }}
-                      className="h-full bg-gradient-to-r from-violet-500 to-purple-500 rounded-full"
+                      className="h-full bg-[#7C9A8E] rounded-full"
                     />
                   </div>
                 </div>
               ))}
             </div>
-            <div className="mt-4 pt-3 border-t border-violet-100 flex items-center justify-between">
-              <span className="text-sm text-gray-600">Overall Progress</span>
-              <span className="text-lg font-bold text-violet-600">{progressPercent}%</span>
+            <div className="mt-3 pt-3 border-t border-[#E8E4DE] flex items-center justify-between">
+              <span className="text-sm text-[#6B7B6E]">Overall Progress</span>
+              <span className="text-base font-bold text-[#7C9A8E]">{progressPercent}%</span>
             </div>
           </div>
         </div>
       </section>
 
       {/* Journey Cards */}
-      <section className="py-12 px-4 bg-gradient-to-b from-white to-gray-50">
+      <section className="py-6 px-4 bg-[#FAF8F5]">
         <div className="max-w-lg mx-auto">
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="mb-6"
+            className="mb-4"
           >
-            <h2 className="text-xl font-bold text-gray-900 mb-1">Your Vision Pathway</h2>
-            <p className="text-sm text-gray-500">Continue your journey through each stage</p>
+            <h2 className="text-lg font-bold text-[#2C3E2D] mb-1">Your Vision Pathway</h2>
+            <p className="text-sm text-[#6B7B6E]">Continue your journey through each stage</p>
           </motion.div>
 
           <div className="space-y-3">
@@ -1111,23 +1107,23 @@ function VisionDashboard({ session }: { session: any }) {
                 onClick={() => navigate(`/vision/${session.id}/${card.route}`)}
                 data-testid={`card-${card.id}`}
               >
-                <div className={`bg-white rounded-2xl overflow-hidden shadow-md border border-gray-100 ${
-                  card.completed ? "border-l-4 border-l-emerald-400" : ""
+                <div className={`bg-white rounded-xl overflow-hidden shadow-sm border border-[#E8E4DE] active:scale-[0.99] transition-transform ${
+                  card.completed ? "border-l-4 border-l-[#7C9A8E]" : ""
                 }`}>
                   <div className="p-4 flex items-center gap-4">
-                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${card.gradient} flex items-center justify-center shadow-md`}>
-                      <card.icon className="w-6 h-6 text-white" />
+                    <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${card.gradient} flex items-center justify-center shadow-sm`}>
+                      <card.icon className="w-5 h-5 text-white" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-bold text-gray-900">{card.title}</h3>
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <h3 className="font-bold text-[#2C3E2D] text-sm">{card.title}</h3>
                         {card.completed && (
-                          <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                          <CheckCircle2 className="w-4 h-4 text-[#7C9A8E]" />
                         )}
                       </div>
-                      <p className="text-xs text-gray-500 truncate">{card.desc}</p>
+                      <p className="text-xs text-[#6B7B6E] truncate">{card.desc}</p>
                     </div>
-                    <ArrowRight className="w-4 h-4 text-gray-300" />
+                    <ArrowRight className="w-4 h-4 text-[#C4BFB8]" />
                   </div>
                 </div>
               </motion.div>
