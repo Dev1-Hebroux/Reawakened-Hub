@@ -33,6 +33,9 @@ import { StylesTool } from "@/pages/StylesTool";
 import { EqTool } from "@/pages/EqTool";
 import { ScaTool } from "@/pages/ScaTool";
 import { DailyReflection } from "@/pages/DailyReflection";
+import { SessionBooking } from "@/pages/SessionBooking";
+import { Mini360 } from "@/pages/Mini360";
+import { FeedbackResponse } from "@/pages/FeedbackResponse";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { QuickShare } from "@/components/ui/QuickShare";
 
@@ -68,6 +71,11 @@ function Router() {
       <Route path="/vision/:sessionId/tools/eq" component={EqTool} />
       <Route path="/vision/:sessionId/tools/sca" component={ScaTool} />
       <Route path="/reflection" component={DailyReflection} />
+      <Route path="/vision/:sessionId/tools/sessions" component={SessionBooking} />
+      <Route path="/tools/sessions" component={SessionBooking} />
+      <Route path="/vision/:sessionId/tools/360" component={Mini360} />
+      <Route path="/tools/360" component={Mini360} />
+      <Route path="/feedback/respond/:token" component={FeedbackResponse} />
       <Route component={NotFound} />
     </Switch>
   );

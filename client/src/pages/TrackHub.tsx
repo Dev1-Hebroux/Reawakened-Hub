@@ -11,7 +11,7 @@ import {
   Brain, Users, Crown, Lock, CheckCircle2, Play, 
   ChevronRight, Sparkles, Star, Target, Zap, 
   Heart, MessageCircle, Shield, Eye, Lightbulb, 
-  TrendingUp, Compass, ArrowRight
+  TrendingUp, Compass, ArrowRight, Calendar, BarChart3
 } from "lucide-react";
 
 const TRACK_ICONS: Record<string, any> = {
@@ -47,7 +47,8 @@ const MODULE_ICONS: Record<string, any> = {
   eq: Heart,
   wdep: Target,
   sca: Zap,
-  mini360: Eye,
+  "360": BarChart3,
+  sessions: Calendar,
 };
 
 const DEMO_TRACKS = [
@@ -82,9 +83,10 @@ const DEMO_TRACKS = [
     title: "Leadership",
     subtitle: "Influence with integrity",
     description: "Grow as a leader through feedback, reflection, and intentional practice.",
-    estimatedMinutes: 35,
+    estimatedMinutes: 55,
     modules: [
-      { id: 6, key: "mini360", title: "Mini-360 Feedback", description: "Get insights from trusted voices", estimatedMinutes: 20, status: "coming_soon" },
+      { id: 6, key: "360", title: "Mini-360 Feedback", description: "Get insights from trusted voices", estimatedMinutes: 20, status: "available" },
+      { id: 7, key: "sessions", title: "Session Booking", description: "Connect with coaches and mentors", estimatedMinutes: 15, status: "available" },
     ]
   },
 ];
