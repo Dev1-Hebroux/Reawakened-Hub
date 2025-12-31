@@ -14,6 +14,9 @@ import {
   CalendarPlus, CalendarCheck, Sparkles, Award
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
+import { AICoachPanel } from "@/components/AICoachPanel";
+import { Navbar } from "@/components/layout/Navbar";
+import { Footer } from "@/components/layout/Footer";
 
 interface Coach {
   id: number;
@@ -499,15 +502,29 @@ export function SessionBooking() {
   );
 
   return (
-    <div className="min-h-screen bg-[#FAF8F5]">
-      <div className="max-w-md mx-auto px-4 py-6 pb-24">
-        <AnimatePresence mode="wait">
-          {step === "intro" && renderIntro()}
-          {step === "browse" && renderBrowseCoaches()}
-          {step === "book" && renderBookSession()}
-          {step === "sessions" && renderSessions()}
-        </AnimatePresence>
-      </div>
+    <div className="min-h-screen bg-[#FAF8F5] flex flex-col">
+      <Navbar />
+      <main className="flex-1 pt-20 pb-24 md:pb-12">
+        <div className="max-w-md mx-auto px-4 py-6">
+          <AnimatePresence mode="wait">
+            {step === "intro" && renderIntro()}
+            {step === "browse" && renderBrowseCoaches()}
+            {step === "book" && renderBookSession()}
+            {step === "sessions" && renderSessions()}
+          </AnimatePresence>
+        </div>
+
+        <AICoachPanel
+          tool="sessions"
+          data={{
+            selectedCoach: selectedCoach?.displayName,
+            topic: bookingForm.topic,
+            goals: bookingForm.goals,
+            step: step,
+          }}
+        />
+      </main>
+      <Footer />
     </div>
   );
 }

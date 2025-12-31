@@ -1536,6 +1536,29 @@ export async function registerRoutes(
     }
   });
 
+  // General AI analyze (no session required)
+  app.post('/api/ai/analyze', isAuthenticated, async (req: any, res) => {
+    try {
+      const { tool, data } = req.body as { tool: string; data: Record<string, any> };
+      
+      if (!tool || !data) {
+        return res.status(400).json({ ok: false, error: { message: "Missing tool or data" } });
+      }
+
+      const insights = await getAICoachInsights({
+        tool: tool as AICoachRequest['tool'],
+        mode: "faith",
+        data,
+        sessionContext: {},
+      });
+
+      res.json({ ok: true, data: insights });
+    } catch (error: any) {
+      console.error("Error getting AI insights:", error);
+      res.status(500).json({ ok: false, error: { message: error.message || "Failed to get AI insights" } });
+    }
+  });
+
   // ===== GROWTH TOOLS: TRACKS & MODULES =====
 
   app.get('/api/tracks', async (req, res) => {

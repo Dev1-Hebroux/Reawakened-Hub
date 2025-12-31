@@ -49,6 +49,8 @@ const MODULE_ICONS: Record<string, any> = {
   sca: Zap,
   "360": BarChart3,
   sessions: Calendar,
+  coaching: MessageCircle,
+  "group-labs": Users,
 };
 
 const DEMO_TRACKS = [
@@ -83,10 +85,12 @@ const DEMO_TRACKS = [
     title: "Leadership",
     subtitle: "Influence with integrity",
     description: "Grow as a leader through feedback, reflection, and intentional practice.",
-    estimatedMinutes: 55,
+    estimatedMinutes: 80,
     modules: [
       { id: 6, key: "360", title: "Mini-360 Feedback", description: "Get insights from trusted voices", estimatedMinutes: 20, status: "available" },
       { id: 7, key: "sessions", title: "Session Booking", description: "Connect with coaches and mentors", estimatedMinutes: 15, status: "available" },
+      { id: 8, key: "coaching", title: "1:1 Coaching Lab", description: "Personal coaching with guided prep", estimatedMinutes: 30, status: "available" },
+      { id: 9, key: "group-labs", title: "Group Labs", description: "Learn together in facilitated sessions", estimatedMinutes: 15, status: "available" },
     ]
   },
 ];

@@ -6,8 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Sparkles, ChevronDown, ChevronUp, Lightbulb, Target, Heart, BookOpen, X, Loader2 } from "lucide-react";
 
 interface AICoachPanelProps {
-  sessionId: string | number;
-  tool: "wheel" | "values" | "goals" | "plan" | "habits" | "checkin" | "wdep" | "strengths" | "styles" | "eq" | "sca";
+  sessionId?: string | number;
+  tool: "wheel" | "values" | "goals" | "plan" | "habits" | "checkin" | "wdep" | "strengths" | "styles" | "eq" | "sca" | "coaching" | "group-labs" | "sessions" | "360" | "reflection";
   data: Record<string, any>;
   title?: string;
   description?: string;
@@ -29,7 +29,10 @@ export function AICoachPanel({ sessionId, tool, data, title, description }: AICo
 
   const analyze = useMutation({
     mutationFn: async () => {
-      const res = await fetch(`/api/vision/sessions/${sessionId}/ai/analyze`, {
+      const endpoint = sessionId 
+        ? `/api/vision/sessions/${sessionId}/ai/analyze`
+        : `/api/ai/analyze`;
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

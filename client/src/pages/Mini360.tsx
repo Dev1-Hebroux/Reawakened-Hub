@@ -15,6 +15,9 @@ import {
   Eye, Trash2, Share2, Sparkles, X, Lightbulb
 } from "lucide-react";
 import { format } from "date-fns";
+import { AICoachPanel } from "@/components/AICoachPanel";
+import { Navbar } from "@/components/layout/Navbar";
+import { Footer } from "@/components/layout/Footer";
 
 interface FeedbackCampaign {
   id: number;
@@ -656,16 +659,29 @@ export function Mini360() {
   );
 
   return (
-    <div className="min-h-screen bg-[#FAF8F5]">
-      <div className="max-w-md mx-auto px-4 py-6 pb-24">
-        <AnimatePresence mode="wait">
-          {step === "intro" && renderIntro()}
-          {step === "campaigns" && renderCampaigns()}
-          {step === "create" && renderCreate()}
-          {step === "manage" && renderManage()}
-          {step === "results" && renderResults()}
-        </AnimatePresence>
-      </div>
+    <div className="min-h-screen bg-[#FAF8F5] flex flex-col">
+      <Navbar />
+      <main className="flex-1 pt-20 pb-24 md:pb-12">
+        <div className="max-w-md mx-auto px-4 py-6">
+          <AnimatePresence mode="wait">
+            {step === "intro" && renderIntro()}
+            {step === "campaigns" && renderCampaigns()}
+            {step === "create" && renderCreate()}
+            {step === "manage" && renderManage()}
+            {step === "results" && renderResults()}
+          </AnimatePresence>
+        </div>
+
+        <AICoachPanel
+          tool="360"
+          data={{
+            selectedCampaign: selectedCampaign?.title,
+            selectedDimensions: selectedDimensions,
+            step: step,
+          }}
+        />
+      </main>
+      <Footer />
     </div>
   );
 }

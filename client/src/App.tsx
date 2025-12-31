@@ -36,6 +36,8 @@ import { DailyReflection } from "@/pages/DailyReflection";
 import { SessionBooking } from "@/pages/SessionBooking";
 import { Mini360 } from "@/pages/Mini360";
 import { FeedbackResponse } from "@/pages/FeedbackResponse";
+import { CoachingLabs } from "@/pages/CoachingLabs";
+import { GroupLabs } from "@/pages/GroupLabs";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { QuickShare } from "@/components/ui/QuickShare";
 
@@ -76,6 +78,10 @@ function Router() {
       <Route path="/vision/:sessionId/tools/360" component={Mini360} />
       <Route path="/tools/360" component={Mini360} />
       <Route path="/feedback/respond/:token" component={FeedbackResponse} />
+      <Route path="/coaching" component={CoachingLabs} />
+      <Route path="/vision/:sessionId/tools/coaching" component={CoachingLabs} />
+      <Route path="/group-labs" component={GroupLabs} />
+      <Route path="/vision/:sessionId/tools/group-labs" component={GroupLabs} />
       <Route component={NotFound} />
     </Switch>
   );

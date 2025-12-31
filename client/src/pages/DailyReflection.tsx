@@ -8,8 +8,11 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   BookOpen, Flame, Heart, Sparkles, ChevronLeft,
   PenLine, Share2, CheckCircle2, Sun, Moon, Calendar,
-  TrendingUp
+  TrendingUp, MessageCircle, Loader2
 } from "lucide-react";
+import { AICoachPanel } from "@/components/AICoachPanel";
+import { Navbar } from "@/components/layout/Navbar";
+import { Footer } from "@/components/layout/Footer";
 
 const REACTIONS = [
   { key: "amen", label: "Amen", icon: "🙏" },
@@ -51,6 +54,8 @@ export function DailyReflection() {
   const [showJournal, setShowJournal] = useState(false);
   const [journalEntry, setJournalEntry] = useState("");
   const [selectedReaction, setSelectedReaction] = useState<string | null>(null);
+  const [aiInsight, setAiInsight] = useState<string | null>(null);
+  const [isLoadingInsight, setIsLoadingInsight] = useState(false);
 
   const { data: user } = useQuery({
     queryKey: ["/api/auth/user"],
@@ -145,10 +150,44 @@ export function DailyReflection() {
     }
   };
 
-  const handleSaveJournal = () => {
+  const handleSaveJournal = async () => {
     if (reflection?.id && journalEntry.trim()) {
       logEngagement.mutate({ reflectionId: reflection.id, journalEntry });
       setShowJournal(false);
+      
+      // Fetch AI coaching insight based on the journal entry
+      setIsLoadingInsight(true);
+      try {
+        const res = await fetch("/api/ai/analyze", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            tool: "reflection",
+            data: {
+              reflectionTitle: reflection.title,
+              reflectionContent: reflection.content,
+              scripture: reflection.scripture,
+              scriptureText: reflection.scriptureText,
+              journalEntry: journalEntry,
+              reaction: selectedReaction,
+            },
+            prompt: "Based on this person's reflection and journal entry, provide a brief, warm, and encouraging coaching insight (2-3 sentences). Help them see patterns, growth opportunities, or affirm their journey. Be conversational and personal."
+          }),
+        });
+        if (res.ok) {
+          const result = await res.json();
+          // API returns { ok, data: AIResponse }
+          const insight = result.data?.encouragement || result.data?.insights?.[0] || result.data?.suggestions?.[0];
+          if (insight) {
+            setAiInsight(insight);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to get AI insight:", error);
+      } finally {
+        setIsLoadingInsight(false);
+      }
     }
   };
 
@@ -170,27 +209,30 @@ export function DailyReflection() {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAF8F5] font-sans">
-      <div className="sticky top-0 z-10 bg-[#FAF8F5] border-b border-[#E8E4DE] px-4 py-3">
-        <div className="max-w-lg mx-auto flex items-center justify-between">
-          <button
-            onClick={() => navigate("/")}
-            className="flex items-center gap-1 text-[#6B7B6E] hover:text-[#2C3E2D] transition-colors"
-            data-testid="button-back"
-          >
-            <ChevronLeft className="w-5 h-5" />
-            <span className="text-sm">Back</span>
-          </button>
-          <div className="flex items-center gap-2 text-sm">
-            <Calendar className="w-4 h-4 text-[#7C9A8E]" />
-            <span className="text-[#6B7B6E]">
-              {new Date().toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" })}
-            </span>
+    <div className="min-h-screen bg-[#FAF8F5] font-sans flex flex-col">
+      <Navbar />
+      <main className="flex-1 pt-20 pb-24 md:pb-12">
+        {/* Sub-header with date */}
+        <div className="sticky top-16 z-10 bg-[#FAF8F5] border-b border-[#E8E4DE] px-4 py-3">
+          <div className="max-w-lg mx-auto flex items-center justify-between">
+            <button
+              onClick={() => navigate("/")}
+              className="flex items-center gap-1 text-[#6B7B6E] hover:text-[#2C3E2D] transition-colors"
+              data-testid="button-back"
+            >
+              <ChevronLeft className="w-5 h-5" />
+              <span className="text-sm">Back</span>
+            </button>
+            <div className="flex items-center gap-2 text-sm">
+              <Calendar className="w-4 h-4 text-[#7C9A8E]" />
+              <span className="text-[#6B7B6E]">
+                {new Date().toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" })}
+              </span>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="max-w-lg mx-auto px-4 pt-8 pb-32">
+        <div className="max-w-lg mx-auto px-4 pt-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -325,6 +367,42 @@ export function DailyReflection() {
                   </CardContent>
                 </Card>
               )}
+
+              {/* AI Coaching Insight */}
+              <AnimatePresence>
+                {isLoadingInsight && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                  >
+                    <Card className="bg-gradient-to-br from-[#4A7C7C]/10 to-[#7C9A8E]/10 border-[#4A7C7C]/20">
+                      <CardContent className="p-4 flex items-center gap-3">
+                        <Loader2 className="w-5 h-5 text-[#4A7C7C] animate-spin" />
+                        <span className="text-sm text-[#4A7C7C]">Getting your personalized coaching insight...</span>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                )}
+
+                {aiInsight && !isLoadingInsight && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                  >
+                    <Card className="bg-gradient-to-br from-[#4A7C7C]/10 to-[#7C9A8E]/10 border-[#4A7C7C]/20">
+                      <CardContent className="p-4 space-y-3">
+                        <div className="flex items-center gap-2 text-[#4A7C7C]">
+                          <MessageCircle className="w-5 h-5" />
+                          <span className="font-medium text-sm">AI Coach Insight</span>
+                        </div>
+                        <p className="text-sm text-gray-700 leading-relaxed">{aiInsight}</p>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </>
           )}
 
@@ -359,7 +437,20 @@ export function DailyReflection() {
             </Button>
           </div>
         </motion.div>
-      </div>
+        </div>
+
+        <AICoachPanel
+          tool="reflection"
+          data={{
+            reflectionTitle: reflection?.title,
+            scripture: reflection?.scripture,
+            journalEntry: journalEntry,
+            reaction: selectedReaction,
+            streak: streak,
+          }}
+        />
+      </main>
+      <Footer />
     </div>
   );
 }
