@@ -1427,3 +1427,37 @@ export const safeguardingReports = pgTable("safeguarding_reports", {
 export const insertSafeguardingReportSchema = createInsertSchema(safeguardingReports).omit({ id: true, createdAt: true });
 export type InsertSafeguardingReport = z.infer<typeof insertSafeguardingReportSchema>;
 export type SafeguardingReport = typeof safeguardingReports.$inferSelect;
+
+// ===== DAILY REFLECTIONS =====
+
+// Daily reflection prompts (admin-created content pool)
+export const dailyReflections = pgTable("daily_reflections", {
+  id: serial("id").primaryKey(),
+  title: varchar("title").notNull(),
+  content: text("content").notNull(), // the thought/reflection text
+  scripture: varchar("scripture"), // e.g. "Psalm 23:1"
+  scriptureText: text("scripture_text"), // the actual verse text
+  category: varchar("category").default("general"), // 'faith', 'growth', 'relationships', 'purpose'
+  scheduledDate: timestamp("scheduled_date"), // specific date to show (null = random pool)
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertDailyReflectionSchema = createInsertSchema(dailyReflections).omit({ id: true, createdAt: true });
+export type InsertDailyReflection = z.infer<typeof insertDailyReflectionSchema>;
+export type DailyReflection = typeof dailyReflections.$inferSelect;
+
+// User reflection engagement logs
+export const reflectionLogs = pgTable("reflection_logs", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  reflectionId: integer("reflection_id").notNull().references(() => dailyReflections.id, { onDelete: 'cascade' }),
+  viewedAt: timestamp("viewed_at").defaultNow(),
+  engagedAt: timestamp("engaged_at"), // when they interacted (journal, share, etc)
+  journalEntry: text("journal_entry"), // optional personal reflection
+  reaction: varchar("reaction"), // 'amen', 'thankful', 'inspired', 'challenged'
+});
+
+export const insertReflectionLogSchema = createInsertSchema(reflectionLogs).omit({ id: true, viewedAt: true });
+export type InsertReflectionLog = z.infer<typeof insertReflectionLogSchema>;
+export type ReflectionLog = typeof reflectionLogs.$inferSelect;
