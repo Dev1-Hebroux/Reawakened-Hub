@@ -1,0 +1,264 @@
+Absolutely — that “Ready to Change the World?” section is already telling you what the product should *do*: help people **Pray, Give, and Go** in a way that’s **biblical, Spirit-led, harvest-focused, and boundaryless**.
+
+Below is a feature set that aligns directly with that hero section *and* your pillars (Biblical Truth, The Outpouring, The Harvest, Without Walls), while staying practical for both the app and webapp.
+
+---
+
+## 1) The Core Experience: “Start Your Mission”
+
+Think of **Start Your Mission** as a guided onboarding + ongoing dashboard that turns inspiration into a personal action plan.
+
+### What it does
+
+* **Mission Match onboarding (2–3 minutes)**
+
+  * “What moves you most right now?” (Nations, youth, evangelism, prayer, justice/mercy, church planting, etc.)
+  * “How can you show up?” (Pray / Give / Go / All three)
+  * Time + budget + travel readiness + language
+* **Your Mission Dashboard**
+
+  * Today’s prayer focus (1–5 minutes)
+  * A project to support (optional)
+  * A next step toward “Go” (training / event / trip interest)
+* **Weekly “Spirit & Strategy” check-in**
+
+  * A short reflection + a simple recommitment plan (keeps it human, not heavy)
+
+### Microcopy ideas (fits your hero tone)
+
+* “Start Your Mission” → *“Let’s build your mission plan.”*
+* “View Projects” → *“Explore where help is needed.”*
+
+---
+
+## 2) The Pray Card: “Adopt a people group”
+
+This is where your “Global Impact” becomes personal and consistent.
+
+### Core Pray features
+
+* **Adopt a People Group (or Nation / City)**
+
+  * Tap “Adopt” → it becomes your default prayer focus for a set period (7, 21, 90 days)
+* **Prayer Guide Engine**
+
+  * Daily prayer points
+  * Scripture declarations (your “Built on Biblical Truth” pillar is baked in)
+  * Action step (small, real-world obedience)
+* **Prayer Timer + Focus Mode**
+
+  * 1 / 3 / 5 / 10 minutes
+  * Simple prompts that keep users engaged without needing “super spiritual” confidence
+* **Prayer Streaks with meaning (not pressure)**
+
+  * “Days showed up” rather than guilt-driven streaks
+* **Prayer Wall**
+
+  * Users post short prayers (moderated)
+  * Projects/field partners can post verified requests
+
+### “Outpouring” layer (Joel 2) — with guardrails
+
+* **Listen & Respond prompts**
+
+  * “Ask the Holy Spirit: who should I encourage today?”
+* **Prophetic encouragement journal**
+
+  * Private by default
+  * Share only if user opts-in
+* **Testimony moments**
+
+  * “What did God do?” (short form)
+  * This becomes fuel for community faith
+
+---
+
+## 3) The Give Card: “Support mission projects”
+
+This should feel like worship + impact, not like a random donation page.
+
+### Core Give features
+
+* **Project funding pages**
+
+  * Clear goal, what funds do, timeline, updates
+* **One-tap giving + recurring giving**
+
+  * “Give once” / “Give monthly”
+* **Impact updates**
+
+  * Short updates (photos/video optional)
+  * “Answered prayers” + “Field story” (connects Pray ↔ Give)
+* **Campaigns**
+
+  * “Harvest Push Week”
+  * “Outpouring Prayer & Provision”
+* **Giving transparency**
+
+  * Receipts, basic breakdown categories, partner verification badges
+
+### Smart but simple extras
+
+* **Micro-giving prompts**
+
+  * “Sponsor a Bible / resource”
+  * “Cover transport for outreach”
+* **Give-as-a-team**
+
+  * Small groups, youth groups, churches can give together and track progress
+
+---
+
+## 4) The Go Card: “Join outreach trips”
+
+This is where people go from digital participation to real-world movement.
+
+### Core Go features
+
+* **Opportunity board**
+
+  * Trips, local outreaches, online missions, volunteering
+  * Filters: location, date, cost, skill needs
+* **Trip readiness pathway**
+
+  * “Are you ready to go?” checklist:
+
+    * Passport/visa
+    * Basic training modules
+    * Fundraising plan
+    * Safety guidance
+* **Apply + get matched**
+
+  * Lightweight application flow
+  * Leader review + acceptance
+* **Team space**
+
+  * Trip chat, schedule, packing list
+  * Prayer covering list (ties back to Pray)
+
+### “Harvest” layer (John 4)
+
+* **Harvest training library**
+
+  * Evangelism basics, discipleship, testimony sharing
+  * “Open your eyes” challenges (weekly)
+* **Stories from the field**
+
+  * Not hype—real testimonies that mobilize others
+
+---
+
+## 5) “View Projects” should be a real discovery engine
+
+This becomes your marketplace of mission opportunities.
+
+### Projects directory features
+
+* **Project cards** (fast scan)
+
+  * Pillar tag: Biblical Truth / Outpouring / Harvest / Without Walls
+  * “Pray / Give / Go” actions directly on the card
+* **Filters**
+
+  * Nation/region, urgency, type, cost, remote-friendly
+* **Follow projects**
+
+  * Updates, prayer requests, progress
+
+---
+
+## 6) Pillars as Product Mechanics (not just statements)
+
+Here’s how each pillar becomes a usable product behavior:
+
+### Built on Biblical Truth
+
+* Scripture-first content format across the whole platform
+* Bible reading plans tied to mission themes
+* “Why we believe” short foundations (for new believers and seekers)
+* Content review + moderation standards (keeps the platform trustworthy)
+
+### The Outpouring (Joel 2)
+
+* Live prayer rooms / scheduled prayer gatherings
+* Spiritual gifts discovery + activation pathways (responsibly framed)
+* Testimony culture (short, shareable, verifiable where needed)
+
+### The Harvest (John 4)
+
+* Evangelism and discipleship training pathways
+* “Harvest challenges” with real-life steps
+* Partner integration with ministries doing on-ground work
+
+### Without Walls (Zechariah 2)
+
+* Multi-language support (even if phased)
+* Low-bandwidth mode + offline reading/prayer guides
+* Community groups that aren’t location-gated (global small groups)
+* Diaspora connections (“pray for your home nation” features)
+
+---
+
+## 7) “Join the Movement” community layer
+
+This is what turns features into a movement.
+
+### Community features
+
+* **Movement feed**
+
+  * Updates, testimonies, prayer wins, project milestones
+* **Challenges**
+
+  * 21-day Nations Awakening (perfect fit)
+  * “Pray-Give-Go Week”
+* **Badges that reflect discipleship**
+
+  * “Intercessor”
+  * “Mobilizer”
+  * “Field Supporter”
+  * “Go Ready”
+* **Shareable cards**
+
+  * “Today I prayed for…”
+  * “We funded…”
+  * “I’m going to…”
+
+---
+
+## 8) Optional (but powerful): Two-tone modes
+
+Since you’ve mentioned this concept before, it fits perfectly here:
+
+* **Classic mode:** explicit Christian language, scripture-forward
+* **Faith & Reflection mode:** seeker-friendly wording while preserving truth and clarity
+
+This helps you mobilize wider audiences without diluting the mission.
+
+---
+
+## 9) MVP vs Phase 2 (to keep it buildable)
+
+### MVP (high value, fast launch)
+
+* Start Your Mission onboarding + dashboard
+* Pray: Adopt a people group + prayer guide + timer
+* Give: Project pages + one-time/recurring giving + updates
+* Go: Opportunity board + basic trip interest form
+* Projects directory + follow + notifications
+
+### Phase 2 (movement expansion)
+
+* Live prayer rooms
+* Team giving + group dashboards
+* Trip team spaces + readiness pathways
+* Multi-language + low-bandwidth mode
+* Partner portal for verified ministries/projects
+
+---
+
+If you want, I can turn this into:
+
+1. a **feature map** (Pray/Give/Go × Pillars)
+2. a **navigation structure** for app + webapp
+3. a **PRD-style backlog** (epics, user stories, acceptance criteria) aligned to your screenshot section.

@@ -254,6 +254,84 @@ import {
   type InsertDailyReflection,
   type ReflectionLog,
   type InsertReflectionLog,
+  missionPillars,
+  missionProfiles,
+  missionPlans,
+  missionFocuses,
+  prayerGuideDays,
+  missionAdoptions,
+  missionPrayerSessions,
+  missionProjects,
+  projectUpdates,
+  missionOpportunities,
+  opportunityInterests,
+  digitalActions,
+  shareCards,
+  missionInvites,
+  liveRooms,
+  roomSessions,
+  followUpThreads,
+  followUpMessages,
+  trainingModules,
+  trainingProgress,
+  missionChallenges,
+  challengeEnrollments,
+  missionDonations,
+  recurringDonations,
+  missionTestimonies,
+  projectFollows,
+  type MissionPillar,
+  type InsertMissionPillar,
+  type MissionProfile,
+  type InsertMissionProfile,
+  type MissionPlan,
+  type InsertMissionPlan,
+  type MissionFocus,
+  type InsertMissionFocus,
+  type PrayerGuideDay,
+  type InsertPrayerGuideDay,
+  type MissionAdoption,
+  type InsertMissionAdoption,
+  type MissionPrayerSession,
+  type InsertMissionPrayerSession,
+  type MissionProject,
+  type InsertMissionProject,
+  type ProjectUpdate,
+  type InsertProjectUpdate,
+  type MissionOpportunity,
+  type InsertMissionOpportunity,
+  type OpportunityInterest,
+  type InsertOpportunityInterest,
+  type DigitalAction,
+  type InsertDigitalAction,
+  type ShareCard,
+  type InsertShareCard,
+  type MissionInvite,
+  type InsertMissionInvite,
+  type LiveRoom,
+  type InsertLiveRoom,
+  type RoomSession,
+  type InsertRoomSession,
+  type FollowUpThread,
+  type InsertFollowUpThread,
+  type FollowUpMessage,
+  type InsertFollowUpMessage,
+  type TrainingModule,
+  type InsertTrainingModule,
+  type TrainingProgress,
+  type InsertTrainingProgress,
+  type MissionChallenge,
+  type InsertMissionChallenge,
+  type ChallengeEnrollment,
+  type InsertChallengeEnrollment,
+  type MissionDonation,
+  type InsertMissionDonation,
+  type RecurringDonation,
+  type InsertRecurringDonation,
+  type MissionTestimony,
+  type InsertMissionTestimony,
+  type ProjectFollow,
+  type InsertProjectFollow,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, sql, inArray, count } from "drizzle-orm";
@@ -2007,6 +2085,466 @@ export class DatabaseStorage implements IStorage {
   async getCampaignAggregates(campaignId: number): Promise<FeedbackAggregate[]> {
     return db.select().from(feedbackAggregates)
       .where(eq(feedbackAggregates.campaignId, campaignId));
+  }
+
+  // ===== MISSION HUB - DIGITAL FIRST =====
+
+  // Mission Pillars
+  async getMissionPillars(): Promise<MissionPillar[]> {
+    return db.select().from(missionPillars).orderBy(missionPillars.name);
+  }
+
+  // Mission Profiles
+  async getMissionProfile(userId: string): Promise<MissionProfile | undefined> {
+    const [profile] = await db.select().from(missionProfiles).where(eq(missionProfiles.userId, userId));
+    return profile;
+  }
+
+  async createMissionProfile(data: InsertMissionProfile): Promise<MissionProfile> {
+    const [profile] = await db.insert(missionProfiles).values(data).returning();
+    return profile;
+  }
+
+  async updateMissionProfile(userId: string, data: Partial<MissionProfile>): Promise<MissionProfile> {
+    const [profile] = await db.update(missionProfiles)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(missionProfiles.userId, userId))
+      .returning();
+    return profile;
+  }
+
+  // Mission Plans (Weekly goals)
+  async getMissionPlan(userId: string): Promise<MissionPlan | undefined> {
+    const [plan] = await db.select().from(missionPlans)
+      .where(eq(missionPlans.userId, userId))
+      .orderBy(desc(missionPlans.weekStartDate))
+      .limit(1);
+    return plan;
+  }
+
+  async createMissionPlan(data: InsertMissionPlan): Promise<MissionPlan> {
+    const [plan] = await db.insert(missionPlans).values(data).returning();
+    return plan;
+  }
+
+  // Mission Focuses (People Groups / Nations / Cities)
+  async getMissionFocuses(type?: string): Promise<MissionFocus[]> {
+    if (type) {
+      return db.select().from(missionFocuses)
+        .where(eq(missionFocuses.type, type))
+        .orderBy(missionFocuses.name);
+    }
+    return db.select().from(missionFocuses).orderBy(missionFocuses.name);
+  }
+
+  async getMissionFocus(id: number): Promise<MissionFocus | undefined> {
+    const [focus] = await db.select().from(missionFocuses).where(eq(missionFocuses.id, id));
+    return focus;
+  }
+
+  async createMissionFocus(data: InsertMissionFocus): Promise<MissionFocus> {
+    const [focus] = await db.insert(missionFocuses).values(data).returning();
+    return focus;
+  }
+
+  // Prayer Guide Days
+  async getPrayerGuideDays(focusId: number): Promise<PrayerGuideDay[]> {
+    return db.select().from(prayerGuideDays)
+      .where(eq(prayerGuideDays.focusId, focusId))
+      .orderBy(prayerGuideDays.dayNumber);
+  }
+
+  async getPrayerGuideDay(focusId: number, dayNumber: number): Promise<PrayerGuideDay | undefined> {
+    const [day] = await db.select().from(prayerGuideDays)
+      .where(and(
+        eq(prayerGuideDays.focusId, focusId),
+        eq(prayerGuideDays.dayNumber, dayNumber)
+      ));
+    return day;
+  }
+
+  async createPrayerGuideDay(data: InsertPrayerGuideDay): Promise<PrayerGuideDay> {
+    const [day] = await db.insert(prayerGuideDays).values(data).returning();
+    return day;
+  }
+
+  // Mission Adoptions
+  async getUserAdoptions(userId: string): Promise<MissionAdoption[]> {
+    return db.select().from(missionAdoptions)
+      .where(eq(missionAdoptions.userId, userId))
+      .orderBy(desc(missionAdoptions.createdAt));
+  }
+
+  async getActiveAdoption(userId: string): Promise<MissionAdoption | undefined> {
+    const [adoption] = await db.select().from(missionAdoptions)
+      .where(and(
+        eq(missionAdoptions.userId, userId),
+        eq(missionAdoptions.status, 'active')
+      ))
+      .limit(1);
+    return adoption;
+  }
+
+  async createAdoption(data: InsertMissionAdoption): Promise<MissionAdoption> {
+    const [adoption] = await db.insert(missionAdoptions).values(data).returning();
+    return adoption;
+  }
+
+  async updateAdoption(id: number, data: Partial<MissionAdoption>): Promise<MissionAdoption> {
+    const [adoption] = await db.update(missionAdoptions)
+      .set(data)
+      .where(eq(missionAdoptions.id, id))
+      .returning();
+    return adoption;
+  }
+
+  async updateAdoptionForUser(userId: string, id: number, data: Partial<MissionAdoption>): Promise<MissionAdoption | undefined> {
+    const [adoption] = await db.update(missionAdoptions)
+      .set(data)
+      .where(and(
+        eq(missionAdoptions.id, id),
+        eq(missionAdoptions.userId, userId)
+      ))
+      .returning();
+    return adoption;
+  }
+
+  // Mission Prayer Sessions
+  async createPrayerSession(data: InsertMissionPrayerSession): Promise<MissionPrayerSession> {
+    const [session] = await db.insert(missionPrayerSessions).values(data).returning();
+    return session;
+  }
+
+  async getUserPrayerSessions(userId: string, limit?: number): Promise<MissionPrayerSession[]> {
+    const query = db.select().from(missionPrayerSessions)
+      .where(eq(missionPrayerSessions.userId, userId))
+      .orderBy(desc(missionPrayerSessions.createdAt));
+    if (limit) return query.limit(limit);
+    return query;
+  }
+
+  async getUserPrayerStreak(userId: string): Promise<number> {
+    const sessions = await db.select().from(missionPrayerSessions)
+      .where(and(
+        eq(missionPrayerSessions.userId, userId),
+        eq(missionPrayerSessions.completed, true)
+      ))
+      .orderBy(desc(missionPrayerSessions.createdAt));
+    
+    let streak = 0;
+    let currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0);
+    
+    for (const session of sessions) {
+      if (!session.createdAt) continue;
+      const sessionDate = new Date(session.createdAt);
+      sessionDate.setHours(0, 0, 0, 0);
+      const diffDays = Math.floor((currentDate.getTime() - sessionDate.getTime()) / (1000 * 60 * 60 * 24));
+      
+      if (diffDays === streak) {
+        streak++;
+      } else if (diffDays > streak) {
+        break;
+      }
+    }
+    return streak;
+  }
+
+  // Mission Projects (sorted by digital actions first)
+  async getMissionProjects(filters?: { pillarTag?: string; hasDigitalActions?: boolean; status?: string }): Promise<MissionProject[]> {
+    let query = db.select().from(missionProjects);
+    const conditions = [];
+    
+    if (filters?.status) conditions.push(eq(missionProjects.status, filters.status));
+    if (filters?.hasDigitalActions !== undefined) conditions.push(eq(missionProjects.hasDigitalActions, filters.hasDigitalActions));
+    
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions)) as typeof query;
+    }
+    
+    return query.orderBy(desc(missionProjects.hasDigitalActions), desc(missionProjects.createdAt));
+  }
+
+  async getMissionProject(id: number): Promise<MissionProject | undefined> {
+    const [project] = await db.select().from(missionProjects).where(eq(missionProjects.id, id));
+    return project;
+  }
+
+  async createMissionProject(data: InsertMissionProject): Promise<MissionProject> {
+    const [project] = await db.insert(missionProjects).values(data).returning();
+    return project;
+  }
+
+  // Project Updates
+  async getProjectUpdates(projectId: number): Promise<ProjectUpdate[]> {
+    return db.select().from(projectUpdates)
+      .where(eq(projectUpdates.projectId, projectId))
+      .orderBy(desc(projectUpdates.createdAt));
+  }
+
+  async createProjectUpdate(data: InsertProjectUpdate): Promise<ProjectUpdate> {
+    const [update] = await db.insert(projectUpdates).values(data).returning();
+    return update;
+  }
+
+  // Project Follows
+  async getProjectFollows(userId: string): Promise<ProjectFollow[]> {
+    return db.select().from(projectFollows)
+      .where(eq(projectFollows.userId, userId));
+  }
+
+  async isProjectFollowed(userId: string, projectId: number): Promise<boolean> {
+    const [follow] = await db.select().from(projectFollows)
+      .where(and(
+        eq(projectFollows.userId, userId),
+        eq(projectFollows.projectId, projectId)
+      ));
+    return !!follow;
+  }
+
+  async followProject(data: InsertProjectFollow): Promise<ProjectFollow> {
+    const [follow] = await db.insert(projectFollows).values(data).returning();
+    return follow;
+  }
+
+  async unfollowProject(userId: string, projectId: number): Promise<void> {
+    await db.delete(projectFollows)
+      .where(and(
+        eq(projectFollows.userId, userId),
+        eq(projectFollows.projectId, projectId)
+      ));
+  }
+
+  // Mission Opportunities (online first by default)
+  async getMissionOpportunities(filters?: { deliveryMode?: string; type?: string; status?: string }): Promise<MissionOpportunity[]> {
+    let query = db.select().from(missionOpportunities);
+    const conditions = [];
+    
+    if (filters?.deliveryMode) conditions.push(eq(missionOpportunities.deliveryMode, filters.deliveryMode));
+    if (filters?.type) conditions.push(eq(missionOpportunities.type, filters.type));
+    if (filters?.status) conditions.push(eq(missionOpportunities.status, filters.status));
+    
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions)) as typeof query;
+    }
+    
+    return query.orderBy(
+      sql`CASE WHEN ${missionOpportunities.deliveryMode} = 'online' THEN 0 ELSE 1 END`,
+      desc(missionOpportunities.createdAt)
+    );
+  }
+
+  async getMissionOpportunity(id: number): Promise<MissionOpportunity | undefined> {
+    const [opp] = await db.select().from(missionOpportunities).where(eq(missionOpportunities.id, id));
+    return opp;
+  }
+
+  async createMissionOpportunity(data: InsertMissionOpportunity): Promise<MissionOpportunity> {
+    const [opp] = await db.insert(missionOpportunities).values(data).returning();
+    return opp;
+  }
+
+  // Opportunity Interests
+  async createOpportunityInterest(data: InsertOpportunityInterest): Promise<OpportunityInterest> {
+    const [interest] = await db.insert(opportunityInterests).values(data).returning();
+    return interest;
+  }
+
+  async getUserOpportunityInterests(userId: string): Promise<OpportunityInterest[]> {
+    return db.select().from(opportunityInterests)
+      .where(eq(opportunityInterests.userId, userId))
+      .orderBy(desc(opportunityInterests.createdAt));
+  }
+
+  // Digital Actions
+  async createDigitalAction(data: InsertDigitalAction): Promise<DigitalAction> {
+    const [action] = await db.insert(digitalActions).values(data).returning();
+    return action;
+  }
+
+  async getUserDigitalActions(userId: string, limit?: number): Promise<DigitalAction[]> {
+    const query = db.select().from(digitalActions)
+      .where(eq(digitalActions.userId, userId))
+      .orderBy(desc(digitalActions.createdAt));
+    if (limit) return query.limit(limit);
+    return query;
+  }
+
+  // Share Cards
+  async getShareCards(type?: string): Promise<ShareCard[]> {
+    if (type) {
+      return db.select().from(shareCards)
+        .where(eq(shareCards.type, type))
+        .orderBy(desc(shareCards.createdAt));
+    }
+    return db.select().from(shareCards).orderBy(desc(shareCards.createdAt));
+  }
+
+  async getShareCard(id: number): Promise<ShareCard | undefined> {
+    const [card] = await db.select().from(shareCards).where(eq(shareCards.id, id));
+    return card;
+  }
+
+  async createShareCard(data: InsertShareCard): Promise<ShareCard> {
+    const [card] = await db.insert(shareCards).values(data).returning();
+    return card;
+  }
+
+  // Mission Invites
+  async createMissionInvite(data: InsertMissionInvite): Promise<MissionInvite> {
+    const [invite] = await db.insert(missionInvites).values(data).returning();
+    return invite;
+  }
+
+  async getMissionInviteByCode(code: string): Promise<MissionInvite | undefined> {
+    const [invite] = await db.select().from(missionInvites).where(eq(missionInvites.inviteCode, code));
+    return invite;
+  }
+
+  async incrementInviteClicks(code: string): Promise<void> {
+    await db.update(missionInvites)
+      .set({ clickCount: sql`${missionInvites.clickCount} + 1` })
+      .where(eq(missionInvites.inviteCode, code));
+  }
+
+  async incrementInviteJoins(code: string): Promise<void> {
+    await db.update(missionInvites)
+      .set({ joinCount: sql`${missionInvites.joinCount} + 1` })
+      .where(eq(missionInvites.inviteCode, code));
+  }
+
+  // Live Rooms
+  async getLiveRooms(status?: string): Promise<LiveRoom[]> {
+    if (status) {
+      return db.select().from(liveRooms)
+        .where(eq(liveRooms.status, status))
+        .orderBy(sql`CASE WHEN ${liveRooms.scheduleType} = 'always_on' THEN 0 ELSE 1 END`, liveRooms.scheduledAt);
+    }
+    return db.select().from(liveRooms).orderBy(sql`CASE WHEN ${liveRooms.scheduleType} = 'always_on' THEN 0 ELSE 1 END`, liveRooms.scheduledAt);
+  }
+
+  async getLiveRoom(id: number): Promise<LiveRoom | undefined> {
+    const [room] = await db.select().from(liveRooms).where(eq(liveRooms.id, id));
+    return room;
+  }
+
+  async createLiveRoom(data: InsertLiveRoom): Promise<LiveRoom> {
+    const [room] = await db.insert(liveRooms).values(data).returning();
+    return room;
+  }
+
+  // Training Modules
+  async getTrainingModules(pillarTag?: string): Promise<TrainingModule[]> {
+    return db.select().from(trainingModules)
+      .where(eq(trainingModules.isActive, true))
+      .orderBy(trainingModules.orderIndex);
+  }
+
+  async getTrainingModule(id: number): Promise<TrainingModule | undefined> {
+    const [module] = await db.select().from(trainingModules).where(eq(trainingModules.id, id));
+    return module;
+  }
+
+  async createTrainingModule(data: InsertTrainingModule): Promise<TrainingModule> {
+    const [module] = await db.insert(trainingModules).values(data).returning();
+    return module;
+  }
+
+  // Training Progress
+  async getTrainingProgress(userId: string): Promise<TrainingProgress[]> {
+    return db.select().from(trainingProgress)
+      .where(eq(trainingProgress.userId, userId));
+  }
+
+  async createTrainingProgress(data: InsertTrainingProgress): Promise<TrainingProgress> {
+    const [progress] = await db.insert(trainingProgress).values(data).returning();
+    return progress;
+  }
+
+  // Mission Challenges
+  async getMissionChallenges(isActive?: boolean): Promise<MissionChallenge[]> {
+    if (isActive !== undefined) {
+      return db.select().from(missionChallenges)
+        .where(eq(missionChallenges.isActive, isActive))
+        .orderBy(desc(missionChallenges.startDate));
+    }
+    return db.select().from(missionChallenges).orderBy(desc(missionChallenges.startDate));
+  }
+
+  async getMissionChallenge(id: number): Promise<MissionChallenge | undefined> {
+    const [challenge] = await db.select().from(missionChallenges).where(eq(missionChallenges.id, id));
+    return challenge;
+  }
+
+  async createMissionChallenge(data: InsertMissionChallenge): Promise<MissionChallenge> {
+    const [challenge] = await db.insert(missionChallenges).values(data).returning();
+    return challenge;
+  }
+
+  // Challenge Enrollments
+  async getChallengeEnrollments(userId: string): Promise<ChallengeEnrollment[]> {
+    return db.select().from(challengeEnrollments)
+      .where(eq(challengeEnrollments.userId, userId));
+  }
+
+  async getChallengeEnrollment(userId: string, challengeId: number): Promise<ChallengeEnrollment | undefined> {
+    const [enrollment] = await db.select().from(challengeEnrollments)
+      .where(and(
+        eq(challengeEnrollments.userId, userId),
+        eq(challengeEnrollments.challengeId, challengeId)
+      ));
+    return enrollment;
+  }
+
+  async createChallengeEnrollment(data: InsertChallengeEnrollment): Promise<ChallengeEnrollment> {
+    const [enrollment] = await db.insert(challengeEnrollments).values(data).returning();
+    return enrollment;
+  }
+
+  async updateChallengeEnrollment(id: number, data: Partial<ChallengeEnrollment>): Promise<ChallengeEnrollment> {
+    const [enrollment] = await db.update(challengeEnrollments)
+      .set(data)
+      .where(eq(challengeEnrollments.id, id))
+      .returning();
+    return enrollment;
+  }
+
+  // Mission Donations
+  async createMissionDonation(data: InsertMissionDonation): Promise<MissionDonation> {
+    const [donation] = await db.insert(missionDonations).values(data).returning();
+    return donation;
+  }
+
+  async getUserDonations(userId: string): Promise<MissionDonation[]> {
+    return db.select().from(missionDonations)
+      .where(eq(missionDonations.userId, userId))
+      .orderBy(desc(missionDonations.createdAt));
+  }
+
+  // Recurring Donations
+  async createRecurringDonation(data: InsertRecurringDonation): Promise<RecurringDonation> {
+    const [donation] = await db.insert(recurringDonations).values(data).returning();
+    return donation;
+  }
+
+  async getUserRecurringDonations(userId: string): Promise<RecurringDonation[]> {
+    return db.select().from(recurringDonations)
+      .where(eq(recurringDonations.userId, userId));
+  }
+
+  // Mission Testimonies
+  async getMissionTestimonies(visibility?: string): Promise<MissionTestimony[]> {
+    const conditions = [eq(missionTestimonies.moderationStatus, 'approved')];
+    if (visibility) conditions.push(eq(missionTestimonies.visibility, visibility));
+    
+    return db.select().from(missionTestimonies)
+      .where(and(...conditions))
+      .orderBy(desc(missionTestimonies.createdAt));
+  }
+
+  async createMissionTestimony(data: InsertMissionTestimony): Promise<MissionTestimony> {
+    const [testimony] = await db.insert(missionTestimonies).values(data).returning();
+    return testimony;
   }
 }
 

@@ -1,0 +1,320 @@
+Absolutely — if Reawakened is a **digital outreach and mission hub**, the product should default to **mobile-first, virtual/online-first**, with in-person/location-based expressions as a secondary layer.
+
+Below is a clean alignment you can apply across **features, navigation, data model, and screens** so everything drives **online action, digital evangelism, and consistent commitment** (revival culture), without requiring travel.
+
+---
+
+## 1) The Operating Principle: Online First, Location Second
+
+### Your default user journey becomes:
+
+**Discover → Commit → Act (online) → Share → Invite → Repeat**
+
+So “Go” should not feel like “travel.” It should feel like:
+
+* **Go Online** (digital outreach, mentoring, content sharing, prayer rooms, follow-up)
+* **Go Local** (optional layer when available)
+
+---
+
+## 2) Feature Map Update: Pray / Give / Go with Digital-First Defaults
+
+### PRAY (online-first by design)
+
+* **Live prayer rooms** (scheduled + always-on rooms; drop-in prayer)
+* **Daily prayer cards** (fast, swipeable, completion-based)
+* **Adopt a focus** (people group/nation/city) with **micro-assignments**
+* **Prayer + outreach prompts** (“Who can you encourage/share with today?”)
+* **Prayer wall + testimonies** (moderated, shareable)
+
+### GIVE (online-first engagement, not just donation)
+
+* **Fund digital mission initiatives** (Bible distribution online, media outreach, discipleship tools)
+* **Give-as-a-team online** (groups/churches/youth cohorts)
+* **Sponsor digital follow-up** (e.g., “fund 1 week of online discipleship”)
+* **Impact updates optimized for mobile** (short story cards, 30–60 sec clips)
+
+### GO (reposition to “Go Digital” first, then “Go Local”)
+
+**Go Digital examples:**
+
+* Online evangelism campaigns (shareable content + trackable invites)
+* Digital discipleship / mentoring (match + chat + guided steps)
+* Prayer-to-outreach actions (DM someone, invite to prayer room, share testimony card)
+* Remote volunteering (translation, editing, design, admin help, media distribution)
+* Training + activation pathways (10-minute modules, field practice challenges)
+
+**Go Local (secondary):**
+
+* Outreach opportunities near you
+* Trips (later-stage commitment)
+
+---
+
+## 3) Navigation Structure Update (App + Web)
+
+### Mobile App Tabs (recommended)
+
+1. **Home**
+2. **Pray**
+3. **Missions** (this becomes your Projects + Go hub)
+4. **Give**
+5. **Movement** (Challenges + testimonies + live rooms)
+
+Why this works:
+
+* It keeps **daily rhythm (Pray)** and **community momentum (Movement)** prominent.
+* It treats “Projects/Go” as **Missions**, which naturally includes digital actions first.
+
+### Web Top Nav (recommended)
+
+* Home
+* Pray
+* Missions
+* Give
+* Movement
+* My Mission (signed-in)
+
+---
+
+## 4) Data Model Deltas to Support Online-First Outreach
+
+You already have the core entities (User, MissionProfile, Project, Focus, Donation, Opportunity). To truly become a digital mission hub, add these “online action” entities:
+
+### **DigitalAction**
+
+**Purpose:** Track real outreach steps that happen online
+**Fields**
+
+* `digital_action_id`
+* `user_id`
+* `project_id` (nullable)
+* `focus_id` (nullable)
+* `action_type` (share_card, invite_friend, send_encouragement, join_prayer_room, start_followup, complete_training, post_testimony)
+* `channel` (in_app, whatsapp, sms, email, social)
+* `status` (initiated, completed)
+* `created_at`
+
+### **ShareCard**
+
+**Purpose:** What users share (prayer prompt, testimony, invite, campaign)
+**Fields**
+
+* `share_card_id`
+* `type` (prayer, testimony, invite, campaign)
+* `content_ref` (links to PrayerGuideDay/Testimony/Challenge/Project)
+* `cta_link` (deep link)
+* `template_id`
+* `created_at`
+
+### **Invite**
+
+**Purpose:** Growth loop for outreach + movement
+**Fields**
+
+* `invite_id`
+* `inviter_user_id`
+* `share_card_id`
+* `invite_channel`
+* `invite_code` / `deep_link_token`
+* `click_count`, `join_count` (optional analytics fields)
+
+### **LiveRoom** (Prayer / Training / Revival gatherings)
+
+**Fields**
+
+* `room_id`
+* `type` (prayer, revival, training)
+* `title`
+* `schedule` (or `always_on`)
+* `host_user_id` or `partner_id`
+* `moderation_level`
+* `status`
+
+### **RoomSession**
+
+**Fields**
+
+* `session_id`
+* `room_id`
+* `start_at`, `end_at`
+* `attendance_count` (optional)
+
+### **FollowUpThread** (Digital discipleship / connection)
+
+**Fields**
+
+* `thread_id`
+* `initiator_user_id`
+* `participant_user_id` (or contact placeholder)
+* `project_id` (nullable)
+* `status` (active, archived)
+* `created_at`
+
+### **TrainingModule** + **TrainingProgress**
+
+**Purpose:** “Go Digital” readiness without travel
+**Fields**
+
+* module: `module_id`, `title`, `duration`, `pillar_tags`, `content`
+* progress: `user_id`, `module_id`, `completed_at`
+
+### **Opportunity** (add a key field)
+
+Add:
+
+* `delivery_mode` = (online, hybrid, local, trip)
+  Default sorting and filtering should prioritize `online`.
+
+This combination makes “Go” measurable and repeatable, even when no location is involved.
+
+---
+
+## 5) Screen-by-Screen UI Inventory Updates (Exact Flow, Online-First)
+
+This is the same flow you asked for, but tuned so the *default actions* are virtual and mobile-native.
+
+### 1) Home (Global Impact Hero)
+
+**What changes:**
+
+* Keep Start Your Mission + View Projects
+* Add **“Join Live”** (prayer room / gathering) as a third, smaller CTA
+* The Pray/Give/Go cards become:
+
+  * **Pray** (Adopt + Pray Now)
+  * **Give** (Support projects)
+  * **Go** (rename in UI to **Go Digital**; in copy: “Take action online today”)
+
+**Interactive layer**
+
+* “Pick today’s commitment: 5 min prayer / 1 share / 1 encouragement message”
+* Tap = logs a mini-commitment and takes you straight into action
+
+---
+
+### 2) Pray Hub
+
+**Default view**
+
+* “Pray Now” (daily guide + timer)
+* “Join a Live Room” (drop-in)
+* “Adopt a Focus” (if not adopted)
+
+**Outreach built-in**
+
+* After prayer completion: “Send one encouragement” (one-tap action)
+
+---
+
+### 3) Pray Action (Daily Prayer Screen)
+
+**Make it engaging**
+
+* Swipe prayer points (cards)
+* 1–3 scripture declarations
+* 1 “Spirit-led prompt” (private response)
+* End screen: **Choose one outreach step**
+
+  * Share prayer card
+  * Invite someone to pray
+  * Send encouragement (copy prompt)
+
+---
+
+### 4) Give Hub
+
+**Default view**
+
+* Featured campaign (digital-first causes included)
+* Quick give (one tap)
+* “Sponsor an outreach action” (small, specific outcomes)
+
+**Loop**
+
+* After giving: “Pray now for this project” + “Share this mission card”
+
+---
+
+### 5) Go Hub (Online First)
+
+This becomes your **Digital Outreach Dashboard**.
+
+**Sections**
+
+* **Take Action Now (online)**
+
+  * Share card
+  * Invite a friend
+  * Join live room
+  * Complete a 10-min training
+* **Digital Opportunities**
+
+  * mentoring, follow-up, content distribution, translation, admin support
+* **Local Opportunities** (collapsed by default)
+* **Trips** (later-stage; keep but not leading)
+
+---
+
+### 6) Projects Directory (View Projects)
+
+**Default sorting**
+
+* Online-ready projects first (or projects with digital actions available)
+
+**Project cards show**
+
+* Pillar tags
+* “Do it now” buttons:
+
+  * Pray
+  * Give
+  * **Take Action** (digital action list)
+
+---
+
+### 7) Project Detail (Decision Screen)
+
+**Top section: “Do something now”**
+
+* **Pray for this** (start immediately)
+* **Give** (quick amount)
+* **Take Action Online**
+
+  * Share campaign card
+  * Invite to prayer room
+  * Join follow-up team (if available)
+  * Complete related training
+
+**Location section**
+
+* “In-person opportunities” (lower on page, optional)
+
+---
+
+### 8) Actions (What “Go Digital” actually looks like)
+
+**Action screen types**
+
+* Share screen (choose card template → share → log action)
+* Invite screen (choose channel → send → log)
+* Training screen (10 minutes → completion → next step)
+* Join live room screen (simple entry + schedule)
+* Follow-up screen (guided prompts for discipleship conversations)
+
+---
+
+## Practical Naming Adjustment (Small change, big clarity)
+
+To keep the brand simple but remove the travel-only implication:
+
+* Keep pillar language as-is.
+* Keep the tab label “Go” if you want.
+* But in every user-facing phrase, frame it as:
+
+  * **“Go Digital”** first
+  * **“Go Local”** second
+
+---
+
+If you want, I can also update your PRD backlog acceptance criteria so “Go” stories *default* to `delivery_mode=online` and include the digital action loop (Share/Invite/Live/Training) as the primary conversion mechanism.
