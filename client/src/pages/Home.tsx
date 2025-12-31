@@ -10,7 +10,7 @@ import { MarqueeCTA } from "@/components/sections/MarqueeCTA";
 import { SubscriptionCapture } from "@/components/sections/SubscriptionCapture";
 import { Footer } from "@/components/layout/Footer";
 import { ArrowRight, ShoppingBag, Flame, Heart, Globe, Zap } from "lucide-react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 
 import outreachImg from "@assets/generated_images/group_wearing_reawakened.one_branded_t-shirts.png";
 import capImg from "@assets/generated_images/cap_with_reawakened_embroidery.png";
@@ -44,6 +44,8 @@ const funnelCards = [
 ];
 
 export default function Home() {
+  const [, navigate] = useLocation();
+  
   return (
     <div className="min-h-screen bg-white text-foreground overflow-x-hidden relative">
       <div className="fixed inset-0 pointer-events-none z-0 opacity-40">
@@ -122,7 +124,11 @@ export default function Home() {
             </div>
 
             <div className="mt-12 text-center">
-              <button className="inline-flex items-center gap-2 bg-gray-900 text-white px-8 py-4 rounded-full font-bold hover:bg-gray-800 transition-all hover:scale-105 shadow-lg" data-testid="button-visit-hub">
+              <button 
+                onClick={() => navigate("/community")}
+                className="inline-flex items-center gap-2 bg-gray-900 text-white px-8 py-4 rounded-full font-bold hover:bg-gray-800 transition-all hover:scale-105 shadow-lg" 
+                data-testid="button-visit-hub"
+              >
                 <ShoppingBag className="h-5 w-5" /> Visit the Hub
               </button>
             </div>

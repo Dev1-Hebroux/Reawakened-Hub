@@ -2,9 +2,9 @@ import { useRef } from "react";
 import { motion } from "framer-motion";
 import { Play, Heart, ArrowRight } from "lucide-react";
 
-import identityImg from "@assets/17_1767182385479.png";
-import believeImg from "@assets/16_1767182385479.png";
-import hearingImg from "@assets/6_1767182385473.png";
+import identityImg from "@assets/14_1767182385478.png";
+import believeImg from "@assets/23_1767182385482.png";
+import hearingImg from "@assets/18_1767182385480.png";
 import boldnessImg from "@assets/19_1767182385480.png";
 
 const sparks = [

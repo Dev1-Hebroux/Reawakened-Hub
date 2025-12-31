@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Users, BookOpen, Heart, Globe, ArrowRight } from "lucide-react";
+import { useLocation } from "wouter";
 import communityBg from "@assets/generated_images/group_of_diverse_young_people_looking_at_a_phone.png";
 
 const rooms = [
@@ -10,6 +11,8 @@ const rooms = [
 ];
 
 export function CommunityRooms() {
+  const [, navigate] = useLocation();
+  
   return (
     <section id="community" className="py-24 bg-gray-50 relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -45,7 +48,11 @@ export function CommunityRooms() {
               ))}
             </div>
             
-            <button className="btn-primary mt-6">
+            <button 
+              onClick={() => navigate("/community")}
+              className="btn-primary mt-6"
+              data-testid="button-find-room"
+            >
               Find Your Room
             </button>
           </motion.div>

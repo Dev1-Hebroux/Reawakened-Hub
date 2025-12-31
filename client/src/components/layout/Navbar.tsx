@@ -14,7 +14,7 @@ export function Navbar() {
   const [location] = useLocation();
 
   // Check if current page has a dark hero section
-  const isDarkHeroPage = ["/", "/mission", "/sparks", "/vision"].includes(location);
+  const isDarkHeroPage = ["/", "/mission", "/sparks", "/vision", "/journeys", "/group-labs", "/coaching-labs"].includes(location);
 
   useEffect(() => {
     const handleScroll = () => {

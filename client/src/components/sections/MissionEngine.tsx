@@ -1,8 +1,11 @@
 import { motion } from "framer-motion";
 import { Map, HeartHandshake, Send, ArrowRight } from "lucide-react";
+import { useLocation } from "wouter";
 import missionBg from "@assets/generated_images/hands_holding_a_glowing_digital_globe.png";
 
 export function MissionEngine() {
+  const [, navigate] = useLocation();
+  
   return (
     <section id="mission" className="py-24 bg-[#FFF8F3] relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -30,10 +33,18 @@ export function MissionEngine() {
               </p>
               
               <div className="flex flex-wrap gap-4 pt-4">
-                <button className="bg-white text-primary font-bold px-8 py-4 rounded-full hover:bg-gray-100 transition-colors shadow-lg">
+                <button 
+                  onClick={() => navigate("/mission#outpouring")}
+                  className="bg-white text-primary font-bold px-8 py-4 rounded-full hover:bg-gray-100 transition-colors shadow-lg"
+                  data-testid="button-start-mission"
+                >
                   Start Your Mission
                 </button>
-                <button className="bg-transparent border-2 border-white text-white font-bold px-8 py-4 rounded-full hover:bg-white/10 transition-colors">
+                <button 
+                  onClick={() => navigate("/mission")}
+                  className="bg-transparent border-2 border-white text-white font-bold px-8 py-4 rounded-full hover:bg-white/10 transition-colors"
+                  data-testid="button-view-projects"
+                >
                   View Projects
                 </button>
               </div>
