@@ -76,7 +76,7 @@ export function ScaTool() {
         });
       }
       
-      return result.json();
+      return result;
     },
     onSuccess: () => {
       setStep("results");
