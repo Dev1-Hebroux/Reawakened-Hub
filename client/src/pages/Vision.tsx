@@ -8,10 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { 
   Compass, Target, Sparkles, Calendar, CheckCircle2, 
   ArrowRight, Mountain, Heart, Flame, Star, ChevronRight,
-  Zap, TrendingUp, Award, Play, Users, Trophy, Clock
+  Zap, TrendingUp, Award, Play, Users, Trophy, Clock, X,
+  BookOpen, Lightbulb, Route, Quote
 } from "lucide-react";
 
 
@@ -40,6 +42,7 @@ export function VisionPage() {
   const [seasonType, setSeasonType] = useState<"new_year" | "new_season">("new_year");
   const [seasonLabel, setSeasonLabel] = useState("2025 Reset");
   const [themeWord, setThemeWord] = useState("");
+  const [showDemoModal, setShowDemoModal] = useState(false);
 
   const { data: session, isLoading } = useQuery({
     queryKey: ["/api/vision/sessions/current"],
@@ -103,61 +106,155 @@ export function VisionPage() {
     );
   }
 
-  const stats = [
-    { label: "Journeys Started", value: "2.5k+", icon: Play },
-    { label: "Goals Achieved", value: "8.2k", icon: Trophy },
-    { label: "Habits Built", value: "15k+", icon: Flame },
-    { label: "Active Users", value: "1.2k", icon: Users },
+  const trustBadges = [
+    { icon: Route, label: "Proven 5-Stage Framework" },
+    { icon: Heart, label: "Faith-Friendly Options" },
+    { icon: Target, label: "Actionable 90-Day Plans" },
+  ];
+
+  const whyCards = [
+    { 
+      icon: Compass, 
+      title: "Discover Your Purpose", 
+      desc: "Use the Wheel of Life and Ikigai frameworks to find clarity on what matters most.",
+      gradient: "from-violet-500 to-purple-600"
+    },
+    { 
+      icon: Target, 
+      title: "Set Meaningful Goals", 
+      desc: "Create SMART goals with real deadlines and measurable outcomes.",
+      gradient: "from-blue-500 to-cyan-500"
+    },
+    { 
+      icon: Flame, 
+      title: "Build Lasting Habits", 
+      desc: "Track daily habits and build consistency with streak tracking and accountability.",
+      gradient: "from-orange-500 to-amber-500"
+    },
+  ];
+
+  const demoFrameworks = [
+    { 
+      title: "Wheel of Life", 
+      desc: "Assess 8 key life areas to discover where you need the most growth",
+      icon: Compass,
+      biblical: "Proverbs 4:26 - Give careful thought to the paths for your feet"
+    },
+    { 
+      title: "Purpose Discovery (Ikigai)", 
+      desc: "Find the intersection of your passions, skills, and what the world needs",
+      icon: Lightbulb,
+      biblical: "Jeremiah 29:11 - For I know the plans I have for you"
+    },
+    { 
+      title: "SMART Goals", 
+      desc: "Set Specific, Measurable, Achievable, Relevant, and Time-bound goals",
+      icon: Target,
+      biblical: "Habakkuk 2:2 - Write down the vision and make it plain"
+    },
+    { 
+      title: "90-Day Action Plans", 
+      desc: "Break big dreams into quarterly sprints with clear milestones",
+      icon: Calendar,
+      biblical: "Proverbs 16:3 - Commit to the Lord whatever you do"
+    },
   ];
 
   return (
     <div className="min-h-screen bg-[#0a1628] text-white font-sans">
       <Navbar />
       
-      {/* Cinematic Hero Section */}
-      <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden">
+      {/* Demo Modal */}
+      <Dialog open={showDemoModal} onOpenChange={setShowDemoModal}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-[#0f1d32] border-white/10 text-white">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-white flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
+                <Play className="w-5 h-5 text-white" />
+              </div>
+              Vision & Goal Frameworks
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 mt-4">
+            <p className="text-gray-300 text-sm">
+              Discover proven frameworks for designing your best season, with biblical principles woven throughout.
+            </p>
+            {demoFrameworks.map((framework, i) => (
+              <motion.div 
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.1 }}
+                className="bg-white/5 border border-white/10 rounded-xl p-4"
+              >
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center flex-shrink-0">
+                    <framework.icon className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-bold text-white mb-1">{framework.title}</h4>
+                    <p className="text-sm text-gray-300 mb-2">{framework.desc}</p>
+                    <div className="flex items-center gap-2 text-xs text-amber-400">
+                      <BookOpen className="w-3 h-3" />
+                      <span className="italic">{framework.biblical}</span>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+            <Button 
+              onClick={() => {
+                setShowDemoModal(false);
+                setShowOnboarding(true);
+              }}
+              className="w-full bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white py-3 rounded-full mt-4"
+            >
+              Start Your Journey <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Dark Gradient Hero */}
+      <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden pt-20">
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-gradient-to-br from-violet-900/40 via-purple-900/30 to-cyan-900/40" />
-          <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-violet-500/20 rounded-full blur-[120px]" />
-          <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-cyan-500/20 rounded-full blur-[120px]" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-purple-600/10 rounded-full blur-[150px]" />
+          <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-violet-500/15 rounded-full blur-[100px]" />
+          <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-cyan-500/15 rounded-full blur-[100px]" />
         </div>
         
-        <div className="relative z-10 max-w-7xl mx-auto px-4 text-center">
+        <div className="relative z-10 max-w-3xl mx-auto px-4 text-center">
           <motion.div
-            initial={{ opacity: 0, y: 40 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
+            transition={{ duration: 0.6 }}
           >
             <motion.div 
-              initial={{ scale: 0.8, opacity: 0 }}
+              initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              transition={{ delay: 0.2 }}
-              className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 text-white px-5 py-2.5 rounded-full mb-8"
+              transition={{ delay: 0.1 }}
+              className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 text-white px-4 py-2 rounded-full mb-6"
             >
               <Sparkles className="w-4 h-4 text-violet-300" />
-              <span className="text-sm font-semibold">Life Vision & Goals Pathway</span>
+              <span className="text-sm font-medium">Life Vision & Goals Pathway</span>
             </motion.div>
             
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-display font-bold mb-6 tracking-tight leading-[0.9]" data-testid="text-vision-title">
+            <h1 className="text-4xl md:text-6xl font-display font-bold mb-4 tracking-tight leading-tight" data-testid="text-vision-title">
               Design Your
-              <br />
-              <span className="bg-gradient-to-r from-violet-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
-                Best Season Yet
-              </span>
+              <span className="bg-gradient-to-r from-violet-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent"> Best Season</span>
             </h1>
             
-            <p className="text-lg md:text-xl text-gray-300 mb-10 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-base md:text-lg text-gray-300 mb-8 max-w-xl mx-auto leading-relaxed">
               An interactive journey to discover your purpose, set meaningful goals, 
               and build habits that transform your life.
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                 <Button 
                   size="lg" 
                   onClick={() => setShowOnboarding(true)}
-                  className="bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white px-8 py-6 text-lg rounded-full shadow-xl shadow-violet-500/30 gap-3"
+                  className="bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white px-6 py-5 text-base rounded-full shadow-xl shadow-violet-500/25 gap-2"
                   data-testid="button-start-vision"
                 >
                   Start Your Vision Journey 
@@ -168,162 +265,224 @@ export function VisionPage() {
                 <Button 
                   variant="outline" 
                   size="lg"
-                  className="border-white/20 text-white hover:bg-white/10 px-8 py-6 rounded-full text-lg backdrop-blur-sm"
+                  onClick={() => setShowDemoModal(true)}
+                  className="border-white/20 text-white hover:bg-white/10 px-6 py-5 rounded-full text-base backdrop-blur-sm"
+                  data-testid="button-watch-demo"
                 >
-                  <Play className="w-5 h-5 mr-2" /> Watch Preview
+                  <Play className="w-4 h-4 mr-2" /> Watch Demo
                 </Button>
               </motion.div>
             </div>
           </motion.div>
         </div>
-        
-        {/* Animated scroll indicator */}
-        <motion.div 
-          className="absolute bottom-8 left-1/2 -translate-x-1/2"
-          animate={{ y: [0, 10, 0] }}
-          transition={{ duration: 2, repeat: Infinity }}
-        >
-          <div className="w-6 h-10 rounded-full border-2 border-white/30 flex items-start justify-center p-1">
-            <div className="w-1.5 h-3 bg-white/60 rounded-full" />
-          </div>
-        </motion.div>
       </section>
 
-      {/* Compact Stats Bar */}
-      <section className="bg-white relative z-20 -mt-12 max-w-md md:max-w-2xl mx-4 md:mx-auto rounded-2xl shadow-xl p-4 md:p-6">
-        <div className="grid grid-cols-2 gap-4">
-          {stats.map((stat, i) => (
-            <div key={i} className="text-center py-2">
-              <div className="flex justify-center mb-2">
-                <div className="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center">
-                  <stat.icon className="w-5 h-5 text-violet-600" />
-                </div>
-              </div>
-              <div className="text-2xl md:text-3xl font-bold text-gray-900">{stat.value}</div>
-              <div className="text-xs text-gray-500">{stat.label}</div>
-            </div>
-          ))}
+      {/* Trust Badges */}
+      <section className="py-8 px-4 bg-[#0a1628]">
+        <div className="max-w-2xl mx-auto">
+          <div className="flex flex-wrap justify-center gap-4">
+            {trustBadges.map((badge, i) => (
+              <motion.div 
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 + i * 0.1 }}
+                className="flex items-center gap-2 bg-white/5 border border-white/10 px-4 py-2.5 rounded-full"
+              >
+                <badge.icon className="w-4 h-4 text-violet-400" />
+                <span className="text-sm text-gray-300 font-medium">{badge.label}</span>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* Compact Journey Roadmap */}
-      <section className="py-12 md:py-16 px-4 bg-gradient-to-b from-white to-gray-50">
-        <div className="max-w-lg mx-auto">
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center gap-2 bg-violet-100 text-violet-600 px-3 py-1.5 rounded-full text-xs font-bold mb-4">
-              <Target className="h-3 w-3" /> Your Path to Purpose
-            </div>
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-              The 5-Stage Vision Pathway
+      {/* Why This Pathway Section */}
+      <section className="py-16 px-4 bg-gradient-to-b from-[#0a1628] to-[#0f1d32]">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-10">
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
+              What You'll Discover
             </h2>
-            <p className="text-sm text-gray-600">
-              A proven framework that transforms dreams into daily action
+            <p className="text-gray-400">
+              Transform dreams into daily action with proven frameworks
             </p>
           </div>
           
-          {/* Vertical Stacked Cards */}
-          <div className="space-y-4">
-            {STAGES.map((stage, i) => {
-              const colors = STAGE_COLORS[stage.key as keyof typeof STAGE_COLORS];
-              return (
-                <div
-                  key={stage.key}
-                  className="bg-white rounded-2xl p-4 shadow-md border border-gray-100"
-                >
-                  <div className="flex flex-col items-center text-center">
-                    <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${colors.bg} flex items-center justify-center shadow-md mb-3`}>
-                      <stage.icon className="w-7 h-7 text-white" />
-                    </div>
-                    <span className={`text-xs font-bold ${colors.text} mb-1`}>Stage {i + 1}</span>
-                    <h3 className="font-bold text-lg text-gray-900">{stage.label}</h3>
-                    <p className="text-xs text-gray-500">{stage.desc}</p>
-                  </div>
+          <div className="grid md:grid-cols-3 gap-6">
+            {whyCards.map((card, i) => (
+              <motion.div 
+                key={i}
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 + i * 0.1 }}
+                className="bg-white/5 border border-white/10 rounded-2xl p-6 text-center hover:bg-white/10 transition-colors"
+              >
+                <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${card.gradient} flex items-center justify-center mx-auto mb-4 shadow-lg`}>
+                  <card.icon className="w-7 h-7 text-white" />
                 </div>
-              );
-            })}
+                <h3 className="font-bold text-lg text-white mb-2">{card.title}</h3>
+                <p className="text-sm text-gray-400">{card.desc}</p>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Compact Mode Selection */}
-      <section className="py-12 px-4 bg-gradient-to-br from-gray-50 to-violet-50/30">
+      {/* 5-Stage Journey Timeline */}
+      <section className="py-16 px-4 bg-[#0f1d32]">
         <div className="max-w-lg mx-auto">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center gap-2 bg-violet-500/20 text-violet-300 px-3 py-1.5 rounded-full text-xs font-bold mb-4">
+              <Target className="h-3 w-3" /> Your Path to Purpose
+            </div>
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
+              The 5-Stage Pathway
+            </h2>
+            <p className="text-sm text-gray-400">
+              A proven framework for intentional living
+            </p>
+          </div>
+          
+          {/* Vertical Timeline */}
+          <div className="relative">
+            <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-gradient-to-b from-violet-500 via-blue-500 via-emerald-500 via-orange-500 to-pink-500" />
+            
+            <div className="space-y-6">
+              {STAGES.map((stage, i) => {
+                const colors = STAGE_COLORS[stage.key as keyof typeof STAGE_COLORS];
+                return (
+                  <motion.div
+                    key={stage.key}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.3 + i * 0.1 }}
+                    className="flex items-center gap-4 pl-0"
+                  >
+                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${colors.bg} flex items-center justify-center shadow-lg relative z-10`}>
+                      <stage.icon className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="flex-1 bg-white/5 border border-white/10 rounded-xl p-4">
+                      <span className={`text-xs font-bold ${colors.text}`}>Stage {i + 1}</span>
+                      <h3 className="font-bold text-white">{stage.label}</h3>
+                      <p className="text-xs text-gray-400">{stage.desc}</p>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Mode Selection - Dark Theme */}
+      <section className="py-16 px-4 bg-gradient-to-b from-[#0f1d32] to-[#0a1628]">
+        <div className="max-w-2xl mx-auto">
+          <div className="text-center mb-10">
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
               Choose Your Approach
             </h2>
-            <p className="text-sm text-gray-600">
+            <p className="text-gray-400">
               Two powerful modes to suit your journey
             </p>
           </div>
           
-          <div className="space-y-4">
-            {/* Classic Mode Card */}
-            <div className="bg-white rounded-2xl overflow-hidden shadow-md border border-gray-100">
-              <div className="h-1.5 bg-gradient-to-r from-violet-500 to-purple-600" />
-              <div className="p-5">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-md">
-                    <Compass className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-gray-900">Classic Mode</h3>
-                    <p className="text-xs text-violet-600 font-medium">Personal Growth Focus</p>
-                  </div>
+          <div className="grid md:grid-cols-2 gap-4">
+            {/* Classic Mode */}
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-5 hover:bg-white/10 transition-colors">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg">
+                  <Compass className="w-6 h-6 text-white" />
                 </div>
-                <p className="text-sm text-gray-600 mb-4">
-                  Focus on life design, goal-setting, and personal growth using proven frameworks like Wheel of Life and Ikigai purpose discovery.
-                </p>
-                <ul className="space-y-1.5">
-                  {["Wheel of Life Assessment", "SMART Goals Framework", "90-Day Action Plans", "Habit Tracking"].map((item, i) => (
-                    <li key={i} className="flex items-center gap-2 text-sm text-gray-700">
-                      <div className="w-1.5 h-1.5 rounded-full bg-violet-500" />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
+                <div>
+                  <h3 className="font-bold text-white">Classic</h3>
+                  <p className="text-xs text-violet-400">Personal Growth</p>
+                </div>
               </div>
+              <p className="text-sm text-gray-400 mb-4">
+                Focus on life design using Wheel of Life, Ikigai, and SMART goals.
+              </p>
+              <ul className="space-y-2">
+                {["Wheel of Life", "SMART Goals", "90-Day Plans", "Habit Tracking"].map((item, i) => (
+                  <li key={i} className="flex items-center gap-2 text-sm text-gray-300">
+                    <CheckCircle2 className="w-4 h-4 text-violet-400" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
             </div>
             
-            {/* Faith Mode Card */}
-            <div className="bg-white rounded-2xl overflow-hidden shadow-md border-l-4 border-l-orange-400 border border-gray-100">
-              <div className="p-5">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-md">
-                    <Heart className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-gray-900">Faith & Reflection</h3>
-                    <p className="text-xs text-orange-600 font-medium">Spiritual Integration</p>
-                  </div>
+            {/* Faith Mode */}
+            <div className="bg-white/5 border border-amber-500/30 rounded-2xl p-5 hover:bg-white/10 transition-colors">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg">
+                  <Heart className="w-6 h-6 text-white" />
                 </div>
-                <p className="text-sm text-gray-600 mb-4">
-                  Includes prayer prompts, Scripture reflections, and spiritual dimensions woven throughout every stage of your journey.
-                </p>
-                <ul className="space-y-1.5">
-                  {["Biblical Foundations", "Prayer & Reflection Prompts", "Purpose Aligned with Faith", "Spiritual Growth Tracking"].map((item, i) => (
-                    <li key={i} className="flex items-center gap-2 text-sm text-gray-700">
-                      <div className="w-1.5 h-1.5 rounded-full bg-orange-500" />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
+                <div>
+                  <h3 className="font-bold text-white">Faith & Reflection</h3>
+                  <p className="text-xs text-amber-400">Spiritual Integration</p>
+                </div>
               </div>
+              <p className="text-sm text-gray-400 mb-4">
+                Includes prayer prompts and Scripture woven throughout.
+              </p>
+              <ul className="space-y-2">
+                {["Biblical Foundations", "Prayer Prompts", "Faith-Aligned Purpose", "Spiritual Growth"].map((item, i) => (
+                  <li key={i} className="flex items-center gap-2 text-sm text-gray-300">
+                    <CheckCircle2 className="w-4 h-4 text-amber-400" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
-          
-          {/* Full-width CTA */}
-          <div className="mt-8">
-            <Button 
-              size="lg" 
-              onClick={() => setShowOnboarding(true)}
-              className="w-full bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white py-4 text-base rounded-full shadow-lg"
-              data-testid="button-start-vision-bottom"
-            >
-              Begin Your Journey Today
-              <ArrowRight className="w-5 h-5 ml-2" />
-            </Button>
-          </div>
+        </div>
+      </section>
+
+      {/* Testimonial */}
+      <section className="py-16 px-4 bg-[#0a1628]">
+        <div className="max-w-2xl mx-auto">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-gradient-to-br from-violet-500/10 to-purple-500/10 border border-white/10 rounded-2xl p-8 text-center"
+          >
+            <Quote className="w-10 h-10 text-violet-400 mx-auto mb-4 opacity-50" />
+            <p className="text-lg text-gray-200 italic mb-6">
+              "This pathway helped me finally get clarity on my purpose and set goals that actually stick. 
+              The faith integration made it feel like more than just another planning tool."
+            </p>
+            <div className="flex items-center justify-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
+                <span className="text-white font-bold text-sm">JM</span>
+              </div>
+              <div className="text-left">
+                <p className="font-semibold text-white text-sm">James M.</p>
+                <p className="text-xs text-gray-400">Completed the Vision Pathway</p>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section className="py-16 px-4 bg-gradient-to-t from-[#0f1d32] to-[#0a1628]">
+        <div className="max-w-lg mx-auto text-center">
+          <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
+            Ready to Design Your Best Season?
+          </h2>
+          <p className="text-gray-400 mb-8">
+            Start your vision journey today and transform your dreams into reality.
+          </p>
+          <Button 
+            size="lg" 
+            onClick={() => setShowOnboarding(true)}
+            className="w-full sm:w-auto bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white px-8 py-5 text-base rounded-full shadow-xl shadow-violet-500/25"
+            data-testid="button-start-vision-bottom"
+          >
+            Begin Your Journey Today
+            <ArrowRight className="w-5 h-5 ml-2" />
+          </Button>
         </div>
       </section>
       <Footer />
