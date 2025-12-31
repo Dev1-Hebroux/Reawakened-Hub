@@ -139,13 +139,14 @@ export function MovementHub() {
     nations: "from-[#7C9A8E]/30 to-[#D4A574]/20",
   };
 
-  const displayChallenges = apiChallenges.length > 0 ? apiChallenges.map((c: any) => ({
+  const displayChallenges = (apiChallenges.length > 0 ? apiChallenges : challenges).map((c: any) => ({
     ...c,
-    daysTotal: c.durationDays || 21,
-    daysRemaining: c.durationDays || 21,
-    participants: Math.floor(Math.random() * 2000) + 500,
-    isJoined: false,
-  })) : challenges;
+    daysTotal: c.durationDays || c.daysTotal || 21,
+    daysRemaining: c.daysRemaining || c.durationDays || 21,
+    participants: c.participants || 0,
+    isJoined: c.isJoined || false,
+    theme: c.theme || "prayer",
+  }));
 
   const streak = dashboard?.streak || 0;
   const earnedBadges = badges.filter(b => b.earned).length;
@@ -302,7 +303,7 @@ export function MovementHub() {
                 exit={{ opacity: 0, x: 20 }}
                 className="space-y-4"
               >
-                {challenges.map((challenge, i) => (
+                {displayChallenges.map((challenge, i) => (
                   <motion.div
                     key={challenge.id}
                     initial={{ opacity: 0, y: 20 }}
