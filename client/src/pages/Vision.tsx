@@ -789,7 +789,6 @@ function VisionDashboard({ session }: { session: any }) {
   const completedSteps = trackedSteps.filter(s => s.completed).length;
   const totalTrackedSteps = trackedSteps.length;
   const progressPercent = Math.round((completedSteps / totalTrackedSteps) * 100);
-  
 
   return (
     <div className="min-h-screen bg-[#0a1628] text-white font-sans">
