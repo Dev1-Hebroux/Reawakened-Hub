@@ -888,62 +888,87 @@ function VisionDashboard({ session }: { session: any }) {
         </div>
       </section>
 
+      {/* Journey Progress Summary */}
+      <section className="py-8 px-4 bg-white">
+        <div className="max-w-lg mx-auto">
+          <h3 className="text-lg font-bold text-gray-900 mb-4">Journey Progress</h3>
+          <div className="bg-gradient-to-r from-violet-50 to-purple-50 rounded-2xl p-4">
+            <div className="space-y-3">
+              {trackedSteps.map((step, i) => (
+                <div key={step.name} className="flex items-center gap-3">
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                    step.completed 
+                      ? 'bg-gradient-to-br from-emerald-400 to-green-500' 
+                      : 'bg-gray-200'
+                  }`}>
+                    {step.completed ? (
+                      <CheckCircle2 className="w-4 h-4 text-white" />
+                    ) : (
+                      <span className="text-xs text-gray-500">{i + 1}</span>
+                    )}
+                  </div>
+                  <span className={`flex-1 text-sm ${step.completed ? 'text-gray-900 font-medium' : 'text-gray-500'}`}>
+                    {step.name}
+                  </span>
+                  <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <motion.div 
+                      initial={{ width: 0 }}
+                      animate={{ width: step.completed ? '100%' : '0%' }}
+                      transition={{ delay: i * 0.2, duration: 0.5 }}
+                      className="h-full bg-gradient-to-r from-violet-500 to-purple-500 rounded-full"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-4 pt-3 border-t border-violet-100 flex items-center justify-between">
+              <span className="text-sm text-gray-600">Overall Progress</span>
+              <span className="text-lg font-bold text-violet-600">{progressPercent}%</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Journey Cards */}
-      <section className="py-16 px-4 bg-gradient-to-b from-white to-gray-50">
-        <div className="max-w-6xl mx-auto">
+      <section className="py-12 px-4 bg-gradient-to-b from-white to-gray-50">
+        <div className="max-w-lg mx-auto">
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="mb-10"
+            className="mb-6"
           >
-            <h2 className="text-2xl font-display font-bold text-gray-900 mb-2">Your Vision Pathway</h2>
-            <p className="text-gray-500">Continue your journey through each stage</p>
+            <h2 className="text-xl font-bold text-gray-900 mb-1">Your Vision Pathway</h2>
+            <p className="text-sm text-gray-500">Continue your journey through each stage</p>
           </motion.div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="space-y-3">
             {dashboardCards.map((card, i) => (
               <motion.div
                 key={card.id}
-                initial={{ opacity: 0, y: 30 }}
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1 }}
-                whileHover={{ y: -8 }}
-                className="cursor-pointer group"
+                transition={{ delay: i * 0.05 }}
+                className="cursor-pointer"
                 onClick={() => navigate(`/vision/${session.id}/${card.route}`)}
                 data-testid={`card-${card.id}`}
               >
-                <div className={`h-full bg-white rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 border border-gray-100 ${
-                  card.completed ? "ring-2 ring-emerald-400" : ""
+                <div className={`bg-white rounded-2xl overflow-hidden shadow-md border border-gray-100 ${
+                  card.completed ? "border-l-4 border-l-emerald-400" : ""
                 }`}>
-                  <div className={`h-2 bg-gradient-to-r ${card.gradient}`} />
-                  <div className="p-6">
-                    <div className={`inline-flex items-center gap-1.5 bg-gradient-to-r ${card.gradient} text-white px-3 py-1.5 rounded-full mb-4 text-xs font-bold shadow-md`}>
-                      <Zap className="w-3 h-3" />
-                      {card.stage}
+                  <div className="p-4 flex items-center gap-4">
+                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${card.gradient} flex items-center justify-center shadow-md`}>
+                      <card.icon className="w-6 h-6 text-white" />
                     </div>
-                    <div className="flex items-center gap-4 mb-4">
-                      <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${card.gradient} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}>
-                        <card.icon className="w-8 h-8 text-white" />
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-bold text-gray-900">{card.title}</h3>
+                        {card.completed && (
+                          <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                        )}
                       </div>
-                      <div>
-                        <h3 className="text-xl font-bold text-gray-900">{card.title}</h3>
-                        <p className="text-sm text-gray-500">{card.desc}</p>
-                      </div>
+                      <p className="text-xs text-gray-500 truncate">{card.desc}</p>
                     </div>
-                    {card.completed ? (
-                      <div className="flex items-center gap-2 pt-4 border-t border-gray-100">
-                        <div className="w-6 h-6 rounded-full bg-gradient-to-br from-emerald-400 to-green-500 flex items-center justify-center">
-                          <CheckCircle2 className="w-4 h-4 text-white" />
-                        </div>
-                        <span className="text-emerald-600 font-semibold text-sm">In Progress</span>
-                        <ArrowRight className="w-4 h-4 ml-auto text-gray-400 group-hover:text-gray-600 group-hover:translate-x-1 transition-all" />
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2 pt-4 border-t border-gray-100">
-                        <span className="text-gray-400 text-sm">Start this step</span>
-                        <ArrowRight className="w-4 h-4 ml-auto text-gray-400 group-hover:text-gray-600 group-hover:translate-x-1 transition-all" />
-                      </div>
-                    )}
+                    <ArrowRight className="w-4 h-4 text-gray-300" />
                   </div>
                 </div>
               </motion.div>
