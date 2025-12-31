@@ -37,22 +37,22 @@ export function PrayHub() {
     <div className="min-h-screen bg-gradient-to-b from-[#1a2744] via-[#1a2744]/95 to-[#1a2744]/90">
       <Navbar />
       
-      <main className="pt-28 pb-32 px-4">
+      <main className="pt-20 pb-24 px-4">
         <div className="max-w-lg mx-auto">
           
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-8"
+            className="text-center mb-5"
           >
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 mb-4">
-              <Heart className="h-4 w-4 text-primary" />
-              <span className="text-sm font-bold text-white/90">Pray</span>
+            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-3 py-1.5 mb-3">
+              <Heart className="h-3 w-3 text-primary" />
+              <span className="text-xs font-bold text-white/90">Pray</span>
             </div>
-            <h1 className="text-3xl font-display font-bold text-white mb-2">
+            <h1 className="text-2xl font-display font-bold text-white mb-1">
               Intercede for the Nations
             </h1>
-            <p className="text-white/70">
+            <p className="text-sm text-white/70">
               Your prayers fuel revival across the earth
             </p>
           </motion.div>
@@ -62,15 +62,15 @@ export function PrayHub() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="bg-white/10 backdrop-blur-md rounded-3xl p-6 mb-6 border border-white/10"
+              className="bg-white/10 backdrop-blur-md rounded-2xl p-4 mb-4 border border-white/10"
             >
-              <div className="flex items-center gap-3 mb-4">
-                <div className="h-12 w-12 rounded-full bg-primary/20 flex items-center justify-center">
-                  <Globe2 className="h-6 w-6 text-primary" />
+              <div className="flex items-center gap-3 mb-3">
+                <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center">
+                  <Globe2 className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-white">Adopt a Focus</h3>
-                  <p className="text-sm text-white/60">Choose a people group to pray for</p>
+                  <h3 className="font-bold text-white text-sm">Adopt a Focus</h3>
+                  <p className="text-xs text-white/60">Choose a people group to pray for</p>
                 </div>
               </div>
               
@@ -96,11 +96,11 @@ export function PrayHub() {
               </div>
               
               <Button 
-                className="w-full mt-4 bg-primary hover:bg-primary/90 text-white font-bold py-6 rounded-2xl"
+                className="w-full mt-3 bg-primary hover:bg-primary/90 text-white font-medium py-2.5 rounded-xl text-sm"
                 onClick={() => navigate("/pray/adopt")}
                 data-testid="button-adopt-focus"
               >
-                <Globe2 className="h-5 w-5 mr-2" />
+                <Globe2 className="h-4 w-4 mr-2" />
                 Browse All People Groups
               </Button>
             </motion.div>
@@ -109,7 +109,7 @@ export function PrayHub() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="bg-gradient-to-br from-primary/20 to-[#4A7C7C]/20 backdrop-blur-md rounded-3xl p-6 mb-6 border border-white/10"
+              className="bg-gradient-to-br from-primary/20 to-[#4A7C7C]/20 backdrop-blur-md rounded-2xl p-4 mb-4 border border-white/10"
             >
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
@@ -147,7 +147,7 @@ export function PrayHub() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="bg-white/10 backdrop-blur-md rounded-3xl p-6 mb-6 border border-white/10"
+            className="bg-white/10 backdrop-blur-md rounded-2xl p-4 mb-4 border border-white/10"
           >
             <div className="flex items-center gap-3 mb-4">
               <div className="h-12 w-12 rounded-full bg-[#4A7C7C]/30 flex items-center justify-center">
@@ -189,7 +189,7 @@ export function PrayHub() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="bg-white/10 backdrop-blur-md rounded-3xl p-6 mb-6 border border-white/10"
+            className="bg-white/10 backdrop-blur-md rounded-2xl p-4 mb-4 border border-white/10"
           >
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
@@ -246,7 +246,7 @@ export function PrayHub() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="bg-gradient-to-br from-[#D4A574]/20 to-[#7C9A8E]/20 backdrop-blur-md rounded-3xl p-6 border border-white/10"
+            className="bg-gradient-to-br from-[#D4A574]/20 to-[#7C9A8E]/20 backdrop-blur-md rounded-2xl p-4 border border-white/10"
           >
             <div className="flex items-center gap-3 mb-4">
               <div className="h-12 w-12 rounded-full bg-[#D4A574]/30 flex items-center justify-center">

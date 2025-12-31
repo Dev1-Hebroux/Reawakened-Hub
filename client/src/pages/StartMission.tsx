@@ -137,28 +137,28 @@ export default function StartMission() {
     <div className="min-h-screen bg-gradient-to-b from-[#1a2744] via-[#1a2744]/95 to-[#FAF8F5] text-foreground pb-20 md:pb-0">
       <Navbar />
       
-      <section className="pt-28 pb-8 px-4">
-        <div className="max-w-xl mx-auto text-center">
+      <section className="pt-20 pb-4 px-4">
+        <div className="max-w-md mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <span className="inline-flex items-center gap-2 bg-white/10 text-white/90 rounded-full px-4 py-2 text-sm font-bold mb-4">
-              <Flame className="h-4 w-4" />
+            <span className="inline-flex items-center gap-2 bg-white/10 text-white/90 rounded-full px-3 py-1.5 text-xs font-bold mb-3">
+              <Flame className="h-3 w-3" />
               Start Your Mission
             </span>
-            <h1 className="text-3xl md:text-4xl font-display font-bold text-white mb-3">
+            <h1 className="text-2xl md:text-3xl font-display font-bold text-white mb-2">
               {currentStep === 'burden' && "What's Your Heart For?"}
               {currentStep === 'actions' && "How Will You Engage?"}
               {currentStep === 'availability' && "How Much Time?"}
               {currentStep === 'skills' && "What Are Your Gifts?"}
               {currentStep === 'confirm' && "You're Ready!"}
             </h1>
-            <div className="flex justify-center gap-2 mt-6">
+            <div className="flex justify-center gap-1.5 mt-4">
               {STEPS.map((step, i) => (
                 <div
                   key={step}
-                  className={`h-2 w-8 rounded-full transition-colors ${
+                  className={`h-1.5 w-6 rounded-full transition-colors ${
                     i <= stepIndex ? 'bg-primary' : 'bg-white/20'
                   }`}
                 />
@@ -168,7 +168,7 @@ export default function StartMission() {
         </div>
       </section>
 
-      <main className="max-w-xl mx-auto px-4 pb-8">
+      <main className="max-w-md mx-auto px-4 pb-6">
         <AnimatePresence mode="wait">
           {currentStep === 'burden' && (
             <motion.div
@@ -176,27 +176,27 @@ export default function StartMission() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="bg-white rounded-2xl shadow-lg p-6"
+              className="bg-white rounded-xl shadow-lg p-4"
             >
-              <p className="text-gray-600 mb-6 text-center">
+              <p className="text-gray-600 mb-4 text-center text-sm">
                 Select the area where God has placed a burden on your heart.
               </p>
-              <div className="grid gap-3">
+              <div className="grid gap-2">
                 {burdens.map((burden) => (
                   <button
                     key={burden.id}
                     onClick={() => setFormData(prev => ({ ...prev, primaryBurden: burden.id }))}
-                    className={`flex items-center gap-4 p-4 rounded-xl border-2 transition-all text-left ${
+                    className={`flex items-center gap-3 p-3 rounded-lg border-2 transition-all text-left ${
                       formData.primaryBurden === burden.id
                         ? 'border-primary bg-primary/5'
                         : 'border-gray-200 hover:border-gray-300'
                     }`}
                     data-testid={`burden-${burden.id}`}
                   >
-                    <div className={`h-12 w-12 rounded-xl flex items-center justify-center ${
+                    <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${
                       formData.primaryBurden === burden.id ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600'
                     }`}>
-                      <burden.icon className="h-6 w-6" />
+                      <burden.icon className="h-5 w-5" />
                     </div>
                     <div className="flex-1">
                       <div className="font-bold text-gray-900">{burden.label}</div>
@@ -217,7 +217,7 @@ export default function StartMission() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="bg-white rounded-2xl shadow-lg p-6"
+              className="bg-white rounded-xl shadow-lg p-4"
             >
               <p className="text-gray-600 mb-6 text-center">
                 Choose how you want to participate. Select all that apply.
@@ -227,7 +227,7 @@ export default function StartMission() {
                   <button
                     key={action.id}
                     onClick={() => toggleAction(action.id)}
-                    className={`relative p-6 rounded-xl border-2 transition-all text-left ${
+                    className={`relative p-4 rounded-lg border-2 transition-all text-left ${
                       formData.actionsPreference.includes(action.id)
                         ? 'border-primary bg-primary/5'
                         : 'border-gray-200 hover:border-gray-300'
@@ -256,7 +256,7 @@ export default function StartMission() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="bg-white rounded-2xl shadow-lg p-6"
+              className="bg-white rounded-xl shadow-lg p-4"
             >
               <p className="text-gray-600 mb-6 text-center">
                 How much time can you commit daily to prayer and action?
@@ -266,7 +266,7 @@ export default function StartMission() {
                   <button
                     key={option.id}
                     onClick={() => setFormData(prev => ({ ...prev, availabilityMinutes: option.id }))}
-                    className={`p-6 rounded-xl border-2 transition-all text-center ${
+                    className={`p-4 rounded-lg border-2 transition-all text-center ${
                       formData.availabilityMinutes === option.id
                         ? 'border-primary bg-primary/5'
                         : 'border-gray-200 hover:border-gray-300'
@@ -292,7 +292,7 @@ export default function StartMission() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="bg-white rounded-2xl shadow-lg p-6"
+              className="bg-white rounded-xl shadow-lg p-4"
             >
               <p className="text-gray-600 mb-6 text-center">
                 What gifts has God given you? (Optional - select any that apply)
@@ -325,7 +325,7 @@ export default function StartMission() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              className="bg-white rounded-2xl shadow-lg p-6 text-center"
+              className="bg-white rounded-xl shadow-lg p-4 text-center"
             >
               <div className="h-20 w-20 mx-auto rounded-full bg-primary/10 flex items-center justify-center mb-6">
                 <Flame className="h-10 w-10 text-primary" />

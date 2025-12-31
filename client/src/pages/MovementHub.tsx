@@ -102,25 +102,25 @@ export function MovementHub() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#1a2744] via-[#1a2744]/95 to-[#1a2744]/90">
+    <div className="min-h-screen bg-gradient-to-b from-[#1a2744] via-[#1a2744]/95 to-[#1a2744]/90 pb-20">
       <Navbar />
       
-      <main className="pt-28 pb-32 px-4">
+      <main className="pt-20 pb-24 px-4">
         <div className="max-w-lg mx-auto">
           
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-6"
+            className="text-center mb-4"
           >
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 mb-4">
-              <Zap className="h-4 w-4 text-primary" />
-              <span className="text-sm font-bold text-white/90">Movement</span>
+            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-3 py-1.5 mb-3">
+              <Zap className="h-3 w-3 text-primary" />
+              <span className="text-xs font-bold text-white/90">Movement</span>
             </div>
-            <h1 className="text-3xl font-display font-bold text-white mb-2">
+            <h1 className="text-2xl font-display font-bold text-white mb-1">
               Join the Revival
             </h1>
-            <p className="text-white/70">
+            <p className="text-sm text-white/70">
               Challenges, testimonies & prayer
             </p>
           </motion.div>
@@ -129,7 +129,7 @@ export function MovementHub() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-white/10 backdrop-blur-md rounded-3xl p-4 mb-6 border border-white/10"
+            className="bg-white/10 backdrop-blur-md rounded-2xl p-4 mb-4 border border-white/10"
           >
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
@@ -205,7 +205,7 @@ export function MovementHub() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.1 }}
-                    className={`bg-gradient-to-br ${themeColors[challenge.theme]} backdrop-blur-md rounded-3xl p-5 border border-white/10`}
+                    className={`bg-gradient-to-br ${themeColors[challenge.theme]} backdrop-blur-md rounded-2xl p-4 border border-white/10`}
                   >
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-2">
@@ -232,7 +232,7 @@ export function MovementHub() {
                           <motion.div 
                             className="bg-primary h-2 rounded-full"
                             initial={{ width: 0 }}
-                            animate={{ width: `${(challenge.currentDay / challenge.daysTotal) * 100}%` }}
+                            animate={{ width: `${((challenge.currentDay || 0) / challenge.daysTotal) * 100}%` }}
                           />
                         </div>
                       </div>
@@ -282,7 +282,7 @@ export function MovementHub() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.1 }}
-                    className="bg-white/10 backdrop-blur-md rounded-3xl p-5 border border-white/10"
+                    className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10"
                   >
                     <div className="flex items-center gap-3 mb-3">
                       <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center">
@@ -333,7 +333,7 @@ export function MovementHub() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.1 }}
-                    className="bg-white/10 backdrop-blur-md rounded-3xl p-5 border border-white/10"
+                    className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10"
                   >
                     <p className="text-white/80 mb-3">{prayer.content}</p>
                     

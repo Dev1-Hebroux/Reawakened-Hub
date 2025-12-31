@@ -1,28 +1,41 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Play, Globe2, X } from "lucide-react";
+import { X, Heart, HandHeart, Send, ArrowRight, Target, Sparkles, Eye } from "lucide-react";
 import { useState } from "react";
 import { useLocation } from "wouter";
-import heroImage from "@assets/generated_images/young_man_praying_with_golden_light_overlay.png";
 import visionVideo from "@assets/generated_videos/holy_spirit_dove_vision_video.mp4";
-import logoImage from "@assets/1_1765584395888.png";
-import heroBgImage from "@assets/11_1767182385476.png";
+import worldMapBg from "@assets/11_1767182385476.png";
 
 export function Hero() {
   const [showVideo, setShowVideo] = useState(false);
   const [, navigate] = useLocation();
 
+  const stats = [
+    { value: "10k+", label: "disciples by 2030", tag: "OUR VISION" },
+    { value: "50+", label: "nations reached", tag: "OUR GOAL" },
+    { value: "365", label: "sparks per year", tag: "DAILY" },
+    { value: "12+", label: "mission projects", tag: "LAUNCHING" },
+  ];
+
+  const actionCards = [
+    { id: 'pray', label: 'Pray', subtitle: 'Adopt a people group', icon: Heart, href: '/pray' },
+    { id: 'give', label: 'Give', subtitle: 'Support mission projects', icon: HandHeart, href: '/give' },
+    { id: 'go', label: 'Go', subtitle: 'Join outreach trips', icon: Send, href: '/missions' },
+  ];
+
   return (
-    <section className="relative min-h-[90vh] flex items-center pt-32 md:pt-36 pb-12 overflow-hidden">
-      {/* Background Image with Rich Gradient Overlay */}
+    <section className="relative min-h-[85vh] md:min-h-[80vh] flex flex-col pt-16 overflow-hidden bg-[#1a2744]">
+      {/* Background with world map */}
       <div className="absolute inset-0 z-0">
-        <img 
-          src={heroBgImage} 
-          alt="Sunrise with cross" 
-          className="w-full h-full object-cover"
+        <div 
+          className="absolute inset-0 opacity-30"
+          style={{
+            backgroundImage: `url(${worldMapBg})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }}
         />
-        <div className="absolute inset-0 bg-gradient-to-br from-[#7C9A8E]/20 via-[#D4A574]/15 to-[#4A7C7C]/20" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#FFF8F3]/90 via-[#FFF8F3]/70 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#1a2744]/80 via-[#1a2744]/90 to-[#1a2744]" />
       </div>
       
       {/* Video Modal */}
@@ -32,150 +45,114 @@ export function Hero() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-[#1a2744]/95 flex items-center justify-center p-4"
+            className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
             onClick={() => setShowVideo(false)}
           >
             <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
+              initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.8, opacity: 0 }}
-              className="relative w-full max-w-4xl"
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="relative w-full max-w-3xl"
               onClick={(e) => e.stopPropagation()}
             >
               <button
                 onClick={() => setShowVideo(false)}
-                className="absolute -top-12 right-0 text-white hover:text-primary transition-colors"
+                className="absolute -top-10 right-0 text-white hover:text-primary transition-colors"
               >
-                <X className="h-8 w-8" />
+                <X className="h-6 w-6" />
               </button>
               <video
                 src={visionVideo}
                 controls
                 autoPlay
-                className="w-full rounded-2xl shadow-2xl"
+                className="w-full rounded-xl shadow-2xl"
               />
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Decorative Circles - More Vibrant */}
-      <div className="absolute top-10 left-10 w-80 h-80 bg-gradient-to-br from-[#D4A574]/40 to-orange-300/30 rounded-full blur-3xl" />
-      <div className="absolute bottom-10 right-10 w-96 h-96 bg-gradient-to-tl from-[#7C9A8E]/40 to-[#4A7C7C]/30 rounded-full blur-3xl" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-[#D4A574]/10 via-transparent to-[#7C9A8E]/10 rounded-full blur-3xl" />
-      
-      {/* Subtle Logo Watermark */}
-      <div 
-        className="absolute bottom-10 left-1/2 -translate-x-1/2 w-[600px] h-[200px] opacity-[0.03] pointer-events-none"
-        style={{
-          backgroundImage: `url(${logoImage})`,
-          backgroundSize: 'contain',
-          backgroundRepeat: 'no-repeat',
-          backgroundPosition: 'center',
-          filter: 'grayscale(100%)',
-        }}
-      />
-      
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          
-          {/* Left Content */}
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            className="space-y-8"
-          >
-            <div className="inline-flex items-center space-x-2 bg-white border border-orange-100 rounded-full px-4 py-2 shadow-sm">
-              <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse"></span>
-              <span className="font-bold text-xs text-orange-900 uppercase tracking-wider">A Call to Vigilance, Revival & Spiritual Awakening!</span>
-            </div>
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col justify-center max-w-5xl mx-auto px-4 w-full relative z-10 py-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-center"
+        >
+          <span className="inline-flex items-center gap-2 bg-primary/20 text-primary rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-wider mb-4">
+            <Sparkles className="h-3 w-3" />
+            Global Impact
+          </span>
 
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-display font-bold text-gray-900 leading-[1.05] tracking-tight">
-              Faith. Real Life. <br />
-              <span className="text-primary relative inline-block">
-                Mission.
-                <svg className="absolute -bottom-2 left-0 w-full h-3 text-orange-200 -z-10" viewBox="0 0 100 10" preserveAspectRatio="none">
-                  <path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="8" fill="none" />
-                </svg>
-              </span>
-            </h1>
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-display font-bold text-white leading-tight mb-3">
+            Ready to Change<br />the World?
+          </h1>
 
-            <p className="text-lg md:text-xl text-gray-600 max-w-lg leading-relaxed">
-              Reawakened is the digital hub for a generation ready to encounter Jesus, find their purpose, and change the world.
-            </p>
+          <p className="text-base md:text-lg text-white/70 max-w-xl mx-auto mb-6 leading-relaxed">
+            Don't just watch. Act. Reawakened is your launchpad to pray, give, and go to the nations.
+          </p>
 
-            <blockquote className="text-base md:text-lg text-gray-600 max-w-lg leading-relaxed border-l-4 border-primary/30 pl-4 italic bg-white/50 py-3 rounded-r-lg">
-              "I will pour out my Spirit upon all of you! Your sons and daughters will prophesy; your old men will dream dreams, and your young men see visions."
-              <span className="block text-sm text-primary font-bold mt-2 not-italic">— Joel 2:28</span>
-            </blockquote>
-
-            <div className="flex flex-col sm:flex-row items-center gap-4 pt-2">
-              <Button 
-                size="lg" 
-                className="bg-primary hover:bg-primary/90 text-white rounded-full px-8 h-14 text-base font-bold shadow-xl shadow-orange-500/20 w-full sm:w-auto hover:-translate-y-1 transition-all"
-                data-testid="button-start-mission"
-                onClick={() => navigate('/start-mission')}
-              >
-                <Globe2 className="h-5 w-5 mr-2" />
-                Start Your Mission
-              </Button>
-              <Button 
-                variant="outline"
-                size="lg" 
-                className="border-2 border-gray-200 bg-white/80 hover:bg-white text-gray-900 rounded-full px-6 h-14 text-base font-bold w-full sm:w-auto hover:-translate-y-1 transition-all"
-                data-testid="button-pray-now"
-                onClick={() => navigate('/pray')}
-              >
-                Pray Now
-              </Button>
-            </div>
-            <div 
-              className="flex items-center gap-3 cursor-pointer group justify-center sm:justify-start mt-2"
-              onClick={() => setShowVideo(true)}
-              data-testid="button-watch-video"
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-8">
+            <Button 
+              size="lg" 
+              className="bg-white text-[#1a2744] hover:bg-gray-100 rounded-full px-6 h-11 text-sm font-bold w-full sm:w-auto"
+              data-testid="button-start-mission"
+              onClick={() => navigate('/start-mission')}
             >
-              <div className="h-12 w-12 rounded-full bg-white border border-gray-100 shadow-lg flex items-center justify-center group-hover:scale-110 transition-transform text-primary">
-                <Play className="h-4 w-4 fill-current ml-1" />
-              </div>
-              <span className="font-bold text-gray-700 group-hover:text-primary transition-colors text-sm">Watch Our Vision</span>
-            </div>
-          </motion.div>
+              Start Your Mission
+            </Button>
+            <Button 
+              variant="outline"
+              size="lg" 
+              className="border-2 border-white/30 bg-transparent hover:bg-white/10 text-white rounded-full px-6 h-11 text-sm font-bold w-full sm:w-auto"
+              data-testid="button-view-projects"
+              onClick={() => navigate('/missions')}
+            >
+              View Projects
+            </Button>
+          </div>
 
-          {/* Right Image Composition */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="relative"
-          >
-            <div className="relative z-10 rounded-[40px] overflow-hidden shadow-2xl border-4 border-white rotate-2 hover:rotate-0 transition-transform duration-500">
-              <img 
-                src={heroImage} 
-                alt="Young man praying" 
-                className="w-full h-[350px] md:h-[450px] lg:h-[600px] object-cover"
-              />
-              
-              {/* Floating Cards */}
-              <div className="absolute bottom-8 left-8 bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-lg flex items-center gap-4 max-w-xs border border-white/50">
-                <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
-                  <Globe2 className="h-5 w-5" />
+          {/* Action Cards */}
+          <div className="grid gap-3 max-w-md mx-auto">
+            {actionCards.map((card) => (
+              <motion.button
+                key={card.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                onClick={() => navigate(card.href)}
+                className="flex items-center gap-4 bg-white/10 backdrop-blur-sm hover:bg-white/15 rounded-xl p-4 text-left transition-all group"
+                data-testid={`action-card-${card.id}`}
+              >
+                <div className="h-10 w-10 rounded-full bg-white/20 flex items-center justify-center text-white">
+                  <card.icon className="h-5 w-5" />
                 </div>
-                <div>
-                  <p className="font-bold text-gray-900 text-sm">Global Impact</p>
-                  <p className="text-xs text-gray-500">45 Nations Reached</p>
+                <div className="flex-1">
+                  <div className="font-bold text-white text-sm">{card.label}</div>
+                  <div className="text-xs text-white/60">{card.subtitle}</div>
                 </div>
-              </div>
+                <ArrowRight className="h-4 w-4 text-white/40 group-hover:text-white/70 transition-colors" />
+              </motion.button>
+            ))}
+          </div>
+        </motion.div>
+      </div>
 
-              <div className="absolute top-12 right-8 bg-white/90 backdrop-blur-md px-4 py-2 rounded-full shadow-lg border border-white/50">
-                 <span className="text-sm font-bold text-gray-900">🔥 500+ Sparks Today</span>
-              </div>
+      {/* Stats Bar */}
+      <div className="relative z-10 mt-auto">
+        <div className="bg-white rounded-t-2xl md:rounded-t-3xl shadow-lg">
+          <div className="max-w-5xl mx-auto px-4 py-5">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+              {stats.map((stat, i) => (
+                <div key={i} className="text-center">
+                  <div className="text-2xl md:text-3xl font-bold text-[#1a2744]">{stat.value}</div>
+                  <div className="text-xs text-gray-600">{stat.label}</div>
+                  <div className="text-[10px] text-gray-400 uppercase tracking-wider mt-0.5">{stat.tag}</div>
+                </div>
+              ))}
             </div>
-            
-            {/* Background Shape */}
-            <div className="absolute -top-10 -right-10 w-full h-full bg-orange-100 rounded-[40px] -z-10 -rotate-3" />
-          </motion.div>
-
+          </div>
         </div>
       </div>
     </section>
