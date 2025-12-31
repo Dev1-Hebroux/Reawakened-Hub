@@ -22,10 +22,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-const mapBg = "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=1200";
-const userAvatar = "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&q=80&w=200"; 
-const feedImg = "https://images.unsplash.com/photo-1504052434569-70ad5836ab65?auto=format&fit=crop&q=80&w=400";
-const storyImg = "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=200";
+import mapBg from "@assets/generated_images/digital_map_of_the_world_with_glowing_connections.png";
+import userAvatar from "@assets/generated_images/diverse_group_taking_a_selfie.png"; 
+import feedImg from "@assets/generated_images/hands_typing_on_a_phone_with_bible_in_background.png";
+import storyImg from "@assets/generated_images/young_woman_speaking_passionately_into_camera.png";
 
 type PostWithUser = Post & { user: User; reactionCount?: number };
 

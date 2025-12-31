@@ -3,7 +3,7 @@ import { CheckCircle2, Lock, Play, ArrowRight, Loader2 } from "lucide-react";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
-const pathBg = "https://images.unsplash.com/photo-1494500764479-0c8f2919a3d8?auto=format&fit=crop&q=80&w=800";
+import pathBg from "@assets/generated_images/woman_looking_at_a_city_skyline_at_sunset.png";
 
 type UserJourneyWithDetails = {
   id: number;

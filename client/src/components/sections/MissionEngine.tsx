@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Map, HeartHandshake, Send, ArrowRight } from "lucide-react";
 import { useLocation } from "wouter";
-const missionBg = "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=800";
+import missionBg from "@assets/generated_images/hands_holding_a_glowing_digital_globe.png";
 
 export function MissionEngine() {
   const [, navigate] = useLocation();

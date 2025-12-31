@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Users, BookOpen, Heart, Globe, ArrowRight } from "lucide-react";
 import { useLocation } from "wouter";
-const communityBg = "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&q=80&w=800";
+import communityBg from "@assets/generated_images/group_of_diverse_young_people_looking_at_a_phone.png";
 
 const rooms = [
   { title: "Students", count: "2.4k", icon: Users, color: "bg-blue-50", iconColor: "text-blue-600" },

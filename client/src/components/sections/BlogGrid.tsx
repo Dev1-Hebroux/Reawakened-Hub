@@ -138,10 +138,10 @@ function ShareDropdown({ post, isOpen, onClose }: { post: BlogPost; isOpen: bool
     </AnimatePresence>
   );
 }
-const img1 = "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?auto=format&fit=crop&q=80&w=400";
-const img2 = "https://images.unsplash.com/photo-1504052434569-70ad5836ab65?auto=format&fit=crop&q=80&w=400";
-const img3 = "https://images.unsplash.com/photo-1501555088652-021faa106b9b?auto=format&fit=crop&q=80&w=400";
-const img4 = "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&q=80&w=400";
+import img1 from "@assets/generated_images/concert_crowd_with_hands_raised_in_worship.png";
+import img2 from "@assets/generated_images/open_bible_on_a_cafe_table_with_coffee.png";
+import img3 from "@assets/generated_images/backpacker_overlooking_a_landscape.png";
+import img4 from "@assets/generated_images/group_discussion_in_a_living_room.png";
 
 const categories = ["All", "Faith & Culture", "Mission Life", "Relationships", "Worship"];
 

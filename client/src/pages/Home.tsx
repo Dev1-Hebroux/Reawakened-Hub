@@ -14,9 +14,9 @@ import { Link, useLocation } from "wouter";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 
-const outreachImg = "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&q=80&w=400";
-const capImg = "https://images.unsplash.com/photo-1521369909029-2afed882baee?auto=format&fit=crop&q=80&w=400";
-const hoodieImg = "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&q=80&w=400";
+import outreachImg from "@assets/generated_images/group_wearing_reawakened.one_branded_t-shirts.png";
+import capImg from "@assets/generated_images/cap_with_reawakened_embroidery.png";
+import hoodieImg from "@assets/generated_images/hoodies_with_reawakened_logo.png";
 
 const actionCards = [
   {

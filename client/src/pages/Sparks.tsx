@@ -15,11 +15,11 @@ import { isUnauthorizedError } from "@/lib/authUtils";
 import { toast } from "sonner";
 import type { Spark, SparkSubscription } from "@shared/schema";
 
-const spark1 = "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?auto=format&fit=crop&q=80&w=400";
-const spark2 = "https://images.unsplash.com/photo-1504052434569-70ad5836ab65?auto=format&fit=crop&q=80&w=400";
-const spark3 = "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&q=80&w=400";
-const spark4 = "https://images.unsplash.com/photo-1523580494863-6f3031224c94?auto=format&fit=crop&q=80&w=400";
-const dailyBg = "https://images.unsplash.com/photo-1495616811223-4d98c6e9c869?auto=format&fit=crop&q=80&w=1200";
+import spark1 from "@assets/generated_images/raw_street_worship_in_brazil.png";
+import spark2 from "@assets/generated_images/testimony_of_healing_in_a_village.png";
+import spark3 from "@assets/generated_images/underground_prayer_meeting.png";
+import spark4 from "@assets/generated_images/student_sharing_gospel_on_campus.png";
+import dailyBg from "@assets/generated_images/cinematic_sunrise_devotional_background.png";
 
 const defaultThumbnails = [spark1, spark2, spark3, spark4];
 

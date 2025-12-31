@@ -8,9 +8,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 
-const mapImg = "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=800";
-const prayerImg = "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=600";
-const worshipImg = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=600";
+import mapImg from "@assets/generated_images/digital_map_of_the_world_with_glowing_connections.png";
+import prayerImg from "@assets/generated_images/young_woman_speaking_passionately_into_camera.png";
+import worshipImg from "@assets/generated_images/young_man_praying_with_golden_light_overlay.png";
 
 const pillars = [
   {
