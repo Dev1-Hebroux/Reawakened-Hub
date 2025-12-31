@@ -899,3 +899,531 @@ export const insertVisionExportSchema = createInsertSchema(visionExports).omit({
 });
 export type InsertVisionExport = z.infer<typeof insertVisionExportSchema>;
 export type VisionExport = typeof visionExports.$inferSelect;
+
+// ===== GROWTH TOOLS: TRACKS & MODULES =====
+
+// Tracks - Personal Mastery, Communication & Influence, Leadership Impact
+export const tracks = pgTable("tracks", {
+  id: serial("id").primaryKey(),
+  key: varchar("key").notNull().unique(), // 'personal_mastery', 'communication_influence', 'leadership_impact'
+  title: varchar("title").notNull(),
+  description: text("description"),
+  iconKey: varchar("icon_key"), // lucide icon name
+  orderIndex: integer("order_index").notNull().default(0),
+  isEnabled: boolean("is_enabled").default(true),
+});
+
+export const insertTrackSchema = createInsertSchema(tracks).omit({ id: true });
+export type InsertTrack = z.infer<typeof insertTrackSchema>;
+export type Track = typeof tracks.$inferSelect;
+
+// Modules within tracks
+export const modules = pgTable("modules", {
+  id: serial("id").primaryKey(),
+  trackId: integer("track_id").notNull().references(() => tracks.id, { onDelete: 'cascade' }),
+  key: varchar("key").notNull().unique(), // 'strengths_assessment', 'styles_quiz', 'eq_check', 'wdep', 'sca', 'mini360'
+  title: varchar("title").notNull(),
+  description: text("description"),
+  moduleType: varchar("module_type").notNull(), // 'lesson', 'assessment', 'practice', 'lab', 'export'
+  iconKey: varchar("icon_key"),
+  orderIndex: integer("order_index").notNull().default(0),
+  prerequisites: jsonb("prerequisites"), // array of module keys
+  estimatedMinutes: integer("estimated_minutes").default(10),
+  isLockedByDefault: boolean("is_locked_by_default").default(false),
+  isEnabled: boolean("is_enabled").default(true),
+});
+
+export const insertModuleSchema = createInsertSchema(modules).omit({ id: true });
+export type InsertModule = z.infer<typeof insertModuleSchema>;
+export type Module = typeof modules.$inferSelect;
+
+// User module progress
+export const userModuleProgress = pgTable("user_module_progress", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  sessionId: integer("session_id").references(() => pathwaySessions.id, { onDelete: 'cascade' }),
+  moduleId: integer("module_id").notNull().references(() => modules.id, { onDelete: 'cascade' }),
+  status: varchar("status").notNull().default("not_started"), // 'not_started', 'in_progress', 'completed'
+  startedAt: timestamp("started_at"),
+  completedAt: timestamp("completed_at"),
+  lastViewedAt: timestamp("last_viewed_at"),
+});
+
+export const insertUserModuleProgressSchema = createInsertSchema(userModuleProgress).omit({ id: true });
+export type InsertUserModuleProgress = z.infer<typeof insertUserModuleProgressSchema>;
+export type UserModuleProgress = typeof userModuleProgress.$inferSelect;
+
+// ===== ASSESSMENT ENGINE (config-driven) =====
+
+// Assessments - reusable across tools
+export const assessments = pgTable("assessments", {
+  id: serial("id").primaryKey(),
+  key: varchar("key").notNull().unique(), // 'strengths_cards_v1', 'styles_v1', 'eq_micro_v1'
+  title: varchar("title").notNull(),
+  description: text("description"),
+  version: integer("version").notNull().default(1),
+  scoringModel: jsonb("scoring_model"), // how to calculate scores
+  isEnabled: boolean("is_enabled").default(true),
+});
+
+export const insertAssessmentSchema = createInsertSchema(assessments).omit({ id: true });
+export type InsertAssessment = z.infer<typeof insertAssessmentSchema>;
+export type Assessment = typeof assessments.$inferSelect;
+
+// Assessment questions
+export const assessmentQuestions = pgTable("assessment_questions", {
+  id: serial("id").primaryKey(),
+  assessmentId: integer("assessment_id").notNull().references(() => assessments.id, { onDelete: 'cascade' }),
+  key: varchar("key").notNull(),
+  promptClassic: text("prompt_classic").notNull(),
+  promptFaith: text("prompt_faith"), // optional faith-mode prompt
+  inputType: varchar("input_type").notNull(), // 'likert', 'single_choice', 'multi_choice', 'text', 'scenario'
+  options: jsonb("options"), // for choice questions
+  dimensionKey: varchar("dimension_key"), // for scoring by dimension
+  reverseScored: boolean("reverse_scored").default(false),
+  orderIndex: integer("order_index").notNull().default(0),
+});
+
+export const insertAssessmentQuestionSchema = createInsertSchema(assessmentQuestions).omit({ id: true });
+export type InsertAssessmentQuestion = z.infer<typeof insertAssessmentQuestionSchema>;
+export type AssessmentQuestion = typeof assessmentQuestions.$inferSelect;
+
+// Assessment responses (user's attempt at an assessment)
+export const assessmentResponses = pgTable("assessment_responses", {
+  id: serial("id").primaryKey(),
+  assessmentId: integer("assessment_id").notNull().references(() => assessments.id, { onDelete: 'cascade' }),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  sessionId: integer("session_id").references(() => pathwaySessions.id, { onDelete: 'cascade' }),
+  status: varchar("status").notNull().default("in_progress"), // 'in_progress', 'completed'
+  startedAt: timestamp("started_at").defaultNow(),
+  completedAt: timestamp("completed_at"),
+});
+
+export const insertAssessmentResponseSchema = createInsertSchema(assessmentResponses).omit({ id: true, startedAt: true });
+export type InsertAssessmentResponse = z.infer<typeof insertAssessmentResponseSchema>;
+export type AssessmentResponse = typeof assessmentResponses.$inferSelect;
+
+// Assessment answers
+export const assessmentAnswers = pgTable("assessment_answers", {
+  id: serial("id").primaryKey(),
+  responseId: integer("response_id").notNull().references(() => assessmentResponses.id, { onDelete: 'cascade' }),
+  questionId: integer("question_id").notNull().references(() => assessmentQuestions.id, { onDelete: 'cascade' }),
+  valueNumber: integer("value_number"), // for likert/rating
+  valueText: text("value_text"), // for text answers
+  valueJson: jsonb("value_json"), // for multi-choice or complex
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertAssessmentAnswerSchema = createInsertSchema(assessmentAnswers).omit({ id: true, createdAt: true });
+export type InsertAssessmentAnswer = z.infer<typeof insertAssessmentAnswerSchema>;
+export type AssessmentAnswer = typeof assessmentAnswers.$inferSelect;
+
+// Assessment scores (calculated per dimension)
+export const assessmentScores = pgTable("assessment_scores", {
+  id: serial("id").primaryKey(),
+  responseId: integer("response_id").notNull().references(() => assessmentResponses.id, { onDelete: 'cascade' }),
+  dimensionKey: varchar("dimension_key").notNull(),
+  scoreRaw: integer("score_raw"),
+  scoreNormalized: integer("score_normalized"), // 0-100
+  band: varchar("band"), // 'low', 'mid', 'high'
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertAssessmentScoreSchema = createInsertSchema(assessmentScores).omit({ id: true, createdAt: true });
+export type InsertAssessmentScore = z.infer<typeof insertAssessmentScoreSchema>;
+export type AssessmentScore = typeof assessmentScores.$inferSelect;
+
+// Assessment insights (AI or rule-based)
+export const assessmentInsights = pgTable("assessment_insights", {
+  id: serial("id").primaryKey(),
+  responseId: integer("response_id").notNull().references(() => assessmentResponses.id, { onDelete: 'cascade' }),
+  headline: varchar("headline"),
+  insightText: text("insight_text"),
+  risksText: text("risks_text"),
+  recommendedPracticeKeys: jsonb("recommended_practice_keys"), // array
+  recommendedNextSteps: jsonb("recommended_next_steps"), // array
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertAssessmentInsightSchema = createInsertSchema(assessmentInsights).omit({ id: true, createdAt: true });
+export type InsertAssessmentInsight = z.infer<typeof insertAssessmentInsightSchema>;
+export type AssessmentInsight = typeof assessmentInsights.$inferSelect;
+
+// ===== STRENGTHS TOOL =====
+
+// Strengths catalog (24 VIA-style character strengths)
+export const strengthsCatalog = pgTable("strengths_catalog", {
+  id: serial("id").primaryKey(),
+  key: varchar("key").notNull().unique(), // 'curiosity', 'discipline', 'empathy', etc.
+  name: varchar("name").notNull(),
+  category: varchar("category"), // 'wisdom', 'courage', 'humanity', 'justice', 'temperance', 'transcendence'
+  definition: text("definition").notNull(),
+  healthyUse: text("healthy_use"),
+  overuseRisk: text("overuse_risk"),
+  underuseRisk: text("underuse_risk"),
+  suggestedHabits: jsonb("suggested_habits"), // array
+  suggestedRoles: jsonb("suggested_roles"), // array
+  suggestedBoundaries: jsonb("suggested_boundaries"), // array
+  iconKey: varchar("icon_key"),
+  orderIndex: integer("order_index").default(0),
+});
+
+export const insertStrengthsCatalogSchema = createInsertSchema(strengthsCatalog).omit({ id: true });
+export type InsertStrengthsCatalog = z.infer<typeof insertStrengthsCatalogSchema>;
+export type StrengthsCatalog = typeof strengthsCatalog.$inferSelect;
+
+// User strengths (top 5-10 selected)
+export const userStrengths = pgTable("user_strengths", {
+  id: serial("id").primaryKey(),
+  sessionId: integer("session_id").notNull().references(() => pathwaySessions.id, { onDelete: 'cascade' }),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  strengthKey: varchar("strength_key").notNull(),
+  rank: integer("rank").notNull(), // 1-10
+  selfRating: integer("self_rating"), // 1-5 how strongly they identify
+  evidenceNote: text("evidence_note"), // example of when they used it
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertUserStrengthSchema = createInsertSchema(userStrengths).omit({ id: true, createdAt: true });
+export type InsertUserStrength = z.infer<typeof insertUserStrengthSchema>;
+export type UserStrength = typeof userStrengths.$inferSelect;
+
+// ===== 4 STYLES (DISC-inspired) =====
+
+// Style profiles (Driver, Connector, Stabilizer, Analyst)
+export const stylesProfiles = pgTable("styles_profiles", {
+  id: serial("id").primaryKey(),
+  key: varchar("key").notNull().unique(), // 'driver', 'connector', 'stabilizer', 'analyst'
+  name: varchar("name").notNull(),
+  description: text("description").notNull(),
+  whenStrong: text("when_strong"),
+  whenStressed: text("when_stressed"),
+  whatTheyNeed: text("what_they_need"),
+  howToWorkWith: jsonb("how_to_work_with"), // object keyed by other style keys
+  communicationTips: jsonb("communication_tips"), // array
+  colorHex: varchar("color_hex"),
+  iconKey: varchar("icon_key"),
+});
+
+export const insertStylesProfileSchema = createInsertSchema(stylesProfiles).omit({ id: true });
+export type InsertStylesProfile = z.infer<typeof insertStylesProfileSchema>;
+export type StylesProfile = typeof stylesProfiles.$inferSelect;
+
+// User styles
+export const userStyles = pgTable("user_styles", {
+  id: serial("id").primaryKey(),
+  sessionId: integer("session_id").notNull().references(() => pathwaySessions.id, { onDelete: 'cascade' }),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  primaryStyleKey: varchar("primary_style_key").notNull(),
+  secondaryStyleKey: varchar("secondary_style_key"),
+  stressStyleKey: varchar("stress_style_key"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertUserStyleSchema = createInsertSchema(userStyles).omit({ id: true, createdAt: true });
+export type InsertUserStyle = z.infer<typeof insertUserStyleSchema>;
+export type UserStyle = typeof userStyles.$inferSelect;
+
+// ===== EQ MICRO-SKILLS =====
+
+// EQ domains
+export const eqDomains = pgTable("eq_domains", {
+  id: serial("id").primaryKey(),
+  key: varchar("key").notNull().unique(), // 'self_awareness', 'self_management', 'social_awareness', 'relationship_management'
+  name: varchar("name").notNull(),
+  description: text("description"),
+  orderIndex: integer("order_index").default(0),
+});
+
+export const insertEqDomainSchema = createInsertSchema(eqDomains).omit({ id: true });
+export type InsertEqDomain = z.infer<typeof insertEqDomainSchema>;
+export type EqDomain = typeof eqDomains.$inferSelect;
+
+// User EQ scores
+export const userEqScores = pgTable("user_eq_scores", {
+  id: serial("id").primaryKey(),
+  responseId: integer("response_id").notNull().references(() => assessmentResponses.id, { onDelete: 'cascade' }),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  sessionId: integer("session_id").references(() => pathwaySessions.id, { onDelete: 'cascade' }),
+  domainKey: varchar("domain_key").notNull(),
+  scoreNormalized: integer("score_normalized"), // 0-100
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertUserEqScoreSchema = createInsertSchema(userEqScores).omit({ id: true, createdAt: true });
+export type InsertUserEqScore = z.infer<typeof insertUserEqScoreSchema>;
+export type UserEqScore = typeof userEqScores.$inferSelect;
+
+// Practice library (micro-exercises for all tools)
+export const practiceLibrary = pgTable("practice_library", {
+  id: serial("id").primaryKey(),
+  key: varchar("key").notNull().unique(),
+  title: varchar("title").notNull(),
+  description: text("description"),
+  durationMinutes: integer("duration_minutes").default(5),
+  domainKeys: jsonb("domain_keys"), // array of EQ domains or strength categories
+  instructionsClassic: text("instructions_classic").notNull(),
+  instructionsFaith: text("instructions_faith"),
+  contraindications: text("contraindications"),
+  tags: jsonb("tags"), // array
+  orderIndex: integer("order_index").default(0),
+});
+
+export const insertPracticeLibrarySchema = createInsertSchema(practiceLibrary).omit({ id: true });
+export type InsertPracticeLibrary = z.infer<typeof insertPracticeLibrarySchema>;
+export type PracticeLibraryItem = typeof practiceLibrary.$inferSelect;
+
+// User practice logs
+export const userPracticeLogs = pgTable("user_practice_logs", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  sessionId: integer("session_id").references(() => pathwaySessions.id, { onDelete: 'cascade' }),
+  practiceKey: varchar("practice_key").notNull(),
+  date: varchar("date").notNull(), // YYYY-MM-DD
+  completed: boolean("completed").default(false),
+  reflectionNote: text("reflection_note"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertUserPracticeLogSchema = createInsertSchema(userPracticeLogs).omit({ id: true, createdAt: true });
+export type InsertUserPracticeLog = z.infer<typeof insertUserPracticeLogSchema>;
+export type UserPracticeLog = typeof userPracticeLogs.$inferSelect;
+
+// ===== WDEP (Goal Realization) =====
+
+// WDEP entries - main container
+export const wdepEntries = pgTable("wdep_entries", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  sessionId: integer("session_id").references(() => pathwaySessions.id, { onDelete: 'cascade' }),
+  linkedGoalId: integer("linked_goal_id").references(() => visionGoals.id, { onDelete: 'set null' }),
+  title: varchar("title"),
+  status: varchar("status").notNull().default("in_progress"), // 'in_progress', 'active_plan', 'completed'
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertWdepEntrySchema = createInsertSchema(wdepEntries).omit({ id: true, createdAt: true, updatedAt: true });
+export type InsertWdepEntry = z.infer<typeof insertWdepEntrySchema>;
+export type WdepEntry = typeof wdepEntries.$inferSelect;
+
+// WDEP Wants
+export const wdepWants = pgTable("wdep_wants", {
+  id: serial("id").primaryKey(),
+  wdepEntryId: integer("wdep_entry_id").notNull().references(() => wdepEntries.id, { onDelete: 'cascade' }),
+  wantPrimary: text("want_primary"),
+  wantInsteadOfProblem: text("want_instead_of_problem"),
+  qualityLifePicture: text("quality_life_picture"),
+  othersWantForYou: text("others_want_for_you"),
+  sessionHope: text("session_hope"),
+  faithReflection: text("faith_reflection"),
+});
+
+export const insertWdepWantsSchema = createInsertSchema(wdepWants).omit({ id: true });
+export type InsertWdepWants = z.infer<typeof insertWdepWantsSchema>;
+export type WdepWants = typeof wdepWants.$inferSelect;
+
+// WDEP Doing
+export const wdepDoing = pgTable("wdep_doing", {
+  id: serial("id").primaryKey(),
+  wdepEntryId: integer("wdep_entry_id").notNull().references(() => wdepEntries.id, { onDelete: 'cascade' }),
+  acting: text("acting"),
+  thinking: text("thinking"),
+  feeling: text("feeling"),
+  healthImpact: text("health_impact"),
+  faithReflection: text("faith_reflection"),
+});
+
+export const insertWdepDoingSchema = createInsertSchema(wdepDoing).omit({ id: true });
+export type InsertWdepDoing = z.infer<typeof insertWdepDoingSchema>;
+export type WdepDoing = typeof wdepDoing.$inferSelect;
+
+// WDEP Evaluation
+export const wdepEvaluation = pgTable("wdep_evaluation", {
+  id: serial("id").primaryKey(),
+  wdepEntryId: integer("wdep_entry_id").notNull().references(() => wdepEntries.id, { onDelete: 'cascade' }),
+  helping: boolean("helping"),
+  directionScore: integer("direction_score"), // -2 to +2 (away to toward)
+  commitmentScore: integer("commitment_score"), // 1-5
+  costOfStayingSame: text("cost_of_staying_same"),
+  faithReflection: text("faith_reflection"),
+});
+
+export const insertWdepEvaluationSchema = createInsertSchema(wdepEvaluation).omit({ id: true });
+export type InsertWdepEvaluation = z.infer<typeof insertWdepEvaluationSchema>;
+export type WdepEvaluation = typeof wdepEvaluation.$inferSelect;
+
+// WDEP Plan
+export const wdepPlan = pgTable("wdep_plan", {
+  id: serial("id").primaryKey(),
+  wdepEntryId: integer("wdep_entry_id").notNull().references(() => wdepEntries.id, { onDelete: 'cascade' }),
+  doDifferently: text("do_differently"),
+  effortLevel: integer("effort_level"), // 1-5
+  achievableThisWeek: boolean("achievable_this_week"),
+  proofOfDone: text("proof_of_done"),
+  startNowAction: text("start_now_action"),
+  startNowCompletedAt: timestamp("start_now_completed_at"),
+});
+
+export const insertWdepPlanSchema = createInsertSchema(wdepPlan).omit({ id: true });
+export type InsertWdepPlan = z.infer<typeof insertWdepPlanSchema>;
+export type WdepPlan = typeof wdepPlan.$inferSelect;
+
+// WDEP Experiments (7-day challenges)
+export const wdepExperiments = pgTable("wdep_experiments", {
+  id: serial("id").primaryKey(),
+  wdepEntryId: integer("wdep_entry_id").notNull().references(() => wdepEntries.id, { onDelete: 'cascade' }),
+  dailyAction: text("daily_action"),
+  daysTarget: integer("days_target").default(7),
+  startDate: varchar("start_date"), // YYYY-MM-DD
+  endDate: varchar("end_date"), // YYYY-MM-DD
+  completedDays: integer("completed_days").default(0),
+  reflectionDay7: text("reflection_day7"),
+  status: varchar("status").default("active"), // 'active', 'completed', 'abandoned'
+});
+
+export const insertWdepExperimentSchema = createInsertSchema(wdepExperiments).omit({ id: true });
+export type InsertWdepExperiment = z.infer<typeof insertWdepExperimentSchema>;
+export type WdepExperiment = typeof wdepExperiments.$inferSelect;
+
+// WDEP Experiment logs
+export const wdepExperimentLogs = pgTable("wdep_experiment_logs", {
+  id: serial("id").primaryKey(),
+  experimentId: integer("experiment_id").notNull().references(() => wdepExperiments.id, { onDelete: 'cascade' }),
+  date: varchar("date").notNull(), // YYYY-MM-DD
+  completed: boolean("completed").default(false),
+  note: text("note"),
+});
+
+export const insertWdepExperimentLogSchema = createInsertSchema(wdepExperimentLogs).omit({ id: true });
+export type InsertWdepExperimentLog = z.infer<typeof insertWdepExperimentLogSchema>;
+export type WdepExperimentLog = typeof wdepExperimentLogs.$inferSelect;
+
+// ===== SELF-CONCORDANT ACTION (Motivation Booster) =====
+
+// SCA exercises
+export const scaExercises = pgTable("sca_exercises", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  sessionId: integer("session_id").references(() => pathwaySessions.id, { onDelete: 'cascade' }),
+  linkedGoalId: integer("linked_goal_id").references(() => visionGoals.id, { onDelete: 'set null' }),
+  activity: text("activity").notNull(), // the important but unenjoyable activity
+  importanceReason: text("importance_reason"),
+  motivationStart: integer("motivation_start"), // 0-10
+  motivationEnd: integer("motivation_end"), // 0-10 after completing focus list
+  status: varchar("status").default("in_progress"), // 'in_progress', 'completed'
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertScaExerciseSchema = createInsertSchema(scaExercises).omit({ id: true, createdAt: true });
+export type InsertScaExercise = z.infer<typeof insertScaExerciseSchema>;
+export type ScaExercise = typeof scaExercises.$inferSelect;
+
+// SCA focus items (the 1-10 reasons)
+export const scaFocusItems = pgTable("sca_focus_items", {
+  id: serial("id").primaryKey(),
+  scaExerciseId: integer("sca_exercise_id").notNull().references(() => scaExercises.id, { onDelete: 'cascade' }),
+  itemIndex: integer("item_index").notNull(), // 1-10
+  focusText: text("focus_text").notNull(), // "Carrying out this activity will allow me to..."
+  motivationAfter: integer("motivation_after"), // 0-10 after adding this focus
+});
+
+export const insertScaFocusItemSchema = createInsertSchema(scaFocusItems).omit({ id: true });
+export type InsertScaFocusItem = z.infer<typeof insertScaFocusItemSchema>;
+export type ScaFocusItem = typeof scaFocusItems.$inferSelect;
+
+// ===== MINI-360 FEEDBACK (Phase 4) =====
+
+// Feedback campaigns
+export const feedbackCampaigns = pgTable("feedback_campaigns", {
+  id: serial("id").primaryKey(),
+  sessionId: integer("session_id").references(() => pathwaySessions.id, { onDelete: 'cascade' }),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  title: varchar("title"),
+  status: varchar("status").notNull().default("draft"), // 'draft', 'sent', 'collecting', 'ready', 'debriefed', 'archived'
+  anonymityLevel: varchar("anonymity_level").default("anonymous_default"), // 'anonymous_default', 'named_allowed', 'named_required'
+  raterLimit: integer("rater_limit").default(5),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertFeedbackCampaignSchema = createInsertSchema(feedbackCampaigns).omit({ id: true, createdAt: true });
+export type InsertFeedbackCampaign = z.infer<typeof insertFeedbackCampaignSchema>;
+export type FeedbackCampaign = typeof feedbackCampaigns.$inferSelect;
+
+// Feedback invites
+export const feedbackInvites = pgTable("feedback_invites", {
+  id: serial("id").primaryKey(),
+  campaignId: integer("campaign_id").notNull().references(() => feedbackCampaigns.id, { onDelete: 'cascade' }),
+  token: varchar("token").notNull().unique(), // secure random token
+  inviteeName: varchar("invitee_name"),
+  inviteeEmail: varchar("invitee_email").notNull(),
+  relationshipType: varchar("relationship_type"), // 'peer', 'mentor', 'friend', 'family', 'manager', 'other'
+  status: varchar("status").notNull().default("created"), // 'created', 'sent', 'opened', 'submitted', 'expired', 'revoked'
+  sentAt: timestamp("sent_at"),
+  openedAt: timestamp("opened_at"),
+  submittedAt: timestamp("submitted_at"),
+  expiresAt: timestamp("expires_at"),
+});
+
+export const insertFeedbackInviteSchema = createInsertSchema(feedbackInvites).omit({ id: true });
+export type InsertFeedbackInvite = z.infer<typeof insertFeedbackInviteSchema>;
+export type FeedbackInvite = typeof feedbackInvites.$inferSelect;
+
+// Feedback answers
+export const feedbackAnswers = pgTable("feedback_answers", {
+  id: serial("id").primaryKey(),
+  inviteId: integer("invite_id").notNull().references(() => feedbackInvites.id, { onDelete: 'cascade' }),
+  campaignId: integer("campaign_id").notNull().references(() => feedbackCampaigns.id, { onDelete: 'cascade' }),
+  questionKey: varchar("question_key").notNull(),
+  rating: integer("rating"), // 1-5
+  comment: text("comment"),
+});
+
+export const insertFeedbackAnswerSchema = createInsertSchema(feedbackAnswers).omit({ id: true });
+export type InsertFeedbackAnswer = z.infer<typeof insertFeedbackAnswerSchema>;
+export type FeedbackAnswer = typeof feedbackAnswers.$inferSelect;
+
+// Self-assessment for 360
+export const feedbackSelfAssessment = pgTable("feedback_self_assessment", {
+  id: serial("id").primaryKey(),
+  campaignId: integer("campaign_id").notNull().references(() => feedbackCampaigns.id, { onDelete: 'cascade' }),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  questionKey: varchar("question_key").notNull(),
+  rating: integer("rating"),
+  comment: text("comment"),
+});
+
+export const insertFeedbackSelfAssessmentSchema = createInsertSchema(feedbackSelfAssessment).omit({ id: true });
+export type InsertFeedbackSelfAssessment = z.infer<typeof insertFeedbackSelfAssessmentSchema>;
+export type FeedbackSelfAssessment = typeof feedbackSelfAssessment.$inferSelect;
+
+// Feedback aggregates
+export const feedbackAggregates = pgTable("feedback_aggregates", {
+  id: serial("id").primaryKey(),
+  campaignId: integer("campaign_id").notNull().references(() => feedbackCampaigns.id, { onDelete: 'cascade' }),
+  dimensionKey: varchar("dimension_key").notNull(),
+  avgRating: integer("avg_rating"), // stored as integer * 10 for precision
+  distributionJson: jsonb("distribution_json"),
+  themesJson: jsonb("themes_json"), // qualitative themes
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertFeedbackAggregateSchema = createInsertSchema(feedbackAggregates).omit({ id: true, createdAt: true });
+export type InsertFeedbackAggregate = z.infer<typeof insertFeedbackAggregateSchema>;
+export type FeedbackAggregate = typeof feedbackAggregates.$inferSelect;
+
+// Safeguarding reports
+export const safeguardingReports = pgTable("safeguarding_reports", {
+  id: serial("id").primaryKey(),
+  campaignId: integer("campaign_id").references(() => feedbackCampaigns.id, { onDelete: 'set null' }),
+  inviteId: integer("invite_id").references(() => feedbackInvites.id, { onDelete: 'set null' }),
+  reporterUserId: varchar("reporter_user_id").references(() => users.id),
+  reason: varchar("reason").notNull(),
+  detail: text("detail"),
+  status: varchar("status").notNull().default("open"), // 'open', 'reviewed', 'actioned'
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertSafeguardingReportSchema = createInsertSchema(safeguardingReports).omit({ id: true, createdAt: true });
+export type InsertSafeguardingReport = z.infer<typeof insertSafeguardingReportSchema>;
+export type SafeguardingReport = typeof safeguardingReports.$inferSelect;

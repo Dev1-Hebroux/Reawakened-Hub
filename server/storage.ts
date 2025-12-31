@@ -143,6 +143,84 @@ import {
   type InsertWeeklyReview,
   type VisionExport,
   type InsertVisionExport,
+  tracks,
+  modules,
+  userModuleProgress,
+  assessments,
+  assessmentQuestions,
+  assessmentResponses,
+  assessmentAnswers,
+  assessmentScores,
+  assessmentInsights,
+  strengthsCatalog,
+  userStrengths,
+  stylesProfiles,
+  userStyles,
+  eqDomains,
+  userEqScores,
+  practiceLibrary,
+  userPracticeLogs,
+  wdepEntries,
+  wdepWants,
+  wdepDoing,
+  wdepEvaluation,
+  wdepPlan,
+  wdepExperiments,
+  wdepExperimentLogs,
+  scaExercises,
+  scaFocusItems,
+  type Track,
+  type InsertTrack,
+  type Module,
+  type InsertModule,
+  type UserModuleProgress,
+  type InsertUserModuleProgress,
+  type Assessment,
+  type InsertAssessment,
+  type AssessmentQuestion,
+  type InsertAssessmentQuestion,
+  type AssessmentResponse,
+  type InsertAssessmentResponse,
+  type AssessmentAnswer,
+  type InsertAssessmentAnswer,
+  type AssessmentScore,
+  type InsertAssessmentScore,
+  type AssessmentInsight,
+  type InsertAssessmentInsight,
+  type StrengthsCatalog,
+  type InsertStrengthsCatalog,
+  type UserStrength,
+  type InsertUserStrength,
+  type StylesProfile,
+  type InsertStylesProfile,
+  type UserStyle,
+  type InsertUserStyle,
+  type EqDomain,
+  type InsertEqDomain,
+  type UserEqScore,
+  type InsertUserEqScore,
+  type PracticeLibraryItem,
+  type InsertPracticeLibrary,
+  type UserPracticeLog,
+  type InsertUserPracticeLog,
+  type WdepEntry,
+  type InsertWdepEntry,
+  type WdepWants,
+  type InsertWdepWants,
+  type WdepDoing,
+  type InsertWdepDoing,
+  type WdepEvaluation,
+  type InsertWdepEvaluation,
+  type WdepPlan,
+  type InsertWdepPlan,
+  type WdepExperiment,
+  type InsertWdepExperiment,
+  type WdepExperimentLog,
+  type InsertWdepExperimentLog,
+  type ScaExercise,
+  type InsertScaExercise,
+  type ScaFocusItem,
+  type InsertScaFocusItem,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, sql, inArray, count } from "drizzle-orm";
@@ -349,6 +427,79 @@ export interface IStorage {
   // Vision Pathway - Exports
   getVisionExports(sessionId: number): Promise<VisionExport[]>;
   createVisionExport(exportData: InsertVisionExport): Promise<VisionExport>;
+
+  // ===== GROWTH TOOLS: TRACKS & MODULES =====
+  getTracks(): Promise<Track[]>;
+  getTrack(key: string): Promise<Track | undefined>;
+  getModules(trackId: number): Promise<Module[]>;
+  getModule(key: string): Promise<Module | undefined>;
+  getUserModuleProgress(userId: string, sessionId?: number): Promise<UserModuleProgress[]>;
+  upsertUserModuleProgress(data: InsertUserModuleProgress): Promise<UserModuleProgress>;
+
+  // ===== ASSESSMENT ENGINE =====
+  getAssessment(key: string): Promise<Assessment | undefined>;
+  getAssessmentQuestions(assessmentId: number): Promise<AssessmentQuestion[]>;
+  createAssessmentResponse(data: InsertAssessmentResponse): Promise<AssessmentResponse>;
+  getAssessmentResponse(id: number): Promise<AssessmentResponse | undefined>;
+  getUserAssessmentResponses(userId: string, assessmentKey?: string): Promise<AssessmentResponse[]>;
+  updateAssessmentResponse(id: number, data: Partial<AssessmentResponse>): Promise<AssessmentResponse>;
+  upsertAssessmentAnswer(responseId: number, questionId: number, data: Partial<InsertAssessmentAnswer>): Promise<AssessmentAnswer>;
+  getAssessmentAnswers(responseId: number): Promise<AssessmentAnswer[]>;
+  createAssessmentScore(data: InsertAssessmentScore): Promise<AssessmentScore>;
+  getAssessmentScores(responseId: number): Promise<AssessmentScore[]>;
+  createAssessmentInsight(data: InsertAssessmentInsight): Promise<AssessmentInsight>;
+  getAssessmentInsight(responseId: number): Promise<AssessmentInsight | undefined>;
+
+  // ===== STRENGTHS =====
+  getStrengthsCatalog(): Promise<StrengthsCatalog[]>;
+  getStrength(key: string): Promise<StrengthsCatalog | undefined>;
+  getUserStrengths(sessionId: number): Promise<UserStrength[]>;
+  upsertUserStrengths(sessionId: number, userId: string, strengths: Omit<InsertUserStrength, 'sessionId' | 'userId'>[]): Promise<UserStrength[]>;
+
+  // ===== 4 STYLES =====
+  getStylesProfiles(): Promise<StylesProfile[]>;
+  getStyleProfile(key: string): Promise<StylesProfile | undefined>;
+  getUserStyle(sessionId: number): Promise<UserStyle | undefined>;
+  upsertUserStyle(data: InsertUserStyle): Promise<UserStyle>;
+
+  // ===== EQ =====
+  getEqDomains(): Promise<EqDomain[]>;
+  getUserEqScores(sessionId: number): Promise<UserEqScore[]>;
+  createUserEqScore(data: InsertUserEqScore): Promise<UserEqScore>;
+
+  // ===== PRACTICE LIBRARY =====
+  getPractices(domainKey?: string): Promise<PracticeLibraryItem[]>;
+  getPractice(key: string): Promise<PracticeLibraryItem | undefined>;
+  getUserPracticeLogs(userId: string, sessionId?: number): Promise<UserPracticeLog[]>;
+  createUserPracticeLog(data: InsertUserPracticeLog): Promise<UserPracticeLog>;
+
+  // ===== WDEP =====
+  createWdepEntry(data: InsertWdepEntry): Promise<WdepEntry>;
+  getWdepEntry(id: number): Promise<WdepEntry | undefined>;
+  getWdepEntries(userId: string, sessionId?: number): Promise<WdepEntry[]>;
+  updateWdepEntry(id: number, data: Partial<WdepEntry>): Promise<WdepEntry>;
+  upsertWdepWants(wdepEntryId: number, data: Omit<InsertWdepWants, 'wdepEntryId'>): Promise<WdepWants>;
+  getWdepWants(wdepEntryId: number): Promise<WdepWants | undefined>;
+  upsertWdepDoing(wdepEntryId: number, data: Omit<InsertWdepDoing, 'wdepEntryId'>): Promise<WdepDoing>;
+  getWdepDoing(wdepEntryId: number): Promise<WdepDoing | undefined>;
+  upsertWdepEvaluation(wdepEntryId: number, data: Omit<InsertWdepEvaluation, 'wdepEntryId'>): Promise<WdepEvaluation>;
+  getWdepEvaluation(wdepEntryId: number): Promise<WdepEvaluation | undefined>;
+  upsertWdepPlan(wdepEntryId: number, data: Omit<InsertWdepPlan, 'wdepEntryId'>): Promise<WdepPlan>;
+  getWdepPlan(wdepEntryId: number): Promise<WdepPlan | undefined>;
+  createWdepExperiment(data: InsertWdepExperiment): Promise<WdepExperiment>;
+  getWdepExperiment(wdepEntryId: number): Promise<WdepExperiment | undefined>;
+  getWdepExperimentById(id: number): Promise<WdepExperiment | undefined>;
+  updateWdepExperiment(id: number, data: Partial<WdepExperiment>): Promise<WdepExperiment>;
+  createWdepExperimentLog(data: InsertWdepExperimentLog): Promise<WdepExperimentLog>;
+  getWdepExperimentLogs(experimentId: number): Promise<WdepExperimentLog[]>;
+
+  // ===== SELF-CONCORDANT ACTION =====
+  createScaExercise(data: InsertScaExercise): Promise<ScaExercise>;
+  getScaExercise(id: number): Promise<ScaExercise | undefined>;
+  getScaExercises(userId: string, sessionId?: number): Promise<ScaExercise[]>;
+  updateScaExercise(id: number, data: Partial<ScaExercise>): Promise<ScaExercise>;
+  createScaFocusItem(data: InsertScaFocusItem): Promise<ScaFocusItem>;
+  getScaFocusItems(scaExerciseId: number): Promise<ScaFocusItem[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1181,6 +1332,345 @@ export class DatabaseStorage implements IStorage {
   async createVisionExport(exportData: InsertVisionExport): Promise<VisionExport> {
     const [exp] = await db.insert(visionExports).values(exportData).returning();
     return exp;
+  }
+
+  // ===== GROWTH TOOLS: TRACKS & MODULES =====
+
+  async getTracks(): Promise<Track[]> {
+    return db.select().from(tracks).where(eq(tracks.isEnabled, true)).orderBy(tracks.orderIndex);
+  }
+
+  async getTrack(key: string): Promise<Track | undefined> {
+    const [track] = await db.select().from(tracks).where(eq(tracks.key, key));
+    return track;
+  }
+
+  async getModules(trackId: number): Promise<Module[]> {
+    return db.select().from(modules).where(and(eq(modules.trackId, trackId), eq(modules.isEnabled, true))).orderBy(modules.orderIndex);
+  }
+
+  async getModule(key: string): Promise<Module | undefined> {
+    const [mod] = await db.select().from(modules).where(eq(modules.key, key));
+    return mod;
+  }
+
+  async getUserModuleProgress(userId: string, sessionId?: number): Promise<UserModuleProgress[]> {
+    if (sessionId) {
+      return db.select().from(userModuleProgress).where(and(eq(userModuleProgress.userId, userId), eq(userModuleProgress.sessionId, sessionId)));
+    }
+    return db.select().from(userModuleProgress).where(eq(userModuleProgress.userId, userId));
+  }
+
+  async upsertUserModuleProgress(data: InsertUserModuleProgress): Promise<UserModuleProgress> {
+    const [existing] = await db.select().from(userModuleProgress).where(and(eq(userModuleProgress.userId, data.userId), eq(userModuleProgress.moduleId, data.moduleId)));
+    if (existing) {
+      const [updated] = await db.update(userModuleProgress).set({ ...data, lastViewedAt: new Date() }).where(eq(userModuleProgress.id, existing.id)).returning();
+      return updated;
+    }
+    const [created] = await db.insert(userModuleProgress).values({ ...data, startedAt: new Date() }).returning();
+    return created;
+  }
+
+  // ===== ASSESSMENT ENGINE =====
+
+  async getAssessment(key: string): Promise<Assessment | undefined> {
+    const [assessment] = await db.select().from(assessments).where(eq(assessments.key, key));
+    return assessment;
+  }
+
+  async getAssessmentQuestions(assessmentId: number): Promise<AssessmentQuestion[]> {
+    return db.select().from(assessmentQuestions).where(eq(assessmentQuestions.assessmentId, assessmentId)).orderBy(assessmentQuestions.orderIndex);
+  }
+
+  async createAssessmentResponse(data: InsertAssessmentResponse): Promise<AssessmentResponse> {
+    const [response] = await db.insert(assessmentResponses).values(data).returning();
+    return response;
+  }
+
+  async getAssessmentResponse(id: number): Promise<AssessmentResponse | undefined> {
+    const [response] = await db.select().from(assessmentResponses).where(eq(assessmentResponses.id, id));
+    return response;
+  }
+
+  async getUserAssessmentResponses(userId: string, assessmentKey?: string): Promise<AssessmentResponse[]> {
+    if (assessmentKey) {
+      const assessment = await this.getAssessment(assessmentKey);
+      if (!assessment) return [];
+      return db.select().from(assessmentResponses).where(and(eq(assessmentResponses.userId, userId), eq(assessmentResponses.assessmentId, assessment.id))).orderBy(desc(assessmentResponses.startedAt));
+    }
+    return db.select().from(assessmentResponses).where(eq(assessmentResponses.userId, userId)).orderBy(desc(assessmentResponses.startedAt));
+  }
+
+  async updateAssessmentResponse(id: number, data: Partial<AssessmentResponse>): Promise<AssessmentResponse> {
+    const [response] = await db.update(assessmentResponses).set(data).where(eq(assessmentResponses.id, id)).returning();
+    return response;
+  }
+
+  async upsertAssessmentAnswer(responseId: number, questionId: number, data: Partial<InsertAssessmentAnswer>): Promise<AssessmentAnswer> {
+    const [existing] = await db.select().from(assessmentAnswers).where(and(eq(assessmentAnswers.responseId, responseId), eq(assessmentAnswers.questionId, questionId)));
+    if (existing) {
+      const [updated] = await db.update(assessmentAnswers).set(data).where(eq(assessmentAnswers.id, existing.id)).returning();
+      return updated;
+    }
+    const [created] = await db.insert(assessmentAnswers).values({ responseId, questionId, ...data }).returning();
+    return created;
+  }
+
+  async getAssessmentAnswers(responseId: number): Promise<AssessmentAnswer[]> {
+    return db.select().from(assessmentAnswers).where(eq(assessmentAnswers.responseId, responseId));
+  }
+
+  async createAssessmentScore(data: InsertAssessmentScore): Promise<AssessmentScore> {
+    const [score] = await db.insert(assessmentScores).values(data).returning();
+    return score;
+  }
+
+  async getAssessmentScores(responseId: number): Promise<AssessmentScore[]> {
+    return db.select().from(assessmentScores).where(eq(assessmentScores.responseId, responseId));
+  }
+
+  async createAssessmentInsight(data: InsertAssessmentInsight): Promise<AssessmentInsight> {
+    const [insight] = await db.insert(assessmentInsights).values(data).returning();
+    return insight;
+  }
+
+  async getAssessmentInsight(responseId: number): Promise<AssessmentInsight | undefined> {
+    const [insight] = await db.select().from(assessmentInsights).where(eq(assessmentInsights.responseId, responseId));
+    return insight;
+  }
+
+  // ===== STRENGTHS =====
+
+  async getStrengthsCatalog(): Promise<StrengthsCatalog[]> {
+    return db.select().from(strengthsCatalog).orderBy(strengthsCatalog.orderIndex);
+  }
+
+  async getStrength(key: string): Promise<StrengthsCatalog | undefined> {
+    const [strength] = await db.select().from(strengthsCatalog).where(eq(strengthsCatalog.key, key));
+    return strength;
+  }
+
+  async getUserStrengths(sessionId: number): Promise<UserStrength[]> {
+    return db.select().from(userStrengths).where(eq(userStrengths.sessionId, sessionId)).orderBy(userStrengths.rank);
+  }
+
+  async upsertUserStrengths(sessionId: number, userId: string, strengths: Omit<InsertUserStrength, 'sessionId' | 'userId'>[]): Promise<UserStrength[]> {
+    await db.delete(userStrengths).where(eq(userStrengths.sessionId, sessionId));
+    if (strengths.length === 0) return [];
+    const toInsert = strengths.map(s => ({ ...s, sessionId, userId }));
+    return db.insert(userStrengths).values(toInsert).returning();
+  }
+
+  // ===== 4 STYLES =====
+
+  async getStylesProfiles(): Promise<StylesProfile[]> {
+    return db.select().from(stylesProfiles);
+  }
+
+  async getStyleProfile(key: string): Promise<StylesProfile | undefined> {
+    const [profile] = await db.select().from(stylesProfiles).where(eq(stylesProfiles.key, key));
+    return profile;
+  }
+
+  async getUserStyle(sessionId: number): Promise<UserStyle | undefined> {
+    const [style] = await db.select().from(userStyles).where(eq(userStyles.sessionId, sessionId));
+    return style;
+  }
+
+  async upsertUserStyle(data: InsertUserStyle): Promise<UserStyle> {
+    const existing = await this.getUserStyle(data.sessionId);
+    if (existing) {
+      const [updated] = await db.update(userStyles).set(data).where(eq(userStyles.id, existing.id)).returning();
+      return updated;
+    }
+    const [created] = await db.insert(userStyles).values(data).returning();
+    return created;
+  }
+
+  // ===== EQ =====
+
+  async getEqDomains(): Promise<EqDomain[]> {
+    return db.select().from(eqDomains).orderBy(eqDomains.orderIndex);
+  }
+
+  async getUserEqScores(sessionId: number): Promise<UserEqScore[]> {
+    return db.select().from(userEqScores).where(eq(userEqScores.sessionId, sessionId));
+  }
+
+  async createUserEqScore(data: InsertUserEqScore): Promise<UserEqScore> {
+    const [score] = await db.insert(userEqScores).values(data).returning();
+    return score;
+  }
+
+  // ===== PRACTICE LIBRARY =====
+
+  async getPractices(domainKey?: string): Promise<PracticeLibraryItem[]> {
+    const allPractices = await db.select().from(practiceLibrary).orderBy(practiceLibrary.orderIndex);
+    if (!domainKey) return allPractices;
+    return allPractices.filter(p => (p.domainKeys as string[] || []).includes(domainKey));
+  }
+
+  async getPractice(key: string): Promise<PracticeLibraryItem | undefined> {
+    const [practice] = await db.select().from(practiceLibrary).where(eq(practiceLibrary.key, key));
+    return practice;
+  }
+
+  async getUserPracticeLogs(userId: string, sessionId?: number): Promise<UserPracticeLog[]> {
+    if (sessionId) {
+      return db.select().from(userPracticeLogs).where(and(eq(userPracticeLogs.userId, userId), eq(userPracticeLogs.sessionId, sessionId))).orderBy(desc(userPracticeLogs.date));
+    }
+    return db.select().from(userPracticeLogs).where(eq(userPracticeLogs.userId, userId)).orderBy(desc(userPracticeLogs.date));
+  }
+
+  async createUserPracticeLog(data: InsertUserPracticeLog): Promise<UserPracticeLog> {
+    const [log] = await db.insert(userPracticeLogs).values(data).returning();
+    return log;
+  }
+
+  // ===== WDEP =====
+
+  async createWdepEntry(data: InsertWdepEntry): Promise<WdepEntry> {
+    const [entry] = await db.insert(wdepEntries).values(data).returning();
+    return entry;
+  }
+
+  async getWdepEntry(id: number): Promise<WdepEntry | undefined> {
+    const [entry] = await db.select().from(wdepEntries).where(eq(wdepEntries.id, id));
+    return entry;
+  }
+
+  async getWdepEntries(userId: string, sessionId?: number): Promise<WdepEntry[]> {
+    if (sessionId) {
+      return db.select().from(wdepEntries).where(and(eq(wdepEntries.userId, userId), eq(wdepEntries.sessionId, sessionId))).orderBy(desc(wdepEntries.createdAt));
+    }
+    return db.select().from(wdepEntries).where(eq(wdepEntries.userId, userId)).orderBy(desc(wdepEntries.createdAt));
+  }
+
+  async updateWdepEntry(id: number, data: Partial<WdepEntry>): Promise<WdepEntry> {
+    const [entry] = await db.update(wdepEntries).set({ ...data, updatedAt: new Date() }).where(eq(wdepEntries.id, id)).returning();
+    return entry;
+  }
+
+  async upsertWdepWants(wdepEntryId: number, data: Omit<InsertWdepWants, 'wdepEntryId'>): Promise<WdepWants> {
+    const existing = await this.getWdepWants(wdepEntryId);
+    if (existing) {
+      const [updated] = await db.update(wdepWants).set(data).where(eq(wdepWants.id, existing.id)).returning();
+      return updated;
+    }
+    const [created] = await db.insert(wdepWants).values({ ...data, wdepEntryId }).returning();
+    return created;
+  }
+
+  async getWdepWants(wdepEntryId: number): Promise<WdepWants | undefined> {
+    const [wants] = await db.select().from(wdepWants).where(eq(wdepWants.wdepEntryId, wdepEntryId));
+    return wants;
+  }
+
+  async upsertWdepDoing(wdepEntryId: number, data: Omit<InsertWdepDoing, 'wdepEntryId'>): Promise<WdepDoing> {
+    const existing = await this.getWdepDoing(wdepEntryId);
+    if (existing) {
+      const [updated] = await db.update(wdepDoing).set(data).where(eq(wdepDoing.id, existing.id)).returning();
+      return updated;
+    }
+    const [created] = await db.insert(wdepDoing).values({ ...data, wdepEntryId }).returning();
+    return created;
+  }
+
+  async getWdepDoing(wdepEntryId: number): Promise<WdepDoing | undefined> {
+    const [doing] = await db.select().from(wdepDoing).where(eq(wdepDoing.wdepEntryId, wdepEntryId));
+    return doing;
+  }
+
+  async upsertWdepEvaluation(wdepEntryId: number, data: Omit<InsertWdepEvaluation, 'wdepEntryId'>): Promise<WdepEvaluation> {
+    const existing = await this.getWdepEvaluation(wdepEntryId);
+    if (existing) {
+      const [updated] = await db.update(wdepEvaluation).set(data).where(eq(wdepEvaluation.id, existing.id)).returning();
+      return updated;
+    }
+    const [created] = await db.insert(wdepEvaluation).values({ ...data, wdepEntryId }).returning();
+    return created;
+  }
+
+  async getWdepEvaluation(wdepEntryId: number): Promise<WdepEvaluation | undefined> {
+    const [evaluation] = await db.select().from(wdepEvaluation).where(eq(wdepEvaluation.wdepEntryId, wdepEntryId));
+    return evaluation;
+  }
+
+  async upsertWdepPlan(wdepEntryId: number, data: Omit<InsertWdepPlan, 'wdepEntryId'>): Promise<WdepPlan> {
+    const existing = await this.getWdepPlan(wdepEntryId);
+    if (existing) {
+      const [updated] = await db.update(wdepPlan).set(data).where(eq(wdepPlan.id, existing.id)).returning();
+      return updated;
+    }
+    const [created] = await db.insert(wdepPlan).values({ ...data, wdepEntryId }).returning();
+    return created;
+  }
+
+  async getWdepPlan(wdepEntryId: number): Promise<WdepPlan | undefined> {
+    const [plan] = await db.select().from(wdepPlan).where(eq(wdepPlan.wdepEntryId, wdepEntryId));
+    return plan;
+  }
+
+  async createWdepExperiment(data: InsertWdepExperiment): Promise<WdepExperiment> {
+    const [experiment] = await db.insert(wdepExperiments).values(data).returning();
+    return experiment;
+  }
+
+  async getWdepExperiment(wdepEntryId: number): Promise<WdepExperiment | undefined> {
+    const [experiment] = await db.select().from(wdepExperiments).where(eq(wdepExperiments.wdepEntryId, wdepEntryId));
+    return experiment;
+  }
+
+  async getWdepExperimentById(id: number): Promise<WdepExperiment | undefined> {
+    const [experiment] = await db.select().from(wdepExperiments).where(eq(wdepExperiments.id, id));
+    return experiment;
+  }
+
+  async updateWdepExperiment(id: number, data: Partial<WdepExperiment>): Promise<WdepExperiment> {
+    const [experiment] = await db.update(wdepExperiments).set(data).where(eq(wdepExperiments.id, id)).returning();
+    return experiment;
+  }
+
+  async createWdepExperimentLog(data: InsertWdepExperimentLog): Promise<WdepExperimentLog> {
+    const [log] = await db.insert(wdepExperimentLogs).values(data).returning();
+    return log;
+  }
+
+  async getWdepExperimentLogs(experimentId: number): Promise<WdepExperimentLog[]> {
+    return db.select().from(wdepExperimentLogs).where(eq(wdepExperimentLogs.experimentId, experimentId)).orderBy(wdepExperimentLogs.date);
+  }
+
+  // ===== SELF-CONCORDANT ACTION =====
+
+  async createScaExercise(data: InsertScaExercise): Promise<ScaExercise> {
+    const [exercise] = await db.insert(scaExercises).values(data).returning();
+    return exercise;
+  }
+
+  async getScaExercise(id: number): Promise<ScaExercise | undefined> {
+    const [exercise] = await db.select().from(scaExercises).where(eq(scaExercises.id, id));
+    return exercise;
+  }
+
+  async getScaExercises(userId: string, sessionId?: number): Promise<ScaExercise[]> {
+    if (sessionId) {
+      return db.select().from(scaExercises).where(and(eq(scaExercises.userId, userId), eq(scaExercises.sessionId, sessionId))).orderBy(desc(scaExercises.createdAt));
+    }
+    return db.select().from(scaExercises).where(eq(scaExercises.userId, userId)).orderBy(desc(scaExercises.createdAt));
+  }
+
+  async updateScaExercise(id: number, data: Partial<ScaExercise>): Promise<ScaExercise> {
+    const [exercise] = await db.update(scaExercises).set(data).where(eq(scaExercises.id, id)).returning();
+    return exercise;
+  }
+
+  async createScaFocusItem(data: InsertScaFocusItem): Promise<ScaFocusItem> {
+    const [item] = await db.insert(scaFocusItems).values(data).returning();
+    return item;
+  }
+
+  async getScaFocusItems(scaExerciseId: number): Promise<ScaFocusItem[]> {
+    return db.select().from(scaFocusItems).where(eq(scaFocusItems.scaExerciseId, scaExerciseId)).orderBy(scaFocusItems.itemIndex);
   }
 }
 

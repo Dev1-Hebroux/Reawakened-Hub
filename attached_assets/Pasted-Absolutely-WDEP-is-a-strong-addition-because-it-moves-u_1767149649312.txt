@@ -1,0 +1,659 @@
+Absolutely—WDEP is a strong addition because it moves users from “I have goals” to “I am making responsible choices that actually change my life.” And the **Self-Concordant Action** exercise is an ideal companion because it solves a very real Gen Z problem: “I know it matters, but I still don’t do it.” 
+
+Below I’m “plugging both in” as first-class build assets: **track design**, **roadmap**, **data model + API contracts**, and **minute-by-minute scripts** for 1:1 and group labs.
+
+---
+
+## 1) Where WDEP + Self-Concordant Action fit (tracks + interconnections)
+
+### New Track Modules (separate, but linked everywhere)
+
+**Track A: Personal Mastery**
+
+* **Module: Goal Realization (WDEP)** — the clarity + responsibility framework
+* **Module: Motivation Booster (Self-Concordant Action)** — values alignment to increase follow-through 
+
+**Track B: Communication & Influence**
+
+* WDEP as a **conflict/relationship decision tool** (“What do I want in this relationship, what am I doing, is it working, what’s my plan?”)
+
+**Track C: Leadership Impact**
+
+* WDEP as the **debrief framework** for Mini-360 feedback (“What do I want to be known for, what am I doing now, is it working, what’s my experiment plan?”)
+
+### Interconnection rules (this is where depth happens)
+
+* If a user creates a SMART goal, they can tap **“Run WDEP on this goal”**
+* If a user is stuck (low habit consistency), the platform prompts **Self-Concordant Action** to reconnect the goal to values and meaning 
+* If a user has repeated weekly review issues (“same obstacle again”), the platform suggests **WDEP: Evaluation + Plan refresh**
+
+---
+
+## 2) Product intent: make it transforming, not superficial
+
+### WDEP is not a “worksheet.” It’s a mirror + decision engine.
+
+To make it life-changing, the platform must do two things:
+
+1. **Expose patterns** (avoidance, coping loops, drift)
+2. **Force a decision** (one plan action that starts now)
+
+### Self-Concordant Action prevents “important goals” from dying
+
+This exercise is designed to help people act on goals that matter but aren’t enjoyable by reconnecting action to underlying values and reasons—especially useful for procrastination and motivation challenges. 
+
+---
+
+## 3) Tiered Roadmap (Phase 2–3–4) with estimated scope
+
+### Phase 2 — Personal Mastery+ (self-led depth)
+
+**Goal:** Get users to real follow-through and identity-level change.
+
+**Additions**
+
+1. **WDEP Module (solo, guided)**
+
+* Wants / Doing / Evaluation / Plan screens
+* “Start-now action” + 7-day plan
+* Output: WDEP One-Page Plan PDF
+  **Scope:** M (1–2 sprints)
+
+2. **Needs Map (optional, lightweight, non-clinical)**
+
+* Users check which “needs” feel unmet and link them to goals (meaning, belonging, autonomy, competence/power, fun)
+  **Scope:** S–M (0.5–1 sprint)
+
+3. **Self-Concordant Action Module (Motivation Booster)**
+
+* Choose “important but unenjoyable” activity, rate motivation, build a 10-item Focus List with re-ratings (per the exercise structure). 
+* Output: Focus List card + PDF
+  **Scope:** M (1–2 sprints)
+
+4. **Linking rules**
+
+* “Run WDEP on this goal”
+* “Boost motivation” prompt when consistency drops
+  **Scope:** S (0.5 sprint)
+
+---
+
+### Phase 3 — Guided Support (1:1 + group labs + coach tooling)
+
+**Goal:** turn insight into transformation with supported practice.
+
+**Additions**
+
+1. **Session Request + Intake (WDEP, Strengths, EQ, Styles)**
+   **Scope:** L (2–3 sprints)
+
+2. **Coach Dashboard + Session Templates**
+
+* WDEP session template auto-pulls user’s goal, habits, weekly review patterns
+  **Scope:** L (2–3 sprints)
+
+3. **Group Lab toolkit**
+
+* WDEP Lab + Motivation Booster Lab + integrated challenges
+  **Scope:** M–L (2–3 sprints)
+
+---
+
+### Phase 4 — Leadership Impact (Mini-360 + WDEP debrief standard)
+
+**Goal:** feedback maturity + leadership growth experiments.
+
+**Additions**
+
+* Mini-360 system (as previously defined)
+* WDEP becomes the standard “debrief spine” for 360 outcomes
+  **Scope:** XL (4–6 sprints)
+
+---
+
+## 4) Build spec: WDEP + Self-Concordant Action modules (screens + outputs)
+
+### 4.1 WDEP Module (Goal Realization)
+
+**Entry points**
+
+* From Track Hub → “Goal Realization (WDEP)”
+* From any goal → “Run WDEP”
+* From weekly review → “I’m stuck—use WDEP”
+
+**Outputs**
+
+* **WDEP One-Page Plan** (PDF + dashboard card)
+* “Start-Now Action” pinned on dashboard
+
+#### Screens (Classic + Faith & Reflection copy differences)
+
+**W0 — Intro**
+
+* Title: “Goal Realization (WDEP)”
+* Body (Classic): “This is a simple process to get clear on what you want, notice what you’re doing, and create a plan that starts now.”
+* Body (Faith): “Same, plus optional reflection prompts if faith is part of your journey.”
+* Buttons: “Start” / “Not now”
+
+**W1 — Wants**
+Prompts (your list, platform-formatted):
+
+* “What do you want?”
+* “What do you want instead of the problem?”
+* “What does a quality life look like for you?”
+* “What do your family/friends want for you?” (optional)
+* “What do you hope to achieve with support or sessions?” (optional)
+
+Buttons: “Continue” / “Save and come back”
+
+Faith add-on (optional field):
+
+* “If faith is part of your journey, what kind of growth do you want to see in your heart and character?”
+
+**W2 — Doing (Direction)**
+Guided triad:
+
+* Acting: “What are you doing (or avoiding)?”
+* Thinking: “When you act this way, what are you telling yourself?”
+* Feeling: “What feelings show up?”
+* Health impact: “How does this affect your energy, sleep, or stress?”
+
+Buttons: “Continue”
+
+Faith add-on:
+
+* “Optional reflection: what do you tend to reach for when you feel pressure?”
+
+**W3 — Evaluation**
+This screen must challenge.
+
+* “Is what you’re doing helping you get what you want?” (Yes/No + why)
+* “Is it taking you in the direction you want to go?” (slider: “away ←→ toward”)
+* “Is your current commitment working in your favour?” (1–5)
+* “What is the cost of staying the same for 90 more days?” (short text)
+
+Buttons: “Continue”
+
+Faith add-on:
+
+* “Optional: where do you need wisdom or strength right now?”
+
+**W4 — Plan**
+Plan builder:
+
+* “What will you do differently?”
+* “How hard are you prepared to work at this?” (1–5)
+* “Is it achievable this week?” (Yes/No; if no → reduce scope)
+* “How will you know you’ve done it?” (measurable proof)
+* “Can you start immediately?”
+
+  * “Start-now action (2 minutes or less): ____”
+
+Buttons: “Save Plan” / “Pin start-now action”
+
+**W5 — Commitment + 7-Day Experiment**
+
+* “Choose your 7-day experiment”
+* Daily checkbox tracker (micro-action)
+* Review prompt on day 7: “What did you learn about yourself?”
+
+Buttons: “Go to Dashboard” / “Download WDEP Plan”
+
+---
+
+### 4.2 Self-Concordant Action Module (Motivation Booster)
+
+This module should feel like: “I’m about to finally do the thing.”
+
+This exercise explicitly distinguishes goals pursued for intrinsic reasons vs identified reasons, and it’s designed to help people reconnect identified goals to values so follow-through becomes easier. 
+
+**Entry points**
+
+* From any goal: “Boost motivation”
+* From habit streak breaks: “Reconnect to why”
+* From weekly review: “I kept avoiding this”
+
+**Outputs**
+
+* **Focus List card** pinned to dashboard for quick recall 
+* **Motivation curve** (start motivation → after each focus point)
+* Export: “My Focus List” PDF
+
+#### Screens (based on the exercise steps) 
+
+**SCA0 — Intro**
+
+* “Pick one important action you don’t really enjoy—but you want to want to do it.” 
+  Buttons: “Choose my action”
+
+**SCA1 — Choose activity**
+
+* Field: “Activity I avoid but know is important”
+* Prompt: “Why is it important (the consequence if you do it)?” 
+  Buttons: “Continue”
+
+**SCA2 — Motivation rating**
+
+* Slider 0–10: “How much do you want to do this right now?” 
+  Buttons: “Continue”
+
+**SCA3 — Focus List builder (1–10)**
+Looped prompt:
+
+* “Carrying out this activity will allow me to…” Focus #1
+* Re-rate motivation (0–10)
+  Repeat up to 10 times (or at least 5). The exercise guidance encourages taking time and generating many reasons. 
+
+Buttons: “Add another focus” / “Finish list”
+
+**SCA4 — Your Focus List (use it when motivation drops)**
+
+* Show list + last motivation rating
+* Button: “Start the action (2 minutes)”
+* Button: “Pin to dashboard”
+* Button: “Download PDF”
+
+Faith add-on (optional):
+
+* “Optional: add a short prayer/anchor line for when motivation is low.”
+
+---
+
+## 5) Data model additions (WDEP + Self-Concordant Action)
+
+### 5.1 WDEP tables
+
+**wdep_entries**
+
+* id (uuid)
+* userId
+* sessionId
+* linkedGoalId (nullable)
+* title (e.g., “WDEP for consistency”)
+* status (`in_progress`, `active_plan`, `completed`)
+* createdAt, updatedAt
+
+**wdep_wants**
+
+* id, wdepEntryId
+* wantPrimary (text)
+* wantInsteadOfProblem (text)
+* qualityLifePicture (text)
+* othersWantForYou (text nullable)
+* sessionHope (text nullable)
+* faithReflection (text nullable)
+
+**wdep_doing**
+
+* id, wdepEntryId
+* acting (text)
+* thinking (text)
+* feeling (text)
+* healthImpact (text)
+* faithReflection (text nullable)
+
+**wdep_evaluation**
+
+* id, wdepEntryId
+* helping (bool)
+* directionScore (-2..+2) // away to toward
+* commitmentScore (1..5)
+* costOfStayingSame (text)
+
+**wdep_plan**
+
+* id, wdepEntryId
+* doDifferently (text)
+* effortLevel (1..5)
+* achievableThisWeek (bool)
+* proofOfDone (text)
+* startNowAction (text)
+* startNowCompletedAt (timestamp nullable)
+
+**wdep_experiments**
+
+* id, wdepEntryId
+* startDate, endDate
+* dailyAction (text)
+* daysTarget (int default 7)
+* completedDays (int)
+* reflectionDay7 (text nullable)
+
+**wdep_experiment_logs**
+
+* id, experimentId
+* date
+* completed (bool)
+* note (text nullable)
+
+---
+
+### 5.2 Self-Concordant Action tables 
+
+**sca_exercises**
+
+* id
+* userId
+* sessionId
+* linkedGoalId (nullable)
+* activity (text)
+* importanceReason (text)
+* motivationStart (0..10)
+* motivationEnd (0..10)
+* createdAt
+
+**sca_focus_items**
+
+* id
+* scaExerciseId
+* index (1..10)
+* focusText (text) // “Carrying out the activity will allow me to…”
+* motivationAfter (0..10)
+
+---
+
+## 6) API Contracts (WDEP + Self-Concordant Action)
+
+Base: `/api/v1`
+Response envelope: `{ ok, data, error }`
+
+### 6.1 WDEP endpoints
+
+**POST /api/v1/sessions/{sessionId}/wdep**
+Create entry.
+
+Request:
+
+```json
+{ "title": "WDEP: Consistency", "linkedGoalId": "goal_uuid" }
+```
+
+Response:
+
+```json
+{ "ok": true, "data": { "wdepEntryId": "wdep_uuid", "status": "in_progress" }, "error": null }
+```
+
+**PUT /api/v1/wdep/{wdepEntryId}/wants**
+
+```json
+{
+  "wantPrimary": "I want consistent focus.",
+  "wantInsteadOfProblem": "I want to stop procrastinating.",
+  "qualityLifePicture": "A calm routine where I finish what I start.",
+  "othersWantForYou": "They want me to be confident and stable.",
+  "sessionHope": "I want tools that actually work.",
+  "faithReflection": null
+}
+```
+
+**PUT /api/v1/wdep/{wdepEntryId}/doing**
+
+```json
+{
+  "acting": "Avoiding tasks, scrolling, starting late.",
+  "thinking": "I have time later; I’ll do it when I feel ready.",
+  "feeling": "Anxious then guilty.",
+  "healthImpact": "Poor sleep; low energy."
+}
+```
+
+**PUT /api/v1/wdep/{wdepEntryId}/evaluation**
+
+```json
+{
+  "helping": false,
+  "directionScore": -1,
+  "commitmentScore": 2,
+  "costOfStayingSame": "I’ll lose confidence and miss opportunities."
+}
+```
+
+**PUT /api/v1/wdep/{wdepEntryId}/plan**
+
+```json
+{
+  "doDifferently": "Start with a 10-minute block daily.",
+  "effortLevel": 3,
+  "achievableThisWeek": true,
+  "proofOfDone": "7 check-ins + one finished task",
+  "startNowAction": "Open the task list and pick the first 10-minute step."
+}
+```
+
+**POST /api/v1/wdep/{wdepEntryId}/experiment**
+
+```json
+{ "dailyAction": "10-minute focus block", "daysTarget": 7, "startDate": "2026-01-01" }
+```
+
+**POST /api/v1/wdep/experiments/{experimentId}/log**
+
+```json
+{ "date": "2026-01-02", "completed": true, "note": "Did it before breakfast." }
+```
+
+**POST /api/v1/wdep/{wdepEntryId}/export**
+
+```json
+{ "pageSize": "A4" }
+```
+
+---
+
+### 6.2 Self-Concordant Action endpoints 
+
+**POST /api/v1/sessions/{sessionId}/sca**
+
+```json
+{
+  "linkedGoalId": "goal_uuid",
+  "activity": "Go for a run",
+  "importanceReason": "I want better energy and long-term health",
+  "motivationStart": 2
+}
+```
+
+**POST /api/v1/sca/{scaExerciseId}/focus-items**
+
+```json
+{
+  "items": [
+    { "index": 1, "focusText": "Have more energy in the day", "motivationAfter": 3 },
+    { "index": 2, "focusText": "Reduce stress and sleep better", "motivationAfter": 4 }
+  ]
+}
+```
+
+**POST /api/v1/sca/{scaExerciseId}/complete**
+Returns final list + motivation change.
+
+**POST /api/v1/sca/{scaExerciseId}/export**
+
+```json
+{ "pageSize": "A4" }
+```
+
+---
+
+## 7) Full facilitation scripts (minute-by-minute)
+
+### 7.1 WDEP 1:1 Session (75 minutes)
+
+**Pre-work (platform sends automatically)**
+
+* User completes WDEP Wants + Doing before session (10–15 minutes)
+* Coach receives a one-page summary
+
+**0–5 | Welcome + outcome**
+
+* “What would make this session a win for you?”
+
+**5–15 | Wants clarity**
+
+* “If this problem disappeared, what would your life look like?”
+* Lock a single sentence: “I want ___ because ___.”
+
+**15–30 | Doing reality check**
+
+* Map the loop: trigger → behaviour → short-term relief → long-term cost
+* “What are you doing that makes sense short-term, but hurts long-term?”
+
+**30–45 | Evaluation (the turning point)**
+
+* “Is it working?”
+* “What’s the cost of staying the same for 90 days?”
+* “What would your future self beg you to change first?”
+
+**45–60 | Plan (make it unbreakable)**
+
+* Reduce to a 7-day experiment
+* Decide proof of done
+* Choose “start-now action” (2 minutes)
+
+**60–70 | Commitment and support**
+
+* “What could sabotage this plan?”
+* “What boundary protects it?”
+* “Who can support you?”
+
+**70–75 | Close**
+
+* Confirm next check-in
+* Export WDEP plan PDF
+* Pin start-now action to dashboard
+
+Faith add-on (optional, if user chooses):
+
+* 60 seconds: “If faith is part of your journey, what do you want to trust God with this week?”
+
+---
+
+### 7.2 WDEP Group Lab (90 minutes)
+
+**0–10 | Welcome + safety norms**
+
+* “This is not performance. This is progress.”
+
+**10–20 | Teach WDEP in 4 minutes**
+
+* Wants, Doing, Evaluation, Plan
+* Explain “start-now action”
+
+**20–35 | Quiet work**
+
+* Everyone completes Wants + Doing
+
+**35–50 | Pair share**
+
+* Prompt: “What do you want instead of the problem?”
+* Prompt: “What are you currently doing?”
+
+**50–65 | Evaluation breakthrough**
+
+* Write: “The cost of staying the same is…”
+* Choose one pattern to interrupt
+
+**65–80 | Build 7-day experiment**
+
+* Everyone writes daily action + proof + start-now action
+
+**80–90 | Close**
+
+* Everyone shares one commitment (optional)
+* Platform sends WDEP PDF + 7-day tracker + reminders
+
+---
+
+### 7.3 Self-Concordant Action 1:1 (60 minutes)
+
+This is perfect when a user says: “I know what I should do, but I don’t do it.” The exercise explicitly builds a “Focus List” of reasons tied to values to increase motivation. 
+
+**Pre-work**
+
+* User chooses one avoided activity and sets motivation baseline 
+
+**0–10 | Choose the one activity**
+
+* “What action would change your life if it became consistent?”
+
+**10–25 | Build Focus #1–#5 slowly**
+
+* For each focus point:
+
+  * “Carrying out this activity will allow you to…?” 
+  * Re-rate motivation (0–10) 
+
+**25–40 | Go to #10 (or as far as possible)**
+
+* Encourage quantity: more reasons = more alignment 
+
+**40–50 | Translate focus into design**
+
+* “Which focus point matters most?”
+* “What environment change makes this easier?”
+
+**50–60 | Start-now**
+
+* Choose a 2-minute starter action
+* Pin Focus List to dashboard
+* Export PDF
+
+---
+
+### 7.4 Self-Concordant Action Group Lab (75 minutes)
+
+**0–10 | Welcome + frame**
+
+* “We’re solving follow-through, not making you feel bad.”
+
+**10–20 | Teach the idea**
+
+* Some goals are meaningful but not enjoyable; alignment helps follow-through 
+
+**20–40 | Quiet work: Focus List #1–#7**
+
+* Build reasons, re-rate motivation after each 
+
+**40–55 | Pair share**
+
+* Share top 2 focus points
+* Partner reflects: “That sounds like your values are…”
+
+**55–70 | Commit**
+
+* Everyone chooses:
+
+  * one focus point to pin
+  * one start-now action
+  * one 7-day commitment
+
+**70–75 | Close**
+
+* Platform sends Focus List PDF + 7-day tracker
+
+---
+
+## 8) Practical safeguarding note (important)
+
+WDEP comes from a therapeutic approach, but your implementation can remain **coaching-based and non-clinical**:
+
+* Use “reflection framework” language
+* Avoid diagnosing
+* Add a quiet disclaimer: “This tool supports reflection and goal progress, not therapy. If you’re in crisis, seek professional support.”
+
+---
+
+## 9) What your team can build next (high-leverage order)
+
+If you want the quickest path to “this is deep”:
+
+1. WDEP module + 7-day experiment tracking
+2. Self-Concordant Action module + Focus List pin
+3. Linking rules (from Goals/Habits/Weekly Review)
+4. Tool-specific PDF exports
+
+If you want, I can also provide:
+
+* **OpenAPI 3.0 YAML** for all WDEP + SCA endpoints, and
+* **CMS-ready copy blocks** (Classic/Faith variants) for every screen in both modules.

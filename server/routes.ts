@@ -1518,8 +1518,8 @@ export async function registerRoutes(
         seasonLabel: session.seasonLabel || undefined,
         themeWord: session.themeWord || undefined,
         focusAreas: focusAreas.map(f => f.categoryKey),
-        values: values?.chosenValues || [],
-        purposeStatement: vision?.purposeStatement || undefined,
+        values: (values?.values as string[]) || [],
+        purposeStatement: vision?.seasonStatement || undefined,
       };
 
       const insights = await getAICoachInsights({
@@ -1533,6 +1533,425 @@ export async function registerRoutes(
     } catch (error: any) {
       console.error("Error getting AI insights:", error);
       res.status(500).json({ ok: false, error: { message: error.message || "Failed to get AI insights" } });
+    }
+  });
+
+  // ===== GROWTH TOOLS: TRACKS & MODULES =====
+
+  app.get('/api/tracks', async (req, res) => {
+    try {
+      const tracksList = await storage.getTracks();
+      res.json({ ok: true, data: tracksList });
+    } catch (error: any) {
+      res.status(500).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  app.get('/api/tracks/:key', async (req, res) => {
+    try {
+      const track = await storage.getTrack(req.params.key);
+      if (!track) return res.status(404).json({ ok: false, error: { message: "Track not found" } });
+      const modulesList = await storage.getModules(track.id);
+      res.json({ ok: true, data: { track, modules: modulesList } });
+    } catch (error: any) {
+      res.status(500).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  app.get('/api/modules/:key', async (req, res) => {
+    try {
+      const mod = await storage.getModule(req.params.key);
+      if (!mod) return res.status(404).json({ ok: false, error: { message: "Module not found" } });
+      res.json({ ok: true, data: mod });
+    } catch (error: any) {
+      res.status(500).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  app.get('/api/user/module-progress', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const sessionId = req.query.sessionId ? parseInt(req.query.sessionId as string) : undefined;
+      const progress = await storage.getUserModuleProgress(userId, sessionId);
+      res.json({ ok: true, data: progress });
+    } catch (error: any) {
+      res.status(500).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  app.post('/api/user/module-progress', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const progress = await storage.upsertUserModuleProgress({ ...req.body, userId });
+      res.json({ ok: true, data: progress });
+    } catch (error: any) {
+      res.status(400).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  // ===== ASSESSMENT ENGINE =====
+
+  app.get('/api/assessments/:key', async (req, res) => {
+    try {
+      const assessment = await storage.getAssessment(req.params.key);
+      if (!assessment) return res.status(404).json({ ok: false, error: { message: "Assessment not found" } });
+      const questions = await storage.getAssessmentQuestions(assessment.id);
+      res.json({ ok: true, data: { assessment, questions } });
+    } catch (error: any) {
+      res.status(500).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  app.post('/api/assessments/:key/start', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { sessionId } = req.body;
+      const assessment = await storage.getAssessment(req.params.key);
+      if (!assessment) return res.status(404).json({ ok: false, error: { message: "Assessment not found" } });
+      const response = await storage.createAssessmentResponse({ assessmentId: assessment.id, userId, sessionId, status: 'in_progress' });
+      res.json({ ok: true, data: response });
+    } catch (error: any) {
+      res.status(400).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  app.get('/api/assessment-responses/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const response = await storage.getAssessmentResponse(parseInt(req.params.id));
+      if (!response) return res.status(404).json({ ok: false, error: { message: "Response not found" } });
+      const answers = await storage.getAssessmentAnswers(response.id);
+      const scores = await storage.getAssessmentScores(response.id);
+      const insight = await storage.getAssessmentInsight(response.id);
+      res.json({ ok: true, data: { response, answers, scores, insight } });
+    } catch (error: any) {
+      res.status(500).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  app.put('/api/assessment-responses/:id/answer', isAuthenticated, async (req: any, res) => {
+    try {
+      const responseId = parseInt(req.params.id);
+      const { questionId, ...data } = req.body;
+      const answer = await storage.upsertAssessmentAnswer(responseId, questionId, data);
+      res.json({ ok: true, data: answer });
+    } catch (error: any) {
+      res.status(400).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  app.post('/api/assessment-responses/:id/complete', isAuthenticated, async (req: any, res) => {
+    try {
+      const responseId = parseInt(req.params.id);
+      const response = await storage.updateAssessmentResponse(responseId, { status: 'completed', completedAt: new Date() });
+      res.json({ ok: true, data: response });
+    } catch (error: any) {
+      res.status(400).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  app.post('/api/assessment-responses/:id/scores', isAuthenticated, async (req: any, res) => {
+    try {
+      const responseId = parseInt(req.params.id);
+      const scores = req.body.scores;
+      const createdScores = await Promise.all(scores.map((s: any) => storage.createAssessmentScore({ ...s, responseId })));
+      res.json({ ok: true, data: createdScores });
+    } catch (error: any) {
+      res.status(400).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  app.post('/api/assessment-responses/:id/insight', isAuthenticated, async (req: any, res) => {
+    try {
+      const responseId = parseInt(req.params.id);
+      const insight = await storage.createAssessmentInsight({ ...req.body, responseId });
+      res.json({ ok: true, data: insight });
+    } catch (error: any) {
+      res.status(400).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  // ===== STRENGTHS =====
+
+  app.get('/api/strengths-catalog', async (req, res) => {
+    try {
+      const catalog = await storage.getStrengthsCatalog();
+      res.json({ ok: true, data: catalog });
+    } catch (error: any) {
+      res.status(500).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  app.get('/api/vision/sessions/:id/strengths', isAuthenticated, async (req: any, res) => {
+    try {
+      const sessionId = parseInt(req.params.id);
+      const strengths = await storage.getUserStrengths(sessionId);
+      res.json({ ok: true, data: strengths });
+    } catch (error: any) {
+      res.status(500).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  app.put('/api/vision/sessions/:id/strengths', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const sessionId = parseInt(req.params.id);
+      const strengths = await storage.upsertUserStrengths(sessionId, userId, req.body.strengths);
+      res.json({ ok: true, data: strengths });
+    } catch (error: any) {
+      res.status(400).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  // ===== 4 STYLES =====
+
+  app.get('/api/styles-profiles', async (req, res) => {
+    try {
+      const profiles = await storage.getStylesProfiles();
+      res.json({ ok: true, data: profiles });
+    } catch (error: any) {
+      res.status(500).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  app.get('/api/vision/sessions/:id/style', isAuthenticated, async (req: any, res) => {
+    try {
+      const sessionId = parseInt(req.params.id);
+      const style = await storage.getUserStyle(sessionId);
+      res.json({ ok: true, data: style });
+    } catch (error: any) {
+      res.status(500).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  app.put('/api/vision/sessions/:id/style', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const sessionId = parseInt(req.params.id);
+      const style = await storage.upsertUserStyle({ ...req.body, sessionId, userId });
+      res.json({ ok: true, data: style });
+    } catch (error: any) {
+      res.status(400).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  // ===== EQ =====
+
+  app.get('/api/eq-domains', async (req, res) => {
+    try {
+      const domains = await storage.getEqDomains();
+      res.json({ ok: true, data: domains });
+    } catch (error: any) {
+      res.status(500).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  app.get('/api/vision/sessions/:id/eq-scores', isAuthenticated, async (req: any, res) => {
+    try {
+      const sessionId = parseInt(req.params.id);
+      const scores = await storage.getUserEqScores(sessionId);
+      res.json({ ok: true, data: scores });
+    } catch (error: any) {
+      res.status(500).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  // ===== PRACTICE LIBRARY =====
+
+  app.get('/api/practices', async (req, res) => {
+    try {
+      const domainKey = req.query.domain as string | undefined;
+      const practices = await storage.getPractices(domainKey);
+      res.json({ ok: true, data: practices });
+    } catch (error: any) {
+      res.status(500).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  app.get('/api/user/practice-logs', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const sessionId = req.query.sessionId ? parseInt(req.query.sessionId as string) : undefined;
+      const logs = await storage.getUserPracticeLogs(userId, sessionId);
+      res.json({ ok: true, data: logs });
+    } catch (error: any) {
+      res.status(500).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  app.post('/api/user/practice-logs', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const log = await storage.createUserPracticeLog({ ...req.body, userId });
+      res.json({ ok: true, data: log });
+    } catch (error: any) {
+      res.status(400).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  // ===== WDEP =====
+
+  app.post('/api/vision/sessions/:sessionId/wdep', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const sessionId = parseInt(req.params.sessionId);
+      const entry = await storage.createWdepEntry({ ...req.body, userId, sessionId });
+      res.json({ ok: true, data: entry });
+    } catch (error: any) {
+      res.status(400).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  app.get('/api/wdep/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const entry = await storage.getWdepEntry(id);
+      if (!entry) return res.status(404).json({ ok: false, error: { message: "WDEP entry not found" } });
+      const [wants, doing, evaluation, plan, experiment] = await Promise.all([
+        storage.getWdepWants(id),
+        storage.getWdepDoing(id),
+        storage.getWdepEvaluation(id),
+        storage.getWdepPlan(id),
+        storage.getWdepExperiment(id),
+      ]);
+      let experimentLogs: any[] = [];
+      if (experiment) {
+        experimentLogs = await storage.getWdepExperimentLogs(experiment.id);
+      }
+      res.json({ ok: true, data: { entry, wants, doing, evaluation, plan, experiment, experimentLogs } });
+    } catch (error: any) {
+      res.status(500).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  app.get('/api/user/wdep', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const sessionId = req.query.sessionId ? parseInt(req.query.sessionId as string) : undefined;
+      const entries = await storage.getWdepEntries(userId, sessionId);
+      res.json({ ok: true, data: entries });
+    } catch (error: any) {
+      res.status(500).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  app.put('/api/wdep/:id/wants', isAuthenticated, async (req: any, res) => {
+    try {
+      const wdepEntryId = parseInt(req.params.id);
+      const wants = await storage.upsertWdepWants(wdepEntryId, req.body);
+      res.json({ ok: true, data: wants });
+    } catch (error: any) {
+      res.status(400).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  app.put('/api/wdep/:id/doing', isAuthenticated, async (req: any, res) => {
+    try {
+      const wdepEntryId = parseInt(req.params.id);
+      const doing = await storage.upsertWdepDoing(wdepEntryId, req.body);
+      res.json({ ok: true, data: doing });
+    } catch (error: any) {
+      res.status(400).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  app.put('/api/wdep/:id/evaluation', isAuthenticated, async (req: any, res) => {
+    try {
+      const wdepEntryId = parseInt(req.params.id);
+      const evaluation = await storage.upsertWdepEvaluation(wdepEntryId, req.body);
+      res.json({ ok: true, data: evaluation });
+    } catch (error: any) {
+      res.status(400).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  app.put('/api/wdep/:id/plan', isAuthenticated, async (req: any, res) => {
+    try {
+      const wdepEntryId = parseInt(req.params.id);
+      const plan = await storage.upsertWdepPlan(wdepEntryId, req.body);
+      await storage.updateWdepEntry(wdepEntryId, { status: 'active_plan' });
+      res.json({ ok: true, data: plan });
+    } catch (error: any) {
+      res.status(400).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  app.post('/api/wdep/:id/experiment', isAuthenticated, async (req: any, res) => {
+    try {
+      const wdepEntryId = parseInt(req.params.id);
+      const experiment = await storage.createWdepExperiment({ ...req.body, wdepEntryId });
+      res.json({ ok: true, data: experiment });
+    } catch (error: any) {
+      res.status(400).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  app.post('/api/wdep/experiments/:experimentId/log', isAuthenticated, async (req: any, res) => {
+    try {
+      const experimentId = parseInt(req.params.experimentId);
+      const log = await storage.createWdepExperimentLog({ ...req.body, experimentId });
+      const experiment = await storage.getWdepExperimentById(experimentId);
+      if (experiment && log.completed) {
+        await storage.updateWdepExperiment(experimentId, { completedDays: (experiment.completedDays || 0) + 1 });
+      }
+      res.json({ ok: true, data: log });
+    } catch (error: any) {
+      res.status(400).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  // ===== SELF-CONCORDANT ACTION =====
+
+  app.post('/api/vision/sessions/:sessionId/sca', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const sessionId = parseInt(req.params.sessionId);
+      const exercise = await storage.createScaExercise({ ...req.body, userId, sessionId });
+      res.json({ ok: true, data: exercise });
+    } catch (error: any) {
+      res.status(400).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  app.get('/api/sca/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const exercise = await storage.getScaExercise(id);
+      if (!exercise) return res.status(404).json({ ok: false, error: { message: "SCA exercise not found" } });
+      const focusItems = await storage.getScaFocusItems(id);
+      res.json({ ok: true, data: { exercise, focusItems } });
+    } catch (error: any) {
+      res.status(500).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  app.get('/api/user/sca', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const sessionId = req.query.sessionId ? parseInt(req.query.sessionId as string) : undefined;
+      const exercises = await storage.getScaExercises(userId, sessionId);
+      res.json({ ok: true, data: exercises });
+    } catch (error: any) {
+      res.status(500).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  app.put('/api/sca/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const exercise = await storage.updateScaExercise(id, req.body);
+      res.json({ ok: true, data: exercise });
+    } catch (error: any) {
+      res.status(400).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  app.post('/api/sca/:id/focus-items', isAuthenticated, async (req: any, res) => {
+    try {
+      const scaExerciseId = parseInt(req.params.id);
+      const item = await storage.createScaFocusItem({ ...req.body, scaExerciseId });
+      res.json({ ok: true, data: item });
+    } catch (error: any) {
+      res.status(400).json({ ok: false, error: { message: error.message } });
     }
   });
 
