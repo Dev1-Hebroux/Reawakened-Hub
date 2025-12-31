@@ -5,12 +5,23 @@ import { useState } from "react";
 import heroImage from "@assets/generated_images/young_man_praying_with_golden_light_overlay.png";
 import visionVideo from "@assets/generated_videos/holy_spirit_dove_vision_video.mp4";
 import logoImage from "@assets/1_1765584395888.png";
+import heroBgImage from "@assets/11_1767182385476.png";
 
 export function Hero() {
   const [showVideo, setShowVideo] = useState(false);
 
   return (
-    <section className="relative min-h-[90vh] flex items-center pt-24 pb-12 bg-[#FFF8F3] overflow-hidden">
+    <section className="relative min-h-[90vh] flex items-center pt-24 pb-12 overflow-hidden">
+      {/* Background Image with Gradient Overlay */}
+      <div className="absolute inset-0 z-0">
+        <img 
+          src={heroBgImage} 
+          alt="Sunrise with cross" 
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#FFF8F3]/95 via-[#FFF8F3]/80 to-[#FFF8F3]/60" />
+      </div>
+      
       {/* Video Modal */}
       <AnimatePresence>
         {showVideo && (
@@ -116,13 +127,13 @@ export function Hero() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="relative hidden lg:block"
+            className="relative"
           >
             <div className="relative z-10 rounded-[40px] overflow-hidden shadow-2xl border-4 border-white rotate-2 hover:rotate-0 transition-transform duration-500">
               <img 
                 src={heroImage} 
                 alt="Young man praying" 
-                className="w-full h-[600px] object-cover"
+                className="w-full h-[350px] md:h-[450px] lg:h-[600px] object-cover"
               />
               
               {/* Floating Cards */}

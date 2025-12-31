@@ -221,7 +221,7 @@ export function MissionPage() {
             </span>
             <h1 className="text-5xl md:text-8xl font-display font-bold text-white mb-6 tracking-tight leading-none" data-testid="text-mission-title">
               Raising a Standard.<br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-400">
+              <span className="text-orange-400">
                 Building Without Walls.
               </span>
             </h1>
