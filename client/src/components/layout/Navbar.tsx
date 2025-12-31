@@ -13,8 +13,11 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [location] = useLocation();
 
-  // Check if current page has a dark hero section
-  const isDarkHeroPage = ["/", "/mission", "/sparks", "/vision", "/journeys", "/group-labs", "/coaching-labs"].includes(location);
+  // Pages with genuinely dark hero backgrounds (navy overlays, dark gradients)
+  const isDarkHeroPage = ["/mission", "/sparks", "/vision", "/journeys", "/group-labs", "/coaching-labs"].includes(location);
+  
+  // Pages with light hero backgrounds (cream, warm gradients) - use frosted glass
+  const isLightHeroPage = ["/", "/about", "/blog", "/community"].includes(location);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -24,18 +27,25 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Determine which logo and text color to use
-  // If scrolled: White background -> Dark Logo, Dark Text
-  // If not scrolled & Dark Hero: Transparent background -> Light Logo, Light Text
-  // If not scrolled & Light Hero: Transparent background -> Dark Logo, Dark Text
+  // Determine navbar appearance:
+  // Scrolled: Always white background with dark logo/text
+  // Dark Hero (unscrolled): Navy glass with white logo/text
+  // Light Hero (unscrolled): Frosted white glass with dark logo/text
   
-  const showDarkNav = scrolled || !isDarkHeroPage;
-  const textColor = showDarkNav ? "text-gray-900" : "text-white";
-  const hoverColor = showDarkNav ? "hover:text-primary hover:bg-gray-100" : "hover:text-white hover:bg-white/10";
-  const currentLogo = showDarkNav ? logoDark : logoLight;
+  const useDarkTheme = !scrolled && isDarkHeroPage;
+  const textColor = useDarkTheme ? "text-white" : "text-gray-900";
+  const hoverColor = useDarkTheme ? "hover:text-white hover:bg-white/10" : "hover:text-primary hover:bg-gray-100";
+  const currentLogo = useDarkTheme ? logoLight : logoDark;
+  
+  // Background styles based on state
+  const getNavBackground = () => {
+    if (scrolled) return 'bg-white/95 backdrop-blur-md shadow-sm py-4';
+    if (isDarkHeroPage) return 'bg-[#1a2744]/60 backdrop-blur-xl border-b border-white/10 shadow-lg py-5';
+    return 'bg-white/70 backdrop-blur-xl border-b border-gray-200/50 shadow-sm py-5';
+  };
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-white/95 backdrop-blur-md shadow-sm py-4' : 'bg-[#1a2744]/50 backdrop-blur-xl border-b border-white/10 shadow-lg py-6'}`}>
+    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${getNavBackground()}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
           <div className="flex-shrink-0">
@@ -62,7 +72,7 @@ export function Navbar() {
           </div>
 
           <div className="hidden md:block">
-            <Button className={`${showDarkNav ? 'bg-primary text-white hover:bg-primary/90' : 'bg-white text-primary hover:bg-gray-100'} font-bold px-6 py-5 rounded-full shadow-lg transition-all hover:scale-105`}>
+            <Button className={`${useDarkTheme ? 'bg-white text-primary hover:bg-gray-100' : 'bg-primary text-white hover:bg-primary/90'} font-bold px-6 py-5 rounded-full shadow-lg transition-all hover:scale-105`}>
               Join Now
             </Button>
           </div>
