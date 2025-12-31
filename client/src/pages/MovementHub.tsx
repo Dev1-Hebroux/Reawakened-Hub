@@ -158,7 +158,7 @@ export function MovementHub() {
   const earnedBadges = badges.filter(b => b.earned).length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#1a2744] via-[#1a2744]/95 to-[#1a2744]/90">
+    <div className="min-h-screen bg-[#1a2744]">
       <Navbar />
       
       <main className="pt-28 pb-32 px-4">
@@ -167,16 +167,16 @@ export function MovementHub() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-6"
+            className="text-center mb-8"
           >
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 mb-4">
-              <Zap className="h-4 w-4 text-primary" />
-              <span className="text-sm font-bold text-white/90">Movement</span>
+            <div className="inline-flex items-center gap-2 bg-[#D4A574] rounded-full px-4 py-2 mb-4 shadow-lg">
+              <Zap className="h-4 w-4 text-white" />
+              <span className="text-sm font-bold text-white">Movement</span>
             </div>
-            <h1 className="text-3xl font-display font-bold text-white mb-2">
+            <h1 className="text-3xl font-display font-bold text-white mb-3">
               Join the Revival
             </h1>
-            <p className="text-white/70">
+            <p className="text-[#E8E4DE]">
               Challenges, testimonies & prayer
             </p>
           </motion.div>
@@ -185,11 +185,11 @@ export function MovementHub() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.05 }}
-            className="bg-gradient-to-br from-yellow-500/20 to-orange-500/10 backdrop-blur-md rounded-3xl p-5 mb-6 border border-yellow-500/20"
+            className="bg-[#243656] rounded-3xl p-5 mb-6 border-2 border-[#D4A574]/40 shadow-xl"
           >
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold text-white flex items-center gap-2">
-                <Award className="h-5 w-5 text-yellow-400" />
+              <h3 className="font-bold text-white text-lg flex items-center gap-2">
+                <Award className="h-5 w-5 text-[#D4A574]" />
                 Your Journey
               </h3>
               <div className="flex items-center gap-2">
@@ -202,28 +202,28 @@ export function MovementHub() {
               </div>
             </div>
 
-            <div className="flex gap-2 overflow-x-auto pb-2">
+            <div className="flex gap-3 overflow-x-auto pb-2">
               {badges.map((badge) => (
                 <div
                   key={badge.id}
-                  className={`flex-shrink-0 w-16 h-16 rounded-2xl flex flex-col items-center justify-center transition-all ${
+                  className={`flex-shrink-0 w-16 h-16 rounded-2xl flex flex-col items-center justify-center transition-all shadow-md ${
                     badge.earned 
-                      ? "bg-white/10 border border-yellow-500/30" 
-                      : "bg-white/5 border border-white/5 opacity-40"
+                      ? "bg-[#1a2744] border-2 border-[#D4A574]" 
+                      : "bg-[#1a2744]/50 border border-[#4A7C7C]/20 opacity-50"
                   }`}
                   title={badge.description}
                   data-testid={`badge-${badge.id}`}
                 >
                   <span className="text-2xl">{badge.icon}</span>
                   {badge.earned && (
-                    <Star className="h-3 w-3 text-yellow-400 mt-1" />
+                    <Star className="h-3 w-3 text-[#D4A574] mt-1" />
                   )}
                 </div>
               ))}
             </div>
 
-            <div className="mt-3 pt-3 border-t border-white/10 flex items-center justify-between">
-              <span className="text-xs text-white/60">{earnedBadges}/{badges.length} badges earned</span>
+            <div className="mt-4 pt-4 border-t border-[#4A7C7C]/30 flex items-center justify-between">
+              <span className="text-sm text-[#E8E4DE]">{earnedBadges}/{badges.length} badges earned</span>
               <Button 
                 size="sm" 
                 variant="ghost" 
@@ -239,39 +239,39 @@ export function MovementHub() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.08 }}
-            className="bg-white/10 backdrop-blur-md rounded-3xl p-5 mb-6 border border-white/10"
+            className="bg-[#243656] rounded-3xl p-5 mb-6 border-2 border-[#4A7C7C]/40 shadow-xl"
           >
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold text-white flex items-center gap-2">
-                <Trophy className="h-5 w-5 text-yellow-400" />
+              <h3 className="font-bold text-white text-lg flex items-center gap-2">
+                <Trophy className="h-5 w-5 text-[#D4A574]" />
                 Top Intercessors
               </h3>
-              <span className="text-xs text-white/50">This Week</span>
+              <span className="text-sm text-[#7C9A8E] font-medium">This Week</span>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-3">
               {leaderboardPreview.map((user, i) => (
                 <div 
                   key={user.rank}
-                  className={`flex items-center justify-between p-3 rounded-xl ${
-                    i === 0 ? "bg-yellow-500/10 border border-yellow-500/20" : "bg-white/5"
+                  className={`flex items-center justify-between p-3 rounded-xl shadow-md ${
+                    i === 0 ? "bg-[#D4A574]/20 border-2 border-[#D4A574]" : "bg-[#1a2744] border border-[#4A7C7C]/20"
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`h-8 w-8 rounded-full flex items-center justify-center text-sm font-bold ${
-                      i === 0 ? "bg-yellow-500 text-white" : 
-                      i === 1 ? "bg-gray-300 text-gray-700" : 
-                      "bg-orange-400 text-white"
+                    <div className={`h-9 w-9 rounded-full flex items-center justify-center text-sm font-bold shadow-lg ${
+                      i === 0 ? "bg-[#D4A574] text-white" : 
+                      i === 1 ? "bg-[#7C9A8E] text-white" : 
+                      "bg-[#4A7C7C] text-white"
                     }`}>
                       {user.rank}
                     </div>
                     <div>
                       <p className="text-sm font-bold text-white">{user.name}</p>
-                      <p className="text-[10px] text-white/50">{user.streak} day streak</p>
+                      <p className="text-xs text-[#7C9A8E]">{user.streak} day streak</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-bold text-primary">{user.points.toLocaleString()}</p>
-                    <p className="text-[10px] text-white/50">points</p>
+                    <p className="text-base font-bold text-[#D4A574]">{user.points.toLocaleString()}</p>
+                    <p className="text-xs text-[#7C9A8E]">points</p>
                   </div>
                 </div>
               ))}
@@ -282,22 +282,22 @@ export function MovementHub() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-white/10 backdrop-blur-md rounded-3xl p-4 mb-6 border border-white/10"
+            className="bg-[#243656] rounded-3xl p-4 mb-6 border-2 border-red-500/40 shadow-xl"
           >
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <div className="h-3 w-3 bg-red-500 rounded-full animate-pulse" />
-                <span className="text-sm font-bold text-white">Live Now</span>
+                <div className="h-3 w-3 bg-red-500 rounded-full animate-pulse shadow-lg shadow-red-500/50" />
+                <span className="text-base font-bold text-white">Live Now</span>
               </div>
-              <span className="text-xs text-white/50">{upcomingRooms.filter(r => r.isLive).length} rooms active</span>
+              <span className="text-sm text-[#7C9A8E] font-medium">{upcomingRooms.filter(r => r.isLive).length} rooms active</span>
             </div>
             
-            <div className="space-y-2">
+            <div className="space-y-3">
               {upcomingRooms.map((room) => (
                 <div 
                   key={room.id}
                   className={`flex items-center justify-between p-3 rounded-xl transition-all cursor-pointer ${
-                    room.isLive ? 'bg-red-500/20 hover:bg-red-500/30' : 'bg-white/5 hover:bg-white/10'
+                    room.isLive ? 'bg-red-500/20 border-2 border-red-500 hover:bg-red-500/30' : 'bg-[#1a2744] border border-[#4A7C7C]/20 hover:bg-[#2a3a5a]'
                   }`}
                   data-testid={`room-${room.id}`}
                 >
@@ -305,14 +305,14 @@ export function MovementHub() {
                     {room.isLive && <div className="h-2 w-2 bg-red-500 rounded-full animate-pulse" />}
                     <div>
                       <h4 className="font-bold text-white text-sm">{room.title}</h4>
-                      <p className="text-xs text-white/50">
+                      <p className="text-xs text-[#7C9A8E]">
                         {room.isLive ? `${room.participants} praying` : room.time}
                       </p>
                     </div>
                   </div>
                   <Button 
                     size="sm" 
-                    className={room.isLive ? "bg-red-500 hover:bg-red-600" : "bg-white/10 hover:bg-white/20"}
+                    className={room.isLive ? "bg-red-500 hover:bg-red-600 shadow-lg" : "bg-[#4A7C7C] hover:bg-[#4A7C7C]/80 text-white"}
                   >
                     {room.isLive ? <Play className="h-4 w-4" /> : <Clock className="h-4 w-4" />}
                   </Button>
@@ -321,7 +321,7 @@ export function MovementHub() {
             </div>
           </motion.div>
 
-          <div className="flex gap-2 mb-6 bg-white/5 rounded-2xl p-1">
+          <div className="flex gap-2 mb-6 bg-[#243656] rounded-2xl p-1.5 border border-[#4A7C7C]/30 shadow-lg">
             {[
               { key: "challenges", label: "Challenges", icon: Trophy },
               { key: "testimonies", label: "Stories", icon: Sparkles },
@@ -330,10 +330,10 @@ export function MovementHub() {
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key as typeof activeTab)}
-                className={`flex-1 py-3 px-2 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1 ${
+                className={`flex-1 py-3 px-2 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-1.5 ${
                   activeTab === tab.key 
-                    ? 'bg-white text-[#1a2744]' 
-                    : 'text-white/60 hover:text-white'
+                    ? 'bg-[#D4A574] text-white shadow-lg' 
+                    : 'text-[#E8E4DE] hover:text-white hover:bg-[#1a2744]'
                 }`}
                 data-testid={`tab-${tab.key}`}
               >
@@ -354,8 +354,8 @@ export function MovementHub() {
               >
                 {challengesLoading ? (
                   <div className="flex flex-col items-center justify-center py-12">
-                    <Loader2 className="h-8 w-8 text-primary animate-spin mb-3" />
-                    <p className="text-white/50 text-sm">Loading challenges...</p>
+                    <Loader2 className="h-8 w-8 text-[#D4A574] animate-spin mb-3" />
+                    <p className="text-[#7C9A8E] text-sm">Loading challenges...</p>
                   </div>
                 ) : displayChallenges.map((challenge, i) => (
                   <motion.div
@@ -363,32 +363,32 @@ export function MovementHub() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.1 }}
-                    className={`bg-gradient-to-br ${themeColors[challenge.theme] || themeColors.prayer} backdrop-blur-md rounded-3xl p-5 border border-white/10`}
+                    className="bg-[#243656] rounded-3xl p-5 border-2 border-[#4A7C7C]/40 shadow-xl"
                   >
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-2">
-                        <Trophy className="h-5 w-5 text-primary" />
-                        <span className="text-xs font-bold text-primary uppercase tracking-wider">Challenge</span>
+                        <Trophy className="h-5 w-5 text-[#D4A574]" />
+                        <span className="text-xs font-bold text-[#D4A574] uppercase tracking-wider">Challenge</span>
                       </div>
                       {challenge.isJoined && (
-                        <div className="bg-green-500/20 rounded-full px-2 py-1">
-                          <span className="text-[10px] font-bold text-green-400">Day {challenge.currentDay}</span>
+                        <div className="bg-green-600 rounded-full px-3 py-1 shadow-md">
+                          <span className="text-[10px] font-bold text-white">Day {challenge.currentDay}</span>
                         </div>
                       )}
                     </div>
                     
                     <h3 className="font-bold text-white text-lg mb-2">{challenge.title}</h3>
-                    <p className="text-sm text-white/70 mb-4">{challenge.description}</p>
+                    <p className="text-sm text-[#E8E4DE] mb-4">{challenge.description}</p>
                     
                     {challenge.isJoined && (
                       <div className="mb-4">
-                        <div className="flex justify-between text-xs text-white/60 mb-1">
+                        <div className="flex justify-between text-xs text-[#7C9A8E] mb-1">
                           <span>Progress</span>
                           <span>{challenge.currentDay}/{challenge.daysTotal} days</span>
                         </div>
-                        <div className="bg-white/10 rounded-full h-2">
+                        <div className="bg-[#1a2744] rounded-full h-2 border border-[#4A7C7C]/30">
                           <motion.div 
-                            className="bg-primary h-2 rounded-full"
+                            className="bg-[#D4A574] h-2 rounded-full"
                             initial={{ width: 0 }}
                             animate={{ width: `${(challenge.currentDay / challenge.daysTotal) * 100}%` }}
                           />
@@ -397,15 +397,15 @@ export function MovementHub() {
                     )}
                     
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-white/60">
+                      <div className="flex items-center gap-2 text-[#7C9A8E]">
                         <Users className="h-4 w-4" />
-                        <span className="text-xs">{challenge.participants.toLocaleString()} joined</span>
+                        <span className="text-xs font-medium">{challenge.participants.toLocaleString()} joined</span>
                       </div>
                       <Button 
                         size="sm"
                         className={challenge.isJoined 
-                          ? "bg-white text-primary hover:bg-white/90" 
-                          : "bg-primary hover:bg-primary/90 text-white"
+                          ? "bg-white text-[#1a2744] hover:bg-[#E8E4DE] font-bold shadow-lg" 
+                          : "bg-[#D4A574] hover:bg-[#C49464] text-white font-bold shadow-lg"
                         }
                         data-testid={`challenge-${challenge.id}`}
                       >
@@ -440,7 +440,7 @@ export function MovementHub() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.1 }}
-                    className="bg-white/10 backdrop-blur-md rounded-3xl p-5 border border-white/10"
+                    className="bg-[#243656] rounded-3xl p-5 border-2 border-[#7C9A8E]/30 shadow-xl"
                   >
                     <div className="flex items-center gap-3 mb-3">
                       <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center">

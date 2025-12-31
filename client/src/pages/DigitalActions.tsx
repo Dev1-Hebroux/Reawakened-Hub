@@ -154,7 +154,7 @@ export function DigitalActions() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#1a2744] via-[#1a2744]/95 to-[#1a2744]/90">
+    <div className="min-h-screen bg-[#1a2744]">
       <Navbar />
       
       <main className="pt-28 pb-32 px-4">
@@ -162,7 +162,8 @@ export function DigitalActions() {
           
           <button 
             onClick={() => navigate("/missions")}
-            className="flex items-center gap-2 text-white/60 hover:text-white mb-6 transition-colors"
+            className="flex items-center gap-2 text-[#D4A574] hover:text-white mb-6 transition-colors font-medium"
+            data-testid="button-back-missions"
           >
             <ChevronLeft className="h-5 w-5" />
             Back to Missions
@@ -173,15 +174,15 @@ export function DigitalActions() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <div className="text-center mb-6">
-                <div className="inline-flex items-center gap-2 bg-primary/20 rounded-full px-4 py-2 mb-4">
-                  <Share2 className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-bold text-primary">Share the Gospel</span>
+              <div className="text-center mb-8">
+                <div className="inline-flex items-center gap-2 bg-[#D4A574] rounded-full px-4 py-2 mb-4 shadow-lg">
+                  <Share2 className="h-4 w-4 text-white" />
+                  <span className="text-sm font-bold text-white">Share the Gospel</span>
                 </div>
-                <h1 className="text-2xl font-display font-bold text-white mb-2">
+                <h1 className="text-3xl font-display font-bold text-white mb-3">
                   Gospel Share Cards
                 </h1>
-                <p className="text-white/60">
+                <p className="text-[#E8E4DE]">
                   Pick a message and share it with your network
                 </p>
               </div>
@@ -270,8 +271,8 @@ export function DigitalActions() {
                 </p>
               </div>
 
-              <div className="bg-white/10 backdrop-blur-md rounded-3xl p-6 mb-6 border border-white/10">
-                <h3 className="font-bold text-white mb-4">Generate Your Invite Link</h3>
+              <div className="bg-[#243656] rounded-3xl p-6 mb-6 border-2 border-[#4A7C7C]/30 shadow-xl">
+                <h3 className="font-bold text-white text-lg mb-4">Generate Your Invite Link</h3>
                 
                 {!inviteLink ? (
                   <Button 
@@ -307,13 +308,13 @@ export function DigitalActions() {
                 )}
               </div>
 
-              <div className="bg-white/10 backdrop-blur-md rounded-3xl p-6 border border-white/10">
-                <h3 className="font-bold text-white mb-4">Message Templates</h3>
+              <div className="bg-[#243656] rounded-3xl p-6 border-2 border-[#7C9A8E]/30 shadow-xl">
+                <h3 className="font-bold text-white text-lg mb-4">Message Templates</h3>
                 <div className="space-y-3">
                   {inviteTemplates.map((template) => (
                     <div 
                       key={template.id}
-                      className="bg-white/5 rounded-2xl p-4 cursor-pointer hover:bg-white/10 transition-colors"
+                      className="bg-[#1a2744] rounded-2xl p-4 cursor-pointer hover:bg-[#2a3a5a] transition-colors border border-[#4A7C7C]/20"
                       onClick={() => {
                         navigator.clipboard.writeText(template.message);
                         toast.success("Message copied!");
@@ -345,22 +346,21 @@ export function DigitalActions() {
                 <h1 className="text-2xl font-display font-bold text-white mb-2">
                   Evangelism Training
                 </h1>
-                <p className="text-white/60">
+                <p className="text-[#E8E4DE]">
                   Learn to share your faith effectively
                 </p>
               </div>
 
-              <div className="bg-white/10 backdrop-blur-md rounded-3xl p-6 border border-white/10 text-center">
-                <div className="h-20 w-20 mx-auto rounded-full bg-[#D4A574]/20 flex items-center justify-center mb-4">
-                  <GraduationCap className="h-10 w-10 text-[#D4A574]" />
+              <div className="bg-[#243656] rounded-3xl p-6 border-2 border-[#D4A574]/30 shadow-xl text-center">
+                <div className="h-20 w-20 mx-auto rounded-full bg-[#D4A574] flex items-center justify-center mb-4 shadow-lg">
+                  <GraduationCap className="h-10 w-10 text-white" />
                 </div>
-                <h3 className="font-bold text-white text-lg mb-2">Coming Soon</h3>
-                <p className="text-white/60 mb-4">
+                <h3 className="font-bold text-white text-xl mb-2">Coming Soon</h3>
+                <p className="text-[#E8E4DE] mb-4">
                   We're building interactive training modules to help you share your faith with confidence.
                 </p>
                 <Button 
-                  variant="outline"
-                  className="border-white/20 text-white hover:bg-white/10"
+                  className="bg-[#D4A574] hover:bg-[#C49464] text-white font-bold px-6"
                   onClick={() => navigate("/missions")}
                 >
                   Back to Missions
@@ -374,30 +374,29 @@ export function DigitalActions() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <div className="text-center mb-6">
-                <div className="inline-flex items-center gap-2 bg-[#7C9A8E]/20 rounded-full px-4 py-2 mb-4">
-                  <MessageCircle className="h-4 w-4 text-[#7C9A8E]" />
-                  <span className="text-sm font-bold text-[#7C9A8E]">Follow-Up</span>
+              <div className="text-center mb-8">
+                <div className="inline-flex items-center gap-2 bg-[#7C9A8E] rounded-full px-4 py-2 mb-4 shadow-lg">
+                  <MessageCircle className="h-4 w-4 text-white" />
+                  <span className="text-sm font-bold text-white">Follow-Up</span>
                 </div>
-                <h1 className="text-2xl font-display font-bold text-white mb-2">
+                <h1 className="text-3xl font-display font-bold text-white mb-3">
                   Start a Conversation
                 </h1>
-                <p className="text-white/60">
+                <p className="text-[#E8E4DE]">
                   Tools to help you disciple others
                 </p>
               </div>
 
-              <div className="bg-white/10 backdrop-blur-md rounded-3xl p-6 border border-white/10 text-center">
-                <div className="h-20 w-20 mx-auto rounded-full bg-[#7C9A8E]/20 flex items-center justify-center mb-4">
-                  <MessageCircle className="h-10 w-10 text-[#7C9A8E]" />
+              <div className="bg-[#243656] rounded-3xl p-6 border-2 border-[#7C9A8E]/40 shadow-xl text-center">
+                <div className="h-20 w-20 mx-auto rounded-full bg-[#7C9A8E] flex items-center justify-center mb-4 shadow-lg">
+                  <MessageCircle className="h-10 w-10 text-white" />
                 </div>
-                <h3 className="font-bold text-white text-lg mb-2">Coming Soon</h3>
-                <p className="text-white/60 mb-4">
+                <h3 className="font-bold text-white text-xl mb-2">Coming Soon</h3>
+                <p className="text-[#E8E4DE] mb-4">
                   We're creating tools to help you have meaningful discipleship conversations.
                 </p>
                 <Button 
-                  variant="outline"
-                  className="border-white/20 text-white hover:bg-white/10"
+                  className="bg-[#7C9A8E] hover:bg-[#6B8B7E] text-white font-bold px-6"
                   onClick={() => navigate("/missions")}
                 >
                   Back to Missions
