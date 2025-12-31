@@ -92,7 +92,7 @@ export function QuickShare() {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-20 right-4 z-40 bg-primary hover:bg-primary/90 text-white p-3 rounded-full shadow-xl hover:scale-110 transition-all duration-300 flex items-center gap-2 group md:bottom-6 md:right-6 md:p-4"
+        className="hidden md:flex fixed bottom-6 right-6 z-40 bg-primary hover:bg-primary/90 text-white p-4 rounded-full shadow-xl hover:scale-110 transition-all duration-300 items-center gap-2 group"
         data-testid="button-quick-share"
       >
         <Share2 className="h-5 w-5" />

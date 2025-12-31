@@ -125,9 +125,9 @@ export function CommunityHub() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-20 pb-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <div className="min-h-screen bg-gray-50 pt-16 pb-24 md:pt-20 md:pb-12">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6">
           
           {/* Left Sidebar - Navigation & Profile (20%) */}
           <div className="hidden lg:block lg:col-span-3 space-y-6">
@@ -190,11 +190,11 @@ export function CommunityHub() {
           <div className="lg:col-span-6 space-y-6">
             
             {/* Stories / Status Bar */}
-            <div className="bg-white rounded-[30px] p-6 shadow-sm border border-gray-100 overflow-x-auto scrollbar-hide">
-              <div className="flex gap-4 min-w-max">
+            <div className="bg-white rounded-2xl md:rounded-[30px] p-3 md:p-6 shadow-sm border border-gray-100 overflow-x-auto scrollbar-hide snap-x snap-mandatory">
+              <div className="flex gap-3 md:gap-4">
                 {stories.map((story) => (
-                  <div key={story.id} className="flex flex-col items-center gap-2 cursor-pointer group">
-                    <div className={`h-16 w-16 rounded-full p-[3px] ${story.isUser ? 'border-2 border-dashed border-gray-300' : story.hasUnseen ? 'bg-gradient-to-tr from-primary to-yellow-500' : 'border-2 border-gray-200'}`}>
+                  <div key={story.id} className="flex flex-col items-center gap-1.5 cursor-pointer group snap-start flex-shrink-0">
+                    <div className={`h-14 w-14 md:h-16 md:w-16 rounded-full p-[2px] ${story.isUser ? 'border-2 border-dashed border-gray-300' : story.hasUnseen ? 'bg-gradient-to-tr from-primary to-yellow-500' : 'border-2 border-gray-200'}`}>
                       <div className="h-full w-full rounded-full overflow-hidden border-2 border-white relative">
                         <img src={story.img} alt={story.name} className="w-full h-full object-cover" />
                         {story.isUser && (
@@ -206,18 +206,18 @@ export function CommunityHub() {
                         )}
                       </div>
                     </div>
-                    <span className="text-xs font-medium text-gray-600 group-hover:text-primary">{story.name}</span>
+                    <span className="text-[10px] md:text-xs font-medium text-gray-600 group-hover:text-primary max-w-[60px] truncate text-center">{story.name}</span>
                   </div>
                 ))}
               </div>
             </div>
 
             {/* Filter Tabs */}
-            <div className="bg-white rounded-[30px] p-2 shadow-sm border border-gray-100 flex gap-2">
+            <div className="bg-white rounded-full p-1.5 shadow-sm border border-gray-100 flex gap-1">
               <button
                 data-testid="filter-all"
                 onClick={() => setPostFilter("all")}
-                className={`flex-1 py-2 px-4 rounded-full text-sm font-medium transition-colors ${
+                className={`flex-1 py-2 px-3 md:px-4 rounded-full text-xs md:text-sm font-medium transition-colors ${
                   postFilter === "all" ? "bg-primary text-white" : "text-gray-600 hover:bg-gray-50"
                 }`}
               >
@@ -226,7 +226,7 @@ export function CommunityHub() {
               <button
                 data-testid="filter-mission"
                 onClick={() => setPostFilter("mission")}
-                className={`flex-1 py-2 px-4 rounded-full text-sm font-medium transition-colors ${
+                className={`flex-1 py-2 px-3 md:px-4 rounded-full text-xs md:text-sm font-medium transition-colors ${
                   postFilter === "mission" ? "bg-primary text-white" : "text-gray-600 hover:bg-gray-50"
                 }`}
               >
@@ -235,7 +235,7 @@ export function CommunityHub() {
               <button
                 data-testid="filter-prayer"
                 onClick={() => setPostFilter("prayer")}
-                className={`flex-1 py-2 px-4 rounded-full text-sm font-medium transition-colors ${
+                className={`flex-1 py-2 px-3 md:px-4 rounded-full text-xs md:text-sm font-medium transition-colors ${
                   postFilter === "prayer" ? "bg-primary text-white" : "text-gray-600 hover:bg-gray-50"
                 }`}
               >
@@ -244,9 +244,9 @@ export function CommunityHub() {
             </div>
 
             {/* Create Post */}
-            <div className="bg-white rounded-[30px] p-6 shadow-sm border border-gray-100">
-              <div className="flex gap-4 mb-4">
-                <div className="h-10 w-10 rounded-full overflow-hidden bg-gray-100 flex-shrink-0">
+            <div className="bg-white rounded-2xl md:rounded-[30px] p-4 md:p-6 shadow-sm border border-gray-100">
+              <div className="flex gap-3 mb-3">
+                <div className="h-9 w-9 md:h-10 md:w-10 rounded-full overflow-hidden bg-gray-100 flex-shrink-0">
                   <img 
                     src={user?.profileImageUrl || userAvatar} 
                     alt={user?.firstName || "User"} 
@@ -258,27 +258,25 @@ export function CommunityHub() {
                   value={newPostContent}
                   onChange={(e) => setNewPostContent(e.target.value)}
                   placeholder="Share a testimony, prayer request, or mission update..." 
-                  className="flex-1 bg-gray-50 rounded-2xl px-6 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none min-h-[60px]"
+                  className="flex-1 bg-gray-50 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none min-h-[50px]"
                   rows={2}
                 />
               </div>
-              <div className="flex justify-between items-center border-t border-gray-50 pt-4">
-                <div className="flex gap-2 items-center">
-                  <select
-                    data-testid="select-post-type"
-                    value={newPostType}
-                    onChange={(e) => setNewPostType(e.target.value as "mission" | "prayer")}
-                    className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  >
-                    <option value="mission">Mission</option>
-                    <option value="prayer">Prayer</option>
-                  </select>
-                </div>
+              <div className="flex flex-col sm:flex-row gap-2 sm:justify-between sm:items-center border-t border-gray-50 pt-3">
+                <select
+                  data-testid="select-post-type"
+                  value={newPostType}
+                  onChange={(e) => setNewPostType(e.target.value as "mission" | "prayer")}
+                  className="text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/20 w-full sm:w-auto"
+                >
+                  <option value="mission">Mission</option>
+                  <option value="prayer">Prayer</option>
+                </select>
                 <button 
                   data-testid="button-submit-post"
                   onClick={handleCreatePost}
                   disabled={createPostMutation.isPending || !newPostContent.trim()}
-                  className="bg-primary text-white px-6 py-2 rounded-full hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm font-medium"
+                  className="bg-primary text-white px-5 py-2.5 rounded-full hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm font-medium w-full sm:w-auto"
                 >
                   {createPostMutation.isPending ? (
                     <>
@@ -297,11 +295,11 @@ export function CommunityHub() {
 
             {/* Feed Posts */}
             {isLoading ? (
-              <div className="bg-white rounded-[30px] p-12 shadow-sm border border-gray-100 flex items-center justify-center">
+              <div className="bg-white rounded-2xl md:rounded-[30px] p-8 md:p-12 shadow-sm border border-gray-100 flex items-center justify-center">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
             ) : filteredPosts.length === 0 ? (
-              <div className="bg-white rounded-[30px] p-12 shadow-sm border border-gray-100 text-center">
+              <div className="bg-white rounded-2xl md:rounded-[30px] p-8 md:p-12 shadow-sm border border-gray-100 text-center">
                 <p className="text-gray-500 mb-4">No posts yet. Be the first to share!</p>
                 {!isAuthenticated && (
                   <button
@@ -319,9 +317,9 @@ export function CommunityHub() {
                   data-testid={`post-${post.id}`}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="bg-white rounded-[30px] overflow-hidden shadow-sm border border-gray-100"
+                  className="bg-white rounded-2xl md:rounded-[30px] overflow-hidden shadow-sm border border-gray-100"
                 >
-                  <div className="p-6">
+                  <div className="p-4 md:p-6">
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-3">
                         <div className="h-10 w-10 rounded-full overflow-hidden bg-gray-100">
