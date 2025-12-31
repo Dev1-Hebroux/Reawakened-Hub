@@ -139,11 +139,15 @@ Preferred communication style: Simple, everyday language.
 ### Logo Files (HD/4K)
 All logos stored in `attached_assets/`:
 
-**Dark Logo** (for light backgrounds):
-- `Reawakened_Logo_1_new_1767191127649.png` - Primary HD dark logo (1024x1024)
+**Primary Logos (278x141 - Current in Use)**:
+- `Reawakened_278_141_logo_bigger_1767192125280.png` - Dark navy text (for light backgrounds) - ACTIVE
+- `Reawakened_278_141_logo_white_1767192258915.png` - White text (for dark/glass backgrounds) - ACTIVE
+
+**Legacy Dark Logo** (for light backgrounds):
+- `Reawakened_Logo_1_new_1767191127649.png` - HD dark logo (1024x1024)
 - `Reawakened_Logo-05_1767191127650.jpg` - JPG version
 
-**Light Logo** (for dark backgrounds):
+**Legacy Light Logo** (for dark backgrounds):
 - `8_1767191207405.png` - White text on dark background
 - `9_1767191207410.png` - Alternative white version
 - `10_1767191207411.png` - Alternative white version

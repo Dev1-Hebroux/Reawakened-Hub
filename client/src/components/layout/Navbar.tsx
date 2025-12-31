@@ -4,9 +4,9 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 
-// Brand Assets - HD Logos
-import logoDark from "@assets/Reawakened_Logo_1_new_1767191127649.png";
-import logoLight from "@assets/8_1767191207405.png";
+// Brand Assets - HD Logos (278x141 larger versions)
+import logoDark from "@assets/Reawakened_278_141_logo_bigger_1767192125280.png";
+import logoLight from "@assets/Reawakened_278_141_logo_white_1767192258915.png";
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -35,7 +35,7 @@ export function Navbar() {
   const currentLogo = showDarkNav ? logoDark : logoLight;
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-white/95 backdrop-blur-md shadow-sm py-4' : 'bg-gradient-to-b from-[#1a2744] via-[#1a2744]/70 to-transparent py-6'}`}>
+    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-white/95 backdrop-blur-md shadow-sm py-4' : 'bg-[#1a2744]/50 backdrop-blur-xl border-b border-white/10 shadow-lg py-6'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
           <div className="flex-shrink-0">
