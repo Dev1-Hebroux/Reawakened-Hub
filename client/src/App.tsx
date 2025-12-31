@@ -26,6 +26,12 @@ import { VisionGoals } from "@/pages/VisionGoals";
 import { VisionPlan } from "@/pages/VisionPlan";
 import { VisionHabits } from "@/pages/VisionHabits";
 import { VisionCheckin } from "@/pages/VisionCheckin";
+import { TrackHub } from "@/pages/TrackHub";
+import { WdepTool } from "@/pages/WdepTool";
+import { StrengthsTool } from "@/pages/StrengthsTool";
+import { StylesTool } from "@/pages/StylesTool";
+import { EqTool } from "@/pages/EqTool";
+import { ScaTool } from "@/pages/ScaTool";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { QuickShare } from "@/components/ui/QuickShare";
 
@@ -53,6 +59,13 @@ function Router() {
       <Route path="/vision/:sessionId/plan" component={VisionPlan} />
       <Route path="/vision/:sessionId/habits" component={VisionHabits} />
       <Route path="/vision/:sessionId/checkin" component={VisionCheckin} />
+      <Route path="/growth" component={TrackHub} />
+      <Route path="/vision/:sessionId/growth" component={TrackHub} />
+      <Route path="/vision/:sessionId/tools/wdep" component={WdepTool} />
+      <Route path="/vision/:sessionId/tools/strengths" component={StrengthsTool} />
+      <Route path="/vision/:sessionId/tools/styles" component={StylesTool} />
+      <Route path="/vision/:sessionId/tools/eq" component={EqTool} />
+      <Route path="/vision/:sessionId/tools/sca" component={ScaTool} />
       <Route component={NotFound} />
     </Switch>
   );
