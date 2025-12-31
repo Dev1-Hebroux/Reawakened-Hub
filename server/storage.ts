@@ -291,11 +291,64 @@ export interface IStorage {
   getMentorAssignments(userJourneyId: number): Promise<MentorAssignment[]>;
   createMentorAssignment(assignment: InsertMentorAssignment): Promise<MentorAssignment>;
 
+  // Vision Pathway - Sessions
+  getPathwaySessions(userId: string): Promise<PathwaySession[]>;
+  getCurrentPathwaySession(userId: string): Promise<PathwaySession | undefined>;
+  getPathwaySession(id: number): Promise<PathwaySession | undefined>;
+  createPathwaySession(session: InsertPathwaySession): Promise<PathwaySession>;
+  updatePathwaySession(id: number, data: Partial<InsertPathwaySession>): Promise<PathwaySession>;
+
+  // Vision Pathway - Wheel of Life
+  getWheelEntries(sessionId: number): Promise<WheelLifeEntry[]>;
+  upsertWheelEntries(sessionId: number, entries: InsertWheelLifeEntry[]): Promise<WheelLifeEntry[]>;
+  getFocusAreas(sessionId: number): Promise<FocusArea[]>;
+  upsertFocusAreas(sessionId: number, areas: InsertFocusArea[]): Promise<FocusArea[]>;
+
+  // Vision Pathway - Values
+  getValuesSelection(sessionId: number): Promise<ValuesSelection | undefined>;
+  upsertValuesSelection(sessionId: number, data: Omit<InsertValuesSelection, 'sessionId'>): Promise<ValuesSelection>;
+
+  // Vision Pathway - Vision Statement
+  getVisionStatement(sessionId: number): Promise<VisionStatement | undefined>;
+  upsertVisionStatement(sessionId: number, data: Omit<InsertVisionStatement, 'sessionId'>): Promise<VisionStatement>;
+
+  // Vision Pathway - Purpose Flower
+  getPurposeFlower(sessionId: number): Promise<PurposeFlower | undefined>;
+  upsertPurposeFlower(sessionId: number, data: Omit<InsertPurposeFlower, 'sessionId'>): Promise<PurposeFlower>;
+
+  // Vision Pathway - Goals
+  getVisionGoals(sessionId: number): Promise<VisionGoal[]>;
+  getVisionGoal(id: number): Promise<VisionGoal | undefined>;
+  createVisionGoal(goal: InsertVisionGoal): Promise<VisionGoal>;
+  updateVisionGoal(id: number, data: Partial<InsertVisionGoal>): Promise<VisionGoal>;
+
+  // Vision Pathway - Milestones
+  getGoalMilestones(goalId: number): Promise<GoalMilestone[]>;
+  createGoalMilestone(milestone: InsertGoalMilestone): Promise<GoalMilestone>;
+  updateGoalMilestone(id: number, data: Partial<InsertGoalMilestone>): Promise<GoalMilestone>;
+  deleteGoalMilestone(id: number): Promise<void>;
+
+  // Vision Pathway - 90-Day Plan
+  getNinetyDayPlan(sessionId: number): Promise<NinetyDayPlan | undefined>;
+  upsertNinetyDayPlan(sessionId: number, data: Omit<InsertNinetyDayPlan, 'sessionId'>): Promise<NinetyDayPlan>;
+
+  // Vision Pathway - Habits
+  getVisionHabits(sessionId: number): Promise<VisionHabit[]>;
+  createVisionHabit(habit: InsertVisionHabit): Promise<VisionHabit>;
+  updateVisionHabit(id: number, data: Partial<InsertVisionHabit>): Promise<VisionHabit>;
+  deleteVisionHabit(id: number): Promise<void>;
+  getHabitLogs(habitId: number): Promise<HabitLog[]>;
+  upsertHabitLog(habitId: number, date: string, completed: boolean): Promise<HabitLog>;
+
   // Vision Pathway - Check-ins
   getDailyCheckin(sessionId: number, date: string): Promise<DailyCheckin | undefined>;
   upsertDailyCheckin(sessionId: number, date: string, data: Omit<InsertDailyCheckin, 'sessionId' | 'date'>): Promise<DailyCheckin>;
   getWeeklyReview(sessionId: number, weekStartDate: string): Promise<WeeklyReview | undefined>;
   upsertWeeklyReview(sessionId: number, weekStartDate: string, data: Omit<InsertWeeklyReview, 'sessionId' | 'weekStartDate'>): Promise<WeeklyReview>;
+
+  // Vision Pathway - Exports
+  getVisionExports(sessionId: number): Promise<VisionExport[]>;
+  createVisionExport(exportData: InsertVisionExport): Promise<VisionExport>;
 }
 
 export class DatabaseStorage implements IStorage {
