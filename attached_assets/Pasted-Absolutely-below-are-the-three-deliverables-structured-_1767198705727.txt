@@ -1,0 +1,427 @@
+Absolutely — below are the three deliverables, structured so you can hand them straight to design + engineering and keep everything aligned with that “Ready to Change the World?” section (Start Your Mission, View Projects, Pray/Give/Go cards) and your pillars.
+
+---
+
+# 1) Feature Map: Pray / Give / Go × Pillars
+
+Here’s the matrix view. Each cell shows the *main* features that express that pillar through that action.
+
+|          | **Built on Biblical Truth**                                                                                  | **The Outpouring (Joel 2)**                                                         | **The Harvest (John 4)**                                                                                | **Without Walls (Zech 2)**                                                                                               |
+| -------- | ------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| **PRAY** | Scripture-led prayer guides (daily points + declarations), Bible-based themes, “Why we pray” micro-teachings | Guided “Listen & Respond” moments, testimony capture, prayer gatherings (scheduled) | Harvest-focused intercession prompts (“laborers,” “open doors”), pray-for-the-lost challenges           | Adopt a people group/nation/city, multilingual prayer guides (phase), low-bandwidth / offline reading                    |
+| **GIVE** | Stewardship framing (biblical giving notes), transparent impact categories, receipts                         | “Provision testimonies” feed, campaigns tied to prayer seasons                      | Fund harvest initiatives (outreach, discipleship, translation, church planting), sponsor specific needs | Global payment options (phase), team giving (church/youth groups), accessibility-first donation flow                     |
+| **GO**   | Biblical foundations for mission, short training modules (gospel, discipleship, character)                   | Activation pathway (boldness, obedience steps), prayer covering for trips           | Opportunity board for outreach + discipling, readiness journey (equip → go → debrief)                   | Local + global opportunities, remote/online missions options, diaspora connections, safety guidance and inclusive access |
+
+### Cross-cutting features (power the whole map)
+
+* **Start Your Mission** (onboarding + dashboard that personalizes Pray/Give/Go)
+* **Projects Directory** (every project has Pray / Give / Go actions)
+* **Pillar tags everywhere** (filters + labels + content associations)
+* **Notifications** (daily prayer prompt, project updates, giving receipts, trip milestones)
+* **Community: Join the Movement** (challenges, testimonies, prayer wall)
+
+---
+
+# 2) Navigation Structure for App + Webapp
+
+## Mobile App Navigation (matches your screenshot pattern)
+
+### Primary navigation (bottom tabs)
+
+1. **Home**
+
+   * Hero: “Ready to Change the World?”
+   * CTA: **Start Your Mission**
+   * CTA: **View Projects**
+   * Action cards: **Pray / Give / Go**
+   * “Join the Movement” highlights (challenge of the week)
+
+2. **Projects**
+
+   * Browse + filters (pillars, region, action type)
+   * Project detail pages (Pray / Give / Go actions)
+
+3. **Pray**
+
+   * Adopt focus (people group/nation/city)
+   * Today’s prayer guide + timer
+   * Prayer wall (optional/community)
+
+4. **Give**
+
+   * Featured projects + campaigns
+   * Donation flow (one-time / monthly)
+   * Giving history + receipts
+
+5. **Go**
+
+   * Opportunities board
+   * Trip details + interest form
+   * Readiness checklist (phase 2 if needed)
+
+### Secondary navigation (hamburger menu / profile menu)
+
+* **My Mission Dashboard** (deep view)
+* **Challenges / Join the Movement**
+* **Training Library**
+* **Saved / Followed Projects**
+* **Notifications**
+* **Settings**
+* **Help / Contact**
+* **Partner Verification / Submit Project** (admin/partner role)
+
+---
+
+## Webapp Navigation (clean + conversion-friendly)
+
+### Top navigation
+
+* **Home**
+* **Projects**
+* **Pray**
+* **Give**
+* **Go**
+* **Join the Movement**
+* **Sign In** / **My Mission** (when logged in)
+
+### Key web routes (suggested)
+
+* `/` Home (hero + CTAs + Pray/Give/Go blocks)
+* `/mission` Start Your Mission onboarding + dashboard
+* `/projects` directory + filters
+* `/projects/{id}` project detail
+* `/pray` adopt + daily guide
+* `/give` campaigns + featured projects
+* `/give/{projectId}` donation page
+* `/go` opportunities
+* `/go/{opportunityId}` opportunity detail + apply/interest
+* `/movement` challenges + stories + prayer wall
+* `/library` training + resources
+* `/account` profile + history + settings
+
+### Footer
+
+* About / Vision & Pillars
+* Safeguarding / Community Guidelines
+* Partners
+* Contact
+* Privacy / Terms
+
+---
+
+# 3) PRD-Style Backlog (Epics → User Stories → Acceptance Criteria)
+
+Below is a PRD-friendly backlog aligned directly to your screenshot section (Home hero + Start Your Mission + View Projects + Pray/Give/Go cards).
+
+## Epic A — Home “Global Impact” Section (Screenshot Alignment)
+
+**Goal:** Turn inspiration into immediate action via Start Mission, View Projects, and Pray/Give/Go entry points.
+
+### User Story A1 — Home hero and CTAs
+
+**As a user,** I want to quickly understand what Reawakened is and choose my next step, **so that** I can act immediately (Pray, Give, or Go).
+
+**Acceptance Criteria**
+
+* Given I open Home, when the page loads, then I see:
+
+  * hero title + subtitle
+  * **Start Your Mission** button
+  * **View Projects** button
+  * Pray/Give/Go cards
+* Given I tap **Start Your Mission**, when navigation occurs, then I land on mission onboarding.
+* Given I tap **View Projects**, when navigation occurs, then I land on Projects directory.
+
+### User Story A2 — Pray/Give/Go cards route correctly
+
+**As a user,** I want each card to take me to the right place, **so that** I can take action without confusion.
+
+**Acceptance Criteria**
+
+* Given I tap Pray, then I land on Pray hub (or Adopt flow if first time).
+* Given I tap Give, then I land on Give hub (featured campaigns/projects).
+* Given I tap Go, then I land on Go hub (opportunities list).
+
+---
+
+## Epic B — Start Your Mission (Onboarding + Mission Dashboard)
+
+**Goal:** Personalize the experience to a user’s burden, capacity, and calling.
+
+### User Story B1 — Mission onboarding
+
+**As a new user,** I want to answer a few questions, **so that** the app can tailor my mission plan.
+
+**Acceptance Criteria**
+
+* Given I start onboarding, when I answer prompts (focus, availability, action preference), then:
+
+  * a mission profile is saved
+  * I’m taken to My Mission dashboard
+* Given I skip onboarding, then I still land on a default dashboard and can edit later.
+
+### User Story B2 — My Mission dashboard
+
+**As a user,** I want a simple daily plan, **so that** I know what to do today.
+
+**Acceptance Criteria**
+
+* Given I open My Mission, then I see:
+
+  * Today’s prayer focus + “Pray now”
+  * A recommended project + “Give” option (optional)
+  * A Go next step (opportunity or training)
+* Given I complete an action, then the dashboard reflects completion state.
+
+---
+
+## Epic C — Projects Directory (View Projects)
+
+**Goal:** Make projects discoverable, credible, and actionable (Pray/Give/Go from every project).
+
+### User Story C1 — Browse and filter projects
+
+**As a user,** I want to find projects by pillar and action type, **so that** I can support what aligns with me.
+
+**Acceptance Criteria**
+
+* Given I’m on Projects, when I filter by pillar (Biblical Truth/Outpouring/Harvest/Without Walls), then results update.
+* Given I filter by action type (Pray/Give/Go), then results update.
+* Given I search by keyword, then matching projects show.
+
+### User Story C2 — Project detail with actions
+
+**As a user,** I want to see clear project info and take action, **so that** I can participate immediately.
+
+**Acceptance Criteria**
+
+* Given I open a project, then I see:
+
+  * overview, location/region, pillar tags
+  * updates/needs
+  * buttons: Pray / Give / Go
+* Given I tap Pray, then I can add it to prayer focus (or open its prayer guide).
+* Given I tap Give, then donation flow starts.
+* Given I tap Go, then I see opportunities or interest form.
+
+---
+
+## Epic D — Pray (Adopt + Daily Guides + Timer)
+
+**Goal:** Make prayer focused, consistent, biblical, and Spirit-led.
+
+### User Story D1 — Adopt a people group/nation/city
+
+**As a user,** I want to adopt a prayer focus, **so that** my prayers are consistent and measurable.
+
+**Acceptance Criteria**
+
+* Given I choose a focus, when I confirm adoption, then:
+
+  * it becomes my default prayer focus
+  * I see a daily prayer guide for it
+* Given I already adopted a focus, when I change it, then the app confirms and updates my dashboard.
+
+### User Story D2 — Daily prayer guide
+
+**As a user,** I want daily prayer points and scripture declarations, **so that** I can pray with confidence.
+
+**Acceptance Criteria**
+
+* Given I open Today’s prayer, then I see:
+
+  * 3–7 prayer points
+  * 1–3 scripture declarations
+  * optional action step
+* Given I complete the guide, then it can be marked as done.
+
+### User Story D3 — Prayer timer
+
+**As a user,** I want a timer with prompts, **so that** I can stay focused.
+
+**Acceptance Criteria**
+
+* Given I choose 1/3/5/10 minutes, when I start, then the timer runs and shows prompts.
+* Given the timer ends, then I see a completion screen (and optional reflection).
+
+---
+
+## Epic E — Give (Donations + Recurring + Receipts + Updates)
+
+**Goal:** Make giving easy, trustworthy, and clearly connected to impact.
+
+### User Story E1 — Donate to a project
+
+**As a user,** I want to donate in a few taps, **so that** I can support the mission quickly.
+
+**Acceptance Criteria**
+
+* Given I tap Give on a project, when I choose amount and payment method, then donation completes successfully.
+* Given donation succeeds, then I receive:
+
+  * confirmation screen
+  * receipt in giving history
+
+### User Story E2 — Monthly giving
+
+**As a user,** I want to give monthly, **so that** I can support consistently.
+
+**Acceptance Criteria**
+
+* Given I select monthly, when I confirm, then:
+
+  * recurring donation is created
+  * I can view/cancel it in account settings
+
+### User Story E3 — Impact updates
+
+**As a user,** I want updates from projects I support, **so that** I can stay engaged and encouraged.
+
+**Acceptance Criteria**
+
+* Given I follow or donate to a project, then I can see project updates in a feed.
+* Given a new update is posted, then I receive a notification (if enabled).
+
+---
+
+## Epic F — Go (Opportunities + Interest + Readiness)
+
+**Goal:** Move users from digital engagement to real participation.
+
+### User Story F1 — Browse opportunities
+
+**As a user,** I want to browse outreach opportunities, **so that** I can find something that fits my capacity.
+
+**Acceptance Criteria**
+
+* Given I open Go, then I see a list with filters (location/date/cost/type).
+* Given I select an opportunity, then I see details and next steps.
+
+### User Story F2 — Register interest / apply
+
+**As a user,** I want to submit interest quickly, **so that** I can take a first step even if I’m unsure.
+
+**Acceptance Criteria**
+
+* Given I tap “I’m interested,” when I complete the form, then:
+
+  * confirmation is shown
+  * request is recorded and visible in “My Go”
+  * optional email confirmation is sent (if configured)
+
+### User Story F3 — Go readiness checklist (Phase 2 if needed)
+
+**As a user,** I want a readiness checklist, **so that** I can prepare responsibly.
+
+**Acceptance Criteria**
+
+* Given I join an opportunity, then a checklist appears (training, documents, fundraising, safety).
+* Given I complete items, then progress updates.
+
+---
+
+## Epic G — Join the Movement (Community + Challenges)
+
+**Goal:** Build momentum, belonging, and consistent participation.
+
+### User Story G1 — Challenges
+
+**As a user,** I want to join a challenge (e.g., 21-day prayer), **so that** I stay consistent with community support.
+
+**Acceptance Criteria**
+
+* Given a challenge is active, then I can join and see daily steps.
+* Given I complete a day, then progress updates and I can share a recap card.
+
+### User Story G2 — Prayer wall (moderated)
+
+**As a user,** I want to share prayer requests and testimonies safely, **so that** faith spreads responsibly.
+
+**Acceptance Criteria**
+
+* Given I submit a post, then it is either published immediately (if trusted) or queued for moderation.
+* Given content violates guidelines, then it can be reported and removed by moderators.
+
+---
+
+## Epic H — Pillar Tagging + Content System (Built on Biblical Truth)
+
+**Goal:** Keep everything anchored in scripture and aligned with the pillars.
+
+### User Story H1 — Pillar tagging model
+
+**As an admin/editor,** I want to tag projects and content by pillar, **so that** discovery and alignment are consistent.
+
+**Acceptance Criteria**
+
+* Given an admin edits a project/content item, then they can select one or more pillars.
+* Given pillars are set, then users can filter by them in Projects.
+
+---
+
+## Epic I — Notifications + Preferences
+
+**Goal:** Nudge users into daily obedience without being noisy.
+
+### User Story I1 — Daily prayer reminder
+
+**As a user,** I want a daily reminder, **so that** prayer becomes a rhythm.
+
+**Acceptance Criteria**
+
+* Given I enable reminders, when the scheduled time arrives, then I receive a push notification.
+* Given I disable reminders, then no daily notifications are sent.
+
+---
+
+## Epic J — Accounts, Safety, and Admin Basics
+
+**Goal:** Trust, safeguarding, and operability.
+
+### User Story J1 — Sign in and profile
+
+**As a user,** I want to sign in and manage my preferences, **so that** my mission plan persists across devices.
+
+**Acceptance Criteria**
+
+* Given I sign in, then my mission profile, giving history, and adopted focus persist.
+* Given I edit preferences, then changes apply immediately.
+
+### User Story J2 — Partner/project verification (MVP-light, expand later)
+
+**As a platform admin,** I want to verify projects, **so that** users can trust where they’re giving and going.
+
+**Acceptance Criteria**
+
+* Given a project is verified, then it shows a verification badge.
+* Given a project is not verified, then it is clearly labeled (or hidden, depending on policy).
+
+---
+
+## MVP Scope (recommended)
+
+If you want the cleanest launch aligned to that home section, MVP could be:
+
+* Home hero + Start Your Mission + View Projects + Pray/Give/Go routing
+* Mission onboarding + dashboard
+* Projects directory + project detail pages with Pray/Give/Go actions
+* Pray: Adopt + daily prayer guide + timer
+* Give: one-time + monthly + receipts + basic updates
+* Go: opportunities list + interest form
+* Notifications: daily prayer reminder (optional)
+
+## Phase 2 Enhancements
+
+* Live prayer rooms / scheduled gatherings
+* Team giving and group dashboards
+* Go readiness pathway + team space
+* Multi-language + low bandwidth/offline mode
+* Expanded community features + moderation tooling
+
+---
+
+If you want, I can also add:
+
+* a **data model sketch** (entities like User, MissionProfile, Project, Focus, Donation, Opportunity)
+* a **screen-by-screen UI inventory** that maps exactly to Home → Pray/Give/Go → Project detail → actions
+* a **release plan** (MVP sprint sequence) without slowing you down with heavy process.

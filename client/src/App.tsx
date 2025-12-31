@@ -38,6 +38,10 @@ import { Mini360 } from "@/pages/Mini360";
 import { FeedbackResponse } from "@/pages/FeedbackResponse";
 import { CoachingLabs } from "@/pages/CoachingLabs";
 import { GroupLabs } from "@/pages/GroupLabs";
+import { PrayHub } from "@/pages/PrayHub";
+import { MissionsHub } from "@/pages/MissionsHub";
+import { GiveHub } from "@/pages/GiveHub";
+import { MovementHub } from "@/pages/MovementHub";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { QuickShare } from "@/components/ui/QuickShare";
 
@@ -82,6 +86,10 @@ function Router() {
       <Route path="/vision/:sessionId/tools/coaching" component={CoachingLabs} />
       <Route path="/group-labs" component={GroupLabs} />
       <Route path="/vision/:sessionId/tools/group-labs" component={GroupLabs} />
+      <Route path="/pray" component={PrayHub} />
+      <Route path="/missions" component={MissionsHub} />
+      <Route path="/give" component={GiveHub} />
+      <Route path="/movement" component={MovementHub} />
       <Route component={NotFound} />
     </Switch>
   );

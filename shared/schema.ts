@@ -1532,3 +1532,557 @@ export const reflectionLogs = pgTable("reflection_logs", {
 export const insertReflectionLogSchema = createInsertSchema(reflectionLogs).omit({ id: true, viewedAt: true });
 export type InsertReflectionLog = z.infer<typeof insertReflectionLogSchema>;
 export type ReflectionLog = typeof reflectionLogs.$inferSelect;
+
+// ===== DIGITAL MISSION HUB - ONLINE-FIRST OUTREACH =====
+
+// Pillars - consistent tagging and filtering (Biblical Truth, Outpouring, Harvest, Without Walls)
+export const missionPillars = pgTable("mission_pillars", {
+  id: serial("id").primaryKey(),
+  key: varchar("key").notNull().unique(), // 'biblical_truth', 'outpouring', 'harvest', 'without_walls'
+  name: varchar("name").notNull(),
+  subtitle: varchar("subtitle"), // e.g. "Joel 2" for Outpouring
+  scriptureRef: varchar("scripture_ref"), // e.g. "Joel 2:28-29"
+  description: text("description"),
+  colorHex: varchar("color_hex"), // brand color
+  iconKey: varchar("icon_key"),
+  orderIndex: integer("order_index").default(0),
+});
+
+export const insertMissionPillarSchema = createInsertSchema(missionPillars).omit({ id: true });
+export type InsertMissionPillar = z.infer<typeof insertMissionPillarSchema>;
+export type MissionPillar = typeof missionPillars.$inferSelect;
+
+// Mission Profiles - "Start Your Mission" personalization + commitment
+export const missionProfiles = pgTable("mission_profiles", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id).unique(),
+  primaryBurden: varchar("primary_burden"), // 'nations', 'youth', 'evangelism', 'discipleship', 'mercy', 'prayer'
+  actionsPreference: text("actions_preference").array(), // ['pray', 'give', 'go']
+  availabilityMinutes: integer("availability_minutes").default(10), // 5, 10, 15, 30
+  givingCapacity: varchar("giving_capacity"), // 'low', 'medium', 'high'
+  travelReadiness: varchar("travel_readiness").default("exploring"), // 'not_ready', 'exploring', 'ready'
+  skills: text("skills").array(), // ['teaching', 'music', 'admin', 'evangelism', 'media', 'tech']
+  commitmentLevel: varchar("commitment_level").default("explorer"), // 'explorer', 'builder', 'sent'
+  pillarAffinities: jsonb("pillar_affinities"), // { biblical_truth: 0.8, harvest: 0.9 }
+  prayerReminderTime: varchar("prayer_reminder_time"), // HH:MM format
+  weeklyPrayerGoal: integer("weekly_prayer_goal").default(5), // days per week
+  onboardingCompleted: boolean("onboarding_completed").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertMissionProfileSchema = createInsertSchema(missionProfiles).omit({ id: true, createdAt: true, updatedAt: true });
+export type InsertMissionProfile = z.infer<typeof insertMissionProfileSchema>;
+export type MissionProfile = typeof missionProfiles.$inferSelect;
+
+// Mission Plans - weekly direction + commitment tracking
+export const missionPlans = pgTable("mission_plans", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  weekStartDate: varchar("week_start_date").notNull(), // YYYY-MM-DD
+  prayerGoalDays: integer("prayer_goal_days").default(5),
+  giveGoalAmount: integer("give_goal_amount"), // optional
+  goGoalStep: varchar("go_goal_step"), // 'training', 'interest', 'outreach'
+  prayerDaysCompleted: integer("prayer_days_completed").default(0),
+  reflectionNotes: text("reflection_notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertMissionPlanSchema = createInsertSchema(missionPlans).omit({ id: true, createdAt: true });
+export type InsertMissionPlan = z.infer<typeof insertMissionPlanSchema>;
+export type MissionPlan = typeof missionPlans.$inferSelect;
+
+// Focuses - People Groups / Nations / Cities for prayer adoption
+export const missionFocuses = pgTable("mission_focuses", {
+  id: serial("id").primaryKey(),
+  type: varchar("type").notNull().default("people_group"), // 'people_group', 'nation', 'city', 'region'
+  name: varchar("name").notNull(),
+  region: varchar("region"), // geographic region
+  country: varchar("country"),
+  languageGroup: varchar("language_group"),
+  population: integer("population"),
+  summary: text("summary"),
+  prayerNeeds: jsonb("prayer_needs"), // array of needs
+  imageUrl: varchar("image_url"),
+  pillarTags: text("pillar_tags").array(), // ['harvest', 'without_walls']
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertMissionFocusSchema = createInsertSchema(missionFocuses).omit({ id: true, createdAt: true });
+export type InsertMissionFocus = z.infer<typeof insertMissionFocusSchema>;
+export type MissionFocus = typeof missionFocuses.$inferSelect;
+
+// Prayer Guide Days - daily prayer content for a focus
+export const prayerGuideDays = pgTable("prayer_guide_days", {
+  id: serial("id").primaryKey(),
+  focusId: integer("focus_id").references(() => missionFocuses.id, { onDelete: 'cascade' }),
+  projectId: integer("project_id"), // nullable, for project-specific guides
+  challengeId: integer("challenge_id"), // nullable, for challenge-specific guides
+  dayNumber: integer("day_number").notNull(),
+  title: varchar("title"),
+  scripture: varchar("scripture"), // e.g. "Matthew 9:37-38"
+  scriptureText: text("scripture_text"),
+  prayerPoints: jsonb("prayer_points"), // array of strings
+  declarations: jsonb("declarations"), // array of scripture declarations
+  actionStep: text("action_step"),
+  revivalPrompt: text("revival_prompt"), // Spirit-led prompt
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertPrayerGuideDaySchema = createInsertSchema(prayerGuideDays).omit({ id: true, createdAt: true });
+export type InsertPrayerGuideDay = z.infer<typeof insertPrayerGuideDaySchema>;
+export type PrayerGuideDay = typeof prayerGuideDays.$inferSelect;
+
+// Adoptions - user adopts a Focus for a period
+export const missionAdoptions = pgTable("mission_adoptions", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  focusId: integer("focus_id").notNull().references(() => missionFocuses.id, { onDelete: 'cascade' }),
+  startDate: varchar("start_date").notNull(), // YYYY-MM-DD
+  endDate: varchar("end_date"), // nullable = ongoing
+  commitmentDays: integer("commitment_days").default(21), // 7, 21, 90
+  status: varchar("status").notNull().default("active"), // 'active', 'completed', 'paused'
+  currentDay: integer("current_day").default(1),
+  reminderEnabled: boolean("reminder_enabled").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertMissionAdoptionSchema = createInsertSchema(missionAdoptions).omit({ id: true, createdAt: true });
+export type InsertMissionAdoption = z.infer<typeof insertMissionAdoptionSchema>;
+export type MissionAdoption = typeof missionAdoptions.$inferSelect;
+
+// Prayer Sessions - timer-driven prayer engagement
+export const missionPrayerSessions = pgTable("mission_prayer_sessions", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  focusId: integer("focus_id").references(() => missionFocuses.id),
+  projectId: integer("project_id"), // nullable
+  adoptionId: integer("adoption_id").references(() => missionAdoptions.id),
+  durationSeconds: integer("duration_seconds").notNull(),
+  completed: boolean("completed").default(false),
+  prayerNote: text("prayer_note"), // optional reflection
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertMissionPrayerSessionSchema = createInsertSchema(missionPrayerSessions).omit({ id: true, createdAt: true });
+export type InsertMissionPrayerSession = z.infer<typeof insertMissionPrayerSessionSchema>;
+export type MissionPrayerSession = typeof missionPrayerSessions.$inferSelect;
+
+// Mission Projects - the engine of Pray/Give/Go alignment
+export const missionProjects = pgTable("mission_projects", {
+  id: serial("id").primaryKey(),
+  title: varchar("title").notNull(),
+  slug: varchar("slug").notNull().unique(),
+  summary: text("summary").notNull(),
+  story: text("story"), // full description
+  location: varchar("location"), // country/city/region
+  region: varchar("region"),
+  pillarTags: text("pillar_tags").array(), // ['biblical_truth', 'harvest']
+  actionsAvailable: text("actions_available").array(), // ['pray', 'give', 'go']
+  verificationStatus: varchar("verification_status").default("verified"), // 'verified', 'unverified', 'partner'
+  fundingGoal: integer("funding_goal"), // in cents
+  fundsRaised: integer("funds_raised").default(0),
+  currency: varchar("currency").default("USD"),
+  imageUrl: varchar("image_url"),
+  videoUrl: varchar("video_url"),
+  partnerId: varchar("partner_id"), // optional external partner
+  status: varchar("status").default("active"), // 'active', 'paused', 'completed', 'archived'
+  urgencyLevel: varchar("urgency_level").default("normal"), // 'low', 'normal', 'high', 'critical'
+  hasDigitalActions: boolean("has_digital_actions").default(true), // online-first flag
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertMissionProjectSchema = createInsertSchema(missionProjects).omit({ id: true, createdAt: true, updatedAt: true });
+export type InsertMissionProject = z.infer<typeof insertMissionProjectSchema>;
+export type MissionProject = typeof missionProjects.$inferSelect;
+
+// Project Updates - keep supporters engaged
+export const projectUpdates = pgTable("project_updates", {
+  id: serial("id").primaryKey(),
+  projectId: integer("project_id").notNull().references(() => missionProjects.id, { onDelete: 'cascade' }),
+  title: varchar("title").notNull(),
+  content: text("content").notNull(),
+  updateType: varchar("update_type").default("general"), // 'general', 'prayer_answered', 'milestone', 'urgent'
+  imageUrl: varchar("image_url"),
+  videoUrl: varchar("video_url"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertProjectUpdateSchema = createInsertSchema(projectUpdates).omit({ id: true, createdAt: true });
+export type InsertProjectUpdate = z.infer<typeof insertProjectUpdateSchema>;
+export type ProjectUpdate = typeof projectUpdates.$inferSelect;
+
+// Project Follows - keep people connected
+export const projectFollows = pgTable("project_follows", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  projectId: integer("project_id").notNull().references(() => missionProjects.id, { onDelete: 'cascade' }),
+  notificationsEnabled: boolean("notifications_enabled").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertProjectFollowSchema = createInsertSchema(projectFollows).omit({ id: true, createdAt: true });
+export type InsertProjectFollow = z.infer<typeof insertProjectFollowSchema>;
+export type ProjectFollow = typeof projectFollows.$inferSelect;
+
+// Opportunities - Go actions with delivery_mode (online first!)
+export const missionOpportunities = pgTable("mission_opportunities", {
+  id: serial("id").primaryKey(),
+  projectId: integer("project_id").references(() => missionProjects.id, { onDelete: 'set null' }),
+  title: varchar("title").notNull(),
+  description: text("description").notNull(),
+  type: varchar("type").notNull(), // 'digital_outreach', 'mentoring', 'content_creation', 'local_outreach', 'trip'
+  deliveryMode: varchar("delivery_mode").notNull().default("online"), // 'online', 'hybrid', 'local', 'trip'
+  location: varchar("location"), // null for online
+  startDate: timestamp("start_date"),
+  endDate: timestamp("end_date"),
+  cost: integer("cost"), // in cents, optional
+  capacity: integer("capacity"),
+  spotsRemaining: integer("spots_remaining"),
+  requirements: jsonb("requirements"), // skills, training modules, age, etc
+  pillarTags: text("pillar_tags").array(),
+  status: varchar("status").default("open"), // 'open', 'closing_soon', 'full', 'closed'
+  imageUrl: varchar("image_url"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertMissionOpportunitySchema = createInsertSchema(missionOpportunities).omit({ id: true, createdAt: true });
+export type InsertMissionOpportunity = z.infer<typeof insertMissionOpportunitySchema>;
+export type MissionOpportunity = typeof missionOpportunities.$inferSelect;
+
+// Opportunity Interests - quick "I'm interested" capture
+export const opportunityInterests = pgTable("opportunity_interests", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  opportunityId: integer("opportunity_id").notNull().references(() => missionOpportunities.id, { onDelete: 'cascade' }),
+  status: varchar("status").default("interested"), // 'interested', 'applied', 'accepted', 'declined', 'completed'
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertOpportunityInterestSchema = createInsertSchema(opportunityInterests).omit({ id: true, createdAt: true });
+export type InsertOpportunityInterest = z.infer<typeof insertOpportunityInterestSchema>;
+export type OpportunityInterest = typeof opportunityInterests.$inferSelect;
+
+// Digital Actions - track real outreach steps online
+export const digitalActions = pgTable("digital_actions", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  projectId: integer("project_id").references(() => missionProjects.id),
+  focusId: integer("focus_id").references(() => missionFocuses.id),
+  actionType: varchar("action_type").notNull(), // 'share_card', 'invite_friend', 'send_encouragement', 'join_room', 'complete_training', 'post_testimony'
+  channel: varchar("channel"), // 'in_app', 'whatsapp', 'sms', 'email', 'social'
+  shareCardId: integer("share_card_id"),
+  status: varchar("status").default("completed"), // 'initiated', 'completed'
+  metadata: jsonb("metadata"), // extra context
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertDigitalActionSchema = createInsertSchema(digitalActions).omit({ id: true, createdAt: true });
+export type InsertDigitalAction = z.infer<typeof insertDigitalActionSchema>;
+export type DigitalAction = typeof digitalActions.$inferSelect;
+
+// Share Cards - what users share (prayer prompt, testimony, invite, campaign)
+export const shareCards = pgTable("share_cards", {
+  id: serial("id").primaryKey(),
+  type: varchar("type").notNull(), // 'prayer', 'testimony', 'invite', 'campaign', 'project'
+  title: varchar("title").notNull(),
+  contentPreview: text("content_preview"),
+  imageUrl: varchar("image_url"),
+  ctaLink: varchar("cta_link"), // deep link
+  relatedProjectId: integer("related_project_id").references(() => missionProjects.id),
+  relatedChallengeId: integer("related_challenge_id"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertShareCardSchema = createInsertSchema(shareCards).omit({ id: true, createdAt: true });
+export type InsertShareCard = z.infer<typeof insertShareCardSchema>;
+export type ShareCard = typeof shareCards.$inferSelect;
+
+// Invites - growth loop for outreach + movement
+export const missionInvites = pgTable("mission_invites", {
+  id: serial("id").primaryKey(),
+  inviterUserId: varchar("inviter_user_id").notNull().references(() => users.id),
+  shareCardId: integer("share_card_id").references(() => shareCards.id),
+  inviteChannel: varchar("invite_channel"), // 'whatsapp', 'sms', 'email', 'link'
+  inviteCode: varchar("invite_code").unique(),
+  deepLinkToken: varchar("deep_link_token"),
+  clickCount: integer("click_count").default(0),
+  joinCount: integer("join_count").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertMissionInviteSchema = createInsertSchema(missionInvites).omit({ id: true, createdAt: true });
+export type InsertMissionInvite = z.infer<typeof insertMissionInviteSchema>;
+export type MissionInvite = typeof missionInvites.$inferSelect;
+
+// Live Rooms - prayer/training/revival gatherings
+export const liveRooms = pgTable("live_rooms", {
+  id: serial("id").primaryKey(),
+  type: varchar("type").notNull(), // 'prayer', 'revival', 'training', 'worship'
+  title: varchar("title").notNull(),
+  description: text("description"),
+  scheduleType: varchar("schedule_type").default("scheduled"), // 'always_on', 'scheduled', 'recurring'
+  scheduledAt: timestamp("scheduled_at"),
+  recurringPattern: varchar("recurring_pattern"), // 'daily', 'weekly', 'biweekly'
+  durationMinutes: integer("duration_minutes").default(30),
+  hostUserId: varchar("host_user_id").references(() => users.id),
+  meetingLink: varchar("meeting_link"),
+  moderationLevel: varchar("moderation_level").default("standard"), // 'open', 'standard', 'strict'
+  maxParticipants: integer("max_participants"),
+  pillarTags: text("pillar_tags").array(),
+  status: varchar("status").default("upcoming"), // 'upcoming', 'live', 'ended', 'cancelled'
+  imageUrl: varchar("image_url"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertLiveRoomSchema = createInsertSchema(liveRooms).omit({ id: true, createdAt: true });
+export type InsertLiveRoom = z.infer<typeof insertLiveRoomSchema>;
+export type LiveRoom = typeof liveRooms.$inferSelect;
+
+// Room Sessions - actual instances of live rooms
+export const roomSessions = pgTable("room_sessions", {
+  id: serial("id").primaryKey(),
+  roomId: integer("room_id").notNull().references(() => liveRooms.id, { onDelete: 'cascade' }),
+  startedAt: timestamp("started_at").defaultNow(),
+  endedAt: timestamp("ended_at"),
+  attendanceCount: integer("attendance_count").default(0),
+  highlightNotes: text("highlight_notes"),
+});
+
+export const insertRoomSessionSchema = createInsertSchema(roomSessions).omit({ id: true, startedAt: true });
+export type InsertRoomSession = z.infer<typeof insertRoomSessionSchema>;
+export type RoomSession = typeof roomSessions.$inferSelect;
+
+// Room Participants - who joined a session
+export const roomParticipants = pgTable("room_participants", {
+  id: serial("id").primaryKey(),
+  roomSessionId: integer("room_session_id").notNull().references(() => roomSessions.id, { onDelete: 'cascade' }),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  joinedAt: timestamp("joined_at").defaultNow(),
+  leftAt: timestamp("left_at"),
+});
+
+export const insertRoomParticipantSchema = createInsertSchema(roomParticipants).omit({ id: true, joinedAt: true });
+export type InsertRoomParticipant = z.infer<typeof insertRoomParticipantSchema>;
+export type RoomParticipant = typeof roomParticipants.$inferSelect;
+
+// Follow-up Threads - digital discipleship / connection
+export const followUpThreads = pgTable("follow_up_threads", {
+  id: serial("id").primaryKey(),
+  initiatorUserId: varchar("initiator_user_id").notNull().references(() => users.id),
+  participantUserId: varchar("participant_user_id").references(() => users.id), // can be null for external contacts
+  participantName: varchar("participant_name"), // for external contacts
+  participantContact: varchar("participant_contact"), // email or phone
+  projectId: integer("project_id").references(() => missionProjects.id),
+  threadType: varchar("thread_type").default("discipleship"), // 'discipleship', 'prayer_partner', 'mentoring'
+  status: varchar("status").default("active"), // 'active', 'paused', 'archived', 'completed'
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  lastActivityAt: timestamp("last_activity_at").defaultNow(),
+});
+
+export const insertFollowUpThreadSchema = createInsertSchema(followUpThreads).omit({ id: true, createdAt: true, lastActivityAt: true });
+export type InsertFollowUpThread = z.infer<typeof insertFollowUpThreadSchema>;
+export type FollowUpThread = typeof followUpThreads.$inferSelect;
+
+// Follow-up Messages - within a thread
+export const followUpMessages = pgTable("follow_up_messages", {
+  id: serial("id").primaryKey(),
+  threadId: integer("thread_id").notNull().references(() => followUpThreads.id, { onDelete: 'cascade' }),
+  senderUserId: varchar("sender_user_id").notNull().references(() => users.id),
+  content: text("content").notNull(),
+  messageType: varchar("message_type").default("text"), // 'text', 'prompt', 'resource', 'prayer'
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertFollowUpMessageSchema = createInsertSchema(followUpMessages).omit({ id: true, createdAt: true });
+export type InsertFollowUpMessage = z.infer<typeof insertFollowUpMessageSchema>;
+export type FollowUpMessage = typeof followUpMessages.$inferSelect;
+
+// Training Modules - "Go Digital" readiness
+export const trainingModules = pgTable("training_modules", {
+  id: serial("id").primaryKey(),
+  key: varchar("key").notNull().unique(),
+  title: varchar("title").notNull(),
+  description: text("description"),
+  durationMinutes: integer("duration_minutes").default(10),
+  category: varchar("category"), // 'evangelism', 'discipleship', 'prayer', 'leadership', 'skills'
+  pillarTags: text("pillar_tags").array(),
+  contentJson: jsonb("content_json"), // flexible content structure
+  videoUrl: varchar("video_url"),
+  imageUrl: varchar("image_url"),
+  prerequisiteModuleKey: varchar("prerequisite_module_key"),
+  orderIndex: integer("order_index").default(0),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertTrainingModuleSchema = createInsertSchema(trainingModules).omit({ id: true, createdAt: true });
+export type InsertTrainingModule = z.infer<typeof insertTrainingModuleSchema>;
+export type TrainingModule = typeof trainingModules.$inferSelect;
+
+// Training Progress - user's module completions
+export const trainingProgress = pgTable("training_progress", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  moduleId: integer("module_id").notNull().references(() => trainingModules.id, { onDelete: 'cascade' }),
+  status: varchar("status").default("not_started"), // 'not_started', 'in_progress', 'completed'
+  startedAt: timestamp("started_at"),
+  completedAt: timestamp("completed_at"),
+  quizScore: integer("quiz_score"), // if applicable
+  notes: text("notes"),
+});
+
+export const insertTrainingProgressSchema = createInsertSchema(trainingProgress).omit({ id: true });
+export type InsertTrainingProgress = z.infer<typeof insertTrainingProgressSchema>;
+export type TrainingProgress = typeof trainingProgress.$inferSelect;
+
+// Challenges - revival momentum (21-day Nations Awakening, etc)
+export const missionChallenges = pgTable("mission_challenges", {
+  id: serial("id").primaryKey(),
+  key: varchar("key").notNull().unique(),
+  title: varchar("title").notNull(),
+  description: text("description"),
+  theme: varchar("theme"), // 'revival', 'harvest', 'nations', 'prayer'
+  startDate: timestamp("start_date"),
+  endDate: timestamp("end_date"),
+  durationDays: integer("duration_days").default(21),
+  pillarTags: text("pillar_tags").array(),
+  imageUrl: varchar("image_url"),
+  badgeKey: varchar("badge_key"), // badge earned on completion
+  isActive: boolean("is_active").default(true),
+  isFeatured: boolean("is_featured").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertMissionChallengeSchema = createInsertSchema(missionChallenges).omit({ id: true, createdAt: true });
+export type InsertMissionChallenge = z.infer<typeof insertMissionChallengeSchema>;
+export type MissionChallenge = typeof missionChallenges.$inferSelect;
+
+// Challenge Enrollments - user participation
+export const challengeEnrollments = pgTable("challenge_enrollments", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  challengeId: integer("challenge_id").notNull().references(() => missionChallenges.id, { onDelete: 'cascade' }),
+  progressDay: integer("progress_day").default(0),
+  status: varchar("status").default("active"), // 'active', 'completed', 'dropped'
+  startedAt: timestamp("started_at").defaultNow(),
+  completedAt: timestamp("completed_at"),
+  notificationsEnabled: boolean("notifications_enabled").default(true),
+});
+
+export const insertChallengeEnrollmentSchema = createInsertSchema(challengeEnrollments).omit({ id: true, startedAt: true });
+export type InsertChallengeEnrollment = z.infer<typeof insertChallengeEnrollmentSchema>;
+export type ChallengeEnrollment = typeof challengeEnrollments.$inferSelect;
+
+// Challenge Day Completions - track daily progress
+export const challengeDayCompletions = pgTable("challenge_day_completions", {
+  id: serial("id").primaryKey(),
+  enrollmentId: integer("enrollment_id").notNull().references(() => challengeEnrollments.id, { onDelete: 'cascade' }),
+  dayNumber: integer("day_number").notNull(),
+  completedAt: timestamp("completed_at").defaultNow(),
+  prayerNote: text("prayer_note"),
+  actionTaken: varchar("action_taken"),
+});
+
+export const insertChallengeDayCompletionSchema = createInsertSchema(challengeDayCompletions).omit({ id: true, completedAt: true });
+export type InsertChallengeDayCompletion = z.infer<typeof insertChallengeDayCompletionSchema>;
+export type ChallengeDayCompletion = typeof challengeDayCompletions.$inferSelect;
+
+// Prayer Wall Posts - community prayer sharing
+export const prayerWallPosts = pgTable("prayer_wall_posts", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  content: text("content").notNull(),
+  focusId: integer("focus_id").references(() => missionFocuses.id),
+  projectId: integer("project_id").references(() => missionProjects.id),
+  visibility: varchar("visibility").default("community"), // 'private', 'community', 'public'
+  moderationStatus: varchar("moderation_status").default("approved"), // 'pending', 'approved', 'rejected'
+  prayerCount: integer("prayer_count").default(0), // others praying
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertPrayerWallPostSchema = createInsertSchema(prayerWallPosts).omit({ id: true, createdAt: true });
+export type InsertPrayerWallPost = z.infer<typeof insertPrayerWallPostSchema>;
+export type PrayerWallPost = typeof prayerWallPosts.$inferSelect;
+
+// Prayer Wall Reactions - "I'm praying" reactions
+export const prayerWallReactions = pgTable("prayer_wall_reactions", {
+  id: serial("id").primaryKey(),
+  postId: integer("post_id").notNull().references(() => prayerWallPosts.id, { onDelete: 'cascade' }),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  reactionType: varchar("reaction_type").default("praying"), // 'praying', 'amen'
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertPrayerWallReactionSchema = createInsertSchema(prayerWallReactions).omit({ id: true, createdAt: true });
+export type InsertPrayerWallReaction = z.infer<typeof insertPrayerWallReactionSchema>;
+export type PrayerWallReaction = typeof prayerWallReactions.$inferSelect;
+
+// Mission Donations - giving with accountability
+export const missionDonations = pgTable("mission_donations", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  projectId: integer("project_id").references(() => missionProjects.id),
+  amount: integer("amount").notNull(), // in cents
+  currency: varchar("currency").default("USD"),
+  paymentStatus: varchar("payment_status").default("pending"), // 'pending', 'completed', 'failed', 'refunded'
+  paymentProvider: varchar("payment_provider"), // 'stripe', 'paypal'
+  paymentId: varchar("payment_id"), // external payment ID
+  isRecurring: boolean("is_recurring").default(false),
+  recurringId: integer("recurring_id"),
+  receiptUrl: varchar("receipt_url"),
+  note: text("note"), // donor message
+  isAnonymous: boolean("is_anonymous").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertMissionDonationSchema = createInsertSchema(missionDonations).omit({ id: true, createdAt: true });
+export type InsertMissionDonation = z.infer<typeof insertMissionDonationSchema>;
+export type MissionDonation = typeof missionDonations.$inferSelect;
+
+// Recurring Donations - monthly giving
+export const recurringDonations = pgTable("recurring_donations", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  projectId: integer("project_id").references(() => missionProjects.id),
+  amount: integer("amount").notNull(), // in cents
+  currency: varchar("currency").default("USD"),
+  frequency: varchar("frequency").default("monthly"), // 'weekly', 'monthly', 'quarterly'
+  paymentProvider: varchar("payment_provider"),
+  subscriptionId: varchar("subscription_id"), // external subscription ID
+  status: varchar("status").default("active"), // 'active', 'paused', 'cancelled'
+  nextPaymentDate: timestamp("next_payment_date"),
+  createdAt: timestamp("created_at").defaultNow(),
+  cancelledAt: timestamp("cancelled_at"),
+});
+
+export const insertRecurringDonationSchema = createInsertSchema(recurringDonations).omit({ id: true, createdAt: true });
+export type InsertRecurringDonation = z.infer<typeof insertRecurringDonationSchema>;
+export type RecurringDonation = typeof recurringDonations.$inferSelect;
+
+// Mission Testimonies - revival culture + encouragement
+export const missionTestimonies = pgTable("mission_testimonies", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  type: varchar("type").notNull(), // 'answered_prayer', 'giving_impact', 'outreach_story', 'salvation', 'transformation'
+  title: varchar("title").notNull(),
+  content: text("content").notNull(),
+  projectId: integer("project_id").references(() => missionProjects.id),
+  focusId: integer("focus_id").references(() => missionFocuses.id),
+  visibility: varchar("visibility").default("community"), // 'private', 'community', 'public'
+  moderationStatus: varchar("moderation_status").default("approved"), // 'pending', 'approved', 'rejected'
+  imageUrl: varchar("image_url"),
+  videoUrl: varchar("video_url"),
+  isFeatured: boolean("is_featured").default(false),
+  likeCount: integer("like_count").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertMissionTestimonySchema = createInsertSchema(missionTestimonies).omit({ id: true, createdAt: true });
+export type InsertMissionTestimony = z.infer<typeof insertMissionTestimonySchema>;
+export type MissionTestimony = typeof missionTestimonies.$inferSelect;

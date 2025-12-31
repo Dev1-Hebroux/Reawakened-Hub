@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Home, Globe, Flame, Users, BookOpen } from "lucide-react";
+import { Home, Heart, Rocket, HandHeart, Zap } from "lucide-react";
 import { motion } from "framer-motion";
 
 export function MobileNav() {
@@ -7,10 +7,10 @@ export function MobileNav() {
 
   const navItems = [
     { icon: Home, label: "Home", href: "/" },
-    { icon: Globe, label: "Mission", href: "/mission" },
-    { icon: Flame, label: "Sparks", href: "/sparks" },
-    { icon: Users, label: "Community", href: "/community" },
-    { icon: BookOpen, label: "Blog", href: "/blog" },
+    { icon: Heart, label: "Pray", href: "/pray" },
+    { icon: Rocket, label: "Missions", href: "/missions" },
+    { icon: HandHeart, label: "Give", href: "/give" },
+    { icon: Zap, label: "Movement", href: "/movement" },
   ];
 
   return (

@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Play, Globe2, X } from "lucide-react";
 import { useState } from "react";
+import { useLocation } from "wouter";
 import heroImage from "@assets/generated_images/young_man_praying_with_golden_light_overlay.png";
 import visionVideo from "@assets/generated_videos/holy_spirit_dove_vision_video.mp4";
 import logoImage from "@assets/1_1765584395888.png";
@@ -9,6 +10,7 @@ import heroBgImage from "@assets/11_1767182385476.png";
 
 export function Hero() {
   const [showVideo, setShowVideo] = useState(false);
+  const [, navigate] = useLocation();
 
   return (
     <section className="relative min-h-[90vh] flex items-center pt-32 md:pt-36 pb-12 overflow-hidden">
@@ -109,18 +111,34 @@ export function Hero() {
             </blockquote>
 
             <div className="flex flex-col sm:flex-row items-center gap-4 pt-2">
-              <Button size="lg" className="bg-primary hover:bg-primary/90 text-white rounded-full px-8 h-16 text-lg font-bold shadow-xl shadow-orange-500/20 w-full sm:w-auto hover:-translate-y-1 transition-all">
-                Join the Movement
-              </Button>
-              <div 
-                className="flex items-center gap-3 cursor-pointer group w-full sm:w-auto justify-center sm:justify-start"
-                onClick={() => setShowVideo(true)}
+              <Button 
+                size="lg" 
+                className="bg-primary hover:bg-primary/90 text-white rounded-full px-8 h-14 text-base font-bold shadow-xl shadow-orange-500/20 w-full sm:w-auto hover:-translate-y-1 transition-all"
+                data-testid="button-start-mission"
+                onClick={() => navigate('/missions')}
               >
-                <div className="h-14 w-14 rounded-full bg-white border border-gray-100 shadow-lg flex items-center justify-center group-hover:scale-110 transition-transform text-primary">
-                  <Play className="h-5 w-5 fill-current ml-1" />
-                </div>
-                <span className="font-bold text-gray-900 group-hover:text-primary transition-colors">Watch Video</span>
+                <Globe2 className="h-5 w-5 mr-2" />
+                Start Your Mission
+              </Button>
+              <Button 
+                variant="outline"
+                size="lg" 
+                className="border-2 border-gray-200 bg-white/80 hover:bg-white text-gray-900 rounded-full px-6 h-14 text-base font-bold w-full sm:w-auto hover:-translate-y-1 transition-all"
+                data-testid="button-pray-now"
+                onClick={() => navigate('/pray')}
+              >
+                Pray Now
+              </Button>
+            </div>
+            <div 
+              className="flex items-center gap-3 cursor-pointer group justify-center sm:justify-start mt-2"
+              onClick={() => setShowVideo(true)}
+              data-testid="button-watch-video"
+            >
+              <div className="h-12 w-12 rounded-full bg-white border border-gray-100 shadow-lg flex items-center justify-center group-hover:scale-110 transition-transform text-primary">
+                <Play className="h-4 w-4 fill-current ml-1" />
               </div>
+              <span className="font-bold text-gray-700 group-hover:text-primary transition-colors text-sm">Watch Our Vision</span>
             </div>
           </motion.div>
 
