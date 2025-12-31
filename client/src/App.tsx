@@ -32,6 +32,7 @@ import { StrengthsTool } from "@/pages/StrengthsTool";
 import { StylesTool } from "@/pages/StylesTool";
 import { EqTool } from "@/pages/EqTool";
 import { ScaTool } from "@/pages/ScaTool";
+import { DailyReflection } from "@/pages/DailyReflection";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { QuickShare } from "@/components/ui/QuickShare";
 
@@ -66,6 +67,7 @@ function Router() {
       <Route path="/vision/:sessionId/tools/styles" component={StylesTool} />
       <Route path="/vision/:sessionId/tools/eq" component={EqTool} />
       <Route path="/vision/:sessionId/tools/sca" component={ScaTool} />
+      <Route path="/reflection" component={DailyReflection} />
       <Route component={NotFound} />
     </Switch>
   );

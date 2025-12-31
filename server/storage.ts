@@ -1707,17 +1707,21 @@ export class DatabaseStorage implements IStorage {
     
     if (scheduled) return scheduled;
 
-    // Otherwise, get a random reflection from the pool (seeded by day)
-    const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
-    const [random] = await db.select().from(dailyReflections)
+    // Get all unscheduled active reflections and pick one based on day of year
+    const allUnscheduled = await db.select().from(dailyReflections)
       .where(and(
         eq(dailyReflections.isActive, true),
         sql`${dailyReflections.scheduledDate} IS NULL`
       ))
-      .offset(dayOfYear % 100)
-      .limit(1);
+      .orderBy(dailyReflections.id);
     
-    return random;
+    if (allUnscheduled.length === 0) return undefined;
+    
+    // Use day of year to deterministically select a reflection
+    const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
+    const index = dayOfYear % allUnscheduled.length;
+    
+    return allUnscheduled[index];
   }
 
   async getReflection(id: number): Promise<DailyReflection | undefined> {
