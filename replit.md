@@ -16,7 +16,7 @@ Preferred communication style: Simple, everyday language.
 - **Framework**: React 18 with TypeScript
 - **Routing**: Wouter (lightweight React router)
 - **State Management**: TanStack React Query for server state
-- **Styling**: Tailwind CSS v4 with custom brand theming (deep navy primary, vibrant orange accent)
+- **Styling**: Tailwind CSS v4 with warm coaching palette (sage #7C9A8E, cream #FAF8F5, teal #4A7C7C, beige #D4A574)
 - **UI Components**: shadcn/ui component library with Radix UI primitives
 - **Animations**: Framer Motion for page transitions and micro-interactions
 - **Fonts**: DM Sans (body) and Space Grotesk (display headings)
@@ -59,6 +59,24 @@ Preferred communication style: Simple, everyday language.
   - `weeklyReviews` - Weekly reflection and planning
   - `visionExports` - PDF/export records
 
+**Growth Tools Tables** (Personal Development Tools):
+  - `growthTracks` - Growth track definitions (Personal Mastery, Communication, Leadership)
+  - `growthModules` - Modules within tracks
+  - `assessments` - Assessment configurations
+  - `assessmentQuestions` - Question bank for assessments
+  - `assessmentAttempts` - User assessment submissions
+  - `strengthsCatalog` - 24 character strengths definitions
+  - `userStrengths` - User's Top 5 strengths selections
+  - `styleProfiles` - DISC-inspired style profiles
+  - `userStyles` - User's primary/secondary style results
+  - `eqDomains` - 4 EQ domains (Self-Awareness, Self-Management, Social Awareness, Relationship Management)
+  - `eqPractices` - EQ micro-practice library
+  - `wdepExercises` - WDEP reality therapy exercises
+  - `wdepResponses` - User responses for each WDEP screen
+  - `wdepExperimentLogs` - Weekly experiment tracking
+  - `scaExercises` - Self-Concordant Action exercises
+  - `scaFocusItems` - Focus list items with motivation tracking
+
 ### Authentication Flow
 - Uses Replit's built-in OIDC authentication
 - Session-based auth with PostgreSQL session store
@@ -70,7 +88,14 @@ Preferred communication style: Simple, everyday language.
 ├── client/           # React frontend
 │   ├── src/
 │   │   ├── components/   # UI components (layout, sections, ui)
+│   │   │   ├── Assessment.tsx  # Reusable assessment engine
 │   │   ├── pages/        # Route pages
+│   │   │   ├── TrackHub.tsx    # Growth Tracks hub
+│   │   │   ├── WdepTool.tsx    # WDEP reality therapy tool
+│   │   │   ├── StrengthsTool.tsx  # Character strengths discovery
+│   │   │   ├── StylesTool.tsx  # 4 Styles communication quiz
+│   │   │   ├── EqTool.tsx      # EQ Micro-Skills assessment
+│   │   │   ├── ScaTool.tsx     # Self-Concordant Action builder
 │   │   ├── hooks/        # Custom React hooks
 │   │   └── lib/          # Utilities and query client
 ├── server/           # Express backend
