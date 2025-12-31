@@ -11,7 +11,7 @@ export function Hero() {
   const [showVideo, setShowVideo] = useState(false);
 
   return (
-    <section className="relative min-h-[90vh] flex items-center pt-24 pb-12 overflow-hidden">
+    <section className="relative min-h-[90vh] flex items-center pt-32 md:pt-36 pb-12 overflow-hidden">
       {/* Background Image with Rich Gradient Overlay */}
       <div className="absolute inset-0 z-0">
         <img 
