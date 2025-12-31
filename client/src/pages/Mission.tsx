@@ -18,7 +18,7 @@ import { toast } from "sonner";
 import { SubscriptionCapture } from "@/components/sections/SubscriptionCapture";
 import { PrayerRequestModal, TestimonyModal, VolunteerModal, MissionTripModal } from "@/components/sections/EngagementForms";
 import { COMMUNITY_LINKS } from "@/lib/config";
-import type { Event, EventRegistration } from "@shared/schema";
+import type { Event, EventRegistration, Testimony } from "@shared/schema";
 
 import heroBg from "@assets/generated_images/global_mission_map_concept.png";
 import outreachImg from "@assets/generated_images/youth_outreach_event.png";
@@ -131,6 +131,10 @@ export function MissionPage() {
 
   const { data: events = [], isLoading: eventsLoading } = useQuery<Event[]>({
     queryKey: ["/api/events"],
+  });
+
+  const { data: testimonies = [], isLoading: testimoniesLoading } = useQuery<Testimony[]>({
+    queryKey: ["/api/testimonies"],
   });
 
   const { data: myRegistrations = [] } = useQuery<EventRegistration[]>({
@@ -586,6 +590,52 @@ export function MissionPage() {
               </motion.div>
             ))}
           </div>
+
+          {/* Community Testimonies */}
+          {testimonies.length > 0 && (
+            <div className="mt-16">
+              <div className="text-center mb-10">
+                <span className="text-[#D4A574] font-bold tracking-wider uppercase text-sm">From Our Community</span>
+                <h3 className="text-2xl font-display font-bold text-gray-900 mt-2">
+                  Your Stories, Your Faith
+                </h3>
+              </div>
+              
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {testimonies.slice(0, 6).map((testimony, i) => (
+                  <motion.div
+                    key={testimony.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: i * 0.1 }}
+                    className="bg-white rounded-3xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 border border-[#D4A574]/20"
+                    data-testid={`card-testimony-${testimony.id}`}
+                  >
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="h-12 w-12 rounded-full bg-gradient-to-br from-[#7C9A8E] to-[#4A7C7C] flex items-center justify-center text-white font-bold text-lg">
+                        {testimony.name.charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-gray-900">{testimony.name}</h4>
+                        {testimony.category && (
+                          <span className="text-xs text-[#D4A574] font-medium capitalize">{testimony.category}</span>
+                        )}
+                      </div>
+                    </div>
+                    <h5 className="font-bold text-gray-800 mb-2">{testimony.title}</h5>
+                    <p className="text-gray-600 text-sm leading-relaxed line-clamp-4">"{testimony.story}"</p>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {testimoniesLoading && (
+            <div className="flex items-center justify-center py-12 mt-8">
+              <Loader2 className="h-6 w-6 animate-spin text-[#7C9A8E]" />
+            </div>
+          )}
 
           <div className="mt-12 text-center">
             <Button 
