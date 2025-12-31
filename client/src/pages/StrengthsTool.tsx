@@ -128,7 +128,6 @@ export function StrengthsTool() {
       
       const sorted = Array.from(finalRatings.entries())
         .sort((a, b) => b[1] - a[1])
-        .slice(0, 12)
         .map(([key]) => key);
       setTop5(sorted.slice(0, 5));
       setRatings(finalRatings);
