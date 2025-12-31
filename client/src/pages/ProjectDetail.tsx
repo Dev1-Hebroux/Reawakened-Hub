@@ -73,7 +73,7 @@ export default function ProjectDetail() {
     <div className="min-h-screen bg-[#FAF8F5] text-foreground pb-20 md:pb-0">
       <Navbar />
       
-      <section className="relative min-h-[40vh] flex items-end pt-20 pb-6 overflow-hidden">
+      <section className="relative min-h-[50vh] flex items-end pt-24 pb-8 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-[#1a2744] via-[#1a2744]/95 to-[#1a2744]/80" />
         {project.imageUrl && (
           <div className="absolute inset-0 opacity-30">
@@ -100,7 +100,7 @@ export default function ProjectDetail() {
               </span>
             )}
 
-            <h1 className="text-2xl md:text-4xl font-display font-bold text-white mb-3">
+            <h1 className="text-3xl md:text-5xl font-display font-bold text-white mb-4">
               {project.title}
             </h1>
 
@@ -129,7 +129,7 @@ export default function ProjectDetail() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-white rounded-xl shadow-lg border border-gray-100 p-4 mb-6"
+          className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-8"
         >
           <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
             <Target className="h-5 w-5 text-primary" />
@@ -193,7 +193,7 @@ export default function ProjectDetail() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="bg-white rounded-xl shadow-lg border border-gray-100 p-4 mb-6"
+            className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-8"
           >
             <h3 className="text-lg font-bold text-gray-900 mb-4">The Story</h3>
             <div className="prose prose-gray max-w-none">
@@ -210,7 +210,7 @@ export default function ProjectDetail() {
           transition={{ delay: 0.3 }}
           className="grid md:grid-cols-2 gap-4 mb-8"
         >
-          <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-4">
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
             <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
               <Share2 className="h-5 w-5 text-primary" />
               Share This Mission
@@ -240,7 +240,7 @@ export default function ProjectDetail() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-4">
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
             <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
               <Users className="h-5 w-5 text-primary" />
               Join the Team
@@ -276,7 +276,7 @@ export default function ProjectDetail() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="bg-gradient-to-br from-primary/10 to-orange-500/10 rounded-xl border border-primary/20 p-4 mb-6"
+            className="bg-gradient-to-br from-primary/10 to-orange-500/10 rounded-2xl border border-primary/20 p-6 mb-8"
           >
             <div className="flex items-center gap-3 mb-4">
               <div className="h-12 w-12 rounded-xl bg-primary/20 flex items-center justify-center">

@@ -48,22 +48,22 @@ export function GiveHub() {
     <div className="min-h-screen bg-gradient-to-b from-[#1a2744] via-[#1a2744]/95 to-[#1a2744]/90">
       <Navbar />
       
-      <main className="pt-20 pb-24 px-4">
+      <main className="pt-28 pb-32 px-4">
         <div className="max-w-lg mx-auto">
           
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-4"
+            className="text-center mb-6"
           >
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-3 py-1.5 mb-3">
-              <HandHeart className="h-3 w-3 text-primary" />
-              <span className="text-xs font-bold text-white/90">Give</span>
+            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 mb-4">
+              <HandHeart className="h-4 w-4 text-primary" />
+              <span className="text-sm font-bold text-white/90">Give</span>
             </div>
-            <h1 className="text-2xl font-display font-bold text-white mb-1">
+            <h1 className="text-3xl font-display font-bold text-white mb-2">
               Fuel the Mission
             </h1>
-            <p className="text-sm text-white/70">
+            <p className="text-white/70">
               Your generosity reaches the nations
             </p>
           </motion.div>
@@ -72,7 +72,7 @@ export function GiveHub() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-gradient-to-br from-primary/30 to-[#D4A574]/20 backdrop-blur-md rounded-2xl p-4 mb-4 border border-white/10 relative overflow-hidden"
+            className="bg-gradient-to-br from-primary/30 to-[#D4A574]/20 backdrop-blur-md rounded-3xl p-6 mb-6 border border-white/10 relative overflow-hidden"
           >
             <div className="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-full blur-3xl" />
             
@@ -108,7 +108,7 @@ export function GiveHub() {
               </div>
               
               <Button 
-                className="w-full bg-white text-primary hover:bg-white/90 font-medium py-2.5 rounded-xl text-sm"
+                className="w-full bg-white text-primary hover:bg-white/90 font-bold py-6 rounded-2xl"
                 onClick={() => navigate("/give/campaign/1")}
                 data-testid="button-give-campaign"
               >
@@ -122,7 +122,7 @@ export function GiveHub() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="bg-white/10 backdrop-blur-md rounded-2xl p-4 mb-4 border border-white/10"
+            className="bg-white/10 backdrop-blur-md rounded-3xl p-6 mb-6 border border-white/10"
           >
             <div className="flex items-center gap-3 mb-4">
               <div className="h-12 w-12 rounded-full bg-[#7C9A8E]/30 flex items-center justify-center">
@@ -182,7 +182,7 @@ export function GiveHub() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="bg-white/10 backdrop-blur-md rounded-2xl p-4 mb-4 border border-white/10"
+            className="bg-white/10 backdrop-blur-md rounded-3xl p-6 mb-6 border border-white/10"
           >
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-bold text-white">Support a Project</h3>
@@ -226,7 +226,7 @@ export function GiveHub() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="bg-gradient-to-br from-[#4A7C7C]/20 to-[#7C9A8E]/20 backdrop-blur-md rounded-2xl p-4 border border-white/10"
+            className="bg-gradient-to-br from-[#4A7C7C]/20 to-[#7C9A8E]/20 backdrop-blur-md rounded-3xl p-6 border border-white/10"
           >
             <div className="flex items-center gap-3 mb-4">
               <div className="h-12 w-12 rounded-full bg-[#4A7C7C]/30 flex items-center justify-center">
