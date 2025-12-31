@@ -2432,5 +2432,205 @@ export async function registerRoutes(
     }
   });
 
+  // ===== MISSION HUB API ROUTES =====
+
+  // Mission Projects
+  app.get('/api/mission/projects', async (req, res) => {
+    try {
+      const projects = await storage.getMissionProjects();
+      res.json(projects);
+    } catch (error) {
+      console.error("Error fetching mission projects:", error);
+      res.status(500).json({ message: "Failed to fetch projects" });
+    }
+  });
+
+  app.get('/api/mission/projects/:id', async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const project = await storage.getMissionProject(id);
+      if (!project) {
+        return res.status(404).json({ message: "Project not found" });
+      }
+      res.json(project);
+    } catch (error) {
+      console.error("Error fetching project:", error);
+      res.status(500).json({ message: "Failed to fetch project" });
+    }
+  });
+
+  // Mission Focuses (people groups/regions)
+  app.get('/api/mission/focuses', async (req, res) => {
+    try {
+      const focuses = await storage.getMissionFocuses();
+      res.json(focuses);
+    } catch (error) {
+      console.error("Error fetching focuses:", error);
+      res.status(500).json({ message: "Failed to fetch focuses" });
+    }
+  });
+
+  // Mission Opportunities (online-first by default)
+  app.get('/api/mission/opportunities', async (req, res) => {
+    try {
+      const deliveryMode = req.query.deliveryMode as string | undefined;
+      const opportunities = await storage.getMissionOpportunities(deliveryMode);
+      res.json(opportunities);
+    } catch (error) {
+      console.error("Error fetching opportunities:", error);
+      res.status(500).json({ message: "Failed to fetch opportunities" });
+    }
+  });
+
+  // Live Rooms
+  app.get('/api/mission/live-rooms', async (req, res) => {
+    try {
+      const status = req.query.status as string | undefined;
+      const rooms = await storage.getLiveRooms(status);
+      res.json(rooms);
+    } catch (error) {
+      console.error("Error fetching live rooms:", error);
+      res.status(500).json({ message: "Failed to fetch live rooms" });
+    }
+  });
+
+  // Mission Challenges
+  app.get('/api/mission/challenges', async (req, res) => {
+    try {
+      const status = req.query.status as string | undefined;
+      const challenges = await storage.getMissionChallenges(status);
+      res.json(challenges);
+    } catch (error) {
+      console.error("Error fetching challenges:", error);
+      res.status(500).json({ message: "Failed to fetch challenges" });
+    }
+  });
+
+  app.post('/api/mission/challenges/:id/enroll', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const challengeId = parseInt(req.params.id);
+      const enrollment = await storage.enrollInChallenge(userId, challengeId);
+      res.status(201).json(enrollment);
+    } catch (error: any) {
+      console.error("Error enrolling in challenge:", error);
+      res.status(400).json({ message: error.message || "Failed to enroll" });
+    }
+  });
+
+  app.get('/api/mission/me/challenges', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const enrollments = await storage.getUserChallengeEnrollments(userId);
+      res.json(enrollments);
+    } catch (error) {
+      console.error("Error fetching user challenges:", error);
+      res.status(500).json({ message: "Failed to fetch enrollments" });
+    }
+  });
+
+  // Mission Testimonies
+  app.get('/api/mission/testimonies', async (req, res) => {
+    try {
+      const type = req.query.type as string | undefined;
+      const testimonies = await storage.getMissionTestimonies(type);
+      res.json(testimonies);
+    } catch (error) {
+      console.error("Error fetching testimonies:", error);
+      res.status(500).json({ message: "Failed to fetch testimonies" });
+    }
+  });
+
+  app.post('/api/mission/testimonies', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const testimony = await storage.createMissionTestimony({ ...req.body, userId });
+      res.status(201).json(testimony);
+    } catch (error: any) {
+      console.error("Error creating testimony:", error);
+      res.status(400).json({ message: error.message || "Failed to create testimony" });
+    }
+  });
+
+  // Mission Pillars
+  app.get('/api/mission/pillars', async (req, res) => {
+    try {
+      const pillars = await storage.getMissionPillars();
+      res.json(pillars);
+    } catch (error) {
+      console.error("Error fetching pillars:", error);
+      res.status(500).json({ message: "Failed to fetch pillars" });
+    }
+  });
+
+  // Mission Profile (user's mission settings)
+  app.get('/api/mission/me/profile', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const profile = await storage.getMissionProfile(userId);
+      res.json(profile || null);
+    } catch (error) {
+      console.error("Error fetching mission profile:", error);
+      res.status(500).json({ message: "Failed to fetch profile" });
+    }
+  });
+
+  app.post('/api/mission/me/profile', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const profile = await storage.upsertMissionProfile({ ...req.body, userId });
+      res.json(profile);
+    } catch (error: any) {
+      console.error("Error saving mission profile:", error);
+      res.status(400).json({ message: error.message || "Failed to save profile" });
+    }
+  });
+
+  // Digital Actions
+  app.get('/api/mission/me/actions', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const actions = await storage.getUserDigitalActions(userId);
+      res.json(actions);
+    } catch (error) {
+      console.error("Error fetching digital actions:", error);
+      res.status(500).json({ message: "Failed to fetch actions" });
+    }
+  });
+
+  app.post('/api/mission/actions', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const action = await storage.createDigitalAction({ ...req.body, userId });
+      res.status(201).json(action);
+    } catch (error: any) {
+      console.error("Error creating digital action:", error);
+      res.status(400).json({ message: error.message || "Failed to create action" });
+    }
+  });
+
+  // Donations
+  app.get('/api/mission/me/donations', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const donations = await storage.getUserDonations(userId);
+      res.json(donations);
+    } catch (error) {
+      console.error("Error fetching donations:", error);
+      res.status(500).json({ message: "Failed to fetch donations" });
+    }
+  });
+
+  app.post('/api/mission/donations', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const donation = await storage.createMissionDonation({ ...req.body, userId });
+      res.status(201).json(donation);
+    } catch (error: any) {
+      console.error("Error creating donation:", error);
+      res.status(400).json({ message: error.message || "Failed to create donation" });
+    }
+  });
+
   return httpServer;
 }

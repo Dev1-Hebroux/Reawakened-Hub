@@ -254,6 +254,45 @@ import {
   type InsertDailyReflection,
   type ReflectionLog,
   type InsertReflectionLog,
+  missionProjects,
+  missionFocuses,
+  missionOpportunities,
+  liveRooms,
+  missionChallenges,
+  challengeEnrollments,
+  missionTestimonies,
+  missionPillars,
+  missionProfiles,
+  missionAdoptions,
+  missionPrayerSessions,
+  digitalActions,
+  missionDonations,
+  type MissionProject,
+  type InsertMissionProject,
+  type MissionFocus,
+  type InsertMissionFocus,
+  type MissionOpportunity,
+  type InsertMissionOpportunity,
+  type LiveRoom,
+  type InsertLiveRoom,
+  type MissionChallenge,
+  type InsertMissionChallenge,
+  type ChallengeEnrollment,
+  type InsertChallengeEnrollment,
+  type MissionTestimony,
+  type InsertMissionTestimony,
+  type MissionPillar,
+  type InsertMissionPillar,
+  type MissionProfile,
+  type InsertMissionProfile,
+  type MissionAdoption,
+  type InsertMissionAdoption,
+  type MissionPrayerSession,
+  type InsertMissionPrayerSession,
+  type DigitalAction,
+  type InsertDigitalAction,
+  type MissionDonation,
+  type InsertMissionDonation,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, sql, inArray, count } from "drizzle-orm";
@@ -543,6 +582,43 @@ export interface IStorage {
   getUserReflectionStreak(userId: string): Promise<number>;
   logReflectionView(userId: string, reflectionId: number): Promise<ReflectionLog>;
   logReflectionEngagement(userId: string, reflectionId: number, data: { journalEntry?: string; reaction?: string }): Promise<ReflectionLog>;
+
+  // ===== MISSION HUB =====
+  getMissionProjects(pillarId?: number): Promise<MissionProject[]>;
+  getMissionProject(id: number): Promise<MissionProject | undefined>;
+  createMissionProject(data: InsertMissionProject): Promise<MissionProject>;
+  
+  getMissionFocuses(): Promise<MissionFocus[]>;
+  getMissionFocus(id: number): Promise<MissionFocus | undefined>;
+  createMissionFocus(data: InsertMissionFocus): Promise<MissionFocus>;
+  
+  getMissionOpportunities(deliveryMode?: string): Promise<MissionOpportunity[]>;
+  getMissionOpportunity(id: number): Promise<MissionOpportunity | undefined>;
+  createMissionOpportunity(data: InsertMissionOpportunity): Promise<MissionOpportunity>;
+  
+  getLiveRooms(status?: string): Promise<LiveRoom[]>;
+  getLiveRoom(id: number): Promise<LiveRoom | undefined>;
+  createLiveRoom(data: InsertLiveRoom): Promise<LiveRoom>;
+  
+  getMissionChallenges(status?: string): Promise<MissionChallenge[]>;
+  getMissionChallenge(id: number): Promise<MissionChallenge | undefined>;
+  createMissionChallenge(data: InsertMissionChallenge): Promise<MissionChallenge>;
+  enrollInChallenge(userId: string, challengeId: number): Promise<ChallengeEnrollment>;
+  getUserChallengeEnrollments(userId: string): Promise<ChallengeEnrollment[]>;
+  
+  getMissionTestimonies(type?: string): Promise<MissionTestimony[]>;
+  createMissionTestimony(data: InsertMissionTestimony): Promise<MissionTestimony>;
+  
+  getMissionPillars(): Promise<MissionPillar[]>;
+  
+  getMissionProfile(userId: string): Promise<MissionProfile | undefined>;
+  upsertMissionProfile(data: InsertMissionProfile): Promise<MissionProfile>;
+  
+  createDigitalAction(data: InsertDigitalAction): Promise<DigitalAction>;
+  getUserDigitalActions(userId: string): Promise<DigitalAction[]>;
+  
+  createMissionDonation(data: InsertMissionDonation): Promise<MissionDonation>;
+  getUserDonations(userId: string): Promise<MissionDonation[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -2007,6 +2083,158 @@ export class DatabaseStorage implements IStorage {
   async getCampaignAggregates(campaignId: number): Promise<FeedbackAggregate[]> {
     return db.select().from(feedbackAggregates)
       .where(eq(feedbackAggregates.campaignId, campaignId));
+  }
+
+  // ===== MISSION HUB IMPLEMENTATIONS =====
+
+  async getMissionProjects(pillarId?: number): Promise<MissionProject[]> {
+    return db.select().from(missionProjects).orderBy(desc(missionProjects.createdAt));
+  }
+
+  async getMissionProject(id: number): Promise<MissionProject | undefined> {
+    const [project] = await db.select().from(missionProjects).where(eq(missionProjects.id, id));
+    return project;
+  }
+
+  async createMissionProject(data: InsertMissionProject): Promise<MissionProject> {
+    const [project] = await db.insert(missionProjects).values(data).returning();
+    return project;
+  }
+
+  async getMissionFocuses(): Promise<MissionFocus[]> {
+    return db.select().from(missionFocuses).orderBy(missionFocuses.name);
+  }
+
+  async getMissionFocus(id: number): Promise<MissionFocus | undefined> {
+    const [focus] = await db.select().from(missionFocuses).where(eq(missionFocuses.id, id));
+    return focus;
+  }
+
+  async createMissionFocus(data: InsertMissionFocus): Promise<MissionFocus> {
+    const [focus] = await db.insert(missionFocuses).values(data).returning();
+    return focus;
+  }
+
+  async getMissionOpportunities(deliveryMode?: string): Promise<MissionOpportunity[]> {
+    if (deliveryMode) {
+      return db.select().from(missionOpportunities)
+        .where(eq(missionOpportunities.deliveryMode, deliveryMode))
+        .orderBy(desc(missionOpportunities.createdAt));
+    }
+    return db.select().from(missionOpportunities).orderBy(desc(missionOpportunities.createdAt));
+  }
+
+  async getMissionOpportunity(id: number): Promise<MissionOpportunity | undefined> {
+    const [opp] = await db.select().from(missionOpportunities).where(eq(missionOpportunities.id, id));
+    return opp;
+  }
+
+  async createMissionOpportunity(data: InsertMissionOpportunity): Promise<MissionOpportunity> {
+    const [opp] = await db.insert(missionOpportunities).values(data).returning();
+    return opp;
+  }
+
+  async getLiveRooms(status?: string): Promise<LiveRoom[]> {
+    if (status) {
+      return db.select().from(liveRooms)
+        .where(eq(liveRooms.status, status))
+        .orderBy(desc(liveRooms.scheduledAt));
+    }
+    return db.select().from(liveRooms).orderBy(desc(liveRooms.scheduledAt));
+  }
+
+  async getLiveRoom(id: number): Promise<LiveRoom | undefined> {
+    const [room] = await db.select().from(liveRooms).where(eq(liveRooms.id, id));
+    return room;
+  }
+
+  async createLiveRoom(data: InsertLiveRoom): Promise<LiveRoom> {
+    const [room] = await db.insert(liveRooms).values(data).returning();
+    return room;
+  }
+
+  async getMissionChallenges(status?: string): Promise<MissionChallenge[]> {
+    if (status === 'active') {
+      return db.select().from(missionChallenges)
+        .where(eq(missionChallenges.isActive, true))
+        .orderBy(desc(missionChallenges.createdAt));
+    }
+    return db.select().from(missionChallenges).orderBy(desc(missionChallenges.createdAt));
+  }
+
+  async getMissionChallenge(id: number): Promise<MissionChallenge | undefined> {
+    const [challenge] = await db.select().from(missionChallenges).where(eq(missionChallenges.id, id));
+    return challenge;
+  }
+
+  async createMissionChallenge(data: InsertMissionChallenge): Promise<MissionChallenge> {
+    const [challenge] = await db.insert(missionChallenges).values(data).returning();
+    return challenge;
+  }
+
+  async enrollInChallenge(userId: string, challengeId: number): Promise<ChallengeEnrollment> {
+    const [enrollment] = await db.insert(challengeEnrollments).values({ userId, challengeId }).returning();
+    return enrollment;
+  }
+
+  async getUserChallengeEnrollments(userId: string): Promise<ChallengeEnrollment[]> {
+    return db.select().from(challengeEnrollments).where(eq(challengeEnrollments.userId, userId));
+  }
+
+  async getMissionTestimonies(type?: string): Promise<MissionTestimony[]> {
+    if (type) {
+      return db.select().from(missionTestimonies)
+        .where(eq(missionTestimonies.type, type))
+        .orderBy(desc(missionTestimonies.createdAt));
+    }
+    return db.select().from(missionTestimonies).orderBy(desc(missionTestimonies.createdAt));
+  }
+
+  async createMissionTestimony(data: InsertMissionTestimony): Promise<MissionTestimony> {
+    const [testimony] = await db.insert(missionTestimonies).values(data).returning();
+    return testimony;
+  }
+
+  async getMissionPillars(): Promise<MissionPillar[]> {
+    return db.select().from(missionPillars).orderBy(missionPillars.orderIndex);
+  }
+
+  async getMissionProfile(userId: string): Promise<MissionProfile | undefined> {
+    const [profile] = await db.select().from(missionProfiles).where(eq(missionProfiles.userId, userId));
+    return profile;
+  }
+
+  async upsertMissionProfile(data: InsertMissionProfile): Promise<MissionProfile> {
+    const [profile] = await db.insert(missionProfiles)
+      .values(data)
+      .onConflictDoUpdate({
+        target: missionProfiles.userId,
+        set: { ...data, updatedAt: new Date() },
+      })
+      .returning();
+    return profile;
+  }
+
+  async createDigitalAction(data: InsertDigitalAction): Promise<DigitalAction> {
+    const [action] = await db.insert(digitalActions).values(data).returning();
+    return action;
+  }
+
+  async getUserDigitalActions(userId: string): Promise<DigitalAction[]> {
+    return db.select().from(digitalActions)
+      .where(eq(digitalActions.userId, userId))
+      .orderBy(desc(digitalActions.createdAt));
+  }
+
+  async createMissionDonation(data: InsertMissionDonation): Promise<MissionDonation> {
+    const [donation] = await db.insert(missionDonations).values(data).returning();
+    return donation;
+  }
+
+  async getUserDonations(userId: string): Promise<MissionDonation[]> {
+    return db.select().from(missionDonations)
+      .where(eq(missionDonations.userId, userId))
+      .orderBy(desc(missionDonations.createdAt));
   }
 }
 

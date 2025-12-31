@@ -115,7 +115,7 @@ export function Hero() {
                 size="lg" 
                 className="bg-primary hover:bg-primary/90 text-white rounded-full px-8 h-14 text-base font-bold shadow-xl shadow-orange-500/20 w-full sm:w-auto hover:-translate-y-1 transition-all"
                 data-testid="button-start-mission"
-                onClick={() => navigate('/missions')}
+                onClick={() => navigate('/start-mission')}
               >
                 <Globe2 className="h-5 w-5 mr-2" />
                 Start Your Mission
