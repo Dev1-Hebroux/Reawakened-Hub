@@ -1955,5 +1955,92 @@ export async function registerRoutes(
     }
   });
 
+  // ===== DAILY REFLECTIONS =====
+
+  // Get today's reflection
+  app.get('/api/reflection/today', async (req, res) => {
+    try {
+      const reflection = await storage.getTodayReflection();
+      if (!reflection) {
+        return res.status(404).json({ ok: false, error: { message: "No reflection available today" } });
+      }
+      res.json({ ok: true, data: reflection });
+    } catch (error: any) {
+      res.status(500).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  // Get a specific reflection
+  app.get('/api/reflection/:id', async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const reflection = await storage.getReflection(id);
+      if (!reflection) {
+        return res.status(404).json({ ok: false, error: { message: "Reflection not found" } });
+      }
+      res.json({ ok: true, data: reflection });
+    } catch (error: any) {
+      res.status(500).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  // Get user's reflection streak
+  app.get('/api/reflection/streak', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const streak = await storage.getUserReflectionStreak(userId);
+      res.json({ ok: true, data: { streak } });
+    } catch (error: any) {
+      res.status(500).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  // Log viewing a reflection
+  app.post('/api/reflection/:id/view', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const reflectionId = parseInt(req.params.id);
+      const log = await storage.logReflectionView(userId, reflectionId);
+      res.json({ ok: true, data: log });
+    } catch (error: any) {
+      res.status(400).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  // Log engagement (journal entry or reaction)
+  app.post('/api/reflection/:id/engage', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const reflectionId = parseInt(req.params.id);
+      const { journalEntry, reaction } = req.body;
+      const log = await storage.logReflectionEngagement(userId, reflectionId, { journalEntry, reaction });
+      res.json({ ok: true, data: log });
+    } catch (error: any) {
+      res.status(400).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  // Get user's log for a specific reflection
+  app.get('/api/reflection/:id/log', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const reflectionId = parseInt(req.params.id);
+      const log = await storage.getUserReflectionLog(userId, reflectionId);
+      res.json({ ok: true, data: log || null });
+    } catch (error: any) {
+      res.status(500).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  // Create a new reflection (admin only - for seeding)
+  app.post('/api/reflections', isAuthenticated, async (req: any, res) => {
+    try {
+      const reflection = await storage.createReflection(req.body);
+      res.json({ ok: true, data: reflection });
+    } catch (error: any) {
+      res.status(400).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
   return httpServer;
 }

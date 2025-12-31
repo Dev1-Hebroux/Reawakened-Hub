@@ -33,6 +33,8 @@ import {
   iWillCommitments,
   buddyCheckIns,
   mentorCheckInLogs,
+  dailyReflections,
+  reflectionLogs,
   type User,
   type UpsertUser,
   type Post,
@@ -221,6 +223,10 @@ import {
   type InsertScaExercise,
   type ScaFocusItem,
   type InsertScaFocusItem,
+  type DailyReflection,
+  type InsertDailyReflection,
+  type ReflectionLog,
+  type InsertReflectionLog,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, sql, inArray, count } from "drizzle-orm";
@@ -500,6 +506,16 @@ export interface IStorage {
   updateScaExercise(id: number, data: Partial<ScaExercise>): Promise<ScaExercise>;
   createScaFocusItem(data: InsertScaFocusItem): Promise<ScaFocusItem>;
   getScaFocusItems(scaExerciseId: number): Promise<ScaFocusItem[]>;
+
+  // ===== DAILY REFLECTIONS =====
+  getTodayReflection(): Promise<DailyReflection | undefined>;
+  getReflection(id: number): Promise<DailyReflection | undefined>;
+  getAllReflections(): Promise<DailyReflection[]>;
+  createReflection(data: InsertDailyReflection): Promise<DailyReflection>;
+  getUserReflectionLog(userId: string, reflectionId: number): Promise<ReflectionLog | undefined>;
+  getUserReflectionStreak(userId: string): Promise<number>;
+  logReflectionView(userId: string, reflectionId: number): Promise<ReflectionLog>;
+  logReflectionEngagement(userId: string, reflectionId: number, data: { journalEntry?: string; reaction?: string }): Promise<ReflectionLog>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1671,6 +1687,126 @@ export class DatabaseStorage implements IStorage {
 
   async getScaFocusItems(scaExerciseId: number): Promise<ScaFocusItem[]> {
     return db.select().from(scaFocusItems).where(eq(scaFocusItems.scaExerciseId, scaExerciseId)).orderBy(scaFocusItems.itemIndex);
+  }
+
+  // ===== DAILY REFLECTIONS =====
+
+  async getTodayReflection(): Promise<DailyReflection | undefined> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    // First try to get a scheduled reflection for today
+    const [scheduled] = await db.select().from(dailyReflections)
+      .where(and(
+        eq(dailyReflections.isActive, true),
+        sql`${dailyReflections.scheduledDate} >= ${today}`,
+        sql`${dailyReflections.scheduledDate} < ${tomorrow}`
+      ));
+    
+    if (scheduled) return scheduled;
+
+    // Otherwise, get a random reflection from the pool (seeded by day)
+    const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
+    const [random] = await db.select().from(dailyReflections)
+      .where(and(
+        eq(dailyReflections.isActive, true),
+        sql`${dailyReflections.scheduledDate} IS NULL`
+      ))
+      .offset(dayOfYear % 100)
+      .limit(1);
+    
+    return random;
+  }
+
+  async getReflection(id: number): Promise<DailyReflection | undefined> {
+    const [reflection] = await db.select().from(dailyReflections).where(eq(dailyReflections.id, id));
+    return reflection;
+  }
+
+  async getAllReflections(): Promise<DailyReflection[]> {
+    return db.select().from(dailyReflections).where(eq(dailyReflections.isActive, true)).orderBy(desc(dailyReflections.createdAt));
+  }
+
+  async createReflection(data: InsertDailyReflection): Promise<DailyReflection> {
+    const [reflection] = await db.insert(dailyReflections).values(data).returning();
+    return reflection;
+  }
+
+  async getUserReflectionLog(userId: string, reflectionId: number): Promise<ReflectionLog | undefined> {
+    const [log] = await db.select().from(reflectionLogs)
+      .where(and(eq(reflectionLogs.userId, userId), eq(reflectionLogs.reflectionId, reflectionId)));
+    return log;
+  }
+
+  async getUserReflectionStreak(userId: string): Promise<number> {
+    const logs = await db.select({ viewedAt: reflectionLogs.viewedAt })
+      .from(reflectionLogs)
+      .where(eq(reflectionLogs.userId, userId))
+      .orderBy(desc(reflectionLogs.viewedAt))
+      .limit(30);
+    
+    if (logs.length === 0) return 0;
+
+    let streak = 0;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    for (let i = 0; i < 30; i++) {
+      const checkDate = new Date(today);
+      checkDate.setDate(checkDate.getDate() - i);
+      const hasLog = logs.some(log => {
+        if (!log.viewedAt) return false;
+        const logDate = new Date(log.viewedAt);
+        logDate.setHours(0, 0, 0, 0);
+        return logDate.getTime() === checkDate.getTime();
+      });
+      
+      if (hasLog) {
+        streak++;
+      } else if (i > 0) {
+        break;
+      }
+    }
+    
+    return streak;
+  }
+
+  async logReflectionView(userId: string, reflectionId: number): Promise<ReflectionLog> {
+    const existing = await this.getUserReflectionLog(userId, reflectionId);
+    if (existing) return existing;
+    
+    const [log] = await db.insert(reflectionLogs).values({
+      userId,
+      reflectionId,
+    }).returning();
+    return log;
+  }
+
+  async logReflectionEngagement(userId: string, reflectionId: number, data: { journalEntry?: string; reaction?: string }): Promise<ReflectionLog> {
+    const existing = await this.getUserReflectionLog(userId, reflectionId);
+    
+    if (existing) {
+      const [updated] = await db.update(reflectionLogs)
+        .set({
+          journalEntry: data.journalEntry ?? existing.journalEntry,
+          reaction: data.reaction ?? existing.reaction,
+          engagedAt: new Date(),
+        })
+        .where(eq(reflectionLogs.id, existing.id))
+        .returning();
+      return updated;
+    }
+    
+    const [log] = await db.insert(reflectionLogs).values({
+      userId,
+      reflectionId,
+      journalEntry: data.journalEntry,
+      reaction: data.reaction,
+      engagedAt: new Date(),
+    }).returning();
+    return log;
   }
 }
 
