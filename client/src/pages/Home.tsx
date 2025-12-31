@@ -57,18 +57,18 @@ export default function Home() {
       <main className="relative z-10">
         <Hero />
         
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-12 relative z-20">
-          <div className="bg-white rounded-[20px] shadow-xl p-8 md:p-12 grid grid-cols-2 md:grid-cols-4 gap-8 border border-[#1a2744]/10 ring-1 ring-[#1a2744]/5">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6 relative z-20">
+          <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-md px-3 py-3 md:px-6 md:py-4 grid grid-cols-4 gap-1 md:gap-4 border border-gray-100">
             {[
               { label: "Our Vision", value: "10k+", subtitle: "disciples by 2030" },
               { label: "Our Goal", value: "50+", subtitle: "nations reached" },
               { label: "Daily", value: "365", subtitle: "sparks per year" },
               { label: "Launching", value: "12+", subtitle: "mission projects" },
             ].map((stat, i) => (
-              <div key={i} className="text-center md:text-left" data-testid={`stat-home-${stat.label.toLowerCase().replace(/\s+/g, '-')}`}>
-                <div className="text-3xl md:text-4xl font-bold text-gray-900 font-display mb-1">{stat.value}</div>
-                <div className="text-xs text-primary font-bold mb-1">{stat.subtitle}</div>
-                <div className="text-xs text-gray-400 uppercase tracking-wide font-bold">{stat.label}</div>
+              <div key={i} className="text-center" data-testid={`stat-home-${stat.label.toLowerCase().replace(/\s+/g, '-')}`}>
+                <div className="text-lg md:text-2xl font-bold text-gray-900 font-display">{stat.value}</div>
+                <div className="text-[9px] md:text-xs text-gray-600 leading-tight">{stat.subtitle}</div>
+                <div className="text-[8px] md:text-[10px] text-gray-400 uppercase tracking-wide font-semibold mt-0.5">{stat.label}</div>
               </div>
             ))}
           </div>
