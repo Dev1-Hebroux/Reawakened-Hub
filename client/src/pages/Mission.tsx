@@ -80,7 +80,7 @@ const missionStories = [
     id: 1,
     name: "Sarah M.",
     location: "UK",
-    image: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?auto=format&fit=crop&q=80&w=200",
+    image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=200",
     story: "Through the outreach to my Uni, I found Jesus and now looking forward to getting discipled!",
     tag: "Transformed Life"
   },
@@ -88,7 +88,7 @@ const missionStories = [
     id: 2,
     name: "David K.",
     location: "Nigeria",
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200",
+    image: "https://images.unsplash.com/photo-1506277886164-e25aa3f4ef7f?auto=format&fit=crop&q=80&w=200",
     story: "The discipleship program changed everything. I went from struggling with purpose to starting my community.",
     tag: "Youth Leader"
   },
@@ -96,15 +96,15 @@ const missionStories = [
     id: 3,
     name: "Grace O.",
     location: "Manchester",
-    image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=200",
-    story: "I was trained in the Innovation Hub and now run gainfully employed and started a side hustle. Kingdom impact through business!",
+    image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=200",
+    story: "I was trained in the Innovation Hub and now gainfully employed and started a side hustle. Kingdom impact through business!",
     tag: "Entrepreneur"
   },
   {
     id: 4,
     name: "James",
     location: "UK",
-    image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=200",
+    image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=200",
     story: "After attending Alpha, I rededicated my life to Christ. Now I'm serving as a volunteer leader helping others find their faith.",
     tag: "Alpha Participant"
   }
