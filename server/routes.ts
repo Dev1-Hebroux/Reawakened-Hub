@@ -2042,5 +2042,372 @@ export async function registerRoutes(
     }
   });
 
+  // ===== SESSION BOOKING =====
+
+  // Get all active coaches
+  app.get('/api/coaches', async (req, res) => {
+    try {
+      const coaches = await storage.getAllActiveCoaches();
+      res.json({ ok: true, data: coaches });
+    } catch (error: any) {
+      res.status(500).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  // Get current user's coach profile
+  app.get('/api/coach/profile', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const profile = await storage.getCoachProfile(userId);
+      res.json({ ok: true, data: profile || null });
+    } catch (error: any) {
+      res.status(500).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  // Create or update coach profile
+  app.post('/api/coach/profile', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const existing = await storage.getCoachProfile(userId);
+      if (existing) {
+        const profile = await storage.updateCoachProfile(existing.id, req.body);
+        res.json({ ok: true, data: profile });
+      } else {
+        const profile = await storage.createCoachProfile({ ...req.body, userId });
+        res.json({ ok: true, data: profile });
+      }
+    } catch (error: any) {
+      res.status(400).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  // Get available slots for a coach
+  app.get('/api/coaches/:coachId/slots', async (req, res) => {
+    try {
+      const coachId = parseInt(req.params.coachId);
+      const slots = await storage.getAvailableSlots(coachId);
+      res.json({ ok: true, data: slots });
+    } catch (error: any) {
+      res.status(500).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  // Create session slots (coach only)
+  app.post('/api/coach/slots', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const profile = await storage.getCoachProfile(userId);
+      if (!profile) {
+        return res.status(403).json({ ok: false, error: { message: "You are not registered as a coach" } });
+      }
+      const slot = await storage.createSessionSlot({ ...req.body, coachId: profile.id });
+      res.json({ ok: true, data: slot });
+    } catch (error: any) {
+      res.status(400).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  // Get user's session bookings
+  app.get('/api/user/sessions', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const bookings = await storage.getUserSessionBookings(userId);
+      res.json({ ok: true, data: bookings });
+    } catch (error: any) {
+      res.status(500).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  // Get coach's session bookings (for coaches)
+  app.get('/api/coach/sessions', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const profile = await storage.getCoachProfile(userId);
+      if (!profile) {
+        return res.status(403).json({ ok: false, error: { message: "You are not registered as a coach" } });
+      }
+      const bookings = await storage.getCoachSessionBookings(profile.id);
+      res.json({ ok: true, data: bookings });
+    } catch (error: any) {
+      res.status(500).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  // Create a session booking request
+  app.post('/api/sessions', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const booking = await storage.createSessionBooking({ ...req.body, userId });
+      res.json({ ok: true, data: booking });
+    } catch (error: any) {
+      res.status(400).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  // Update session booking status
+  app.put('/api/sessions/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const booking = await storage.updateSessionBooking(id, req.body);
+      res.json({ ok: true, data: booking });
+    } catch (error: any) {
+      res.status(400).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  // Get session follow-ups
+  app.get('/api/sessions/:id/follow-ups', isAuthenticated, async (req: any, res) => {
+    try {
+      const bookingId = parseInt(req.params.id);
+      const followUps = await storage.getSessionFollowUps(bookingId);
+      res.json({ ok: true, data: followUps });
+    } catch (error: any) {
+      res.status(500).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  // Create a session follow-up
+  app.post('/api/sessions/:id/follow-ups', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const bookingId = parseInt(req.params.id);
+      const followUp = await storage.createSessionFollowUp({ ...req.body, bookingId, authorId: userId });
+      res.json({ ok: true, data: followUp });
+    } catch (error: any) {
+      res.status(400).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  // ===== MINI-360 FEEDBACK =====
+
+  // Get user's feedback campaigns
+  app.get('/api/user/feedback-campaigns', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const campaigns = await storage.getUserFeedbackCampaigns(userId);
+      res.json({ ok: true, data: campaigns });
+    } catch (error: any) {
+      res.status(500).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  // Get a specific feedback campaign
+  app.get('/api/feedback-campaigns/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const campaign = await storage.getFeedbackCampaign(id);
+      if (!campaign) {
+        return res.status(404).json({ ok: false, error: { message: "Campaign not found" } });
+      }
+      res.json({ ok: true, data: campaign });
+    } catch (error: any) {
+      res.status(500).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  // Create a new feedback campaign
+  app.post('/api/feedback-campaigns', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const campaign = await storage.createFeedbackCampaign({ ...req.body, userId });
+      res.json({ ok: true, data: campaign });
+    } catch (error: any) {
+      res.status(400).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  // Update a feedback campaign
+  app.put('/api/feedback-campaigns/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const campaign = await storage.updateFeedbackCampaign(id, req.body);
+      res.json({ ok: true, data: campaign });
+    } catch (error: any) {
+      res.status(400).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  // Get campaign invites
+  app.get('/api/feedback-campaigns/:id/invites', isAuthenticated, async (req: any, res) => {
+    try {
+      const campaignId = parseInt(req.params.id);
+      const invites = await storage.getCampaignInvites(campaignId);
+      res.json({ ok: true, data: invites });
+    } catch (error: any) {
+      res.status(500).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  // Create a feedback invite
+  app.post('/api/feedback-campaigns/:id/invites', isAuthenticated, async (req: any, res) => {
+    try {
+      const campaignId = parseInt(req.params.id);
+      const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      const invite = await storage.createFeedbackInvite({ ...req.body, campaignId, token });
+      res.json({ ok: true, data: invite });
+    } catch (error: any) {
+      res.status(400).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  // Get invite by token (public - for anonymous responders)
+  app.get('/api/feedback/respond/:token', async (req, res) => {
+    try {
+      const token = req.params.token;
+      const invite = await storage.getFeedbackInviteByToken(token);
+      if (!invite) {
+        return res.status(404).json({ ok: false, error: { message: "Invite not found" } });
+      }
+      if (invite.status === 'completed') {
+        return res.status(400).json({ ok: false, error: { message: "Feedback already submitted" } });
+      }
+      const campaign = await storage.getFeedbackCampaign(invite.campaignId);
+      res.json({ ok: true, data: { invite, campaign } });
+    } catch (error: any) {
+      res.status(500).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  // Submit feedback response (public - for anonymous responders)
+  app.post('/api/feedback/respond/:token', async (req, res) => {
+    try {
+      const token = req.params.token;
+      const invite = await storage.getFeedbackInviteByToken(token);
+      if (!invite) {
+        return res.status(404).json({ ok: false, error: { message: "Invite not found" } });
+      }
+      if (invite.status === 'completed') {
+        return res.status(400).json({ ok: false, error: { message: "Feedback already submitted" } });
+      }
+      
+      // Save each answer
+      const { answers } = req.body;
+      for (const answer of answers) {
+        await storage.createFeedbackAnswer({
+          campaignId: invite.campaignId,
+          inviteId: invite.id,
+          questionKey: answer.questionKey,
+          rating: answer.rating,
+          comment: answer.comment,
+        });
+      }
+      
+      // Update invite status
+      await storage.updateFeedbackInvite(invite.id, { status: 'submitted', submittedAt: new Date() });
+      
+      res.json({ ok: true, data: { message: "Feedback submitted successfully" } });
+    } catch (error: any) {
+      res.status(400).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  // Get campaign answers
+  app.get('/api/feedback-campaigns/:id/answers', isAuthenticated, async (req: any, res) => {
+    try {
+      const campaignId = parseInt(req.params.id);
+      const answers = await storage.getCampaignAnswers(campaignId);
+      res.json({ ok: true, data: answers });
+    } catch (error: any) {
+      res.status(500).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  // Submit self-assessment
+  app.post('/api/feedback-campaigns/:id/self-assessment', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const campaignId = parseInt(req.params.id);
+      const { answers } = req.body;
+      
+      for (const answer of answers) {
+        await storage.createFeedbackSelfAssessment({
+          campaignId,
+          userId,
+          questionKey: answer.questionKey,
+          rating: answer.rating,
+          comment: answer.comment,
+        });
+      }
+      
+      res.json({ ok: true, data: { message: "Self-assessment submitted" } });
+    } catch (error: any) {
+      res.status(400).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  // Get campaign self-assessment
+  app.get('/api/feedback-campaigns/:id/self-assessment', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const campaignId = parseInt(req.params.id);
+      const assessment = await storage.getCampaignSelfAssessment(campaignId, userId);
+      res.json({ ok: true, data: assessment });
+    } catch (error: any) {
+      res.status(500).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  // Get campaign aggregates
+  app.get('/api/feedback-campaigns/:id/aggregates', isAuthenticated, async (req: any, res) => {
+    try {
+      const campaignId = parseInt(req.params.id);
+      const aggregates = await storage.getCampaignAggregates(campaignId);
+      res.json({ ok: true, data: aggregates });
+    } catch (error: any) {
+      res.status(500).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  // Calculate and save aggregates
+  app.post('/api/feedback-campaigns/:id/calculate', isAuthenticated, async (req: any, res) => {
+    try {
+      const campaignId = parseInt(req.params.id);
+      const answers = await storage.getCampaignAnswers(campaignId);
+      
+      // Group by question key and calculate averages
+      const grouped: Record<string, { ratings: number[], texts: string[] }> = {};
+      for (const answer of answers) {
+        if (!grouped[answer.questionKey]) {
+          grouped[answer.questionKey] = { ratings: [], texts: [] };
+        }
+        if (answer.rating !== null) {
+          grouped[answer.questionKey].ratings.push(answer.rating);
+        }
+        if (answer.comment) {
+          grouped[answer.questionKey].texts.push(answer.comment);
+        }
+      }
+      
+      // Save aggregates
+      const aggregates = [];
+      for (const [dimensionKey, data] of Object.entries(grouped)) {
+        const avgRating = data.ratings.length > 0 
+          ? Math.round((data.ratings.reduce((a, b) => a + b, 0) / data.ratings.length) * 10)
+          : null;
+        // Calculate distribution
+        const distribution: Record<number, number> = {};
+        for (const rating of data.ratings) {
+          distribution[rating] = (distribution[rating] || 0) + 1;
+        }
+        const aggregate = await storage.createFeedbackAggregate({
+          campaignId,
+          dimensionKey,
+          avgRating: avgRating,
+          distributionJson: distribution,
+          themesJson: data.texts.length > 0 ? data.texts : null,
+        });
+        aggregates.push(aggregate);
+      }
+      
+      // Update campaign status
+      await storage.updateFeedbackCampaign(campaignId, { status: 'completed' });
+      
+      res.json({ ok: true, data: aggregates });
+    } catch (error: any) {
+      res.status(400).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
   return httpServer;
 }
