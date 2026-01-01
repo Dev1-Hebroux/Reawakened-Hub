@@ -24,18 +24,18 @@ import {
 import type { MissionFocus } from "@shared/schema";
 
 const steps = [
-  { id: 1, title: "Welcome", subtitle: "Join the journey" },
+  { id: 1, title: "Welcome", subtitle: "Join the mission" },
   { id: 2, title: "Your Why", subtitle: "What drives you?" },
-  { id: 3, title: "Focus Area", subtitle: "Choose a focus" },
+  { id: 3, title: "Prayer Focus", subtitle: "Adopt a focus" },
   { id: 4, title: "Commitment", subtitle: "Set your rhythm" },
-  { id: 5, title: "Ready!", subtitle: "Start making impact" },
+  { id: 5, title: "Ready!", subtitle: "Start your mission" },
 ];
 
 const whyOptions = [
-  { id: "encounter", label: "Find deeper meaning", icon: Sparkles },
-  { id: "grow", label: "Grow personally", icon: Target },
+  { id: "encounter", label: "Encounter God deeper", icon: Sparkles },
+  { id: "grow", label: "Grow as a disciple", icon: Target },
   { id: "impact", label: "Make global impact", icon: Globe2 },
-  { id: "community", label: "Join a community", icon: Users },
+  { id: "community", label: "Join a movement", icon: Users },
 ];
 
 const commitmentOptions = [
@@ -119,7 +119,7 @@ export function MissionOnboarding() {
         dailyCommitmentMinutes: selectedCommitment,
       });
 
-      toast.success("You're all set! Let's make an impact.");
+      toast.success("Mission profile created! Let's go!");
       navigate("/missions");
     } catch (error) {
       toast.error("Failed to complete setup. Please try again.");
@@ -203,29 +203,29 @@ export function MissionOnboarding() {
                   <Rocket className="h-12 w-12 text-primary" />
                 </div>
                 <h1 className="text-3xl font-display font-bold text-white mb-4">
-                  Make a Difference
+                  Start Your Mission
                 </h1>
                 <p className="text-white/70 mb-8 max-w-sm mx-auto">
-                  You're about to join thousands of people making real impact around the world. Let's set up your profile.
+                  You're about to join thousands of believers making digital impact for the Kingdom. Let's set up your mission profile.
                 </p>
                 <div className="space-y-3 text-left bg-white/5 rounded-2xl p-6">
                   <div className="flex items-center gap-3">
                     <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center">
                       <Heart className="h-4 w-4 text-primary" />
                     </div>
-                    <span className="text-white/80">Support communities in need</span>
+                    <span className="text-white/80">Pray for unreached people groups</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="h-8 w-8 rounded-full bg-[#4A7C7C]/20 flex items-center justify-center">
                       <Globe2 className="h-4 w-4 text-[#4A7C7C]" />
                     </div>
-                    <span className="text-white/80">Take meaningful action from anywhere</span>
+                    <span className="text-white/80">Take digital mission actions</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="h-8 w-8 rounded-full bg-[#D4A574]/20 flex items-center justify-center">
                       <Users className="h-4 w-4 text-[#D4A574]" />
                     </div>
-                    <span className="text-white/80">Join a global community</span>
+                    <span className="text-white/80">Join a global movement</span>
                   </div>
                 </div>
               </motion.div>
@@ -283,10 +283,10 @@ export function MissionOnboarding() {
                 exit={{ opacity: 0, x: -20 }}
               >
                 <h2 className="text-2xl font-display font-bold text-white mb-2 text-center">
-                  Choose Your Focus
+                  Adopt a Prayer Focus
                 </h2>
                 <p className="text-white/60 mb-6 text-center">
-                  Pick a community to support over the next 21 days
+                  Choose a people group to pray for over 21 days
                 </p>
                 {focusesLoading ? (
                   <div className="flex justify-center py-8">
@@ -336,10 +336,10 @@ export function MissionOnboarding() {
                 exit={{ opacity: 0, x: -20 }}
               >
                 <h2 className="text-2xl font-display font-bold text-white mb-2 text-center">
-                  Set Your Daily Rhythm
+                  Set Your Prayer Rhythm
                 </h2>
                 <p className="text-white/60 mb-6 text-center">
-                  How much time can you dedicate each day?
+                  How much time can you commit daily?
                 </p>
                 <div className="space-y-3">
                   {commitmentOptions.map((option) => (
@@ -390,11 +390,11 @@ export function MissionOnboarding() {
                   You're Ready!
                 </h1>
                 <p className="text-white/70 mb-8 max-w-sm mx-auto">
-                  Your profile is set. Here's your commitment:
+                  Your mission profile is set. Here's your commitment:
                 </p>
                 <div className="bg-white/5 rounded-2xl p-6 mb-6 text-left space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-white/60">Focus Area</span>
+                    <span className="text-white/60">Prayer Focus</span>
                     <span className="text-white font-medium">{selectedFocus?.name || "Not selected"}</span>
                   </div>
                   <div className="flex items-center justify-between">
@@ -406,10 +406,6 @@ export function MissionOnboarding() {
                     <span className="text-white font-medium">21 days</span>
                   </div>
                 </div>
-                <p className="text-xs text-white/50 mb-4 flex items-center justify-center gap-1">
-                  <Sparkles className="h-3 w-3" />
-                  Optional: Add faith-based content in your settings
-                </p>
                 <Button
                   className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-6 rounded-2xl"
                   onClick={handleComplete}
@@ -421,7 +417,7 @@ export function MissionOnboarding() {
                   ) : (
                     <>
                       <Sparkles className="h-5 w-5 mr-2" />
-                      Start Making Impact
+                      Launch My Mission
                     </>
                   )}
                 </Button>

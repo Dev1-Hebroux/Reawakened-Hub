@@ -1,7 +1,6 @@
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ScrollToTop } from "@/components/ScrollToTop";
@@ -58,8 +57,6 @@ import { AdminFunnels } from "@/pages/AdminFunnels";
 import { AdminMissions } from "@/pages/AdminMissions";
 import { AdminChallenges } from "@/pages/AdminChallenges";
 import { Goals } from "@/pages/Goals";
-import { Dashboard } from "@/pages/Dashboard";
-import { Resources } from "@/pages/Resources";
 
 function Router() {
   return (
@@ -119,8 +116,6 @@ function Router() {
       <Route path="/admin/missions" component={AdminMissions} />
       <Route path="/admin/challenges" component={AdminChallenges} />
       <Route path="/goals" component={Goals} />
-      <Route path="/dashboard" component={Dashboard} />
-      <Route path="/resources" component={Resources} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -128,19 +123,17 @@ function Router() {
 
 function App() {
   return (
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <ScrollToTop />
-          <div className="dove-background min-h-screen relative bg-background text-foreground transition-colors">
-            <Toaster />
-            <Router />
-            <MobileNav />
-            <QuickShare />
-          </div>
-        </TooltipProvider>
-      </QueryClientProvider>
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <ScrollToTop />
+        <div className="dove-background min-h-screen relative">
+          <Toaster />
+          <Router />
+          <MobileNav />
+          <QuickShare />
+        </div>
+      </TooltipProvider>
+    </QueryClientProvider>
   );
 }
 

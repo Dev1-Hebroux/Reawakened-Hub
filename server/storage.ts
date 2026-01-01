@@ -280,7 +280,6 @@ import {
   recurringDonations,
   missionTestimonies,
   projectFollows,
-  resources,
   type MissionPillar,
   type InsertMissionPillar,
   type MissionProfile,
@@ -333,8 +332,6 @@ import {
   type InsertMissionTestimony,
   type ProjectFollow,
   type InsertProjectFollow,
-  type Resource,
-  type InsertResource,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, sql, inArray, count } from "drizzle-orm";
@@ -645,13 +642,6 @@ export interface IStorage {
     habitTitle?: string;
   }): Promise<any>;
   toggleHabitLog(habitId: number, date: string, completed: boolean): Promise<any>;
-
-  // ===== RESOURCES LIBRARY =====
-  getResources(type?: string, category?: string): Promise<Resource[]>;
-  getResource(id: number): Promise<Resource | undefined>;
-  createResource(data: InsertResource): Promise<Resource>;
-  updateResource(id: number, data: Partial<Resource>): Promise<Resource>;
-  deleteResource(id: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -2782,44 +2772,6 @@ export class DatabaseStorage implements IStorage {
         .returning();
       return newLog;
     }
-  }
-
-  // ===== RESOURCES LIBRARY =====
-
-  async getResources(type?: string, category?: string): Promise<Resource[]> {
-    const conditions: any[] = [];
-    if (type) conditions.push(eq(resources.type, type));
-    if (category) conditions.push(eq(resources.category, category));
-    
-    if (conditions.length > 0) {
-      return db.select().from(resources)
-        .where(and(...conditions))
-        .orderBy(desc(resources.isFeatured), desc(resources.createdAt));
-    }
-    return db.select().from(resources)
-      .orderBy(desc(resources.isFeatured), desc(resources.createdAt));
-  }
-
-  async getResource(id: number): Promise<Resource | undefined> {
-    const [resource] = await db.select().from(resources).where(eq(resources.id, id));
-    return resource;
-  }
-
-  async createResource(data: InsertResource): Promise<Resource> {
-    const [resource] = await db.insert(resources).values(data).returning();
-    return resource;
-  }
-
-  async updateResource(id: number, data: Partial<Resource>): Promise<Resource> {
-    const [resource] = await db.update(resources)
-      .set(data)
-      .where(eq(resources.id, id))
-      .returning();
-    return resource;
-  }
-
-  async deleteResource(id: number): Promise<void> {
-    await db.delete(resources).where(eq(resources.id, id));
   }
 }
 

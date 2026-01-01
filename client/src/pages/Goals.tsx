@@ -10,7 +10,7 @@ import { Progress } from "@/components/ui/progress";
 import { 
   Target, Plus, Check, Flame, Calendar, Trophy, 
   Loader2, ArrowRight, Sparkles, CheckCircle2, Circle,
-  X, Edit2, Trash2, Bot, Lightbulb, Heart, RefreshCw
+  X, Edit2, Trash2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -82,8 +82,6 @@ export function Goals() {
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"goals" | "habits">("goals");
-  const [showAICoach, setShowAICoach] = useState(false);
-  const [aiSuggestions, setAiSuggestions] = useState<any>(null);
   const [formData, setFormData] = useState({
     title: "",
     category: "faith",
@@ -127,40 +125,6 @@ export function Goals() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/goals"] });
       toast.success("Habit logged!");
-    },
-  });
-
-  const aiSuggestMutation = useMutation({
-    mutationFn: async (category: string) => {
-      const res = await apiRequest("POST", "/api/goals/ai-suggest", { category });
-      return res.json();
-    },
-    onSuccess: (data) => {
-      setAiSuggestions(data);
-    },
-    onError: () => {
-      toast.error("Failed to get AI suggestions");
-    },
-  });
-
-  const aiCoachMutation = useMutation({
-    mutationFn: async () => {
-      const res = await apiRequest("POST", "/api/goals/ai-coach", { 
-        goals: goals.map(g => ({
-          title: g.title,
-          why: "",
-          relevant: g.category,
-          deadline: g.targetDate,
-        }))
-      });
-      return res.json();
-    },
-    onSuccess: (data) => {
-      setAiSuggestions(data);
-      setShowAICoach(true);
-    },
-    onError: () => {
-      toast.error("Failed to get AI coaching");
     },
   });
 
@@ -277,121 +241,8 @@ export function Goals() {
           </motion.div>
         )}
 
-        {/* AI Coach Button */}
-        {goals.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
-            className="mb-6"
-          >
-            <Button
-              onClick={() => aiCoachMutation.mutate()}
-              disabled={aiCoachMutation.isPending}
-              className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl py-4"
-              data-testid="ai-coach-button"
-            >
-              {aiCoachMutation.isPending ? (
-                <Loader2 className="h-5 w-5 animate-spin mr-2" />
-              ) : (
-                <Bot className="h-5 w-5 mr-2" />
-              )}
-              Get AI Coaching Insights
-            </Button>
-          </motion.div>
-        )}
-
-        {/* AI Coach Panel */}
-        <AnimatePresence>
-          {showAICoach && aiSuggestions && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="mb-6 overflow-hidden"
-            >
-              <div className="bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-2xl p-5 border-2 border-purple-200 dark:border-purple-800">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <Bot className="h-5 w-5 text-purple-600" />
-                    <h3 className="font-bold text-gray-900 dark:text-white">AI Coach Insights</h3>
-                  </div>
-                  <button 
-                    onClick={() => setShowAICoach(false)}
-                    className="text-gray-400 hover:text-gray-600"
-                  >
-                    <X className="h-5 w-5" />
-                  </button>
-                </div>
-                
-                {aiSuggestions.encouragement && (
-                  <div className="bg-white dark:bg-gray-800 rounded-xl p-4 mb-4">
-                    <div className="flex items-start gap-3">
-                      <Heart className="h-5 w-5 text-pink-500 flex-shrink-0 mt-0.5" />
-                      <p className="text-sm text-gray-700 dark:text-gray-300">{aiSuggestions.encouragement}</p>
-                    </div>
-                  </div>
-                )}
-
-                {aiSuggestions.insights?.length > 0 && (
-                  <div className="mb-4">
-                    <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-2">
-                      <Lightbulb className="h-4 w-4 text-amber-500" /> Key Insights
-                    </h4>
-                    <ul className="space-y-2">
-                      {aiSuggestions.insights.slice(0, 3).map((insight: string, i: number) => (
-                        <li key={i} className="text-sm text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-800 rounded-lg p-3">
-                          {insight}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {aiSuggestions.recommendations?.length > 0 && (
-                  <div className="mb-4">
-                    <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Recommendations</h4>
-                    <ul className="space-y-2">
-                      {aiSuggestions.recommendations.slice(0, 3).map((rec: string, i: number) => (
-                        <li key={i} className="text-sm text-gray-600 dark:text-gray-400 flex items-start gap-2">
-                          <CheckCircle2 className="h-4 w-4 text-green-500 flex-shrink-0 mt-0.5" />
-                          {rec}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {aiSuggestions.scriptures?.length > 0 && (
-                  <div>
-                    <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Scripture for Your Journey</h4>
-                    {aiSuggestions.scriptures.slice(0, 2).map((scripture: any, i: number) => (
-                      <div key={i} className="bg-white dark:bg-gray-800 rounded-lg p-3 mb-2">
-                        <p className="text-sm font-medium text-primary">{scripture.reference}</p>
-                        <p className="text-sm italic text-gray-600 dark:text-gray-400 mt-1">"{scripture.text}"</p>
-                        <p className="text-xs text-gray-500 mt-2">{scripture.application}</p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                <Button
-                  onClick={() => aiCoachMutation.mutate()}
-                  variant="ghost"
-                  size="sm"
-                  className="w-full mt-3 text-purple-600"
-                  disabled={aiCoachMutation.isPending}
-                >
-                  <RefreshCw className={`h-4 w-4 mr-2 ${aiCoachMutation.isPending ? 'animate-spin' : ''}`} />
-                  Refresh Insights
-                </Button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
         {/* Tab Switcher */}
-        <div className="flex bg-white dark:bg-gray-800 rounded-xl p-1 mb-6 shadow-sm border border-gray-100 dark:border-gray-700">
+        <div className="flex bg-white rounded-xl p-1 mb-6 shadow-sm border border-gray-100">
           <button
             onClick={() => setActiveTab("goals")}
             className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all ${

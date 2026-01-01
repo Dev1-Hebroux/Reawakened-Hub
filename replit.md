@@ -157,45 +157,9 @@ All logos stored in `attached_assets/`:
 - `2_1767191238762.png` - Alternative dark on navy
 
 ### Brand Colors
-- **Navy Blue**: #1a2744 (PRIMARY - dark overlays, gradients, section backgrounds)
+- **Navy Blue**: #1a2744 (dark overlays, gradients)
 - **Sage Green**: #7C9A8E
 - **Cream**: #FAF8F5
 - **Muted Teal**: #4A7C7C
 - **Beige**: #D4A574
-- **Primary Orange**: (accent only - CTAs, highlights, not dominant backgrounds)
-
-## Platform Messaging Guidelines
-
-### Seeker-First Language Strategy
-Reawakened is an **outreach hub** targeting ages 15-45. The messaging must be accessible and inviting to seekers, not just believers. Follow these principles:
-
-#### 1. Lead with Universal Aspirations
-- Use language around: **purpose, clarity, direction, growth, transformation, identity**
-- Speak to the human desire for meaning, not religious obligation
-- Example: "Discover your purpose" instead of "Find God's will"
-
-#### 2. Avoid Insider Jargon
-- **Don't use** in primary messaging: "discipleship," "revival," "watchmen," "sanctification," "anointing"
-- These terms can be used in faith-specific content but not in main navigation or landing pages
-- Replace with everyday equivalents: "growth journey," "personal development," "life coaching"
-
-#### 3. Faith as Opt-In Enhancement
-- Default content should be universally accessible
-- Offer **"Faith Mode"** or scripture options as enhancements, not defaults
-- Example: "Add scripture prompts" toggle for those who want faith integration
-- Never pressure; always invite
-
-#### 4. Outcome-Focused Descriptions
-- Describe features by their **life transformation**, not religious framing
-- Lead with benefits: "Gain clarity on your next steps" before "Align with God's purpose"
-- Show real-world results: career clarity, relationship health, mental wellness
-
-#### 5. Inclusive CTAs
-- Use welcoming language that invites exploration
-- Good: "Start Your Vision Journey" / "Explore Your Purpose"
-- Avoid: "Join the Revival" / "Become a Disciple" (save for deeper engagement)
-
-#### 6. Journey Titles & Content
-- Use purpose-forward summaries that explain outcomes in everyday terms
-- Example: "Mindset Reshape" not "Breaking Chains"
-- Provide optional faith cues for those who want them
+- **Primary Orange**: (defined in Tailwind config)
