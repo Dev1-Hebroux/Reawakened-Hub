@@ -36,6 +36,9 @@ export const users = pgTable("users", {
   profileImageUrl: varchar("profile_image_url"),
   contentMode: varchar("content_mode").default("reflection"),
   audienceSegment: varchar("audience_segment"),
+  role: varchar("role").default("member"), // 'member', 'leader', 'admin'
+  region: varchar("region"), // for regional leaders
+  community: varchar("community"), // community/group affiliation
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -142,6 +145,30 @@ export const insertPrayerMessageSchema = createInsertSchema(prayerMessages).omit
 });
 export type InsertPrayerMessage = z.infer<typeof insertPrayerMessageSchema>;
 export type PrayerMessage = typeof prayerMessages.$inferSelect;
+
+// Prayer Sessions - leader-initiated intercession sessions
+export const prayerSessions = pgTable("prayer_sessions", {
+  id: serial("id").primaryKey(),
+  title: varchar("title").notNull(),
+  description: text("description"),
+  region: varchar("region"), // regional scope
+  community: varchar("community"), // community/group scope
+  leaderId: varchar("leader_id").notNull().references(() => users.id),
+  leaderName: varchar("leader_name"),
+  status: varchar("status").notNull().default("active"), // 'active', 'ended'
+  participantCount: integer("participant_count").default(0),
+  startedAt: timestamp("started_at").defaultNow(),
+  endedAt: timestamp("ended_at"),
+});
+
+export const insertPrayerSessionSchema = createInsertSchema(prayerSessions).omit({
+  id: true,
+  startedAt: true,
+  endedAt: true,
+  participantCount: true,
+});
+export type InsertPrayerSession = z.infer<typeof insertPrayerSessionSchema>;
+export type PrayerSession = typeof prayerSessions.$inferSelect;
 
 // Spark subscriptions (for notifications)
 export const sparkSubscriptions = pgTable("spark_subscriptions", {
