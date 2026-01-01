@@ -7,7 +7,7 @@ import type { Spark, Event, Post } from "@shared/schema";
 import { 
   Target, Flame, Calendar, Users, BookOpen, 
   GripVertical, Settings, Check, Plus, TrendingUp,
-  Heart, Clock, ChevronRight
+  Heart, Clock, ChevronRight, Compass, ArrowRight
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
@@ -291,6 +291,55 @@ function CommunityWidget() {
   );
 }
 
+function VisionStartCard() {
+  const { data: goals } = useQuery<any[]>({
+    queryKey: ['/api', 'goals'],
+  });
+  
+  const { data: visionSessions } = useQuery<any[]>({
+    queryKey: ['/api/vision/sessions'],
+    retry: false,
+    queryFn: async () => {
+      const res = await fetch('/api/vision/sessions', { credentials: 'include' });
+      if (!res.ok) return [];
+      return res.json();
+    },
+  });
+  
+  const hasStartedVision = visionSessions && visionSessions.length > 0;
+  const hasGoals = goals && goals.length > 0;
+  
+  if (hasGoals || hasStartedVision) {
+    return null;
+  }
+  
+  return (
+    <Link href="/vision">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="p-6 rounded-2xl bg-gradient-to-br from-[#1a2744] to-[#243656] border border-[#4A7C7C]/20 cursor-pointer hover:shadow-lg transition-all group"
+        data-testid="card-start-vision"
+      >
+        <div className="flex items-start gap-4">
+          <div className="h-12 w-12 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0">
+            <Compass className="h-6 w-6 text-primary" />
+          </div>
+          <div className="flex-1">
+            <h3 className="font-bold text-white text-lg mb-1">Discover Your Purpose</h3>
+            <p className="text-sm text-white/70 mb-3">
+              Start your Vision Journey - gain clarity on who you are, what matters most, and where you're headed.
+            </p>
+            <div className="inline-flex items-center gap-2 text-primary font-bold text-sm group-hover:gap-3 transition-all">
+              Begin Now <ArrowRight className="h-4 w-4" />
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    </Link>
+  );
+}
+
 const widgetComponents: Record<WidgetType, React.FC> = {
   stats: StatsWidget,
   habits: HabitsWidget,
@@ -394,6 +443,10 @@ export function Dashboard() {
               </p>
             </motion.div>
           )}
+
+          <div className="mb-4">
+            <VisionStartCard />
+          </div>
 
           <div className="space-y-4">
             {visibleWidgets.map((widget, index) => {

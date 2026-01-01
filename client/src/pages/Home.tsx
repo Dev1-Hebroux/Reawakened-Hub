@@ -9,7 +9,7 @@ import { MissionEngine } from "@/components/sections/MissionEngine";
 import { MarqueeCTA } from "@/components/sections/MarqueeCTA";
 import { SubscriptionCapture } from "@/components/sections/SubscriptionCapture";
 import { Footer } from "@/components/layout/Footer";
-import { ArrowRight, ShoppingBag, Flame, Heart, Globe, Zap, Rocket, HandHeart, Users, Clock, CheckCircle2 } from "lucide-react";
+import { ArrowRight, ShoppingBag, Flame, Heart, Globe, Zap, Rocket, HandHeart, Users, Clock, CheckCircle2, Compass, Target, Sparkles, TrendingUp } from "lucide-react";
 import { StatsBar } from "@/components/ui/StatsBar";
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
@@ -22,13 +22,13 @@ import hoodieImg from "@assets/generated_images/hoodies_with_reawakened_logo.png
 const globalImpactCards = [
   {
     title: "Pray",
-    subtitle: "Adopt a people group",
+    subtitle: "Support a community",
     icon: Heart,
     link: "/pray",
   },
   {
     title: "Give",
-    subtitle: "Support mission projects",
+    subtitle: "Fund impactful projects",
     icon: HandHeart,
     link: "/give",
   },
@@ -39,17 +39,17 @@ const globalImpactCards = [
     link: "/missions",
   },
   {
-    title: "Movement",
-    subtitle: "Join the revival",
+    title: "Connect",
+    subtitle: "Join the community",
     icon: Zap,
-    link: "/movement",
+    link: "/community",
   },
 ];
 
 const commitmentLevels = [
-  { id: "5min", label: "5 min", description: "Daily prayer", color: "from-[#D4A574] to-[#C49466]" },
-  { id: "15min", label: "15 min", description: "Prayer + devotional", color: "from-[#7C9A8E] to-[#6A8A7E]" },
-  { id: "30min", label: "30 min", description: "Full intercession", color: "from-primary to-orange-500" },
+  { id: "5min", label: "5 min", description: "Daily reflection", color: "from-[#D4A574] to-[#C49466]" },
+  { id: "15min", label: "15 min", description: "Reflection + reading", color: "from-[#7C9A8E] to-[#6A8A7E]" },
+  { id: "30min", label: "30 min", description: "Deep focus time", color: "from-[#1a2744] to-[#243656]" },
 ];
 
 export default function Home() {
@@ -121,12 +121,12 @@ export default function Home() {
                 className="text-center"
               >
                 <Button 
-                  onClick={() => navigate('/pray')}
+                  onClick={() => navigate('/vision')}
                   className="bg-primary hover:bg-primary/90 text-white font-bold px-8 py-6 rounded-xl shadow-lg"
                   data-testid="button-start-commitment"
                 >
                   <Heart className="h-5 w-5 mr-2" />
-                  Start Today's Prayer
+                  Begin Your Journey
                 </Button>
               </motion.div>
             )}
@@ -142,7 +142,7 @@ export default function Home() {
               <span className="text-primary font-bold tracking-widest uppercase text-sm mb-2 block">Wear the Vision</span>
               <h2 className="text-4xl md:text-5xl font-display font-bold text-gray-900 mb-6">Represent the Movement</h2>
               <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                Join thousands of watchmen carrying the message on the streets, in schools, and across nations.
+                Join thousands carrying the message on the streets, in schools, and across nations.
               </p>
             </div>
 
@@ -265,7 +265,7 @@ export default function Home() {
             </div>
 
             <div className="mt-16 text-center">
-              <p className="text-[#7C9A8E] mb-4">Join the global movement of young believers taking action</p>
+              <p className="text-[#7C9A8E] mb-4">Join a global community of young people taking action</p>
               <div className="flex justify-center gap-8 items-center">
                 <div className="flex items-center gap-2">
                   <div className="flex -space-x-2">
@@ -284,10 +284,98 @@ export default function Home() {
 
         <DailySparks />
         <CommunityRooms />
+
+        <section className="py-24 bg-gradient-to-br from-[#1a2744] via-[#1a2744] to-[#243656] relative overflow-hidden">
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0wIDBoNDB2NDBIMHoiLz48Y2lyY2xlIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wMykiIGN4PSIyMCIgY3k9IjIwIiByPSIxIi8+PC9nPjwvc3ZnPg==')] opacity-50" />
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              <motion.div
+                initial={{ opacity: 0, x: -30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+              >
+                <div className="inline-flex items-center gap-2 bg-primary/20 rounded-full px-4 py-2 mb-6">
+                  <Compass className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-bold text-primary">Your Vision Journey</span>
+                </div>
+                <h2 className="text-4xl md:text-5xl font-display font-bold text-white mb-6 leading-tight">
+                  Discover Your Purpose.<br />Set Your Path.
+                </h2>
+                <p className="text-lg text-[#E8E4DE] mb-6 max-w-md">
+                  A step-by-step journey to gain clarity on who you are, what matters most, and where you're headed. Build a personal roadmap for meaningful growth.
+                </p>
+                <p className="text-sm text-[#7C9A8E] mb-8 flex items-center gap-2">
+                  <Sparkles className="h-4 w-4" />
+                  Faith-friendly options available for those who want them
+                </p>
+                <div className="flex flex-wrap gap-4">
+                  <Button 
+                    onClick={() => navigate('/vision')}
+                    className="bg-primary hover:bg-primary/90 text-white font-bold px-8 py-6 rounded-full shadow-xl"
+                    data-testid="button-start-vision"
+                  >
+                    Start Your Vision Journey
+                  </Button>
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, x: 30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                className="space-y-4"
+              >
+                {[
+                  { step: 1, title: "Reflect", description: "Assess where you are in life's key areas", icon: Target },
+                  { step: 2, title: "Clarify", description: "Discover what truly drives and inspires you", icon: Compass },
+                  { step: 3, title: "Set Goals", description: "Define meaningful goals that fit your season", icon: TrendingUp },
+                  { step: 4, title: "Build Habits", description: "Create daily practices that lead to lasting change", icon: CheckCircle2 },
+                ].map((item, i) => (
+                  <motion.div
+                    key={item.step}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: i * 0.1 }}
+                    className="bg-[#243656] hover:bg-[#2a3f66] rounded-2xl p-4 flex items-center gap-4 cursor-pointer transition-all group border border-[#4A7C7C]/20 shadow-lg"
+                    onClick={() => navigate('/vision')}
+                    data-testid={`card-vision-step-${item.step}`}
+                  >
+                    <div className="h-12 w-12 rounded-xl bg-primary/20 flex items-center justify-center shadow-md">
+                      <item.icon className="h-6 w-6 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-white text-lg">{item.title}</h3>
+                      <p className="text-sm text-[#7C9A8E]">{item.description}</p>
+                    </div>
+                    <ArrowRight className="h-5 w-5 text-[#7C9A8E] group-hover:text-white group-hover:translate-x-1 transition-all" />
+                  </motion.div>
+                ))}
+              </motion.div>
+            </div>
+
+            <div className="mt-12 text-center">
+              <p className="text-[#7C9A8E] mb-4">Join thousands who've found clarity and direction</p>
+              <div className="flex justify-center gap-8 items-center flex-wrap">
+                <div className="flex items-center gap-2">
+                  <div className="flex -space-x-2">
+                    {[1,2,3,4,5].map(i => (
+                      <div key={i} className="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-[#7C9A8E] border-2 border-[#1a2744] flex items-center justify-center">
+                        <Users className="h-4 w-4 text-white" />
+                      </div>
+                    ))}
+                  </div>
+                  <span className="text-sm font-bold text-white">3,200+ journeys started</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <DiscipleshipPaths />
         <MissionEngine />
 
-        <section className="py-16 bg-gradient-to-br from-primary via-primary to-blue-700 relative overflow-hidden">
+        <section className="py-16 bg-gradient-to-br from-[#1a2744] via-[#1a2744] to-[#243656] relative overflow-hidden">
           <div className="absolute inset-0 opacity-10">
             <div className="absolute top-0 left-0 w-full h-full bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48Y2lyY2xlIGN4PSIzMCIgY3k9IjMwIiByPSIyIi8+PC9nPjwvZz48L3N2Zz4=')] " />
           </div>
@@ -306,7 +394,7 @@ export default function Home() {
                 Stay Ignited. Stay Connected.
               </h2>
               <p className="text-sm text-white/80">
-                Join thousands receiving weekly inspiration and mission updates.
+                Join thousands receiving weekly inspiration and updates.
               </p>
             </div>
 
@@ -317,8 +405,8 @@ export default function Home() {
             >
               <SubscriptionCapture 
                 variant="card"
-                title="Join the Movement"
-                subtitle="Get daily sparks, mission updates, and prayer points delivered to your inbox."
+                title="Join the Community"
+                subtitle="Get daily inspiration, growth tips, and updates delivered to your inbox."
                 showCategories={true}
                 showWhatsApp={true}
               />

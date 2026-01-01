@@ -145,7 +145,7 @@ export function DiscipleshipPaths() {
                   <div className="space-y-3 mb-8">
                     {[
                       { day: 1, title: "The Awakening", status: "ready" },
-                      { day: 2, title: "Breaking Chains", status: "locked" },
+                      { day: 2, title: "Mindset Reshape", status: "locked" },
                       { day: 3, title: "Identity Reset", status: "locked" },
                       { day: 4, title: "Hearing God", status: "locked" },
                     ].map((step, i) => (
