@@ -4,7 +4,7 @@ import {
   Heart, Play, Globe, X, Send,
   Maximize2, MoreVertical, ArrowRight,
   Mail, Rss, Smartphone, BookOpen, Clock, Calendar, Loader2, Check,
-  Headphones, Download, Volume2, Pause, HandHeart
+  Headphones, Download, Volume2, Pause, HandHeart, Sparkles
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -13,8 +13,11 @@ import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { toast } from "sonner";
-import type { Spark, SparkSubscription } from "@shared/schema";
+import type { Spark, SparkSubscription, ReflectionCard } from "@shared/schema";
 import { GrowthToolsDiscovery } from "@/components/GrowthToolsDiscovery";
+import { DominionOnboarding } from "@/components/DominionOnboarding";
+import { WeeklyChallenge } from "@/components/WeeklyChallenge";
+import { GamificationBar } from "@/components/GamificationBar";
 
 import spark1 from "@assets/generated_images/raw_street_worship_in_brazil.png";
 import spark2 from "@assets/generated_images/testimony_of_healing_in_a_village.png";
@@ -77,6 +80,14 @@ export function SparksPage() {
   const userContentMode = (user as any)?.contentMode as 'reflection' | 'faith' | undefined;
   const userAudienceSegment = (user as any)?.audienceSegment as string | undefined;
 
+  const [showOnboarding, setShowOnboarding] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const completed = localStorage.getItem('dominion_onboarding_complete');
+    return !completed;
+  });
+
+  const needsOnboarding = isAuthenticated && showOnboarding && !userContentMode && !userAudienceSegment;
+
   const [viewMode, setViewMode] = useState<'reflection' | 'faith'>(() => {
     if (userContentMode) return userContentMode;
     if (typeof window !== 'undefined') {
@@ -136,6 +147,12 @@ export function SparksPage() {
   const { data: subscriptions = [], isLoading: subscriptionsLoading } = useQuery<SparkSubscription[]>({
     queryKey: ["/api/subscriptions"],
     enabled: !!user,
+  });
+
+  const { data: todayReflection } = useQuery<ReflectionCard>({
+    queryKey: ["/api/reflection-cards/today", userAudienceSegment],
+    queryFn: () => fetch(`/api/reflection-cards/today${audienceParam}`).then(r => r.json()),
+    retry: false,
   });
 
   const subscribeMutation = useMutation({
@@ -289,6 +306,14 @@ export function SparksPage() {
   return (
     <div className="min-h-screen bg-black text-white overflow-x-hidden">
       <Navbar />
+      
+      <DominionOnboarding 
+        isOpen={needsOnboarding}
+        onComplete={() => setShowOnboarding(false)}
+      />
+      
+      {/* Gamification Bar */}
+      <GamificationBar />
       
       {/* Hero / Live Now Section */}
       <section className="relative h-[60vh] md:h-[70vh] w-full overflow-hidden">
@@ -478,6 +503,66 @@ export function SparksPage() {
           )}
         </div>
       </div>
+
+      {/* Today's Reflection Card */}
+      {todayReflection && (
+        <div className="bg-gradient-to-br from-gray-900 to-black border-b border-white/10">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h2 className="text-2xl font-bold font-display flex items-center gap-2">
+                  <Sparkles className="h-6 w-6 text-amber-400" /> Daily Reflection
+                </h2>
+                <p className="text-gray-400 text-sm">Pause. Reflect. Take one small step.</p>
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-amber-500/10 to-orange-500/10 rounded-3xl p-8 border border-amber-500/20 backdrop-blur-xl">
+              <div className="max-w-3xl mx-auto space-y-6">
+                <div className="text-center">
+                  <span className="inline-flex items-center gap-2 bg-amber-500/20 text-amber-400 text-xs font-bold px-3 py-1 rounded-full mb-4">
+                    {todayReflection.weekTheme || "Reflection"}
+                  </span>
+                  <blockquote className="text-2xl md:text-3xl font-display font-bold text-white leading-relaxed" data-testid="text-reflection-quote">
+                    "{todayReflection.baseQuote}"
+                  </blockquote>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-6 pt-6 border-t border-white/10">
+                  <div className="bg-white/5 rounded-2xl p-6">
+                    <h4 className="text-sm font-bold text-amber-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                      <MessageCircle className="h-4 w-4" /> Reflect
+                    </h4>
+                    <p className="text-white/90" data-testid="text-reflection-question">{todayReflection.question}</p>
+                  </div>
+                  <div className="bg-white/5 rounded-2xl p-6">
+                    <h4 className="text-sm font-bold text-green-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                      <ArrowRight className="h-4 w-4" /> Take Action
+                    </h4>
+                    <p className="text-white/90" data-testid="text-reflection-action">{todayReflection.action}</p>
+                  </div>
+                </div>
+
+                {viewMode === 'faith' && todayReflection.faithOverlayScripture && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-primary/20 rounded-2xl p-6 border border-primary/30 text-center"
+                  >
+                    <h4 className="text-sm font-bold text-primary uppercase tracking-wider mb-2 flex items-center justify-center gap-2">
+                      <BookOpen className="h-4 w-4" /> Scripture
+                    </h4>
+                    <p className="text-white font-medium" data-testid="text-reflection-scripture">{todayReflection.faithOverlayScripture}</p>
+                  </motion.div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Weekly Challenge */}
+      <WeeklyChallenge />
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">

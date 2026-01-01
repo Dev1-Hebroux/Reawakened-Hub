@@ -331,46 +331,43 @@ function SparkCarousel({ sparks, config }: { sparks: Spark[]; config: AudienceCo
               key={spark.id} 
               className="w-full flex-shrink-0 px-4"
             >
-              <motion.div
-                className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl border border-white/20 rounded-3xl overflow-hidden"
-                whileHover={{ scale: 1.02 }}
-                data-testid={`card-spark-carousel-${spark.id}`}
-              >
-                <div className="aspect-[16/10] bg-gradient-to-br from-gray-800 to-gray-900 relative overflow-hidden">
-                  <div className={`absolute inset-0 bg-gradient-to-br ${config.gradient} opacity-30`} />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <motion.div 
-                      className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center"
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      <Play className="h-8 w-8 text-white ml-1" />
-                    </motion.div>
-                  </div>
-                  <div className="absolute top-4 left-4 flex items-center gap-2">
-                    <span className={`bg-gradient-to-r ${config.gradient} text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg`}>
-                      Day {i + 1}
-                    </span>
-                    <span className="bg-black/50 backdrop-blur-md text-white text-xs px-3 py-1.5 rounded-full">
-                      2 min
-                    </span>
-                  </div>
-                </div>
-                <div className="p-6">
-                  <h3 className="text-xl font-bold text-white mb-2 font-display">{spark.title}</h3>
-                  <p className="text-white/60 text-sm line-clamp-2">{spark.description}</p>
-                  <div className="flex items-center gap-4 mt-4 pt-4 border-t border-white/10">
-                    <div className="flex items-center gap-2 text-white/50 text-sm">
-                      <Flame className="h-4 w-4" />
-                      <span>1.2k views</span>
+              <Link href="/sparks">
+                <motion.div
+                  className="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl border border-white/20 rounded-3xl overflow-hidden cursor-pointer"
+                  whileHover={{ scale: 1.02 }}
+                  data-testid={`card-spark-carousel-${spark.id}`}
+                >
+                  <div className="aspect-[16/10] bg-gradient-to-br from-gray-800 to-gray-900 relative overflow-hidden">
+                    <div className={`absolute inset-0 bg-gradient-to-br ${config.gradient} opacity-30`} />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <motion.div 
+                        className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center"
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <Play className="h-8 w-8 text-white ml-1" />
+                      </motion.div>
                     </div>
-                    <div className="flex items-center gap-2 text-white/50 text-sm">
-                      <Heart className="h-4 w-4" />
-                      <span>342</span>
+                    <div className="absolute top-4 left-4 flex items-center gap-2">
+                      <span className={`bg-gradient-to-r ${config.gradient} text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg`}>
+                        Day {i + 1}
+                      </span>
+                      <span className="bg-black/50 backdrop-blur-md text-white text-xs px-3 py-1.5 rounded-full">
+                        {spark.duration ? `${Math.floor(spark.duration / 60)} min` : '2 min'}
+                      </span>
                     </div>
                   </div>
-                </div>
-              </motion.div>
+                  <div className="p-6">
+                    <h3 className="text-xl font-bold text-white mb-2 font-display">{spark.title}</h3>
+                    <p className="text-white/60 text-sm line-clamp-2">{spark.description}</p>
+                    <div className="flex items-center gap-2 mt-4 pt-4 border-t border-white/10">
+                      <span className={`bg-gradient-to-r ${config.gradient} bg-clip-text text-transparent text-sm font-medium`}>
+                        View Full Spark →
+                      </span>
+                    </div>
+                  </div>
+                </motion.div>
+              </Link>
             </div>
           ))}
         </motion.div>
