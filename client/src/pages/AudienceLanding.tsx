@@ -434,7 +434,7 @@ export function AudienceLanding({ segment }: Props) {
   });
 
   const campaignStart = new Date('2026-01-19T05:00:00Z');
-  const participantCount = 2847 + Math.floor(Math.random() * 100);
+  const signupGoal = 5000;
 
   if (!config) {
     return (
@@ -547,23 +547,16 @@ export function AudienceLanding({ segment }: Props) {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.5 }}
-                className="flex items-center gap-4"
+                className="flex items-center gap-3"
               >
-                <div className="flex -space-x-2">
-                  {[...Array(4)].map((_, i) => (
-                    <div 
-                      key={i} 
-                      className={`w-10 h-10 rounded-full bg-gradient-to-br ${config.gradient} border-2 border-black flex items-center justify-center text-sm font-bold`}
-                    >
-                      {['A', 'B', 'C', 'D'][i]}
-                    </div>
-                  ))}
+                <div className={`h-10 w-10 rounded-full bg-gradient-to-br ${config.gradient} flex items-center justify-center`}>
+                  <Target className="h-5 w-5 text-white" />
                 </div>
                 <div>
-                  <p className="text-white font-bold">
-                    <AnimatedCounter target={participantCount} suffix="+" />
+                  <p className="text-white font-medium">
+                    Be among the first {signupGoal.toLocaleString()}
                   </p>
-                  <p className="text-white/50 text-sm">already signed up</p>
+                  <p className="text-white/50 text-sm">Launching 19 Jan 2026</p>
                 </div>
               </motion.div>
             </motion.div>
@@ -796,7 +789,7 @@ export function AudienceLanding({ segment }: Props) {
               Ready to Start?
             </h2>
             <p className="text-white/60 text-xl mb-4">
-              Join <span className="text-white font-bold"><AnimatedCounter target={participantCount} /></span> others starting January 19th
+              Be among the first {signupGoal.toLocaleString()} to join January 19th
             </p>
             <p className="text-white/40 mb-10">
               30 days. Your transformation. Completely free.
