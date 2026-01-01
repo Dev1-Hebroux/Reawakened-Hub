@@ -232,7 +232,7 @@ export function MissionPage() {
             <p className="text-xl text-gray-300 max-w-2xl mx-auto mb-10 leading-relaxed">
               We are a movement committed to spiritual awakening, societal transformation, and empowering the next generation through faith, technology, and excellence.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
               <Button 
                 className="bg-primary hover:bg-primary/90 text-white px-8 py-6 rounded-full text-lg font-bold" 
                 onClick={() => setVolunteerModalOpen(true)}
@@ -243,6 +243,7 @@ export function MissionPage() {
               <Button 
                 variant="outline" 
                 className="border-white/20 text-white hover:bg-white/10 px-8 py-6 rounded-full text-lg font-bold backdrop-blur-sm" 
+                onClick={() => document.getElementById('outpouring')?.scrollIntoView({ behavior: 'smooth' })}
                 data-testid="button-explore-programs"
               >
                 Explore Programs
@@ -252,7 +253,7 @@ export function MissionPage() {
         </div>
       </section>
 
-      <section className="bg-white border-b border-gray-100 relative z-20 -mt-20 max-w-6xl mx-auto rounded-2xl shadow-xl p-6 md:p-8 mx-4 md:mx-auto">
+      <section className="bg-white border-b border-gray-100 relative z-20 -mt-8 max-w-6xl mx-auto rounded-2xl shadow-xl p-6 md:p-8 mx-4 md:mx-auto">
         <div className="grid grid-cols-4 gap-2 md:gap-8">
           {stats.map((stat, i) => (
             <div key={i} className="text-center" data-testid={`stat-${stat.label.toLowerCase().replace(/\s+/g, '-')}`}>

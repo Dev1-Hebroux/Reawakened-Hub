@@ -47,6 +47,15 @@ import { DigitalActions } from "@/pages/DigitalActions";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { QuickShare } from "@/components/ui/QuickShare";
 import Profile from "@/pages/Profile";
+import { AdminDashboard } from "@/pages/Admin";
+import { AdminEvents } from "@/pages/AdminEvents";
+import { AdminSparks } from "@/pages/AdminSparks";
+import { AdminBlog } from "@/pages/AdminBlog";
+import { AdminUsers } from "@/pages/AdminUsers";
+import { AdminModeration } from "@/pages/AdminModeration";
+import { AdminFunnels } from "@/pages/AdminFunnels";
+import { AdminMissions } from "@/pages/AdminMissions";
+import { AdminChallenges } from "@/pages/AdminChallenges";
 
 function Router() {
   return (
@@ -96,6 +105,15 @@ function Router() {
       <Route path="/give" component={GiveHub} />
       <Route path="/movement" component={MovementHub} />
       <Route path="/profile" component={Profile} />
+      <Route path="/admin" component={AdminDashboard} />
+      <Route path="/admin/events" component={AdminEvents} />
+      <Route path="/admin/sparks" component={AdminSparks} />
+      <Route path="/admin/blog" component={AdminBlog} />
+      <Route path="/admin/users" component={AdminUsers} />
+      <Route path="/admin/moderation" component={AdminModeration} />
+      <Route path="/admin/funnels" component={AdminFunnels} />
+      <Route path="/admin/missions" component={AdminMissions} />
+      <Route path="/admin/challenges" component={AdminChallenges} />
       <Route component={NotFound} />
     </Switch>
   );

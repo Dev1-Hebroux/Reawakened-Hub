@@ -341,6 +341,7 @@ export interface IStorage {
   // User operations
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
+  getAllUsers(): Promise<User[]>;
 
   // Community Hub - Posts
   getPosts(type?: string): Promise<Post[]>;
@@ -356,6 +357,8 @@ export interface IStorage {
   getSparks(category?: string): Promise<Spark[]>;
   getSpark(id: number): Promise<Spark | undefined>;
   createSpark(spark: InsertSpark): Promise<Spark>;
+  updateSpark(id: number, updates: Partial<InsertSpark>): Promise<Spark>;
+  deleteSpark(id: number): Promise<void>;
 
   // Spark Reactions
   getSparkReactions(sparkId: number): Promise<SparkReaction[]>;
@@ -373,9 +376,12 @@ export interface IStorage {
   getEvents(type?: string): Promise<Event[]>;
   getEvent(id: number): Promise<Event | undefined>;
   createEvent(event: InsertEvent): Promise<Event>;
+  updateEvent(id: number, updates: Partial<InsertEvent>): Promise<Event>;
+  deleteEvent(id: number): Promise<void>;
 
   // Event Registrations
   getEventRegistrations(eventId: number): Promise<EventRegistration[]>;
+  getAllEventRegistrations(): Promise<EventRegistration[]>;
   getUserEventRegistration(eventId: number, userId: string): Promise<EventRegistration | undefined>;
   createEventRegistration(registration: InsertEventRegistration): Promise<EventRegistration>;
 
@@ -383,6 +389,8 @@ export interface IStorage {
   getBlogPosts(category?: string): Promise<BlogPost[]>;
   getBlogPost(slug: string): Promise<BlogPost | undefined>;
   createBlogPost(post: InsertBlogPost): Promise<BlogPost>;
+  updateBlogPost(id: number, updates: Partial<InsertBlogPost>): Promise<BlogPost>;
+  deleteBlogPost(id: number): Promise<void>;
 
   // Email Subscriptions
   createEmailSubscription(subscription: InsertEmailSubscription): Promise<EmailSubscription>;
@@ -645,6 +653,10 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
+  async getAllUsers(): Promise<User[]> {
+    return db.select().from(users).orderBy(desc(users.createdAt));
+  }
+
   // Posts
   async getPosts(type?: string): Promise<any[]> {
     const query = db
@@ -737,6 +749,15 @@ export class DatabaseStorage implements IStorage {
     return spark;
   }
 
+  async updateSpark(id: number, updates: Partial<InsertSpark>): Promise<Spark> {
+    const [spark] = await db.update(sparks).set(updates).where(eq(sparks.id, id)).returning();
+    return spark;
+  }
+
+  async deleteSpark(id: number): Promise<void> {
+    await db.delete(sparks).where(eq(sparks.id, id));
+  }
+
   // Spark Reactions
   async getSparkReactions(sparkId: number): Promise<SparkReaction[]> {
     return db.select().from(sparkReactions).where(eq(sparkReactions.sparkId, sparkId));
@@ -806,9 +827,22 @@ export class DatabaseStorage implements IStorage {
     return event;
   }
 
+  async updateEvent(id: number, updates: Partial<InsertEvent>): Promise<Event> {
+    const [event] = await db.update(events).set(updates).where(eq(events.id, id)).returning();
+    return event;
+  }
+
+  async deleteEvent(id: number): Promise<void> {
+    await db.delete(events).where(eq(events.id, id));
+  }
+
   // Event Registrations
   async getEventRegistrations(eventId: number): Promise<EventRegistration[]> {
     return db.select().from(eventRegistrations).where(eq(eventRegistrations.eventId, eventId));
+  }
+
+  async getAllEventRegistrations(): Promise<EventRegistration[]> {
+    return db.select().from(eventRegistrations).orderBy(desc(eventRegistrations.createdAt));
   }
 
   async getUserEventRegistration(eventId: number, userId: string): Promise<EventRegistration | undefined> {
@@ -840,6 +874,15 @@ export class DatabaseStorage implements IStorage {
   async createBlogPost(postData: InsertBlogPost): Promise<BlogPost> {
     const [post] = await db.insert(blogPosts).values(postData).returning();
     return post;
+  }
+
+  async updateBlogPost(id: number, updates: Partial<InsertBlogPost>): Promise<BlogPost> {
+    const [post] = await db.update(blogPosts).set(updates).where(eq(blogPosts.id, id)).returning();
+    return post;
+  }
+
+  async deleteBlogPost(id: number): Promise<void> {
+    await db.delete(blogPosts).where(eq(blogPosts.id, id));
   }
 
   // Email Subscriptions

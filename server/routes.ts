@@ -2971,5 +2971,158 @@ export async function registerRoutes(
     }
   });
 
+  // ===== ADMIN ROUTES =====
+
+  // Admin Stats Dashboard
+  app.get('/api/admin/stats', isAuthenticated, async (req: any, res) => {
+    try {
+      const [users, sparks, events, blogPosts, posts, registrations] = await Promise.all([
+        storage.getAllUsers(),
+        storage.getSparks(),
+        storage.getEvents(),
+        storage.getBlogPosts(),
+        storage.getPosts(),
+        storage.getAllEventRegistrations(),
+      ]);
+
+      res.json({
+        users: users.length,
+        sparks: sparks.length,
+        events: events.length,
+        blogPosts: blogPosts.length,
+        posts: posts.length,
+        registrations: registrations.length,
+        recentEvents: events.slice(0, 5),
+        recentUsers: users.slice(0, 5),
+      });
+    } catch (error) {
+      console.error("Error fetching admin stats:", error);
+      res.status(500).json({ message: "Failed to fetch stats" });
+    }
+  });
+
+  // Admin - Get all users
+  app.get('/api/admin/users', isAuthenticated, async (req: any, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      res.json(users);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+
+  // Admin - Create event
+  app.post('/api/admin/events', isAuthenticated, async (req: any, res) => {
+    try {
+      const eventData = insertEventSchema.parse(req.body);
+      const event = await storage.createEvent(eventData);
+      res.status(201).json(event);
+    } catch (error: any) {
+      console.error("Error creating event:", error);
+      res.status(400).json({ message: error.message || "Failed to create event" });
+    }
+  });
+
+  // Admin - Update event
+  app.put('/api/admin/events/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updates = insertEventSchema.partial().parse(req.body);
+      const event = await storage.updateEvent(id, updates);
+      res.json(event);
+    } catch (error: any) {
+      console.error("Error updating event:", error);
+      res.status(400).json({ message: error.message || "Failed to update event" });
+    }
+  });
+
+  // Admin - Delete event
+  app.delete('/api/admin/events/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteEvent(id);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting event:", error);
+      res.status(500).json({ message: "Failed to delete event" });
+    }
+  });
+
+  // Admin - Create spark
+  app.post('/api/admin/sparks', isAuthenticated, async (req: any, res) => {
+    try {
+      const sparkData = insertSparkSchema.parse(req.body);
+      const spark = await storage.createSpark(sparkData);
+      res.status(201).json(spark);
+    } catch (error: any) {
+      console.error("Error creating spark:", error);
+      res.status(400).json({ message: error.message || "Failed to create spark" });
+    }
+  });
+
+  // Admin - Update spark
+  app.put('/api/admin/sparks/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updates = insertSparkSchema.partial().parse(req.body);
+      const spark = await storage.updateSpark(id, updates);
+      res.json(spark);
+    } catch (error: any) {
+      console.error("Error updating spark:", error);
+      res.status(400).json({ message: error.message || "Failed to update spark" });
+    }
+  });
+
+  // Admin - Delete spark
+  app.delete('/api/admin/sparks/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteSpark(id);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting spark:", error);
+      res.status(500).json({ message: "Failed to delete spark" });
+    }
+  });
+
+  // Admin - Create blog post
+  app.post('/api/admin/blog', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const blogData = insertBlogPostSchema.parse({ ...req.body, authorId: userId });
+      const post = await storage.createBlogPost(blogData);
+      res.status(201).json(post);
+    } catch (error: any) {
+      console.error("Error creating blog post:", error);
+      res.status(400).json({ message: error.message || "Failed to create blog post" });
+    }
+  });
+
+  // Admin - Update blog post
+  app.put('/api/admin/blog/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updates = insertBlogPostSchema.partial().parse(req.body);
+      const post = await storage.updateBlogPost(id, updates);
+      res.json(post);
+    } catch (error: any) {
+      console.error("Error updating blog post:", error);
+      res.status(400).json({ message: error.message || "Failed to update blog post" });
+    }
+  });
+
+  // Admin - Delete blog post
+  app.delete('/api/admin/blog/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteBlogPost(id);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting blog post:", error);
+      res.status(500).json({ message: "Failed to delete blog post" });
+    }
+  });
+
   return httpServer;
 }
