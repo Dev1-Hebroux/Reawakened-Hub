@@ -629,6 +629,19 @@ export interface IStorage {
   getUserReflectionStreak(userId: string): Promise<number>;
   logReflectionView(userId: string, reflectionId: number): Promise<ReflectionLog>;
   logReflectionEngagement(userId: string, reflectionId: number, data: { journalEntry?: string; reaction?: string }): Promise<ReflectionLog>;
+
+  // ===== SIMPLE GOALS & RESOLUTIONS =====
+  getUserGoals(userId: string): Promise<any[]>;
+  createSimpleGoal(data: {
+    userId: string;
+    title: string;
+    category: string;
+    targetDate: Date | null;
+    why?: string;
+    firstStep?: string;
+    habitTitle?: string;
+  }): Promise<any>;
+  toggleHabitLog(habitId: number, date: string, completed: boolean): Promise<any>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -2588,6 +2601,177 @@ export class DatabaseStorage implements IStorage {
   async createMissionTestimony(data: InsertMissionTestimony): Promise<MissionTestimony> {
     const [testimony] = await db.insert(missionTestimonies).values(data).returning();
     return testimony;
+  }
+
+  // ===== SIMPLE GOALS & RESOLUTIONS =====
+  
+  async getUserGoals(userId: string): Promise<any[]> {
+    const userSessions = await db.select()
+      .from(pathwaySessions)
+      .where(eq(pathwaySessions.userId, userId));
+    
+    if (userSessions.length === 0) {
+      return [];
+    }
+    
+    const sessionIds = userSessions.map(s => s.id);
+    const today = new Date().toISOString().split('T')[0];
+    
+    const goalsData = await db.select()
+      .from(visionGoals)
+      .where(inArray(visionGoals.sessionId, sessionIds))
+      .orderBy(desc(visionGoals.createdAt));
+    
+    const allHabits = await db.select()
+      .from(visionHabits)
+      .where(inArray(visionHabits.sessionId, sessionIds));
+    
+    const habitsWithStatus = await Promise.all(allHabits.map(async (habit) => {
+      const todayLog = await db.select()
+        .from(habitLogs)
+        .where(and(
+          eq(habitLogs.habitId, habit.id),
+          eq(habitLogs.date, today)
+        ))
+        .limit(1);
+      
+      const allLogs = await db.select()
+        .from(habitLogs)
+        .where(and(
+          eq(habitLogs.habitId, habit.id),
+          eq(habitLogs.completed, true)
+        ))
+        .orderBy(desc(habitLogs.date))
+        .limit(30);
+      
+      let streak = 0;
+      const todayDate = new Date();
+      for (let i = 0; i < 30; i++) {
+        const checkDate = new Date(todayDate);
+        checkDate.setDate(checkDate.getDate() - i);
+        const dateStr = checkDate.toISOString().split('T')[0];
+        if (allLogs.some(l => l.date === dateStr)) {
+          streak++;
+        } else {
+          break;
+        }
+      }
+      
+      return {
+        id: habit.id,
+        title: habit.title,
+        frequency: habit.frequency,
+        completedToday: todayLog.length > 0 && todayLog[0].completed,
+        streak,
+      };
+    }));
+    
+    const goalsWithDetails = await Promise.all(goalsData.map(async (goal, index) => {
+      const milestones = await db.select()
+        .from(goalMilestones)
+        .where(eq(goalMilestones.goalId, goal.id));
+      
+      const completedMilestones = milestones.filter(m => m.completedAt).length;
+      const progress = milestones.length > 0 
+        ? Math.round((completedMilestones / milestones.length) * 100)
+        : 0;
+      
+      return {
+        id: goal.id,
+        title: goal.title,
+        category: goal.relevant || 'faith',
+        targetDate: goal.deadline?.toISOString() || new Date().toISOString(),
+        progress,
+        habits: index === 0 ? habitsWithStatus : [],
+        milestones: milestones.map(m => ({
+          id: m.id,
+          title: m.title,
+          dueDate: m.dueDate?.toISOString() || '',
+          completed: !!m.completedAt,
+        })),
+      };
+    }));
+    
+    return goalsWithDetails;
+  }
+
+  async createSimpleGoal(data: {
+    userId: string;
+    title: string;
+    category: string;
+    targetDate: Date | null;
+    why?: string;
+    firstStep?: string;
+    habitTitle?: string;
+  }): Promise<any> {
+    let session = await db.select()
+      .from(pathwaySessions)
+      .where(eq(pathwaySessions.userId, data.userId))
+      .limit(1);
+    
+    let sessionId: number;
+    
+    if (session.length === 0) {
+      const [newSession] = await db.insert(pathwaySessions)
+        .values({
+          userId: data.userId,
+          title: `${new Date().getFullYear()} Goals`,
+          currentStep: 'goals',
+          isFaithMode: true,
+        })
+        .returning();
+      sessionId = newSession.id;
+    } else {
+      sessionId = session[0].id;
+    }
+    
+    const [goal] = await db.insert(visionGoals)
+      .values({
+        sessionId,
+        title: data.title,
+        why: data.why,
+        relevant: data.category,
+        deadline: data.targetDate,
+        firstStep: data.firstStep,
+        status: 'active',
+      })
+      .returning();
+    
+    if (data.habitTitle) {
+      await db.insert(visionHabits)
+        .values({
+          sessionId,
+          title: data.habitTitle,
+          frequency: 'daily',
+          targetPerWeek: 7,
+          isActive: true,
+        });
+    }
+    
+    return goal;
+  }
+
+  async toggleHabitLog(habitId: number, date: string, completed: boolean): Promise<any> {
+    const existingLog = await db.select()
+      .from(habitLogs)
+      .where(and(
+        eq(habitLogs.habitId, habitId),
+        eq(habitLogs.date, date)
+      ))
+      .limit(1);
+    
+    if (existingLog.length > 0) {
+      const [updatedLog] = await db.update(habitLogs)
+        .set({ completed })
+        .where(eq(habitLogs.id, existingLog[0].id))
+        .returning();
+      return updatedLog;
+    } else {
+      const [newLog] = await db.insert(habitLogs)
+        .values({ habitId, date, completed })
+        .returning();
+      return newLog;
+    }
   }
 }
 

@@ -3124,5 +3124,56 @@ export async function registerRoutes(
     }
   });
 
+  // ===== GOALS & RESOLUTIONS =====
+  
+  // Get user's goals with habits
+  app.get('/api/goals', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const goals = await storage.getUserGoals(userId);
+      res.json({ goals });
+    } catch (error) {
+      console.error("Error fetching goals:", error);
+      res.status(500).json({ message: "Failed to fetch goals" });
+    }
+  });
+
+  // Create a new goal
+  app.post('/api/goals', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { title, category, targetDate, why, firstStep, habit } = req.body;
+      
+      const goal = await storage.createSimpleGoal({
+        userId,
+        title,
+        category,
+        targetDate: targetDate ? new Date(targetDate) : null,
+        why,
+        firstStep,
+        habitTitle: habit,
+      });
+      
+      res.status(201).json(goal);
+    } catch (error: any) {
+      console.error("Error creating goal:", error);
+      res.status(400).json({ message: error.message || "Failed to create goal" });
+    }
+  });
+
+  // Toggle habit completion
+  app.post('/api/habits/:id/toggle', isAuthenticated, async (req: any, res) => {
+    try {
+      const habitId = parseInt(req.params.id);
+      const { completed, date } = req.body;
+      
+      const log = await storage.toggleHabitLog(habitId, date, completed);
+      res.json(log);
+    } catch (error) {
+      console.error("Error toggling habit:", error);
+      res.status(500).json({ message: "Failed to toggle habit" });
+    }
+  });
+
   return httpServer;
 }

@@ -56,6 +56,7 @@ import { AdminModeration } from "@/pages/AdminModeration";
 import { AdminFunnels } from "@/pages/AdminFunnels";
 import { AdminMissions } from "@/pages/AdminMissions";
 import { AdminChallenges } from "@/pages/AdminChallenges";
+import { Goals } from "@/pages/Goals";
 
 function Router() {
   return (
@@ -114,6 +115,7 @@ function Router() {
       <Route path="/admin/funnels" component={AdminFunnels} />
       <Route path="/admin/missions" component={AdminMissions} />
       <Route path="/admin/challenges" component={AdminChallenges} />
+      <Route path="/goals" component={Goals} />
       <Route component={NotFound} />
     </Switch>
   );
