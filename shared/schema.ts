@@ -2086,3 +2086,39 @@ export const missionTestimonies = pgTable("mission_testimonies", {
 export const insertMissionTestimonySchema = createInsertSchema(missionTestimonies).omit({ id: true, createdAt: true });
 export type InsertMissionTestimony = z.infer<typeof insertMissionTestimonySchema>;
 export type MissionTestimony = typeof missionTestimonies.$inferSelect;
+
+
+// Dashboard Widget Settings
+export const dashboardSettings = pgTable("dashboard_settings", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  widgetLayout: jsonb("widget_layout").default([]),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertDashboardSettingsSchema = createInsertSchema(dashboardSettings).omit({ id: true, updatedAt: true });
+export type InsertDashboardSettings = z.infer<typeof insertDashboardSettingsSchema>;
+export type DashboardSettings = typeof dashboardSettings.$inferSelect;
+
+
+
+// Resources Library
+export const resources = pgTable("resources", {
+  id: serial("id").primaryKey(),
+  title: varchar("title").notNull(),
+  description: text("description"),
+  type: varchar("type").notNull().default("article"),
+  category: varchar("category").notNull().default("faith"),
+  url: varchar("url").notNull(),
+  thumbnailUrl: varchar("thumbnail_url"),
+  author: varchar("author"),
+  duration: varchar("duration"),
+  tags: text("tags").array(),
+  isFeatured: boolean("is_featured").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertResourceSchema = createInsertSchema(resources).omit({ id: true, createdAt: true });
+export type InsertResource = z.infer<typeof insertResourceSchema>;
+export type Resource = typeof resources.$inferSelect;
+

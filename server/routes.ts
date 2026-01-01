@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { getAICoachInsights, type AICoachRequest } from "./ai-service";
-import { insertPostSchema, insertReactionSchema, insertSparkSchema, insertSparkReactionSchema, insertSparkSubscriptionSchema, insertEventSchema, insertEventRegistrationSchema, insertBlogPostSchema, insertEmailSubscriptionSchema, insertPrayerRequestSchema, insertTestimonySchema, insertVolunteerSignupSchema, insertMissionRegistrationSchema, insertJourneySchema, insertJourneyDaySchema, insertJourneyStepSchema, insertAlphaCohortSchema, insertAlphaCohortWeekSchema, insertAlphaCohortParticipantSchema, insertMissionProfileSchema, insertMissionPlanSchema, insertMissionAdoptionSchema, insertMissionPrayerSessionSchema, insertOpportunityInterestSchema, insertDigitalActionSchema, insertProjectFollowSchema, insertChallengeEnrollmentSchema, insertMissionTestimonySchema } from "@shared/schema";
+import { insertPostSchema, insertReactionSchema, insertSparkSchema, insertSparkReactionSchema, insertSparkSubscriptionSchema, insertEventSchema, insertEventRegistrationSchema, insertBlogPostSchema, insertEmailSubscriptionSchema, insertPrayerRequestSchema, insertTestimonySchema, insertVolunteerSignupSchema, insertMissionRegistrationSchema, insertJourneySchema, insertJourneyDaySchema, insertJourneyStepSchema, insertAlphaCohortSchema, insertAlphaCohortWeekSchema, insertAlphaCohortParticipantSchema, insertMissionProfileSchema, insertMissionPlanSchema, insertMissionAdoptionSchema, insertMissionPrayerSessionSchema, insertOpportunityInterestSchema, insertDigitalActionSchema, insertProjectFollowSchema, insertChallengeEnrollmentSchema, insertMissionTestimonySchema, insertResourceSchema } from "@shared/schema";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -3172,6 +3172,128 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Error toggling habit:", error);
       res.status(500).json({ message: "Failed to toggle habit" });
+    }
+  });
+
+  // AI Goal Coach - Get suggestions and coaching for goals
+  app.post('/api/goals/ai-coach', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { goals, action } = req.body;
+      
+      let aiRequest: AICoachRequest;
+      
+      if (action === 'suggest') {
+        aiRequest = {
+          tool: 'goals',
+          mode: 'faith',
+          data: { goals: [] },
+          sessionContext: {}
+        };
+      } else {
+        aiRequest = {
+          tool: 'goals',
+          mode: 'faith',
+          data: { goals: goals || [] },
+          sessionContext: {}
+        };
+      }
+      
+      const insights = await getAICoachInsights(aiRequest);
+      res.json(insights);
+    } catch (error) {
+      console.error("Error getting AI coach insights:", error);
+      res.status(500).json({ message: "Failed to get AI insights" });
+    }
+  });
+
+  // ===== RESOURCES LIBRARY =====
+
+  // Get all resources (with optional filters)
+  app.get('/api/resources', async (req, res) => {
+    try {
+      const type = req.query.type as string | undefined;
+      const category = req.query.category as string | undefined;
+      const resources = await storage.getResources(type, category);
+      res.json(resources);
+    } catch (error) {
+      console.error("Error fetching resources:", error);
+      res.status(500).json({ message: "Failed to fetch resources" });
+    }
+  });
+
+  // Get a single resource
+  app.get('/api/resources/:id', async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const resource = await storage.getResource(id);
+      if (!resource) {
+        return res.status(404).json({ message: "Resource not found" });
+      }
+      res.json(resource);
+    } catch (error) {
+      console.error("Error fetching resource:", error);
+      res.status(500).json({ message: "Failed to fetch resource" });
+    }
+  });
+
+  // Create a resource (admin only in future)
+  app.post('/api/resources', isAuthenticated, async (req: any, res) => {
+    try {
+      const resourceData = insertResourceSchema.parse(req.body);
+      const resource = await storage.createResource(resourceData);
+      res.status(201).json(resource);
+    } catch (error: any) {
+      console.error("Error creating resource:", error);
+      res.status(400).json({ message: error.message || "Failed to create resource" });
+    }
+  });
+
+  // AI Goal Suggestions - Generate goal ideas based on category
+  app.post('/api/goals/ai-suggest', isAuthenticated, async (req: any, res) => {
+    try {
+      const { category, context } = req.body;
+      
+      const OpenAI = (await import('openai')).default;
+      const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+      
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          { 
+            role: "system", 
+            content: `You are a warm, encouraging Christian life coach helping someone set meaningful goals for the new year.
+Focus on practical, achievable goals that align with faith and personal growth.
+Keep suggestions concise but inspiring.` 
+          },
+          { 
+            role: "user", 
+            content: `Suggest 3 specific, actionable goals for the category: ${category}
+${context ? `Additional context from user: ${context}` : ''}
+
+Return as JSON:
+{
+  "suggestions": [
+    {
+      "title": "Goal title",
+      "why": "Why this matters",
+      "firstStep": "A simple first action to take",
+      "habit": "A daily/weekly habit to support this goal"
+    }
+  ],
+  "encouragement": "A brief encouraging message"
+}` 
+          }
+        ],
+        temperature: 0.8,
+        response_format: { type: "json_object" }
+      });
+      
+      const content = completion.choices[0].message.content;
+      res.json(JSON.parse(content || '{}'));
+    } catch (error) {
+      console.error("Error getting AI suggestions:", error);
+      res.status(500).json({ message: "Failed to get suggestions" });
     }
   });
 

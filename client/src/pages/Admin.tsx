@@ -67,9 +67,9 @@ export function AdminLayout({ children, title, subtitle, actions }: AdminLayoutP
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex">
       {/* Sidebar - Desktop */}
-      <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 bg-[#1a2744] text-white">
+      <aside className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 bg-[#1a2744] dark:bg-gray-950 text-white">
         <div className="flex items-center h-16 px-6 border-b border-white/10">
           <Link href="/">
             <span className="text-xl font-display font-bold cursor-pointer">Reawakened</span>
@@ -161,17 +161,17 @@ export function AdminLayout({ children, title, subtitle, actions }: AdminLayoutP
       {/* Main Content */}
       <div className="flex-1 lg:pl-64">
         {/* Top Header */}
-        <header className="sticky top-0 z-30 bg-white border-b border-gray-200 h-16 flex items-center px-4 lg:px-8">
+        <header className="sticky top-0 z-30 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 h-16 flex items-center px-4 lg:px-8">
           <button 
             onClick={() => setSidebarOpen(true)}
-            className="lg:hidden p-2 -ml-2 mr-2 hover:bg-gray-100 rounded-lg"
+            className="lg:hidden p-2 -ml-2 mr-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
           >
-            <Menu className="h-5 w-5" />
+            <Menu className="h-5 w-5 text-gray-900 dark:text-white" />
           </button>
           
           <div className="flex-1">
-            <h1 className="text-xl font-display font-bold text-gray-900">{title}</h1>
-            {subtitle && <p className="text-sm text-gray-500">{subtitle}</p>}
+            <h1 className="text-xl font-display font-bold text-gray-900 dark:text-white">{title}</h1>
+            {subtitle && <p className="text-sm text-gray-500 dark:text-gray-400">{subtitle}</p>}
           </div>
 
           <div className="flex items-center gap-2">
@@ -218,22 +218,22 @@ export function AdminDashboard() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.05 }}
-            className="bg-white rounded-xl p-4 shadow-sm border border-gray-100"
+            className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-700"
           >
             <div className={`w-10 h-10 ${stat.color} rounded-lg flex items-center justify-center mb-3`}>
               <stat.icon className="h-5 w-5 text-white" />
             </div>
-            <div className="text-2xl font-bold text-gray-900">
+            <div className="text-2xl font-bold text-gray-900 dark:text-white">
               {isLoading ? "..." : stat.value}
             </div>
-            <div className="text-xs text-gray-500 font-medium">{stat.label}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400 font-medium">{stat.label}</div>
           </motion.div>
         ))}
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-8">
-        <h2 className="text-lg font-display font-bold text-gray-900 mb-4">Quick Actions</h2>
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 mb-8">
+        <h2 className="text-lg font-display font-bold text-gray-900 dark:text-white mb-4">Quick Actions</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Link href="/admin/events">
             <Button variant="outline" className="w-full justify-start gap-2 h-auto py-4">
@@ -276,9 +276,9 @@ export function AdminDashboard() {
 
       {/* Recent Activity */}
       <div className="grid md:grid-cols-2 gap-6">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-display font-bold text-gray-900">Recent Events</h2>
+            <h2 className="text-lg font-display font-bold text-gray-900 dark:text-white">Recent Events</h2>
             <Link href="/admin/events">
               <span className="text-sm text-primary hover:underline cursor-pointer flex items-center gap-1">
                 View all <ChevronRight className="h-4 w-4" />
@@ -288,11 +288,11 @@ export function AdminDashboard() {
           {stats?.recentEvents && stats.recentEvents.length > 0 ? (
             <div className="space-y-3">
               {stats.recentEvents.slice(0, 5).map((event) => (
-                <div key={event.id} className="flex items-center gap-3 p-3 rounded-lg bg-gray-50">
-                  <Calendar className="h-5 w-5 text-green-500" />
+                <div key={event.id} className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50">
+                  <Calendar className="h-5 w-5 text-green-500 dark:text-green-400" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">{event.title}</p>
-                    <p className="text-xs text-gray-500">{new Date(event.startDate).toLocaleDateString()}</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{event.title}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{new Date(event.startDate).toLocaleDateString()}</p>
                   </div>
                 </div>
               ))}
@@ -302,9 +302,9 @@ export function AdminDashboard() {
           )}
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-display font-bold text-gray-900">Recent Users</h2>
+            <h2 className="text-lg font-display font-bold text-gray-900 dark:text-white">Recent Users</h2>
             <Link href="/admin/users">
               <span className="text-sm text-primary hover:underline cursor-pointer flex items-center gap-1">
                 View all <ChevronRight className="h-4 w-4" />
@@ -314,19 +314,19 @@ export function AdminDashboard() {
           {stats?.recentUsers && stats.recentUsers.length > 0 ? (
             <div className="space-y-3">
               {stats.recentUsers.slice(0, 5).map((u) => (
-                <div key={u.id} className="flex items-center gap-3 p-3 rounded-lg bg-gray-50">
+                <div key={u.id} className="flex items-center gap-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50">
                   {u.profileImageUrl ? (
                     <img src={u.profileImageUrl} alt="" className="h-8 w-8 rounded-full" />
                   ) : (
-                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                    <div className="h-8 w-8 rounded-full bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
                       <Users className="h-4 w-4 text-primary" />
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">
+                    <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
                       {u.firstName} {u.lastName}
                     </p>
-                    <p className="text-xs text-gray-500">{u.email}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{u.email}</p>
                   </div>
                 </div>
               ))}

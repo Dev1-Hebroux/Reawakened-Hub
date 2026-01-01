@@ -190,43 +190,45 @@ export function AdminEvents() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
-              className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex items-center gap-4"
+              className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4"
             >
-              <div className="w-16 h-16 rounded-lg bg-green-100 flex items-center justify-center flex-shrink-0">
-                <Calendar className="h-8 w-8 text-green-600" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <h3 className="font-bold text-gray-900 truncate">{event.title}</h3>
-                  <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full capitalize">
-                    {event.type.replace("-", " ")}
-                  </span>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center flex-shrink-0">
+                  <Calendar className="h-6 w-6 sm:h-8 sm:w-8 text-green-600 dark:text-green-400" />
                 </div>
-                <div className="flex items-center gap-4 text-sm text-gray-500">
-                  <span className="flex items-center gap-1">
-                    <Clock className="h-4 w-4" />
-                    {formatDate(event.startDate)}
-                  </span>
-                  {event.location && (
-                    <span className="flex items-center gap-1">
-                      <MapPin className="h-4 w-4" />
-                      {event.location}
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2 mb-1">
+                    <h3 className="font-bold text-gray-900 dark:text-white">{event.title}</h3>
+                    <span className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2 py-0.5 rounded-full capitalize">
+                      {event.type.replace("-", " ")}
                     </span>
-                  )}
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-sm text-gray-500 dark:text-gray-400">
+                    <span className="flex items-center gap-1">
+                      <Clock className="h-4 w-4" />
+                      {formatDate(event.startDate)}
+                    </span>
+                    {event.location && (
+                      <span className="flex items-center gap-1">
+                        <MapPin className="h-4 w-4" />
+                        {event.location}
+                      </span>
+                    )}
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" onClick={() => openEditModal(event)}>
-                  <Edit2 className="h-4 w-4" />
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => handleDelete(event)}
-                  className="text-red-600 hover:bg-red-50"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                <div className="flex items-center gap-2 mt-3 sm:mt-0">
+                  <Button variant="outline" size="sm" onClick={() => openEditModal(event)}>
+                    <Edit2 className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => handleDelete(event)}
+                    className="text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </motion.div>
           ))}
@@ -259,9 +261,9 @@ export function AdminEvents() {
                 data-testid="input-event-description"
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Type *</label>
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">Type *</label>
                 <Select value={formData.type} onValueChange={(v) => setFormData({ ...formData, type: v })}>
                   <SelectTrigger data-testid="select-event-type">
                     <SelectValue />
@@ -283,9 +285,9 @@ export function AdminEvents() {
                 />
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-1 block">Start Date *</label>
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 block">Start Date *</label>
                 <Input
                   type="datetime-local"
                   value={formData.startDate}
