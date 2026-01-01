@@ -1,0 +1,234 @@
+Here’s a clear review of the extract, with what’s strong, what’s missing, and how I’d tighten it so “Sparks” becomes genuinely usable (and scalable) rather than a mostly-finished UI waiting on content.
+
+---
+
+## What’s already solid
+
+### Strong foundations
+
+* **You’ve defined the core content types** (devotional, worship, testimony) and **media formats** (video/audio/quick-read/download). That’s enough to ship a compelling MVP.
+* The **Sparks page feature set is robust** (featured spark, filters, 9:16 cards, playback, reactions, subscriptions). This is very close to “Reels/TikTok for mission/devotionals.”
+* **Admin CRUD exists**. That’s a major unlock—content can scale without engineering intervention.
+
+### The extract communicates “state + gaps”
+
+It clearly separates:
+
+* *Current implementation*
+* *Content required*
+* *What needs fixing*
+* *Options to proceed*
+
+This is the right structure for sprint planning and stakeholder alignment.
+
+---
+
+## The main gaps (what will bite you later)
+
+### 1) Schema is heading toward “nullable field sprawl”
+
+Right now you have:
+
+* `mediaType` plus multiple URL columns (`videoUrl`, `audioUrl`, `downloadUrl`) that are mutually exclusive most of the time.
+
+That works early on, but it becomes messy when you add:
+
+* multiple renditions (low/high quality)
+* captions/transcripts
+* multiple clips per spark
+* platform embeds vs direct uploads
+
+**Fix:** model “media” as a structured object (or separate table), so you don’t keep adding more nullable columns.
+
+---
+
+### 2) Reactions need “per-user” integrity
+
+“Tracking (flame, amen, praying)” is good, but the extract doesn’t clarify:
+
+* Is it just aggregate counts on the spark?
+* Or are you recording **who reacted**, to prevent duplicates and enable “my reactions” state?
+
+**Fix:** add a `spark_reactions` table keyed by `(spark_id, user_id, reaction_type)` with uniqueness. Keep aggregate counts in `sparks` optionally for speed.
+
+---
+
+### 3) “Daily” needs a proper publishing/scheduling concept
+
+The extract correctly identifies:
+
+* no scheduling system
+* hardcoded verse rotation
+
+But the deeper requirement is: **you need a publish lifecycle**:
+
+* Draft → Scheduled → Published → Archived
+
+Otherwise you’ll struggle with:
+
+* “Today’s devotional” reliability
+* timezones
+* featured vs normal content
+* moderation/quality gates
+
+**Fix:** add `status`, `publishAt`, optionally `expiresAt`, and a “dailyDate” or deterministic selector.
+
+---
+
+### 4) Content operations aren’t described (and they matter)
+
+To make it usable, you’ll need a repeatable content workflow:
+
+* Upload / link media
+* Add scripture + title + description
+* Attach thumbnail
+* Set category + publish date
+* QA preview
+* Publish
+
+**Fix:** make Admin support “Schedule” and “Preview as user,” plus minimum required fields validation.
+
+---
+
+### 5) Worship clips have a hidden legal/licensing risk
+
+Worship snippets (even short) can be copyrighted. If you’re embedding YouTube official uploads you’re safer; if you’re uploading MP3/MP4 clips, you need permission/licensing.
+
+**Fix:** for worship, prefer:
+
+* YouTube embeds from official channels
+* or fully licensed content you own / have permission to distribute
+
+---
+
+## Recommended schema upgrades (minimal but future-proof)
+
+You can keep the `sparks` table, but add the missing lifecycle + daily mechanics:
+
+**Add to `sparks`:**
+
+* `status` (draft | scheduled | published | archived)
+* `publishAt` (datetime)
+* `featured` (boolean)
+* `slug` (optional, for share links)
+* `createdBy`, `updatedBy`
+* `publishedBy` (optional)
+* `tags` (array or separate join table)
+* `transcript` (optional but valuable for accessibility + search)
+
+**Media refactor (choose one):**
+
+* **Option A (fast):** replace `videoUrl/audioUrl/downloadUrl` with `mediaUrl` + `mediaMeta` JSON
+* **Option B (cleaner):** `spark_media` table: `(id, spark_id, type, url, provider, duration, thumbnailUrl, metadata)`
+
+**Reactions:**
+
+* `spark_reactions`: `(id, spark_id, user_id, reaction_type, created_at)` with unique constraint on `(spark_id, user_id, reaction_type)`
+
+**Subscriptions:**
+
+* `spark_subscriptions`: `(id, user_id, category, channel, target, created_at, is_active)`
+
+  * channel: whatsapp | email | push
+  * target: phone/email token etc.
+
+---
+
+## “Today’s Devotional” rotation: two reliable patterns
+
+### Pattern 1 (best for scheduling): deterministic “dailyDate”
+
+* Add `dailyDate` (date) to devotionals
+* Admin assigns each devotional to a specific day
+* “Today’s Devotional” = devotional where `dailyDate == today (Europe/London)`
+
+This gives absolute control and predictable planning.
+
+### Pattern 2 (best for minimal admin): date-hash rotation
+
+* “Today’s Devotional” = pick published devotionals ordered by `publishAt`, select index = `dayOfYear % total`
+* Good for MVP, but less intentional (you can’t guarantee thematic alignment for special dates).
+
+Given you’re launching college/sixth-form/university outreaches in **January 2026**, I’d use **Pattern 1** so you can align devotionals with outreach weeks and events.
+
+---
+
+## What needs fixing (your list is correct) — plus two more
+
+You already have:
+
+* Home page uses hardcoded data
+* Daily widget verse is hardcoded
+* No scheduling system
+
+Add these two:
+
+* **No empty-state UX** (what happens when there are 0 published sparks in a category?)
+* **No observability** (basic analytics: plays, completions, shares, saves)
+
+Even lightweight tracking will help you learn what is resonating.
+
+---
+
+## What I would do next (practical, shippable plan)
+
+### Step 1 — Make it real end-to-end (MVP hardening)
+
+1. **Home page pulls from DB**
+
+* Show: featured spark + 3 latest published sparks
+* Fallback: latest devotional if no featured exists
+
+2. **Today’s Devotional**
+
+* Implement Pattern 1 (dailyDate) + timezone consistency (Europe/London)
+* Add “previous/next day” navigation (optional but very engaging)
+
+3. **Seed data**
+
+* 15–30 sparks across categories
+* Realistic placeholders:
+
+  * thumbnails (vertical 9:16)
+  * scriptureRef
+  * duration
+  * sample YouTube links for video sparks (safe demo)
+  * sample MP3 links only if you have hosting
+
+### Step 2 — Scheduling + admin workflow
+
+* Add `status` + `publishAt` + “Schedule” button in Admin
+* Validation rules (must-have fields before publish)
+* Preview mode in Admin
+
+### Step 3 — Engagement loops
+
+* Reaction integrity (per-user)
+* Shares (“copy link”, “share to WhatsApp”)
+* Subscriptions that actually send something (email/WhatsApp workflows)
+
+---
+
+## Quick quality bar (definition of “usable”)
+
+Sparks is “usable” when:
+
+* Home + Sparks page show **only published** content from the DB
+* “Today’s Devotional” changes daily without manual edits
+* Admin can schedule devotionals for specific dates
+* Users can react and see their reaction state persist
+* There is enough seed content to feel alive (at least 15–30 items)
+
+---
+
+## Your proposed options: recommended order
+
+If you proceed exactly as your extract suggests, I’d do:
+
+1. **Fix Home page to pull real sparks from DB**
+2. **Add “Today’s Devotional” daily rotation** (with scheduling fields)
+3. **Create sample seed data**
+
+That sequence ensures you can immediately see real content everywhere, then lock down the daily mechanic, then populate.
+
+If you want, I can also turn this into a clean Sprint ticket set (engineering-ready) with acceptance criteria and test notes—but the above should already give you a strong “review + next steps” response to align the build.

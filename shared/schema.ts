@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm';
 import {
   boolean,
+  date,
   index,
   integer,
   jsonb,
@@ -87,6 +88,16 @@ export const sparks = pgTable("sparks", {
   category: varchar("category").notNull(), // 'daily-devotional', 'worship', 'testimony', etc.
   duration: integer("duration"), // in seconds
   scriptureRef: varchar("scripture_ref"), // e.g. "Matthew 6:6"
+  status: varchar("status").notNull().default("draft"), // 'draft', 'scheduled', 'published', 'archived'
+  publishAt: timestamp("publish_at"),
+  dailyDate: date("daily_date"), // for Today's Devotional rotation
+  featured: boolean("featured").default(false),
+  prayerLine: text("prayer_line"), // prayer prompt for Faith Overlay
+  ctaPrimary: varchar("cta_primary"), // 'Pray', 'Give', 'Go'
+  thumbnailText: varchar("thumbnail_text"), // text overlay for thumbnail
+  thumbnailPrompt: text("thumbnail_prompt"), // AI generation prompt
+  weekTheme: varchar("week_theme"), // e.g. "Week 1: Identity & Belonging"
+  audienceSegment: varchar("audience_segment"), // 'schools', 'universities', 'early-career', 'builders', 'couples'
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -127,6 +138,28 @@ export const insertSparkSubscriptionSchema = createInsertSchema(sparkSubscriptio
 });
 export type InsertSparkSubscription = z.infer<typeof insertSparkSubscriptionSchema>;
 export type SparkSubscription = typeof sparkSubscriptions.$inferSelect;
+
+// Reflection Cards - daily reflection prompts
+export const reflectionCards = pgTable("reflection_cards", {
+  id: serial("id").primaryKey(),
+  baseQuote: text("base_quote").notNull(), // seeker-sensitive quote/insight
+  question: text("question").notNull(), // reflection question
+  action: text("action").notNull(), // small action step
+  faithOverlayScripture: varchar("faith_overlay_scripture"), // optional scripture ref for Faith mode
+  publishAt: timestamp("publish_at"),
+  dailyDate: date("daily_date"), // for daily rotation
+  status: varchar("status").notNull().default("draft"), // 'draft', 'scheduled', 'published'
+  weekTheme: varchar("week_theme"), // e.g. "Week 1: Identity & Belonging"
+  audienceSegment: varchar("audience_segment"), // 'schools', 'universities', 'early-career', 'builders', 'couples'
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertReflectionCardSchema = createInsertSchema(reflectionCards).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertReflectionCard = z.infer<typeof insertReflectionCardSchema>;
+export type ReflectionCard = typeof reflectionCards.$inferSelect;
 
 // Mission Events
 export const events = pgTable("events", {

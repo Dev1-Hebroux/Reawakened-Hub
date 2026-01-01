@@ -1,0 +1,202 @@
+This is the right checklist. If you ship exactly this **Minimum Viable Content pack**, Reawakened will stop feeling like “a platform with features” and start feeling like **a living movement**—because users will have something to watch, pray, join, and share every day.
+
+Below is how to turn your list into a simple, repeatable **content operating system** that fuels daily engagement and mission mobilisation (digital-first, then location).
+
+---
+
+## The principle that makes the platform feel alive
+
+Reawakened feels alive when there is a **daily rhythm** and a **clear next step**:
+
+* **Daily rhythm:** “Something new today” (Sparks + Reflections)
+* **Clear next step:** every piece of content ends in **Pray / Give / Go**
+
+A good internal rule: **No content goes live unless it ends with one meaningful action.**
+
+---
+
+## Launch strategy: build the “Month 1 Engine”
+
+### Your MVP pack is correct
+
+To launch strong, you need:
+
+1. **30 Sparks** (one scheduled per day)
+2. **30 Reflection Cards** (lightweight daily companion)
+3. **2 Journeys** fully complete (so there’s depth beyond the feed)
+4. **3–5 Events** (so “Go” feels real)
+5. **5 Blog posts** (so the platform has substance and shareable thought leadership)
+6. **3–5 Seed community posts** (so Community Hub isn’t empty)
+
+That combination creates: **habit + depth + community + mobilisation**.
+
+---
+
+## Make it easier: content should be “repurposable by design”
+
+One daily devotional can become 4 assets with minimal extra effort:
+
+* **Sparks Video** (1–3 min)
+* **Sparks Text** (title + verse + 2–3 sentence reflection)
+* **Reflection Card** (quote/verse + question)
+* **Community prompt** (a post that sparks comments)
+
+This is how you get volume without burnout.
+
+---
+
+## The Reawakened “Spark” template (use this every time)
+
+Every Spark should follow the same structure so it’s easy to produce and easy to consume:
+
+**1) Hook (5–10s):** “If you’re feeling ___ at uni/college…”
+**2) Scripture (10–15s):** one verse + reference
+**3) Reflection (30–60s):** what it means in real life
+**4) Prayer (15–25s):** pray it out loud with them
+**5) Action (10s):** one step tied to Pray/Give/Go
+
+### The CTA rule (this is what drives mission outcomes)
+
+Pick **one primary CTA** (and optionally one secondary):
+
+* **PRAY:** “Tap Pray and pray this now / submit a request.”
+* **GIVE:** “Tap Give—£5 funds outreach resources this week.”
+* **GO (digital-first):** “Tap Go—join the online outreach / DM challenge / sign-up.”
+
+If you do this consistently, Sparks becomes a mobilisation funnel, not just content.
+
+---
+
+## Recommended Month 1 theme plan (so it feels coherent)
+
+A 30-day series works best when it has a clear arc. Here’s a proven structure for sixth forms + universities:
+
+### Week themes (high resonance with students)
+
+* **Week 1: Identity & Belonging** (Who am I? Where do I fit?)
+* **Week 2: Prayer & Presence** (How do I meet God daily?)
+* **Week 3: Peace & Anxiety** (How do I stand firm emotionally?)
+* **Week 4: Bold Witness & Mission** (How do I speak and act?)
+* **Days 29–30: Consecration + Commission** (commitment + sending)
+
+This gives you consistency, avoids random content, and aligns naturally to outreach goals in January 2026.
+
+---
+
+## Asset specs (so your team produces the right things the first time)
+
+### Sparks (Videos + Thumbnails + Text)
+
+* **Video:** 9:16, 1080×1920, 1–3 min, captions strongly recommended
+* **Thumbnail:** 1080×1920, high contrast, 3–6 words max
+* **Text block:** Title + ScriptureRef + 2–3 sentence reflection + 1 prayer line + CTA
+
+**Thumbnail copy examples**
+
+* “God Has Not Forgotten You”
+* “Peace in Exam Pressure”
+* “Courage to Speak Today”
+* “You Are Sent”
+
+### Worship Clips (keep it safe)
+
+* Use **YouTube embeds from official/licensed channels** (as you noted)
+* Add one sentence of framing + a prayer prompt (so it’s not “just a clip”)
+
+### Testimonies (make them mission-productive)
+
+Use a simple story spine:
+
+* Before → Encounter → After → “What I’d say to you” → CTA (Pray/Go)
+
+---
+
+## Journeys: make them your discipleship backbone
+
+If Sparks is the “front door,” Journeys is where transformation sticks.
+
+### Minimum format per day/session
+
+* Title
+* Scripture
+* Reflection (150–300 words)
+* Action step (“I will…”)
+* Optional: short video/audio
+* Weekly: 3–5 buddy questions
+
+### “I Will” templates (examples)
+
+* “I will pray for 2 minutes every morning this week.”
+* “I will message one friend and ask: ‘Can I pray for you?’”
+* “I will join one outreach opportunity this week (digital or local).”
+
+Journeys should always end with a **clear commitment** and a **share option**.
+
+---
+
+## Events + Blog: keep them lightweight but real
+
+### Events (3–5 is perfect)
+
+Each event should answer:
+
+* What is it?
+* Who is it for?
+* What happens?
+* Where/when?
+* How do I join / bring a friend?
+
+### Blog posts (5–10)
+
+Make them shareable and mission-aligned:
+
+* “Why Students Need Revival Again”
+* “Digital Evangelism That Actually Works”
+* “How to Pray When You Don’t Feel Anything”
+* “Identity in Christ in a Culture of Pressure”
+* “Young Men Grow When Older Men Show Up” (ties to your existing theme)
+
+---
+
+## Community Hub: seed it so it doesn’t feel empty
+
+You only need 3–5 posts, but they must model the culture:
+
+### Seed post types
+
+1. **Mission report** (what we did + outcome + praise + next step)
+2. **Prayer request** (specific + time-bound + update promise)
+3. **Praise report** (short testimony)
+4. **Discussion prompt** (“What’s your biggest challenge at college right now?”)
+
+If these are strong, user-generated content follows faster.
+
+---
+
+## A practical “Content Package Checklist” (launch-ready definition)
+
+Before you call it “live,” ensure:
+
+* 30 devotionals scheduled with `dailyDate` (no gaps)
+* Every Spark has a thumbnail, scriptureRef, and CTA button
+* 2 Journeys are complete end-to-end
+* Events are visible with images
+* Blog has at least 5 posts (so it doesn’t look empty)
+* Community has at least 3 seed posts
+* Reflection cards are scheduled or selectable daily
+
+This will make the platform feel active from Day 1.
+
+---
+
+## If you want the fastest next step
+
+I can generate a **Month 1 content pack** for you in a format your admin can ingest, including:
+
+* 30 Sparks: titles, scriptureRef, 2–3 sentence reflection, prayer line, CTA (Pray/Give/Go), plus thumbnail text prompts
+* 30 Reflection cards: verse/quote + question + action
+* 5 blog post outlines (or full drafts if you prefer)
+* 3–5 seed community posts written in the right tone
+* A suggested schedule mapped to your January 2026 outreach weeks
+
+If you tell me your preferred Month 1 theme (or I can default to the 4-week structure above), I’ll produce the full set in one go.

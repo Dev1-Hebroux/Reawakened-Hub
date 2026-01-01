@@ -75,7 +75,16 @@ export function SparksPage() {
   const { user, isAuthenticated } = useAuth();
 
   const { data: sparks = [], isLoading } = useQuery<Spark[]>({
-    queryKey: ["/api/sparks"],
+    queryKey: ["/api/sparks/published"],
+  });
+
+  const { data: todaySpark, isLoading: todayLoading } = useQuery<Spark>({
+    queryKey: ["/api/sparks/today"],
+    retry: false,
+  });
+
+  const { data: featuredSparks = [] } = useQuery<Spark[]>({
+    queryKey: ["/api/sparks/featured"],
   });
 
   const { data: subscriptions = [], isLoading: subscriptionsLoading } = useQuery<SparkSubscription[]>({
@@ -224,7 +233,12 @@ export function SparksPage() {
     ? sparks 
     : sparks.filter(s => s.category === activeFilter);
 
-  const featuredSpark = sparks.length > 0 ? sparks[0] : null;
+  const featuredSpark = featuredSparks.length > 0 ? featuredSparks[0] : (sparks.length > 0 ? sparks[0] : null);
+  
+  const formatDate = (dateStr: string | null) => {
+    if (!dateStr) return new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    return new Date(dateStr).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  };
 
   return (
     <div className="min-h-screen bg-black text-white overflow-x-hidden">
@@ -283,7 +297,7 @@ export function SparksPage() {
           <div className="flex items-center justify-between mb-8">
             <div>
               <h2 className="text-2xl font-bold font-display flex items-center gap-2">
-                <BookOpen className="h-6 w-6 text-primary" /> Daily Spark
+                <BookOpen className="h-6 w-6 text-primary" /> Today's Devotional
               </h2>
               <p className="text-gray-400 text-sm">Your daily dose of scripture and inspiration.</p>
             </div>
@@ -296,70 +310,100 @@ export function SparksPage() {
             </button>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8">
-            {/* Today's Video */}
-            <div className="relative aspect-video rounded-2xl overflow-hidden group cursor-pointer border border-white/10">
-              <img src={dailyBg} alt="Daily Devotional" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
-              <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                <div className="h-16 w-16 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 group-hover:scale-110 transition-transform">
-                  <Play className="h-8 w-8 fill-white text-white ml-1" />
+          {todayLoading ? (
+            <div className="flex justify-center py-16">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : todaySpark ? (
+            <div className="grid md:grid-cols-2 gap-8">
+              {/* Today's Spark */}
+              <div 
+                onClick={() => setSelectedSpark(todaySpark)}
+                className="relative aspect-video rounded-2xl overflow-hidden group cursor-pointer border border-white/10"
+                data-testid="card-today-spark"
+              >
+                <img src={todaySpark.thumbnailUrl || dailyBg} alt={todaySpark.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                  <div className="h-16 w-16 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 group-hover:scale-110 transition-transform">
+                    <Play className="h-8 w-8 fill-white text-white ml-1" />
+                  </div>
+                </div>
+                <div className="absolute bottom-4 left-4 right-4">
+                  <span className="bg-primary text-white text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wider mb-2 inline-block">
+                    {todaySpark.weekTheme || "Today's Word"}
+                  </span>
+                  <h3 className="text-xl font-bold text-white">{todaySpark.title}</h3>
+                  <p className="text-sm text-white/80">
+                    {todaySpark.duration ? `${Math.floor(todaySpark.duration / 60)} min ${todaySpark.mediaType === 'video' ? 'watch' : 'listen'}` : 'Daily spark'}
+                  </p>
                 </div>
               </div>
-              <div className="absolute bottom-4 left-4 right-4">
-                <span className="bg-primary text-white text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wider mb-2 inline-block">
-                  Today's Word
-                </span>
-                <h3 className="text-xl font-bold text-white">The Power of Secret Prayer</h3>
-                <p className="text-sm text-white/80">Pastor Michael • 5 min watch</p>
+
+              {/* Today's Scripture & Prayer */}
+              <div className="flex flex-col justify-between space-y-6">
+                <div className="bg-white/5 rounded-2xl p-6 border border-white/10 flex-1">
+                   <div className="flex items-center justify-between mb-4">
+                     <span className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
+                       <Calendar className="h-4 w-4" /> {formatDate(todaySpark.dailyDate)}
+                     </span>
+                     <Share2 className="h-4 w-4 text-gray-400 cursor-pointer hover:text-white" />
+                   </div>
+                   <p className="text-lg text-white/90 mb-4 leading-relaxed">
+                     {todaySpark.description}
+                   </p>
+                   {todaySpark.scriptureRef && (
+                     <p className="text-right text-primary font-bold">— {todaySpark.scriptureRef}</p>
+                   )}
+                   {todaySpark.prayerLine && (
+                     <div className="mt-4 pt-4 border-t border-white/10">
+                       <p className="text-sm text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+                         <HandHeart className="h-4 w-4" /> Prayer
+                       </p>
+                       <p className="text-white/80 italic">{todaySpark.prayerLine}</p>
+                     </div>
+                   )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                   <button 
+                     onClick={() => setShowSubscribe(true)}
+                     className="bg-gray-800 hover:bg-gray-700 p-4 rounded-xl flex items-center gap-3 transition-colors border border-white/5 group"
+                     data-testid="button-whatsapp"
+                   >
+                     <div className="h-10 w-10 bg-green-500/20 rounded-full flex items-center justify-center text-green-500 group-hover:bg-green-500 group-hover:text-white transition-colors">
+                       <MessageCircle className="h-5 w-5" />
+                     </div>
+                     <div className="text-left">
+                       <div className="text-xs text-gray-400">Join on</div>
+                       <div className="font-bold">WhatsApp</div>
+                     </div>
+                   </button>
+
+                   <button 
+                     onClick={() => setShowSubscribe(true)}
+                     className="bg-gray-800 hover:bg-gray-700 p-4 rounded-xl flex items-center gap-3 transition-colors border border-white/5 group"
+                     data-testid="button-email"
+                   >
+                     <div className="h-10 w-10 bg-blue-500/20 rounded-full flex items-center justify-center text-blue-500 group-hover:bg-blue-500 group-hover:text-white transition-colors">
+                       <Mail className="h-5 w-5" />
+                     </div>
+                     <div className="text-left">
+                       <div className="text-xs text-gray-400">Get via</div>
+                       <div className="font-bold">Email</div>
+                     </div>
+                   </button>
+                </div>
               </div>
             </div>
-
-            {/* Today's Verse & Subscribe CTA */}
-            <div className="flex flex-col justify-between space-y-6">
-              <div className="bg-white/5 rounded-2xl p-6 border border-white/10 flex-1">
-                 <div className="flex items-center justify-between mb-4">
-                   <span className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
-                     <Calendar className="h-4 w-4" /> Dec 13, 2025
-                   </span>
-                   <Share2 className="h-4 w-4 text-gray-400 cursor-pointer hover:text-white" />
-                 </div>
-                 <blockquote className="text-xl md:text-2xl font-serif italic leading-relaxed text-white/90 mb-4">
-                   "But when you pray, go into your room, close the door and pray to your Father, who is unseen. Then your Father, who sees what is done in secret, will reward you."
-                 </blockquote>
-                 <p className="text-right text-primary font-bold">— Matthew 6:6 (NIV)</p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                 <button 
-                   onClick={() => setShowSubscribe(true)}
-                   className="bg-gray-800 hover:bg-gray-700 p-4 rounded-xl flex items-center gap-3 transition-colors border border-white/5 group"
-                   data-testid="button-whatsapp"
-                 >
-                   <div className="h-10 w-10 bg-green-500/20 rounded-full flex items-center justify-center text-green-500 group-hover:bg-green-500 group-hover:text-white transition-colors">
-                     <MessageCircle className="h-5 w-5" />
-                   </div>
-                   <div className="text-left">
-                     <div className="text-xs text-gray-400">Join on</div>
-                     <div className="font-bold">WhatsApp</div>
-                   </div>
-                 </button>
-
-                 <button 
-                   onClick={() => setShowSubscribe(true)}
-                   className="bg-gray-800 hover:bg-gray-700 p-4 rounded-xl flex items-center gap-3 transition-colors border border-white/5 group"
-                   data-testid="button-email"
-                 >
-                   <div className="h-10 w-10 bg-blue-500/20 rounded-full flex items-center justify-center text-blue-500 group-hover:bg-blue-500 group-hover:text-white transition-colors">
-                     <Mail className="h-5 w-5" />
-                   </div>
-                   <div className="text-left">
-                     <div className="text-xs text-gray-400">Get via</div>
-                     <div className="font-bold">Email</div>
-                   </div>
-                 </button>
-              </div>
+          ) : (
+            <div className="text-center py-12 bg-white/5 rounded-2xl border border-white/10">
+              <Calendar className="h-12 w-12 text-gray-500 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-white mb-2">No Devotional Today</h3>
+              <p className="text-gray-400 max-w-md mx-auto">
+                Check back tomorrow for your daily dose of inspiration, or explore our library of past devotionals below.
+              </p>
             </div>
-          </div>
+          )}
         </div>
       </div>
 

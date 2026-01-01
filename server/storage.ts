@@ -5,6 +5,7 @@ import {
   sparks,
   sparkReactions,
   sparkSubscriptions,
+  reflectionCards,
   events,
   eventRegistrations,
   blogPosts,
@@ -58,6 +59,8 @@ import {
   type InsertSparkReaction,
   type SparkSubscription,
   type InsertSparkSubscription,
+  type ReflectionCard,
+  type InsertReflectionCard,
   type Event,
   type InsertEvent,
   type EventRegistration,
@@ -365,6 +368,14 @@ export interface IStorage {
   createSpark(spark: InsertSpark): Promise<Spark>;
   updateSpark(id: number, updates: Partial<InsertSpark>): Promise<Spark>;
   deleteSpark(id: number): Promise<void>;
+  getPublishedSparks(audienceSegment?: string): Promise<Spark[]>;
+  getFeaturedSparks(audienceSegment?: string): Promise<Spark[]>;
+  getTodaySpark(audienceSegment?: string): Promise<Spark | undefined>;
+
+  // Reflection Cards
+  getReflectionCards(audienceSegment?: string): Promise<ReflectionCard[]>;
+  getTodayReflectionCard(audienceSegment?: string): Promise<ReflectionCard | undefined>;
+  createReflectionCard(card: InsertReflectionCard): Promise<ReflectionCard>;
 
   // Spark Reactions
   getSparkReactions(sparkId: number): Promise<SparkReaction[]>;
@@ -783,6 +794,89 @@ export class DatabaseStorage implements IStorage {
 
   async deleteSpark(id: number): Promise<void> {
     await db.delete(sparks).where(eq(sparks.id, id));
+  }
+
+  private getLondonDate(): string {
+    const londonTime = new Date().toLocaleString("en-GB", { timeZone: "Europe/London" });
+    const parts = londonTime.split(',')[0].split('/');
+    return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+  }
+
+  async getPublishedSparks(audienceSegment?: string): Promise<Spark[]> {
+    const now = new Date();
+    const conditions = [
+      sql`${sparks.status} IN ('published', 'scheduled')`,
+      sql`(${sparks.publishAt} IS NULL OR ${sparks.publishAt} <= ${now})`,
+    ];
+    if (audienceSegment) {
+      conditions.push(eq(sparks.audienceSegment, audienceSegment));
+    } else {
+      conditions.push(sql`(${sparks.audienceSegment} IS NULL OR ${sparks.audienceSegment} = '')`);
+    }
+    return db.select().from(sparks).where(and(...conditions)).orderBy(desc(sparks.publishAt));
+  }
+
+  async getFeaturedSparks(audienceSegment?: string): Promise<Spark[]> {
+    const conditions = [
+      eq(sparks.featured, true),
+      sql`${sparks.status} IN ('published', 'scheduled')`,
+    ];
+    if (audienceSegment) {
+      conditions.push(eq(sparks.audienceSegment, audienceSegment));
+    } else {
+      conditions.push(sql`(${sparks.audienceSegment} IS NULL OR ${sparks.audienceSegment} = '')`);
+    }
+    return db.select().from(sparks).where(and(...conditions)).orderBy(desc(sparks.publishAt)).limit(5);
+  }
+
+  async getTodaySpark(audienceSegment?: string): Promise<Spark | undefined> {
+    const todayLondon = this.getLondonDate();
+    const conditions = [
+      eq(sparks.dailyDate, todayLondon),
+      sql`${sparks.status} IN ('published', 'scheduled')`,
+    ];
+    if (audienceSegment) {
+      conditions.push(eq(sparks.audienceSegment, audienceSegment));
+    } else {
+      conditions.push(sql`(${sparks.audienceSegment} IS NULL OR ${sparks.audienceSegment} = '')`);
+    }
+    const [spark] = await db.select().from(sparks).where(and(...conditions)).limit(1);
+    return spark;
+  }
+
+  // Reflection Cards
+  async getReflectionCards(audienceSegment?: string): Promise<ReflectionCard[]> {
+    const now = new Date();
+    const conditions = [
+      sql`${reflectionCards.status} IN ('published', 'scheduled')`,
+      sql`(${reflectionCards.publishAt} IS NULL OR ${reflectionCards.publishAt} <= ${now})`,
+    ];
+    if (audienceSegment) {
+      conditions.push(eq(reflectionCards.audienceSegment, audienceSegment));
+    } else {
+      conditions.push(sql`(${reflectionCards.audienceSegment} IS NULL OR ${reflectionCards.audienceSegment} = '')`);
+    }
+    return db.select().from(reflectionCards).where(and(...conditions)).orderBy(desc(reflectionCards.publishAt));
+  }
+
+  async getTodayReflectionCard(audienceSegment?: string): Promise<ReflectionCard | undefined> {
+    const todayLondon = this.getLondonDate();
+    const conditions = [
+      eq(reflectionCards.dailyDate, todayLondon),
+      sql`${reflectionCards.status} IN ('published', 'scheduled')`,
+    ];
+    if (audienceSegment) {
+      conditions.push(eq(reflectionCards.audienceSegment, audienceSegment));
+    } else {
+      conditions.push(sql`(${reflectionCards.audienceSegment} IS NULL OR ${reflectionCards.audienceSegment} = '')`);
+    }
+    const [card] = await db.select().from(reflectionCards).where(and(...conditions)).limit(1);
+    return card;
+  }
+
+  async createReflectionCard(cardData: InsertReflectionCard): Promise<ReflectionCard> {
+    const [card] = await db.insert(reflectionCards).values(cardData).returning();
+    return card;
   }
 
   // Spark Reactions

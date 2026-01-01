@@ -119,6 +119,45 @@ export async function registerRoutes(
     }
   });
 
+  // Get published sparks (for public display)
+  app.get('/api/sparks/published', async (req, res) => {
+    try {
+      const audienceSegment = req.query.audience as string | undefined;
+      const sparks = await storage.getPublishedSparks(audienceSegment);
+      res.json(sparks);
+    } catch (error) {
+      console.error("Error fetching published sparks:", error);
+      res.status(500).json({ message: "Failed to fetch published sparks" });
+    }
+  });
+
+  // Get featured sparks
+  app.get('/api/sparks/featured', async (req, res) => {
+    try {
+      const audienceSegment = req.query.audience as string | undefined;
+      const sparks = await storage.getFeaturedSparks(audienceSegment);
+      res.json(sparks);
+    } catch (error) {
+      console.error("Error fetching featured sparks:", error);
+      res.status(500).json({ message: "Failed to fetch featured sparks" });
+    }
+  });
+
+  // Get today's devotional
+  app.get('/api/sparks/today', async (req, res) => {
+    try {
+      const audienceSegment = req.query.audience as string | undefined;
+      const spark = await storage.getTodaySpark(audienceSegment);
+      if (!spark) {
+        return res.status(404).json({ message: "No devotional for today" });
+      }
+      res.json(spark);
+    } catch (error) {
+      console.error("Error fetching today's spark:", error);
+      res.status(500).json({ message: "Failed to fetch today's devotional" });
+    }
+  });
+
   // Get a single spark
   app.get('/api/sparks/:id', async (req, res) => {
     try {
@@ -177,6 +216,35 @@ export async function registerRoutes(
     } catch (error: any) {
       console.error("Error creating spark reaction:", error);
       res.status(400).json({ message: error.message || "Failed to add reaction" });
+    }
+  });
+
+  // ===== REFLECTION CARDS ROUTES =====
+
+  // Get published reflection cards
+  app.get('/api/reflection-cards', async (req, res) => {
+    try {
+      const audienceSegment = req.query.audience as string | undefined;
+      const cards = await storage.getReflectionCards(audienceSegment);
+      res.json(cards);
+    } catch (error) {
+      console.error("Error fetching reflection cards:", error);
+      res.status(500).json({ message: "Failed to fetch reflection cards" });
+    }
+  });
+
+  // Get today's reflection card
+  app.get('/api/reflection-cards/today', async (req, res) => {
+    try {
+      const audienceSegment = req.query.audience as string | undefined;
+      const card = await storage.getTodayReflectionCard(audienceSegment);
+      if (!card) {
+        return res.status(404).json({ message: "No reflection card for today" });
+      }
+      res.json(card);
+    } catch (error) {
+      console.error("Error fetching today's reflection card:", error);
+      res.status(500).json({ message: "Failed to fetch today's reflection card" });
     }
   });
 

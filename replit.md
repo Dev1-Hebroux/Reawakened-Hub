@@ -37,8 +37,9 @@ Preferred communication style: Simple, everyday language.
   - `sessions` - Session storage (required for Replit Auth)
   - `posts` - Community hub posts (mission reports, prayer requests)
   - `reactions` - Post reactions/likes
-  - `sparks` - Daily devotional content
+  - `sparks` - Daily devotional content (enhanced for DOMINION campaign)
   - `sparkSubscriptions` - User subscriptions to spark categories
+  - `reflectionCards` - Dual-mode reflection cards (base + faith overlay)
   - `events` - Mission events and gatherings
   - `eventRegistrations` - Event sign-ups
   - `blogPosts` - Blog articles
@@ -163,3 +164,54 @@ All logos stored in `attached_assets/`:
 - **Muted Teal**: #4A7C7C
 - **Beige**: #D4A574
 - **Primary Orange**: (defined in Tailwind config)
+
+## DOMINION Campaign (19 Jan - 17 Feb 2026)
+
+### Campaign Overview
+30-day devotional campaign targeting 5 audience segments with 360 pieces of content total.
+
+### Content Structure
+- **30 Global Sparks** - Universal daily devotionals
+- **150 Segmented Sparks** - 30 × 5 audiences (tailored messaging)
+- **30 Global Reflection Cards** - Universal reflection prompts
+- **150 Segmented Reflection Cards** - 30 × 5 audiences
+
+### Audience Segments
+1. `schools` - Students (ages 15-18)
+2. `universities` - University students
+3. `early-career` - "The 9-5 Reset" (young professionals)
+4. `builders` - Entrepreneurs and creatives
+5. `couples` - Young couples
+
+### Week Themes
+1. Identity & Belonging (Days 1-6)
+2. Prayer & Presence (Days 7-12)
+3. Peace & Anxiety (Days 13-18)
+4. Bold Witness (Days 19-24)
+5. Commission (Days 25-30)
+
+### Content Modes
+- **Reflection Mode** - Seeker-sensitive base content (quote, question, action)
+- **Faith Overlay** - Additional scripture reference + prayer line
+
+### Daily Rotation
+- Content rotates at 05:00 GMT (Europe/London timezone)
+- `daily_date` field controls which content shows each day
+- Segment-specific content prioritized, falls back to global if no match
+
+### Key Schema Fields (sparks table)
+- `status` - draft, scheduled, published, archived
+- `publish_at` - When to auto-publish (timestamp)
+- `daily_date` - Which day to show (YYYY-MM-DD format)
+- `featured` - Homepage highlight flag
+- `audience_segment` - Target audience (null = global)
+- `week_theme` - Campaign week category
+- `prayer_line` - Faith Overlay prayer text
+- `cta_primary` - Call-to-action text
+
+### API Endpoints
+- `GET /api/sparks/published?audience=X` - Published sparks for audience
+- `GET /api/sparks/featured?audience=X` - Featured sparks for audience
+- `GET /api/sparks/today?audience=X` - Today's devotional for audience
+- `GET /api/reflection-cards?audience=X` - Reflection cards for audience
+- `GET /api/reflection-cards/today?audience=X` - Today's reflection card

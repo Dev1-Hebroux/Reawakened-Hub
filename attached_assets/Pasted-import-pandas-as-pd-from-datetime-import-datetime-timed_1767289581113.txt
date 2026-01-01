@@ -1,0 +1,363 @@
+import pandas as pd
+from datetime import datetime, timedelta, time
+import json, os
+
+start_date = datetime(2026, 1, 19)  # Europe/London (GMT)
+days = 30
+dates = [start_date + timedelta(days=i) for i in range(days)]
+
+def publish_at(dt):
+    # 05:00 local time (GMT in Jan/Feb), stored as naive ISO string
+    return datetime(dt.year, dt.month, dt.day, 5, 0, 0).isoformat()
+
+# Week mapping
+def week_theme(dt):
+    if datetime(2026,1,19) <= dt <= datetime(2026,1,25):
+        return "Week 1: Identity & Belonging"
+    if datetime(2026,1,26) <= dt <= datetime(2026,2,1):
+        return "Week 2: Prayer & Presence"
+    if datetime(2026,2,2) <= dt <= datetime(2026,2,8):
+        return "Week 3: Peace & Anxiety"
+    if datetime(2026,2,9) <= dt <= datetime(2026,2,15):
+        return "Week 4: Bold Witness & Mission"
+    return "Days 29–30: Consecration & Commission"
+
+sparks_plan = {
+    "2026-01-19": dict(title="Dominion Begins with Belonging", category="daily-devotional", mediaType="video", duration="2:00",
+                      scriptureRef="Romans 8:15-17",
+                      description="Real authority starts with security, not striving. When you know you belong, you stop performing and start living steady under pressure. Today, let your identity be your anchor.",
+                      prayerLine="Father, anchor me in belonging and teach me to live from Your love, not from pressure.",
+                      ctaPrimary="Pray",
+                      thumbnailText="Belonging First",
+                      thumbnailPrompt="Bold, youth-friendly 9:16 thumbnail. High-contrast. Text: 'Belonging First'. Background: warm gradient with subtle light rays. Minimal, modern, confident."),
+    "2026-01-20": dict(title="Seated, Not Shaken", category="daily-devotional", mediaType="video", duration="2:10",
+                      scriptureRef="Ephesians 2:4-6",
+                      description="Dominion is perspective before it is performance. When life feels loud, remember you’re not beneath fear—you’re invited into a higher view. Calm begins when you stop fighting from the ground.",
+                      prayerLine="Jesus, lift my perspective and settle my heart in Your victory today.",
+                      ctaPrimary="Pray",
+                      thumbnailText="Not Shaken",
+                      thumbnailPrompt="9:16 thumbnail, clean and modern. Text: 'Not Shaken'. Background: elevated skyline/above-clouds feel, minimal shapes, confident tone."),
+    "2026-01-21": dict(title="Chosen for Influence", category="daily-devotional", mediaType="video", duration="1:55",
+                      scriptureRef="1 Peter 2:9",
+                      description="You were made to bring light, not just survive the day. Dominion looks like quiet confidence, integrity, and courage that changes atmospheres. One small act of faith can open a door for someone else.",
+                      prayerLine="Lord, let my life bring light and hope to the people around me.",
+                      ctaPrimary="Go",
+                      thumbnailText="Chosen",
+                      thumbnailPrompt="9:16 thumbnail. Text: 'Chosen'. Background: bright focal light behind a silhouette walking forward; hopeful, bold, minimal."),
+    "2026-01-22": dict(title="Testimony: From Pressure to Peace", category="testimony", mediaType="video", duration="3:15",
+                      scriptureRef="John 14:27",
+                      description="This is a real story of calm arriving in the middle of pressure. If you’ve been carrying stress, let this remind you that peace is possible—and you don’t have to do it alone.",
+                      prayerLine="Jesus, meet me in my pressure and give me peace that holds.",
+                      ctaPrimary="Pray",
+                      thumbnailText="Peace Found Me",
+                      thumbnailPrompt="9:16 thumbnail. Text: 'Peace Found Me'. Background: calming tones, soft glow, subtle texture, modern typography."),
+    "2026-01-23": dict(title="Dominion Through Love", category="daily-devotional", mediaType="video", duration="2:05",
+                      scriptureRef="1 John 4:18-19",
+                      description="Fear shrinks you; love strengthens you. Dominion is not control—it’s being steady enough to choose love in real situations. Today, receive love first, then give it away.",
+                      prayerLine="Father, fill me with Your love until fear loses its voice in my life.",
+                      ctaPrimary="Pray",
+                      thumbnailText="Love > Fear",
+                      thumbnailPrompt="9:16 thumbnail. Text: 'Love > Fear'. Background: bold contrasting colors, heart/light motif, modern minimal style."),
+    "2026-01-24": dict(title="Beloved Before You Build", category="daily-devotional", mediaType="video", duration="2:00",
+                      scriptureRef="Luke 3:21-22",
+                      description="Before Jesus did anything public, He heard ‘beloved.’ Your order matters too. Dominion grows when your worth is settled before your work begins.",
+                      prayerLine="Father, remind me I’m beloved—secure me before I serve.",
+                      ctaPrimary="Pray",
+                      thumbnailText="Beloved First",
+                      thumbnailPrompt="9:16 thumbnail. Text: 'Beloved First'. Background: soft light halo, modern clean look, reassuring tone."),
+    "2026-01-25": dict(title="Worship Clip: Make Room", category="worship", mediaType="video", duration="1:00",
+                      scriptureRef="Psalm 22:3",
+                      description="Worship is more than a moment—it’s re-centering. Take one minute to breathe, lift your focus, and make room for God to lead your week.",
+                      prayerLine="Lord, be at the centre of my heart and my week.",
+                      ctaPrimary="Pray",
+                      thumbnailText="Make Room",
+                      thumbnailPrompt="9:16 thumbnail. Text: 'Make Room'. Background: abstract stage lights, minimal, energetic yet calm."),
+
+    "2026-01-26": dict(title="Secret Place Strength", category="daily-devotional", mediaType="video", duration="2:20",
+                      scriptureRef="Matthew 6:6",
+                      description="Private moments shape public strength. Dominion grows when your inner world is led by peace, not noise. Today, choose the secret place—even if it’s only two minutes.",
+                      prayerLine="Father, meet me in quiet and shape my day from Your presence.",
+                      ctaPrimary="Pray",
+                      thumbnailText="Secret Strength",
+                      thumbnailPrompt="9:16 thumbnail. Text: 'Secret Strength'. Background: quiet room silhouette, soft contrast, modern typography."),
+    "2026-01-27": dict(title="Abide and Breathe", category="daily-devotional", mediaType="video", duration="2:10",
+                      scriptureRef="John 15:4-5",
+                      description="Dominion isn’t hustle; it’s connection. When you stay rooted, you don’t run dry. Today, slow down, breathe, and reattach your heart to what gives life.",
+                      prayerLine="Jesus, teach me to abide—make my life fruitful without striving.",
+                      ctaPrimary="Pray",
+                      thumbnailText="Stay Rooted",
+                      thumbnailPrompt="9:16 thumbnail. Text: 'Stay Rooted'. Background: subtle vine/roots motif, minimal, clean, confident."),
+    "2026-01-28": dict(title="Wisdom for Decisions", category="daily-devotional", mediaType="video", duration="2:05",
+                      scriptureRef="James 1:5",
+                      description="You don’t have to guess your way through life. Ask for wisdom with confidence, then take the next right step. Dominion looks like choosing well, not rushing.",
+                      prayerLine="God, give me wisdom for the decisions in front of me today.",
+                      ctaPrimary="Pray",
+                      thumbnailText="Ask for Wisdom",
+                      thumbnailPrompt="9:16 thumbnail. Text: 'Ask for Wisdom'. Background: clean lines, compass/route icon, modern."),
+    "2026-01-29": dict(title="Testimony: God Met Me in Prayer", category="testimony", mediaType="video", duration="3:05",
+                      scriptureRef="Jeremiah 29:12-13",
+                      description="This story starts with a simple, honest prayer—and ends with real change. If you’ve felt distant, this is your reminder: seeking is worth it.",
+                      prayerLine="Father, draw me into real prayer and let me find You deeply.",
+                      ctaPrimary="Pray",
+                      thumbnailText="He Answered",
+                      thumbnailPrompt="9:16 thumbnail. Text: 'He Answered'. Background: sunrise/hope imagery, modern, bold."),
+    "2026-01-30": dict(title="Pray for Your World", category="daily-devotional", mediaType="video", duration="1:50",
+                      scriptureRef="1 Timothy 2:1",
+                      description="Dominion begins when you stop only reacting and start praying intentionally. Choose three people in your world and bless them today—quietly, sincerely, consistently.",
+                      prayerLine="Lord, I lift up my friends and my community—move with mercy and power.",
+                      ctaPrimary="Pray",
+                      thumbnailText="Pray for 3",
+                      thumbnailPrompt="9:16 thumbnail. Text: 'Pray for 3'. Background: three simple icons/dots, clean, modern."),
+    "2026-01-31": dict(title="Authority with Humility", category="daily-devotional", mediaType="video", duration="2:10",
+                      scriptureRef="Mark 10:42-45",
+                      description="Biblical dominion never looks like domination. It looks like serving, listening, and leading with love. Today, choose humility—and watch influence grow the right way.",
+                      prayerLine="Jesus, shape my leadership into humility—make me a servant-hearted person.",
+                      ctaPrimary="Go",
+                      thumbnailText="Lead Like Jesus",
+                      thumbnailPrompt="9:16 thumbnail. Text: 'Lead Like Jesus'. Background: minimal crown + towel icon, clean and bold."),
+    "2026-02-01": dict(title="Worship Clip: Still My Soul", category="worship", mediaType="video", duration="1:00",
+                      scriptureRef="Psalm 46:10",
+                      description="Sometimes dominion is the courage to pause. Take one minute to breathe, be still, and let peace settle inside you.",
+                      prayerLine="Lord, still my soul and steady my thoughts.",
+                      ctaPrimary="Pray",
+                      thumbnailText="Be Still",
+                      thumbnailPrompt="9:16 thumbnail. Text: 'Be Still'. Background: calm waves or gradient, minimal, soothing."),
+
+    "2026-02-02": dict(title="Peace That Guards You", category="daily-devotional", mediaType="video", duration="2:25",
+                      scriptureRef="Philippians 4:6-7",
+                      description="Peace isn’t pretending everything is fine—it’s protection for your inner life. Trade worry for prayer, and let calm take its rightful place. Dominion includes peace over the mind.",
+                      prayerLine="God, I give You my anxiety—guard my heart and mind with Your peace.",
+                      ctaPrimary="Pray",
+                      thumbnailText="Peace Can Guard",
+                      thumbnailPrompt="9:16 thumbnail. Text: 'Peace Can Guard'. Background: shield outline with soft glow, modern."),
+    "2026-02-03": dict(title="Cast the Weight", category="daily-devotional", mediaType="video", duration="1:55",
+                      scriptureRef="1 Peter 5:7",
+                      description="You weren’t built to carry everything alone. Dominion looks like releasing burdens quickly, not rehearsing them endlessly. Drop the weight—again and again, if you need to.",
+                      prayerLine="Father, I release my burdens to You—teach me to trust Your care.",
+                      ctaPrimary="Pray",
+                      thumbnailText="Drop the Weight",
+                      thumbnailPrompt="9:16 thumbnail. Text: 'Drop the Weight'. Background: minimal weight/stone icon falling, strong contrast."),
+    "2026-02-04": dict(title="Renew Your Mind", category="daily-devotional", mediaType="video", duration="2:15",
+                      scriptureRef="Romans 12:2",
+                      description="Dominion is won in thought patterns. One true sentence believed can change an entire day. Today, replace the lie you keep replaying with a truth that builds you.",
+                      prayerLine="Holy Spirit, renew my mind with truth and establish peace in me today.",
+                      ctaPrimary="Pray",
+                      thumbnailText="Renew Your Mind",
+                      thumbnailPrompt="9:16 thumbnail. Text: 'Renew Your Mind'. Background: abstract brain/lines, modern tech feel, calm."),
+    "2026-02-05": dict(title="Testimony: Peace That Didn’t Make Sense", category="testimony", mediaType="video", duration="3:20",
+                      scriptureRef="John 14:27",
+                      description="This is a story of peace arriving when circumstances didn’t change yet. If you’re waiting for life to calm down before you feel okay, let this remind you: peace can meet you now.",
+                      prayerLine="Jesus, give me Your peace—peace the world cannot give or take away.",
+                      ctaPrimary="Pray",
+                      thumbnailText="Peace Arrived",
+                      thumbnailPrompt="9:16 thumbnail. Text: 'Peace Arrived'. Background: calm glow over a stormy texture, modern."),
+    "2026-02-06": dict(title="Grace for Today", category="daily-devotional", mediaType="video", duration="2:05",
+                      scriptureRef="Matthew 6:33-34",
+                      description="Tomorrow will ask its questions—today has enough grace. Dominion over worry is choosing presence over panic. Seek what matters most, and trust that you’ll be carried through.",
+                      prayerLine="Father, help me focus on today and trust You with tomorrow.",
+                      ctaPrimary="Pray",
+                      thumbnailText="Grace Today",
+                      thumbnailPrompt="9:16 thumbnail. Text: 'Grace Today'. Background: sunrise gradient, minimal, hopeful."),
+    "2026-02-07": dict(title="Strength in Weakness", category="daily-devotional", mediaType="video", duration="2:10",
+                      scriptureRef="2 Corinthians 12:9",
+                      description="Dominion is not pretending you’re strong—it’s receiving strength where you’re not. When you admit weakness, grace meets you. Today, bring your need honestly.",
+                      prayerLine="Jesus, I receive Your grace—be strong in me where I feel weak.",
+                      ctaPrimary="Pray",
+                      thumbnailText="Grace Is Power",
+                      thumbnailPrompt="9:16 thumbnail. Text: 'Grace Is Power'. Background: bold type + subtle lightning/energy motif, clean."),
+    "2026-02-08": dict(title="Worship Clip: Peace, Be Still", category="worship", mediaType="video", duration="1:00",
+                      scriptureRef="Mark 4:39",
+                      description="Take one minute to let peace lead again. Breathe, worship, and allow calm to settle over your mind and body.",
+                      prayerLine="Lord, speak peace over me—calm the storm within.",
+                      ctaPrimary="Pray",
+                      thumbnailText="Peace, Be Still",
+                      thumbnailPrompt="9:16 thumbnail. Text: 'Peace, Be Still'. Background: calm ocean or smooth gradient, minimal."),
+
+    "2026-02-09": dict(title="You Are Sent", category="daily-devotional", mediaType="video", duration="2:05",
+                      scriptureRef="John 20:21",
+                      description="Dominion becomes real when it turns outward. You’re not here by accident—your everyday spaces are places of purpose. Today, take one small step toward someone else.",
+                      prayerLine="Jesus, send me today with love, courage, and the right words.",
+                      ctaPrimary="Go",
+                      thumbnailText="You Are Sent",
+                      thumbnailPrompt="9:16 thumbnail. Text: 'You Are Sent'. Background: forward arrow/road motif, bold and clean."),
+    "2026-02-10": dict(title="Courage to Speak", category="daily-devotional", mediaType="video", duration="1:55",
+                      scriptureRef="Acts 4:29-31",
+                      description="Boldness isn’t personality—it’s help. Ask for courage, then take a small step: a message, a question, an invite. Dominion includes courage that serves people well.",
+                      prayerLine="Holy Spirit, give me courage and one person to encourage today.",
+                      ctaPrimary="Go",
+                      thumbnailText="Courage Today",
+                      thumbnailPrompt="9:16 thumbnail. Text: 'Courage Today'. Background: strong typography + subtle flame icon, modern."),
+    "2026-02-11": dict(title="Love Is Your Strategy", category="daily-devotional", mediaType="video", duration="2:10",
+                      scriptureRef="Colossians 3:12-14",
+                      description="The most powerful influence you can carry is love in action. Kindness and patience create trust—and trust opens doors. Today, choose love deliberately.",
+                      prayerLine="Father, clothe me with love—make me steady and compassionate today.",
+                      ctaPrimary="Go",
+                      thumbnailText="Love Is Power",
+                      thumbnailPrompt="9:16 thumbnail. Text: 'Love Is Power'. Background: bold contrast, minimal heart/light icon."),
+    "2026-02-12": dict(title="Testimony: One Invite Changed Everything", category="testimony", mediaType="video", duration="3:00",
+                      scriptureRef="Mark 2:1-5",
+                      description="One invite. One moment. One life opened. This story proves that small obedience can create big outcomes. If you’ve been hesitating, let faith rise for one step.",
+                      prayerLine="Jesus, use my small steps to create moments of grace for others.",
+                      ctaPrimary="Go",
+                      thumbnailText="One Invite",
+                      thumbnailPrompt="9:16 thumbnail. Text: 'One Invite'. Background: open door icon, modern, hopeful."),
+    "2026-02-13": dict(title="Generosity Fuels Impact", category="daily-devotional", mediaType="video", duration="1:45",
+                      scriptureRef="2 Corinthians 9:7-8",
+                      description="Dominion includes freedom from fear around resources. Giving is partnership—helping good work reach real people. Today, choose generosity in a way that feels sincere and sustainable.",
+                      prayerLine="Lord, make me joyful and generous—let my giving advance what is good.",
+                      ctaPrimary="Give",
+                      thumbnailText="Give With Joy",
+                      thumbnailPrompt="9:16 thumbnail. Text: 'Give With Joy'. Background: clean coin/heart icon, modern, trustworthy."),
+    "2026-02-14": dict(title="The Gospel in One Minute", category="daily-devotional", mediaType="video", duration="1:30",
+                      scriptureRef="2 Corinthians 5:17-21",
+                      description="You don’t need perfect words to share hope. Keep it simple: what changed in you, who helped you, and what someone can do next. Dominion includes courage to offer good news with kindness.",
+                      prayerLine="Jesus, give me simple words and genuine love as I share hope.",
+                      ctaPrimary="Go",
+                      thumbnailText="Keep It Simple",
+                      thumbnailPrompt="9:16 thumbnail. Text: 'Keep It Simple'. Background: speech bubble icon, clean minimal."),
+    "2026-02-15": dict(title="Worship Clip: Lift Jesus Higher", category="worship", mediaType="video", duration="1:00",
+                      scriptureRef="John 12:32",
+                      description="Worship fuels mission and re-centres your heart. Take one minute to lift your focus and pray for the people around you.",
+                      prayerLine="Jesus, be lifted up—draw people toward hope and healing.",
+                      ctaPrimary="Pray",
+                      thumbnailText="Lift Him Higher",
+                      thumbnailPrompt="9:16 thumbnail. Text: 'Lift Him Higher'. Background: stage lights/hand silhouette, modern."),
+
+    "2026-02-16": dict(title="Consecrated Dominion", category="daily-devotional", mediaType="video", duration="2:25",
+                      scriptureRef="Romans 12:1",
+                      description="Power without surrender becomes self-led. Dominion with surrender becomes clean, steady, and fruitful. Today is a reset: offer your life again—your choices, your pace, your relationships.",
+                      prayerLine="Father, I consecrate my life to You—lead me with purity and purpose.",
+                      ctaPrimary="Pray",
+                      thumbnailText="Consecrate",
+                      thumbnailPrompt="9:16 thumbnail. Text: 'Consecrate'. Background: simple altar/flame icon, minimal, reverent."),
+    "2026-02-17": dict(title="Commissioned Again", category="daily-devotional", mediaType="video", duration="2:30",
+                      scriptureRef="Matthew 28:18-20",
+                      description="You don’t go alone—you go with authority, presence, and love. Dominion is saying yes again to purpose in everyday life. Today, take your next step and bring someone with you.",
+                      prayerLine="Jesus, I say yes—send me, use me, and keep me faithful in Your mission.",
+                      ctaPrimary="Go",
+                      thumbnailText="Say Yes Again",
+                      thumbnailPrompt="9:16 thumbnail. Text: 'Say Yes Again'. Background: bold YES typography, clean modern design.")
+}
+
+# Build sparks rows
+sparks_rows = []
+for dt in dates:
+    d = dt.date().isoformat()
+    item = sparks_plan[d].copy()
+    item.update({
+        "dailyDate": d,
+        "publishAt": publish_at(dt),
+        "status": "scheduled",
+        "featured": True if d == "2026-01-19" else False,
+        "theme": "DOMINION",
+        "weekTheme": week_theme(dt),
+        # placeholders for existing schema
+        "imageUrl": "",
+        "thumbnailUrl": "",
+        "videoUrl": "" if item["mediaType"] != "video" else "",
+        "audioUrl": "" if item["mediaType"] != "audio" else "",
+        "downloadUrl": "",
+        "mediaUrl": item.get("mediaUrl",""),
+    })
+    sparks_rows.append(item)
+
+sparks_df = pd.DataFrame(sparks_rows)
+
+# Reflection cards with seeker-sensitive base + optional faith overlay verse reference
+reflection_cards_plan = {}
+# We'll align each day to spark theme. Base quote avoids explicit scripture; faith overlay provides verse + optional short prayer.
+def rc(date, base_quote, question, action, faith_ref):
+    return {
+        "date": date,
+        "baseQuote": base_quote,
+        "question": question,
+        "action": action,
+        "faithOverlayScriptureRef": faith_ref,
+        "theme": "DOMINION",
+        "weekTheme": week_theme(datetime.fromisoformat(date)),
+        "status": "scheduled",
+        "publishAt": publish_at(datetime.fromisoformat(date)),
+    }
+
+for dt in dates:
+    d = dt.date().isoformat()
+    # Create aligned cards
+    if d == "2026-01-19":
+        reflection_cards_plan[d] = rc(d, "Belonging changes how you show up.", "Where do you feel pressure to prove yourself today?", "Say: “I don’t have to earn my worth.” Then do one task calmly and intentionally.", "Romans 8:15-17")
+    elif d == "2026-01-20":
+        reflection_cards_plan[d] = rc(d, "Perspective can calm the storm.", "What would change if you faced today from a higher view?", "Write one fear. Then write one truth that outranks it.", "Ephesians 2:4-6")
+    elif d == "2026-01-21":
+        reflection_cards_plan[d] = rc(d, "Small light still changes the room.", "Who might need encouragement from you this week?", "Send one message: “How can I support you today?”", "1 Peter 2:9")
+    elif d == "2026-01-22":
+        reflection_cards_plan[d] = rc(d, "Peace is possible even under pressure.", "Where do you feel the most pressure right now?", "Take 60 seconds: inhale slowly, exhale slowly, and release one worry.", "John 14:27")
+    elif d == "2026-01-23":
+        reflection_cards_plan[d] = rc(d, "Love makes you braver than fear.", "What fear is shaping your decisions?", "Choose one loving action you’ve been delaying and do it today.", "1 John 4:18-19")
+    elif d == "2026-01-24":
+        reflection_cards_plan[d] = rc(d, "Worth comes before work.", "Where have you tied your value to your results?", "Before you start your day, speak one sentence of self-kindness.", "Luke 3:21-22")
+    elif d == "2026-01-25":
+        reflection_cards_plan[d] = rc(d, "Make space. Breathe. Reset.", "What’s crowding your mind right now?", "Play one minute of calm music, breathe, and reset your focus.", "Psalm 22:3")
+    elif d == "2026-01-26":
+        reflection_cards_plan[d] = rc(d, "Quiet can be powerful.", "What would 2 minutes of stillness do for you today?", "Set a 2-minute timer. Sit quietly. Let your mind settle.", "Matthew 6:6")
+    elif d == "2026-01-27":
+        reflection_cards_plan[d] = rc(d, "Connection beats hustle.", "Where are you running on empty?", "Pause before your next task and take three slow breaths.", "John 15:4-5")
+    elif d == "2026-01-28":
+        reflection_cards_plan[d] = rc(d, "You can ask for wisdom.", "What decision do you need clarity on?", "Write the decision down and list two wise next steps.", "James 1:5")
+    elif d == "2026-01-29":
+        reflection_cards_plan[d] = rc(d, "Honest seeking leads to real change.", "What would you say if you could speak freely today?", "Write one honest sentence about how you’re doing. Don’t edit it.", "Jeremiah 29:12-13")
+    elif d == "2026-01-30":
+        reflection_cards_plan[d] = rc(d, "Praying changes how you carry life.", "Who are three people you care about?", "Write three names. Send one encouragement to one of them today.", "1 Timothy 2:1")
+    elif d == "2026-01-31":
+        reflection_cards_plan[d] = rc(d, "True influence serves people.", "Where can you lead by serving today?", "Do one hidden act of kindness without announcing it.", "Mark 10:42-45")
+    elif d == "2026-02-01":
+        reflection_cards_plan[d] = rc(d, "Stillness is strength.", "What would it look like to pause instead of push?", "Take 60 seconds in silence. Let your body relax.", "Psalm 46:10")
+    elif d == "2026-02-02":
+        reflection_cards_plan[d] = rc(d, "Peace can protect your mind.", "What needs guarding in your thoughts today?", "Swap one worry for one gratitude. Repeat three times.", "Philippians 4:6-7")
+    elif d == "2026-02-03":
+        reflection_cards_plan[d] = rc(d, "You don’t have to carry everything.", "What are you holding that you could release?", "Write it down, then physically put the note away as a release symbol.", "1 Peter 5:7")
+    elif d == "2026-02-04":
+        reflection_cards_plan[d] = rc(d, "Thoughts are trainable.", "What thought pattern keeps pulling you down?", "Replace it with one true sentence and repeat it today.", "Romans 12:2")
+    elif d == "2026-02-05":
+        reflection_cards_plan[d] = rc(d, "Peace can meet you before life calms down.", "Where do you need calm right now?", "Breathe in for 4, out for 6—five times. Notice the shift.", "John 14:27")
+    elif d == "2026-02-06":
+        reflection_cards_plan[d] = rc(d, "Grace is available today.", "What are you worrying about tomorrow?", "Choose one ‘today’ task and complete it without rushing.", "Matthew 6:33-34")
+    elif d == "2026-02-07":
+        reflection_cards_plan[d] = rc(d, "Strength can grow inside weakness.", "Where do you feel least equipped?", "Ask for help—first internally, then from one trusted person.", "2 Corinthians 12:9")
+    elif d == "2026-02-08":
+        reflection_cards_plan[d] = rc(d, "Let calm lead again.", "What does peace look like in your body today?", "Relax your shoulders and unclench your jaw. Breathe slowly.", "Mark 4:39")
+    elif d == "2026-02-09":
+        reflection_cards_plan[d] = rc(d, "Purpose often looks like one small step.", "Who might need your kindness today?", "Send a message offering support: “I’m here if you need anything.”", "John 20:21")
+    elif d == "2026-02-10":
+        reflection_cards_plan[d] = rc(d, "Courage is a decision, not a feeling.", "What conversation have you been avoiding?", "Choose one small ‘first step’ message and send it today.", "Acts 4:29-31")
+    elif d == "2026-02-11":
+        reflection_cards_plan[d] = rc(d, "Kindness opens doors.", "Where can you choose patience today?", "Practise a slower response in one tense moment.", "Colossians 3:12-14")
+    elif d == "2026-02-12":
+        reflection_cards_plan[d] = rc(d, "One invite can change a story.", "Who could you include this week?", "Invite one person to join the challenge or an event.", "Mark 2:1-5")
+    elif d == "2026-02-13":
+        reflection_cards_plan[d] = rc(d, "Generosity breaks fear.", "What’s one generous thing you can do today?", "Give something: time, attention, encouragement, or a small donation.", "2 Corinthians 9:7-8")
+    elif d == "2026-02-14":
+        reflection_cards_plan[d] = rc(d, "Keep hope simple.", "What’s one sentence of hope you could share?", "Write your one-sentence story: “I’ve found hope because…”", "2 Corinthians 5:17-21")
+    elif d == "2026-02-15":
+        reflection_cards_plan[d] = rc(d, "Worship re-centres the heart.", "What do you need to lift your focus from today?", "Take one minute to lift your eyes and breathe. Reset your attention.", "John 12:32")
+    elif d == "2026-02-16":
+        reflection_cards_plan[d] = rc(d, "Surrender makes strength clean.", "What do you need to let go of to move forward well?", "Write one thing to surrender. Then choose one pure next step.", "Romans 12:1")
+    elif d == "2026-02-17":
+        reflection_cards_plan[d] = rc(d, "You can say yes again.", "What is your next obedient step—today, not someday?", "Commit to one action and tell one person for accountability.", "Matthew 28:18-20")
+    else:
+        reflection_cards_plan[d] = rc(d, "A small daily reset changes direction.", "What’s one thing you need most today?", "Do one small action that supports your wellbeing.", "")
+
+reflection_df = pd.DataFrame([reflection_cards_plan[d.date().isoformat()] for d in dates])
+
+# Save files
+base = "/mnt/data"
+sparks_csv = os.path.join(base, "sparks_2026-01-19_to_2026-02-17.csv")
+sparks_json = os.path.join(base, "sparks_2026-01-19_to_2026-02-17.json")
+refl_csv = os.path.join(base, "reflection_cards_2026-01-19_to_2026-02-17.csv")
+refl_json = os.path.join(base, "reflection_cards_2026-01-19_to_2026-02-17.json")
+
+sparks_df.to_csv(sparks_csv, index=False)
+sparks_df.to_json(sparks_json, orient="records", indent=2)
+reflection_df.to_csv(refl_csv, index=False)
+reflection_df.to_json(refl_json, orient="records", indent=2)
+
+# Show small previews
+sparks_df.head(3), reflection_df.head(3), sparks_csv, sparks_json, refl_csv, refl_json
