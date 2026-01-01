@@ -9,7 +9,7 @@ import { DiscipleshipPaths } from "@/components/sections/DiscipleshipPaths";
 import { MarqueeCTA } from "@/components/sections/MarqueeCTA";
 import { SubscriptionCapture } from "@/components/sections/SubscriptionCapture";
 import { Footer } from "@/components/layout/Footer";
-import { ArrowRight, ShoppingBag, Flame, Heart, Globe, Zap, Rocket, HandHeart, Users, Clock, CheckCircle2 } from "lucide-react";
+import { ArrowRight, ShoppingBag, Flame, Heart, Globe, Zap, Rocket, HandHeart, Users, Clock, CheckCircle2, Compass, Target, Sparkles, TrendingUp } from "lucide-react";
 import { StatsBar } from "@/components/ui/StatsBar";
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
@@ -135,6 +135,84 @@ export default function Home() {
         
         <Foundations />
         <GrowthToolsSection />
+        
+        {/* Vision Journey Section */}
+        <section className="py-20 bg-gradient-to-b from-[#FAF8F5] to-white relative overflow-hidden">
+          <div className="absolute inset-0 pointer-events-none">
+            <div className="absolute top-20 right-10 w-64 h-64 bg-[#7C9A8E]/5 rounded-full blur-3xl" />
+            <div className="absolute bottom-10 left-10 w-48 h-48 bg-[#4A7C7C]/5 rounded-full blur-3xl" />
+          </div>
+          
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-center mb-12"
+            >
+              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-[#7C9A8E]/20 to-[#4A7C7C]/20 rounded-full px-4 py-2 mb-4">
+                <Compass className="h-4 w-4 text-[#7C9A8E]" />
+                <span className="text-sm font-bold text-[#7C9A8E]">Vision & Goals</span>
+              </div>
+              <h2 className="text-3xl md:text-4xl font-display font-bold text-gray-900 mb-4">
+                Design Your Next Season
+              </h2>
+              <p className="text-lg text-gray-600 max-w-xl mx-auto">
+                Get crystal clear on where you're headed. Our proven 5-stage framework helps you turn dreams into daily action.
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+              className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10"
+            >
+              {[
+                { icon: Compass, label: "Clarity", desc: "Know where you are", color: "from-[#7C9A8E] to-[#6B8B7E]" },
+                { icon: Heart, label: "Alignment", desc: "Match your values", color: "from-[#9B8AA6] to-[#8A7995]" },
+                { icon: Target, label: "Direction", desc: "Set SMART goals", color: "from-[#4A7C7C] to-[#3A6C6C]" },
+                { icon: TrendingUp, label: "Consistency", desc: "Build lasting habits", color: "from-[#D4A574] to-[#C49464]" },
+              ].map((item, idx) => (
+                <motion.div
+                  key={item.label}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.1 + idx * 0.05 }}
+                  className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
+                  data-testid={`card-vision-${item.label.toLowerCase()}`}
+                >
+                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${item.color} flex items-center justify-center mb-3 shadow-md`}>
+                    <item.icon className="w-6 h-6 text-white" />
+                  </div>
+                  <h3 className="font-bold text-gray-900 mb-1">{item.label}</h3>
+                  <p className="text-sm text-gray-500">{item.desc}</p>
+                </motion.div>
+              ))}
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.3 }}
+              className="text-center"
+            >
+              <Button 
+                onClick={() => navigate('/vision')}
+                className="bg-[#7C9A8E] hover:bg-[#6B8B7E] text-white font-bold px-8 py-6 rounded-full shadow-lg hover:shadow-xl transition-all"
+                data-testid="button-start-vision-home"
+              >
+                <Sparkles className="h-5 w-5 mr-2" />
+                Start Your Vision Journey
+                <ArrowRight className="h-5 w-5 ml-2" />
+              </Button>
+            </motion.div>
+          </div>
+        </section>
+
         <MarqueeCTA />
         
         <section className="py-24 bg-gray-50/50 relative overflow-hidden">
