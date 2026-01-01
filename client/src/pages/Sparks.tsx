@@ -388,10 +388,10 @@ export function SparksPage() {
                    <p className="text-lg text-white/90 mb-4 leading-relaxed">
                      {todaySpark.description}
                    </p>
-                   {todaySpark.scriptureRef && (
+                   {viewMode === 'faith' && todaySpark.scriptureRef && (
                      <p className="text-right text-primary font-bold">— {todaySpark.scriptureRef}</p>
                    )}
-                   {todaySpark.prayerLine && (
+                   {viewMode === 'faith' && todaySpark.prayerLine && (
                      <div className="mt-4 pt-4 border-t border-white/10">
                        <p className="text-sm text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-2">
                          <HandHeart className="h-4 w-4" /> Prayer
@@ -751,7 +751,7 @@ export function SparksPage() {
                   <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center p-8 overflow-y-auto">
                     <div className="max-w-sm text-center">
                       <BookOpen className="h-12 w-12 text-primary mx-auto mb-6" />
-                      {selectedSpark.scriptureRef && (
+                      {viewMode === 'faith' && selectedSpark.scriptureRef && (
                         <span className="text-primary font-bold text-sm uppercase tracking-wider mb-4 block">
                           {selectedSpark.scriptureRef}
                         </span>
@@ -759,6 +759,14 @@ export function SparksPage() {
                       <blockquote className="text-xl md:text-2xl font-serif italic leading-relaxed text-white/90 mb-6">
                         "{selectedSpark.description}"
                       </blockquote>
+                      {viewMode === 'faith' && selectedSpark.prayerLine && (
+                        <div className="mt-4 pt-4 border-t border-white/20">
+                          <p className="text-sm text-gray-400 uppercase tracking-wider mb-2 flex items-center justify-center gap-2">
+                            <HandHeart className="h-4 w-4" /> Prayer
+                          </p>
+                          <p className="text-white/80 italic text-sm">{selectedSpark.prayerLine}</p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
