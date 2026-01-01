@@ -11,7 +11,7 @@ import logoLight from "@assets/Reawakened_278_141_logo_white_1767192258915.png";
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [location] = useLocation();
+  const [location, navigate] = useLocation();
 
   // Pages with genuinely dark hero backgrounds (navy overlays, dark gradients)
   const isDarkHeroPage = ["/mission", "/missions", "/pray", "/give", "/movement", "/sparks", "/vision", "/journeys", "/group-labs", "/coaching-labs"].includes(location) || location.startsWith("/projects/");
@@ -37,11 +37,11 @@ export function Navbar() {
   const hoverColor = useDarkTheme ? "hover:text-white hover:bg-white/10" : "hover:text-primary hover:bg-gray-100";
   const currentLogo = useDarkTheme ? logoLight : logoDark;
   
-  // Background styles based on state
+  // Background styles based on state - compact navbar
   const getNavBackground = () => {
-    if (scrolled) return 'bg-white/95 backdrop-blur-md shadow-sm py-4';
-    if (isDarkHeroPage) return 'bg-[#1a2744]/60 backdrop-blur-xl border-b border-white/10 shadow-lg py-5';
-    return 'bg-white/70 backdrop-blur-xl border-b border-gray-200/50 shadow-sm py-5';
+    if (scrolled) return 'bg-white/95 backdrop-blur-md shadow-sm py-2';
+    if (isDarkHeroPage) return 'bg-[#1a2744]/60 backdrop-blur-xl border-b border-white/10 shadow-lg py-2';
+    return 'bg-white/70 backdrop-blur-xl border-b border-gray-200/50 shadow-sm py-2';
   };
 
   return (
@@ -54,25 +54,28 @@ export function Navbar() {
                 <img 
                   src={currentLogo} 
                   alt="The Reawakened One" 
-                  className="h-16 md:h-20 w-auto object-contain transition-all duration-300 drop-shadow-lg"
+                  className="h-10 md:h-12 w-auto object-contain transition-all duration-300 drop-shadow-lg"
                 />
               </div>
             </Link>
           </div>
           
-          <div className={`hidden md:block px-6 py-2.5 rounded-full border transition-all duration-300 ${scrolled ? 'bg-white/50 border-gray-200' : 'bg-transparent border-transparent'}`}>
-            <div className="flex items-baseline space-x-1">
-              <Link href="/"><span className={`${textColor} ${hoverColor} px-4 py-2 rounded-full text-sm font-bold transition-all cursor-pointer`} data-testid="nav-home">Home</span></Link>
-              <Link href="/sparks"><span className={`${textColor} ${hoverColor} px-4 py-2 rounded-full text-sm font-bold transition-all cursor-pointer`} data-testid="nav-sparks">Sparks</span></Link>
-              <Link href="/community"><span className={`${textColor} ${hoverColor} px-4 py-2 rounded-full text-sm font-bold transition-all cursor-pointer`} data-testid="nav-community">Community Hub</span></Link>
-              <Link href="/mission"><span className={`${textColor} ${hoverColor} px-4 py-2 rounded-full text-sm font-bold transition-all cursor-pointer`} data-testid="nav-missions">Missions</span></Link>
-              <Link href="/blog"><span className={`${textColor} ${hoverColor} px-4 py-2 rounded-full text-sm font-bold transition-all cursor-pointer`} data-testid="nav-blog">Blog</span></Link>
-              <Link href="/about"><span className={`${textColor} ${hoverColor} px-4 py-2 rounded-full text-sm font-bold transition-all cursor-pointer`} data-testid="nav-about">About</span></Link>
+          <div className={`hidden md:block px-4 py-1.5 rounded-full border transition-all duration-300 ${scrolled ? 'bg-white/50 border-gray-200' : 'bg-transparent border-transparent'}`}>
+            <div className="flex items-baseline space-x-0.5">
+              <Link href="/"><span className={`${textColor} ${hoverColor} px-3 py-1.5 rounded-full text-sm font-bold transition-all cursor-pointer`} data-testid="nav-home">Home</span></Link>
+              <Link href="/sparks"><span className={`${textColor} ${hoverColor} px-3 py-1.5 rounded-full text-sm font-bold transition-all cursor-pointer`} data-testid="nav-sparks">Sparks</span></Link>
+              <Link href="/community"><span className={`${textColor} ${hoverColor} px-3 py-1.5 rounded-full text-sm font-bold transition-all cursor-pointer`} data-testid="nav-community">Community Hub</span></Link>
+              <Link href="/mission"><span className={`${textColor} ${hoverColor} px-3 py-1.5 rounded-full text-sm font-bold transition-all cursor-pointer`} data-testid="nav-missions">Missions</span></Link>
+              <Link href="/blog"><span className={`${textColor} ${hoverColor} px-3 py-1.5 rounded-full text-sm font-bold transition-all cursor-pointer`} data-testid="nav-blog">Blog</span></Link>
+              <Link href="/about"><span className={`${textColor} ${hoverColor} px-3 py-1.5 rounded-full text-sm font-bold transition-all cursor-pointer`} data-testid="nav-about">About</span></Link>
             </div>
           </div>
 
           <div className="hidden md:block">
-            <Button className={`${useDarkTheme ? 'bg-white text-primary hover:bg-gray-100' : 'bg-primary text-white hover:bg-primary/90'} font-bold px-6 py-5 rounded-full shadow-lg transition-all hover:scale-105`}>
+            <Button 
+              onClick={() => navigate('/mission/onboarding')}
+              className={`${useDarkTheme ? 'bg-white text-primary hover:bg-gray-100' : 'bg-primary text-white hover:bg-primary/90'} font-bold px-5 py-2 rounded-full shadow-lg transition-all hover:scale-105`}
+            >
               Join Now
             </Button>
           </div>
@@ -104,7 +107,11 @@ export function Navbar() {
               <Link href="/blog"><span className="text-gray-800 hover:text-primary hover:bg-gray-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer" data-testid="mobile-nav-blog">Blog</span></Link>
               <Link href="/about"><span className="text-gray-800 hover:text-primary hover:bg-gray-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer" data-testid="mobile-nav-about">About</span></Link>
               <div className="pt-4">
-                <Button className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-6 rounded-xl" data-testid="mobile-nav-join">
+                <Button 
+                  onClick={() => { setIsOpen(false); navigate('/mission/onboarding'); }}
+                  className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-6 rounded-xl" 
+                  data-testid="mobile-nav-join"
+                >
                   Join the Movement
                 </Button>
               </div>
