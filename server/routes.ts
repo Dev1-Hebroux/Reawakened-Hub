@@ -236,6 +236,46 @@ export async function registerRoutes(
     }
   });
 
+  // ===== PRAYER MESSAGES (LIVE INTERCESSION) =====
+  
+  // Get prayer messages (optional sparkId filter)
+  app.get('/api/prayer-messages', async (req, res) => {
+    try {
+      const sparkId = req.query.sparkId ? parseInt(req.query.sparkId as string) : undefined;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
+      const messages = await storage.getPrayerMessages(sparkId, limit);
+      res.json(messages);
+    } catch (error) {
+      console.error("Error fetching prayer messages:", error);
+      res.status(500).json({ message: "Failed to fetch prayer messages" });
+    }
+  });
+
+  // Create a prayer message (protected)
+  app.post('/api/prayer-messages', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      const userName = user?.firstName || 'Anonymous';
+      const { sparkId, message } = req.body;
+      
+      if (!message || message.trim().length === 0) {
+        return res.status(400).json({ message: "Prayer message cannot be empty" });
+      }
+      
+      const prayerMessage = await storage.createPrayerMessage({
+        sparkId: sparkId || null,
+        userId,
+        userName,
+        message: message.trim(),
+      });
+      res.status(201).json(prayerMessage);
+    } catch (error: any) {
+      console.error("Error creating prayer message:", error);
+      res.status(400).json({ message: error.message || "Failed to create prayer message" });
+    }
+  });
+
   // ===== REFLECTION CARDS ROUTES =====
 
   // Get published reflection cards

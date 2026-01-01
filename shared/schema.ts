@@ -126,6 +126,23 @@ export const insertSparkReactionSchema = createInsertSchema(sparkReactions).omit
 export type InsertSparkReaction = z.infer<typeof insertSparkReactionSchema>;
 export type SparkReaction = typeof sparkReactions.$inferSelect;
 
+// Prayer Messages for Live Intercession
+export const prayerMessages = pgTable("prayer_messages", {
+  id: serial("id").primaryKey(),
+  sparkId: integer("spark_id").references(() => sparks.id, { onDelete: 'cascade' }),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  userName: varchar("user_name"),
+  message: text("message").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertPrayerMessageSchema = createInsertSchema(prayerMessages).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertPrayerMessage = z.infer<typeof insertPrayerMessageSchema>;
+export type PrayerMessage = typeof prayerMessages.$inferSelect;
+
 // Spark subscriptions (for notifications)
 export const sparkSubscriptions = pgTable("spark_subscriptions", {
   id: serial("id").primaryKey(),

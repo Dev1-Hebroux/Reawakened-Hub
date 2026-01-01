@@ -4,6 +4,7 @@ import {
   reactions,
   sparks,
   sparkReactions,
+  prayerMessages,
   sparkSubscriptions,
   reflectionCards,
   events,
@@ -57,6 +58,8 @@ import {
   type InsertSpark,
   type SparkReaction,
   type InsertSparkReaction,
+  type PrayerMessage,
+  type InsertPrayerMessage,
   type SparkSubscription,
   type InsertSparkSubscription,
   type ReflectionCard,
@@ -384,6 +387,10 @@ export interface IStorage {
   getUserSparkReaction(sparkId: number, userId: string): Promise<SparkReaction | undefined>;
   createSparkReaction(reaction: InsertSparkReaction): Promise<SparkReaction>;
   deleteSparkReaction(sparkId: number, userId: string, reactionType: string): Promise<void>;
+
+  // Prayer Messages (Live Intercession)
+  getPrayerMessages(sparkId?: number, limit?: number): Promise<PrayerMessage[]>;
+  createPrayerMessage(message: InsertPrayerMessage): Promise<PrayerMessage>;
 
   // Spark Subscriptions
   getSubscriptions(userId: string): Promise<SparkSubscription[]>;
@@ -925,6 +932,24 @@ export class DatabaseStorage implements IStorage {
     await db.delete(sparkReactions).where(
       and(eq(sparkReactions.sparkId, sparkId), eq(sparkReactions.userId, userId), eq(sparkReactions.reactionType, reactionType))
     );
+  }
+
+  // Prayer Messages (Live Intercession)
+  async getPrayerMessages(sparkId?: number, limit: number = 50): Promise<PrayerMessage[]> {
+    if (sparkId) {
+      return db.select().from(prayerMessages)
+        .where(eq(prayerMessages.sparkId, sparkId))
+        .orderBy(desc(prayerMessages.createdAt))
+        .limit(limit);
+    }
+    return db.select().from(prayerMessages)
+      .orderBy(desc(prayerMessages.createdAt))
+      .limit(limit);
+  }
+
+  async createPrayerMessage(messageData: InsertPrayerMessage): Promise<PrayerMessage> {
+    const [message] = await db.insert(prayerMessages).values(messageData).returning();
+    return message;
   }
 
   // Spark Subscriptions
