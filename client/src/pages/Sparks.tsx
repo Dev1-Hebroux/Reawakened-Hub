@@ -18,6 +18,8 @@ import { GrowthToolsDiscovery } from "@/components/GrowthToolsDiscovery";
 import { DominionOnboarding } from "@/components/DominionOnboarding";
 import { WeeklyChallenge } from "@/components/WeeklyChallenge";
 import { GamificationBar } from "@/components/GamificationBar";
+import { JournalingPrompt } from "@/components/JournalingPrompt";
+import { DailyQuiz } from "@/components/DailyQuiz";
 
 import spark1 from "@assets/generated_images/raw_street_worship_in_brazil.png";
 import spark2 from "@assets/generated_images/testimony_of_healing_in_a_village.png";
@@ -515,10 +517,10 @@ export function SparksPage() {
               </div>
             </div>
 
-            <div className="rounded-3xl p-8 border backdrop-blur-xl" style={{ backgroundColor: 'rgba(74, 124, 124, 0.08)', borderColor: 'rgba(124, 154, 142, 0.2)' }}>
+            <div className="rounded-3xl p-8 border backdrop-blur-xl" style={{ backgroundColor: 'rgba(124, 154, 142, 0.12)', borderColor: 'rgba(124, 154, 142, 0.25)' }}>
               <div className="max-w-3xl mx-auto space-y-6">
                 <div className="text-center">
-                  <span className="inline-flex items-center gap-2 text-xs font-bold px-3 py-1 rounded-full mb-4" style={{ backgroundColor: 'rgba(124, 154, 142, 0.15)', color: '#7C9A8E' }}>
+                  <span className="inline-flex items-center gap-2 text-xs font-bold px-3 py-1 rounded-full mb-4" style={{ backgroundColor: 'rgba(124, 154, 142, 0.25)', color: '#9FBAB0' }}>
                     {todayReflection.weekTheme || "Reflection"}
                   </span>
                   <blockquote className="text-2xl md:text-3xl font-display font-bold text-white leading-relaxed" data-testid="text-reflection-quote">
@@ -526,14 +528,14 @@ export function SparksPage() {
                   </blockquote>
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-6 pt-6 border-t border-white/10">
-                  <div className="rounded-2xl p-6" style={{ backgroundColor: 'rgba(250, 248, 245, 0.03)' }}>
-                    <h4 className="text-sm font-bold uppercase tracking-wider mb-3 flex items-center gap-2" style={{ color: '#4A7C7C' }}>
+                <div className="grid md:grid-cols-2 gap-6 pt-6 border-t border-white/15">
+                  <div className="rounded-2xl p-6" style={{ backgroundColor: 'rgba(250, 248, 245, 0.06)' }}>
+                    <h4 className="text-sm font-bold uppercase tracking-wider mb-3 flex items-center gap-2" style={{ color: '#7C9A8E' }}>
                       <MessageCircle className="h-4 w-4" /> Reflect
                     </h4>
                     <p className="text-white/90" data-testid="text-reflection-question">{todayReflection.question}</p>
                   </div>
-                  <div className="rounded-2xl p-6" style={{ backgroundColor: 'rgba(250, 248, 245, 0.03)' }}>
+                  <div className="rounded-2xl p-6" style={{ backgroundColor: 'rgba(250, 248, 245, 0.06)' }}>
                     <h4 className="text-sm font-bold uppercase tracking-wider mb-3 flex items-center gap-2" style={{ color: '#D4A574' }}>
                       <ArrowRight className="h-4 w-4" /> Take Action
                     </h4>
@@ -553,6 +555,15 @@ export function SparksPage() {
                     <p className="text-white font-medium" data-testid="text-reflection-scripture">{todayReflection.faithOverlayScripture}</p>
                   </motion.div>
                 )}
+
+                {/* Journaling Prompt */}
+                <JournalingPrompt 
+                  prompt={todayReflection.question || "What is one thing you're grateful for today?"} 
+                  reflectionId={todayReflection.id}
+                />
+
+                {/* Daily Quiz */}
+                <DailyQuiz />
               </div>
             </div>
           </div>
