@@ -1923,6 +1923,25 @@ export async function registerRoutes(
     }
   });
 
+  app.put('/api/wdep/experiments/:experimentId/reflection', isAuthenticated, async (req: any, res) => {
+    try {
+      const experimentId = parseInt(req.params.experimentId);
+      const { reflectionDay7 } = req.body;
+      
+      if (!reflectionDay7 || typeof reflectionDay7 !== 'string' || reflectionDay7.trim().length === 0) {
+        return res.status(400).json({ ok: false, error: { message: "Reflection text is required" } });
+      }
+      
+      const experiment = await storage.updateWdepExperiment(experimentId, { 
+        reflectionDay7: reflectionDay7.trim(),
+        status: 'completed'
+      });
+      res.json({ ok: true, data: experiment });
+    } catch (error: any) {
+      res.status(400).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
   // ===== SELF-CONCORDANT ACTION =====
 
   app.post('/api/vision/sessions/:sessionId/sca', isAuthenticated, async (req: any, res) => {

@@ -928,13 +928,16 @@ function VisionDashboard({ session }: { session: any }) {
   // Calculate overall progress based on tracked stages only
   // Only count stages we can actually verify completion for
   const trackedSteps = [
-    { name: "Wheel of Life", completed: hasWheel },
-    { name: "SMART Goals", completed: hasGoals },
-    { name: "Habits", completed: hasHabits },
+    { name: "Wheel of Life", completed: hasWheel, route: "wheel", icon: Target, gradient: "from-[#7C9A8E] to-[#6B8B7E]" },
+    { name: "SMART Goals", completed: hasGoals, route: "goals", icon: Target, gradient: "from-[#4A7C7C] to-[#3A6C6C]" },
+    { name: "Daily Habits", completed: hasHabits, route: "habits", icon: Flame, gradient: "from-[#D4A574] to-[#C49464]" },
   ];
   const completedSteps = trackedSteps.filter(s => s.completed).length;
   const totalTrackedSteps = trackedSteps.length;
   const progressPercent = Math.round((completedSteps / totalTrackedSteps) * 100);
+  
+  // Find the next uncompleted step
+  const nextStep = trackedSteps.find(s => !s.completed);
 
   return (
     <div className="min-h-screen bg-[#FAF8F5] font-sans">
@@ -965,9 +968,21 @@ function VisionDashboard({ session }: { session: any }) {
                 </span>
               )}
             </motion.div>
-            <h1 className="text-2xl md:text-4xl font-display font-bold mb-3 text-[#2C3E2D]">
+            <h1 className="text-2xl md:text-4xl font-display font-bold mb-2 text-[#2C3E2D]">
               {session.seasonLabel || "My Vision Journey"}
             </h1>
+            <p className="text-[#6B7B6E] text-sm mb-1">
+              {progressPercent === 0 
+                ? "Let's get started - your journey begins now!"
+                : progressPercent === 100 
+                ? "Amazing! You've completed all core steps."
+                : progressPercent >= 66 
+                ? "You're making great progress - almost there!"
+                : progressPercent >= 33 
+                ? "Good momentum - keep building your vision!"
+                : "Nice start - let's continue your journey."
+              }
+            </p>
             {session.themeWord && (
               <div className="flex items-center justify-center gap-2 mb-4">
                 <span className="text-[#6B7B6E] text-sm">Theme Word:</span>
@@ -1019,6 +1034,25 @@ function VisionDashboard({ session }: { session: any }) {
                 </div>
               </div>
             </motion.div>
+            
+            {/* Next Step CTA */}
+            {nextStep && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+                className="mt-4"
+              >
+                <Button
+                  onClick={() => navigate(`/vision/${session.id}/${nextStep.route}`)}
+                  className={`bg-gradient-to-r ${nextStep.gradient} hover:opacity-90 text-white font-semibold px-6 py-3 rounded-full shadow-md`}
+                  data-testid="button-next-step-cta"
+                >
+                  <ArrowRight className="w-4 h-4 mr-2" />
+                  Continue: {nextStep.name}
+                </Button>
+              </motion.div>
+            )}
           </motion.div>
         </div>
       </section>
