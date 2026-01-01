@@ -392,7 +392,7 @@ export interface IStorage {
   deleteSparkReaction(sparkId: number, userId: string, reactionType: string): Promise<void>;
 
   // Prayer Messages (Live Intercession)
-  getPrayerMessages(sparkId?: number, limit?: number): Promise<PrayerMessage[]>;
+  getPrayerMessages(sparkId?: number, sessionId?: number, limit?: number): Promise<PrayerMessage[]>;
   createPrayerMessage(message: InsertPrayerMessage): Promise<PrayerMessage>;
 
   // Leader Prayer Sessions (Live Intercession)
@@ -945,10 +945,17 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Prayer Messages (Live Intercession)
-  async getPrayerMessages(sparkId?: number, limit: number = 50): Promise<PrayerMessage[]> {
+  async getPrayerMessages(sparkId?: number, sessionId?: number, limit: number = 50): Promise<PrayerMessage[]> {
+    const conditions = [];
     if (sparkId) {
+      conditions.push(eq(prayerMessages.sparkId, sparkId));
+    }
+    if (sessionId) {
+      conditions.push(eq(prayerMessages.sessionId, sessionId));
+    }
+    if (conditions.length > 0) {
       return db.select().from(prayerMessages)
-        .where(eq(prayerMessages.sparkId, sparkId))
+        .where(and(...conditions))
         .orderBy(desc(prayerMessages.createdAt))
         .limit(limit);
     }

@@ -133,6 +133,7 @@ export type SparkReaction = typeof sparkReactions.$inferSelect;
 export const prayerMessages = pgTable("prayer_messages", {
   id: serial("id").primaryKey(),
   sparkId: integer("spark_id").references(() => sparks.id, { onDelete: 'cascade' }),
+  sessionId: integer("session_id").references(() => prayerSessions.id, { onDelete: 'cascade' }),
   userId: varchar("user_id").notNull().references(() => users.id),
   userName: varchar("user_name"),
   message: text("message").notNull(),

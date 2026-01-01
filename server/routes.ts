@@ -238,12 +238,26 @@ export async function registerRoutes(
 
   // ===== PRAYER MESSAGES (LIVE INTERCESSION) =====
   
-  // Get prayer messages (optional sparkId filter)
+  // Get prayer messages (requires valid active sessionId for scoped chat)
   app.get('/api/prayer-messages', async (req, res) => {
     try {
-      const sparkId = req.query.sparkId ? parseInt(req.query.sparkId as string) : undefined;
+      const sessionId = req.query.sessionId ? parseInt(req.query.sessionId as string) : undefined;
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
-      const messages = await storage.getPrayerMessages(sparkId, limit);
+      
+      if (!sessionId || isNaN(sessionId)) {
+        return res.status(400).json({ message: "Session ID is required" });
+      }
+      
+      const session = await storage.getLeaderPrayerSession(sessionId);
+      if (!session) {
+        return res.status(404).json({ message: "Prayer session not found" });
+      }
+      
+      if (session.status !== 'active') {
+        return res.status(400).json({ message: "Prayer session has ended" });
+      }
+      
+      const messages = await storage.getPrayerMessages(undefined, sessionId, limit);
       res.json(messages);
     } catch (error) {
       console.error("Error fetching prayer messages:", error);
@@ -251,20 +265,30 @@ export async function registerRoutes(
     }
   });
 
-  // Create a prayer message (protected)
+  // Create a prayer message (protected - requires valid sessionId)
   app.post('/api/prayer-messages', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
       const userName = user?.firstName || 'Anonymous';
-      const { sparkId, message } = req.body;
+      const { sessionId, message } = req.body;
       
       if (!message || message.trim().length === 0) {
         return res.status(400).json({ message: "Prayer message cannot be empty" });
       }
       
+      if (!sessionId || typeof sessionId !== 'number') {
+        return res.status(400).json({ message: "Please join a prayer session first" });
+      }
+      
+      const session = await storage.getLeaderPrayerSession(sessionId);
+      if (!session || session.status !== 'active') {
+        return res.status(400).json({ message: "Prayer session is not active" });
+      }
+      
       const prayerMessage = await storage.createPrayerMessage({
-        sparkId: sparkId || null,
+        sparkId: null,
+        sessionId: sessionId,
         userId,
         userName,
         message: message.trim(),
