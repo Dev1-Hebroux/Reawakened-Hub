@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Users, Heart, Plus, MapPin, X, Loader2, Radio } from "lucide-react";
+import { Send, Users, Heart, Plus, MapPin, X, Loader2, Radio, Video, ExternalLink } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
@@ -33,6 +33,7 @@ export function LiveIntercession({ sparkId }: LiveIntercessionProps) {
   const [sessionTitle, setSessionTitle] = useState("");
   const [sessionDescription, setSessionDescription] = useState("");
   const [sessionRegion, setSessionRegion] = useState("");
+  const [sessionMeetingLink, setSessionMeetingLink] = useState("");
   const [activeTab, setActiveTab] = useState<'chat' | 'sessions'>('sessions');
   const [selectedSession, setSelectedSession] = useState<PrayerSession | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -88,7 +89,7 @@ export function LiveIntercession({ sparkId }: LiveIntercessionProps) {
   });
 
   const createSessionMutation = useMutation({
-    mutationFn: async (data: { title: string; description: string; region: string }) => {
+    mutationFn: async (data: { title: string; description: string; region: string; meetingLink?: string }) => {
       const res = await apiRequest("POST", "/api/leader-prayer-sessions", data);
       return res.json();
     },
@@ -98,6 +99,7 @@ export function LiveIntercession({ sparkId }: LiveIntercessionProps) {
       setSessionTitle("");
       setSessionDescription("");
       setSessionRegion("");
+      setSessionMeetingLink("");
       setSelectedSession(session);
       setActiveTab('chat');
       toast.success("Prayer session started!");
@@ -157,6 +159,7 @@ export function LiveIntercession({ sparkId }: LiveIntercessionProps) {
       title: sessionTitle.trim(),
       description: sessionDescription.trim(),
       region: sessionRegion.trim(),
+      meetingLink: sessionMeetingLink.trim() || undefined,
     });
   };
 
@@ -256,6 +259,17 @@ export function LiveIntercession({ sparkId }: LiveIntercessionProps) {
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-primary/50"
               data-testid="input-session-region"
             />
+            <div className="flex items-center gap-2">
+              <Video className="h-4 w-4 text-gray-500" />
+              <input
+                type="url"
+                value={sessionMeetingLink}
+                onChange={(e) => setSessionMeetingLink(e.target.value)}
+                placeholder="Zoom/Google Meet link (optional)"
+                className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-primary/50"
+                data-testid="input-session-meeting-link"
+              />
+            </div>
             <button
               onClick={handleStartSession}
               disabled={!sessionTitle.trim() || createSessionMutation.isPending}
@@ -329,6 +343,18 @@ export function LiveIntercession({ sparkId }: LiveIntercessionProps) {
                         )}
                         <span>Led by {session.leaderName || 'Leader'}</span>
                       </div>
+                      {session.meetingLink && (
+                        <a
+                          href={session.meetingLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="inline-flex items-center gap-1.5 mt-2 px-2 py-1 rounded-md text-xs font-medium bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 transition-colors"
+                          data-testid={`session-meeting-link-${session.id}`}
+                        >
+                          <Video className="h-3 w-3" /> Join Video Call
+                        </a>
+                      )}
                     </div>
                     <button
                       className="px-3 py-1.5 rounded-full text-xs font-bold transition-colors"
@@ -364,6 +390,18 @@ export function LiveIntercession({ sparkId }: LiveIntercessionProps) {
               </div>
             ) : (
               <>
+                {selectedSession.meetingLink && (
+                  <div className="px-4 py-2 bg-blue-500/10 border-b border-blue-500/20">
+                    <a
+                      href={selectedSession.meetingLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2 text-sm font-medium text-blue-400 hover:text-blue-300"
+                    >
+                      <Video className="h-4 w-4" /> Join Video Call <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </div>
+                )}
                 {isLeader && selectedSession.leaderId === user?.id && (
                   <div className="px-4 py-2 bg-white/5 border-b border-white/10 flex items-center justify-between">
                     <span className="text-xs text-gray-400">You are leading this session</span>

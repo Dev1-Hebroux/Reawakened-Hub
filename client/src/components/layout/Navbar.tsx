@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
+import { NotificationBell } from "@/components/NotificationBell";
 
 // Brand Assets - HD Logos (278x141 larger versions)
 import logoDark from "@assets/Reawakened_278_141_logo_bigger_1767192125280.png";
@@ -81,7 +82,8 @@ export function Navbar() {
             </div>
           </div>
 
-          <div className="hidden md:block">
+          <div className="hidden md:flex items-center gap-3">
+            <NotificationBell isDark={useDarkTheme} />
             <Button 
               onClick={() => navigate('/mission/onboarding')}
               className={`${useDarkTheme ? 'bg-white text-primary hover:bg-gray-100' : 'bg-primary text-white hover:bg-primary/90'} font-bold px-5 py-2 rounded-full shadow-lg transition-all hover:scale-105`}

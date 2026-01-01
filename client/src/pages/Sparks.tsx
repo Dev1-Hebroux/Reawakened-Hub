@@ -13,7 +13,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { toast } from "sonner";
-import type { Spark, SparkSubscription, ReflectionCard } from "@shared/schema";
+import type { Spark, SparkSubscription, ReflectionCard, PrayerSession } from "@shared/schema";
 import { DominionOnboarding } from "@/components/DominionOnboarding";
 import { WeeklyChallenge } from "@/components/WeeklyChallenge";
 import { GamificationBar } from "@/components/GamificationBar";
@@ -158,6 +158,14 @@ export function SparksPage() {
     queryFn: () => fetch(`/api/reflection-cards/today${audienceParam}`).then(r => r.json()),
     retry: false,
   });
+
+  const { data: activeSessions = [] } = useQuery<PrayerSession[]>({
+    queryKey: ["/api/leader-prayer-sessions"],
+    queryFn: () => fetch("/api/leader-prayer-sessions?status=active").then(r => r.json()),
+    refetchInterval: 30000,
+  });
+
+  const hasActiveSessions = activeSessions.length > 0;
 
   const subscribeMutation = useMutation({
     mutationFn: async (category: string) => {
@@ -591,11 +599,23 @@ export function SparksPage() {
               </div>
               <button
                 onClick={() => setShowIntercession(true)}
-                className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all border"
-                style={{ backgroundColor: 'rgba(74, 124, 124, 0.2)', borderColor: 'rgba(74, 124, 124, 0.4)', color: '#4A7C7C' }}
+                className={`relative flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all border ${
+                  hasActiveSessions ? 'animate-pulse shadow-lg shadow-teal-500/30' : ''
+                }`}
+                style={{ 
+                  backgroundColor: hasActiveSessions ? 'rgba(74, 124, 124, 0.4)' : 'rgba(74, 124, 124, 0.2)', 
+                  borderColor: hasActiveSessions ? '#4A7C7C' : 'rgba(74, 124, 124, 0.4)', 
+                  color: hasActiveSessions ? '#fff' : '#4A7C7C' 
+                }}
                 data-testid="button-open-intercession"
               >
-                <Users className="h-4 w-4" /> Join Prayer
+                {hasActiveSessions && (
+                  <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+                  </span>
+                )}
+                <Users className="h-4 w-4" /> {hasActiveSessions ? `Live (${activeSessions.length})` : 'Join Prayer'}
               </button>
             </div>
 
@@ -753,14 +773,14 @@ export function SparksPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         
         {/* Filters */}
-        <div className="flex items-center justify-between mb-8 overflow-x-auto pb-4 scrollbar-hide gap-4">
-          <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
+          <div className="flex flex-wrap gap-2 w-full sm:w-auto">
             {pillars.map((pillar) => (
               <button
                 key={pillar}
                 onClick={() => setActiveFilter(pillar)}
                 data-testid={`button-filter-${pillar}`}
-                className={`px-6 py-2.5 rounded-full text-sm font-bold whitespace-nowrap transition-all border ${
+                className={`px-4 sm:px-6 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold whitespace-nowrap transition-all border ${
                   activeFilter === pillar 
                     ? "bg-white text-black border-white" 
                     : "bg-white/5 text-gray-400 border-white/10 hover:bg-white/10 hover:text-white"

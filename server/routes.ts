@@ -341,7 +341,7 @@ export async function registerRoutes(
         return res.status(403).json({ message: "Only leaders can start prayer sessions" });
       }
       
-      const { title, description, region, community } = req.body;
+      const { title, description, region, community, meetingLink } = req.body;
       
       if (!title || title.trim().length === 0) {
         return res.status(400).json({ message: "Title is required" });
@@ -352,10 +352,33 @@ export async function registerRoutes(
         description: description?.trim() || null,
         region: region || user.region || null,
         community: community || user.community || null,
+        meetingLink: meetingLink?.trim() || null,
         leaderId: userId,
         leaderName: `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Leader',
         status: 'active',
       });
+      
+      // Create notifications for users with prayer session alerts enabled
+      try {
+        const allUsers = await storage.getAllUsers();
+        for (const notifyUser of allUsers) {
+          if (notifyUser.id !== userId) {
+            const prefs = await storage.getNotificationPreferences(notifyUser.id);
+            if (!prefs || prefs.prayerSessionAlerts !== false) {
+              await storage.createNotification({
+                userId: notifyUser.id,
+                type: 'prayer_session',
+                title: 'Live Prayer Session',
+                body: `${session.leaderName} started "${session.title}"${session.region ? ` in ${session.region}` : ''}`,
+                data: JSON.stringify({ sessionId: session.id }),
+              });
+            }
+          }
+        }
+      } catch (notifyError) {
+        console.error("Error sending notifications:", notifyError);
+      }
+      
       res.status(201).json(session);
     } catch (error: any) {
       console.error("Error creating prayer session:", error);
@@ -395,6 +418,99 @@ export async function registerRoutes(
     } catch (error: any) {
       console.error("Error joining prayer session:", error);
       res.status(400).json({ message: error.message || "Failed to join prayer session" });
+    }
+  });
+
+  // ===== NOTIFICATIONS =====
+
+  // Get notification preferences
+  app.get('/api/notifications/preferences', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const prefs = await storage.getNotificationPreferences(userId);
+      res.json(prefs || { 
+        pushEnabled: true, 
+        emailEnabled: true, 
+        prayerSessionAlerts: true, 
+        newSparkAlerts: true, 
+        eventReminders: true, 
+        weeklyDigest: true 
+      });
+    } catch (error) {
+      console.error("Error fetching notification preferences:", error);
+      res.status(500).json({ message: "Failed to fetch notification preferences" });
+    }
+  });
+
+  // Update notification preferences
+  app.put('/api/notifications/preferences', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const prefsSchema = z.object({
+        pushEnabled: z.boolean().optional(),
+        emailEnabled: z.boolean().optional(),
+        prayerSessionAlerts: z.boolean().optional(),
+        newSparkAlerts: z.boolean().optional(),
+        eventReminders: z.boolean().optional(),
+        weeklyDigest: z.boolean().optional(),
+        pushSubscription: z.string().optional(),
+      });
+      const prefs = prefsSchema.parse(req.body);
+      const updated = await storage.upsertNotificationPreferences(userId, prefs);
+      res.json(updated);
+    } catch (error: any) {
+      console.error("Error updating notification preferences:", error);
+      res.status(400).json({ message: error.message || "Failed to update notification preferences" });
+    }
+  });
+
+  // Get user notifications
+  app.get('/api/notifications', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
+      const notifications = await storage.getNotifications(userId, limit);
+      res.json(notifications);
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+      res.status(500).json({ message: "Failed to fetch notifications" });
+    }
+  });
+
+  // Get unread notifications count
+  app.get('/api/notifications/unread-count', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const count = await storage.getUnreadNotificationsCount(userId);
+      res.json({ count });
+    } catch (error) {
+      console.error("Error fetching unread count:", error);
+      res.status(500).json({ message: "Failed to fetch unread count" });
+    }
+  });
+
+  // Mark notification as read
+  app.patch('/api/notifications/:id/read', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const id = parseInt(req.params.id);
+      await storage.markNotificationRead(id, userId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+      res.status(500).json({ message: "Failed to mark notification as read" });
+    }
+  });
+
+  // Mark all notifications as read
+  app.post('/api/notifications/mark-all-read', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      await storage.markAllNotificationsRead(userId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error marking all notifications as read:", error);
+      res.status(500).json({ message: "Failed to mark all notifications as read" });
     }
   });
 

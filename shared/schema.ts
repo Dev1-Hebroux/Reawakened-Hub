@@ -156,6 +156,7 @@ export const prayerSessions = pgTable("prayer_sessions", {
   community: varchar("community"), // community/group scope
   leaderId: varchar("leader_id").notNull().references(() => users.id),
   leaderName: varchar("leader_name"),
+  meetingLink: varchar("meeting_link"), // Zoom, Google Meet, YouTube Live link
   status: varchar("status").notNull().default("active"), // 'active', 'ended'
   participantCount: integer("participant_count").default(0),
   startedAt: timestamp("started_at").defaultNow(),
@@ -185,6 +186,53 @@ export const insertSparkSubscriptionSchema = createInsertSchema(sparkSubscriptio
 });
 export type InsertSparkSubscription = z.infer<typeof insertSparkSubscriptionSchema>;
 export type SparkSubscription = typeof sparkSubscriptions.$inferSelect;
+
+// Notification Preferences - user notification settings across the platform
+export const notificationPreferences = pgTable("notification_preferences", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  pushEnabled: boolean("push_enabled").default(true),
+  emailEnabled: boolean("email_enabled").default(true),
+  prayerSessionAlerts: boolean("prayer_session_alerts").default(true),
+  newSparkAlerts: boolean("new_spark_alerts").default(true),
+  eventReminders: boolean("event_reminders").default(true),
+  weeklyDigest: boolean("weekly_digest").default(true),
+  pushSubscription: text("push_subscription"), // JSON web push subscription
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertNotificationPreferencesSchema = createInsertSchema(notificationPreferences).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export type InsertNotificationPreferences = z.infer<typeof insertNotificationPreferencesSchema>;
+export type NotificationPreferences = typeof notificationPreferences.$inferSelect;
+
+// Notifications - platform notifications queue
+export const notifications = pgTable("notifications", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  type: varchar("type").notNull(), // 'prayer_session', 'new_spark', 'event_reminder', 'weekly_digest'
+  title: varchar("title").notNull(),
+  body: text("body").notNull(),
+  data: text("data"), // JSON payload for action data
+  read: boolean("read").default(false),
+  sentPush: boolean("sent_push").default(false),
+  sentEmail: boolean("sent_email").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertNotificationSchema = createInsertSchema(notifications).omit({
+  id: true,
+  createdAt: true,
+  read: true,
+  sentPush: true,
+  sentEmail: true,
+});
+export type InsertNotification = z.infer<typeof insertNotificationSchema>;
+export type Notification = typeof notifications.$inferSelect;
 
 // Reflection Cards - daily reflection prompts
 export const reflectionCards = pgTable("reflection_cards", {

@@ -347,6 +347,12 @@ import {
   type InsertAiCoachSession,
   type AiCoachMessage,
   type InsertAiCoachMessage,
+  notificationPreferences,
+  notifications,
+  type NotificationPreferences,
+  type InsertNotificationPreferences,
+  type Notification,
+  type InsertNotification,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, sql, inArray, count } from "drizzle-orm";
@@ -685,6 +691,16 @@ export interface IStorage {
   updateAiCoachSession(id: number, data: Partial<AiCoachSession>): Promise<AiCoachSession>;
   createAiCoachMessage(data: InsertAiCoachMessage): Promise<AiCoachMessage>;
   getAiCoachMessages(sessionId: number): Promise<AiCoachMessage[]>;
+
+  // ===== NOTIFICATIONS =====
+  getNotificationPreferences(userId: string): Promise<NotificationPreferences | undefined>;
+  upsertNotificationPreferences(userId: string, prefs: Partial<InsertNotificationPreferences>): Promise<NotificationPreferences>;
+  getNotifications(userId: string, limit?: number): Promise<Notification[]>;
+  getUnreadNotificationsCount(userId: string): Promise<number>;
+  createNotification(notification: InsertNotification): Promise<Notification>;
+  markNotificationRead(id: number, userId: string): Promise<void>;
+  markAllNotificationsRead(userId: string): Promise<void>;
+  getUsersWithPushEnabled(): Promise<Array<{ userId: string; pushSubscription: string }>>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -3018,6 +3034,77 @@ export class DatabaseStorage implements IStorage {
       .from(aiCoachMessages)
       .where(eq(aiCoachMessages.sessionId, sessionId))
       .orderBy(aiCoachMessages.createdAt);
+  }
+
+  // ===== NOTIFICATIONS =====
+  async getNotificationPreferences(userId: string): Promise<NotificationPreferences | undefined> {
+    const [prefs] = await db.select()
+      .from(notificationPreferences)
+      .where(eq(notificationPreferences.userId, userId));
+    return prefs;
+  }
+
+  async upsertNotificationPreferences(userId: string, prefs: Partial<InsertNotificationPreferences>): Promise<NotificationPreferences> {
+    const existing = await this.getNotificationPreferences(userId);
+    if (existing) {
+      const [updated] = await db.update(notificationPreferences)
+        .set({ ...prefs, updatedAt: new Date() })
+        .where(eq(notificationPreferences.userId, userId))
+        .returning();
+      return updated;
+    }
+    const [created] = await db.insert(notificationPreferences)
+      .values({ userId, ...prefs })
+      .returning();
+    return created;
+  }
+
+  async getNotifications(userId: string, limit: number = 50): Promise<Notification[]> {
+    return db.select()
+      .from(notifications)
+      .where(eq(notifications.userId, userId))
+      .orderBy(desc(notifications.createdAt))
+      .limit(limit);
+  }
+
+  async getUnreadNotificationsCount(userId: string): Promise<number> {
+    const result = await db.select({ count: count() })
+      .from(notifications)
+      .where(and(
+        eq(notifications.userId, userId),
+        eq(notifications.read, false)
+      ));
+    return result[0]?.count || 0;
+  }
+
+  async createNotification(notification: InsertNotification): Promise<Notification> {
+    const [created] = await db.insert(notifications).values(notification).returning();
+    return created;
+  }
+
+  async markNotificationRead(id: number, userId: string): Promise<void> {
+    await db.update(notifications)
+      .set({ read: true })
+      .where(and(eq(notifications.id, id), eq(notifications.userId, userId)));
+  }
+
+  async markAllNotificationsRead(userId: string): Promise<void> {
+    await db.update(notifications)
+      .set({ read: true })
+      .where(eq(notifications.userId, userId));
+  }
+
+  async getUsersWithPushEnabled(): Promise<Array<{ userId: string; pushSubscription: string }>> {
+    const results = await db.select({
+      userId: notificationPreferences.userId,
+      pushSubscription: notificationPreferences.pushSubscription,
+    })
+    .from(notificationPreferences)
+    .where(and(
+      eq(notificationPreferences.pushEnabled, true),
+      sql`${notificationPreferences.pushSubscription} IS NOT NULL`
+    ));
+    return results.filter(r => r.pushSubscription !== null) as Array<{ userId: string; pushSubscription: string }>;
   }
 }
 
