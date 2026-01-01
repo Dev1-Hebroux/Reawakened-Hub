@@ -14,7 +14,6 @@ import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { toast } from "sonner";
 import type { Spark, SparkSubscription, ReflectionCard } from "@shared/schema";
-import { GrowthToolsDiscovery } from "@/components/GrowthToolsDiscovery";
 import { DominionOnboarding } from "@/components/DominionOnboarding";
 import { WeeklyChallenge } from "@/components/WeeklyChallenge";
 import { GamificationBar } from "@/components/GamificationBar";
@@ -363,13 +362,20 @@ export function SparksPage() {
                {featuredSpark?.description || "Join thousands gathering to declare Jesus over the city. Miracles are happening!"}
              </p>
              
-             <div className="flex items-center gap-4 pt-4">
+             <div className="flex items-center gap-4 pt-4 flex-wrap">
                <button 
                  onClick={() => featuredSpark && setSelectedSpark(featuredSpark)}
                  className="bg-primary hover:bg-primary/90 text-white font-bold px-8 py-4 rounded-full flex items-center gap-2 transition-all hover:scale-105"
                  data-testid="button-watch-featured"
                >
                  <Play className="h-5 w-5 fill-current" /> Watch Now
+               </button>
+               <button 
+                 onClick={() => setShowSubscribe(true)}
+                 className="bg-white/10 backdrop-blur-md hover:bg-white/20 text-white font-bold px-6 py-4 rounded-full flex items-center gap-2 transition-all border border-white/20"
+                 data-testid="button-get-updates-hero"
+               >
+                 <Rss className="h-5 w-5" /> Get Daily Updates
                </button>
                <div className="flex items-center gap-2 text-sm font-medium">
                  <div className="h-2 w-2 bg-green-500 rounded-full" />
@@ -415,13 +421,6 @@ export function SparksPage() {
                   Faith Overlay
                 </button>
               </div>
-              <button 
-                onClick={() => setShowSubscribe(true)}
-                className="hidden md:flex items-center gap-2 text-sm font-bold text-primary hover:text-white transition-colors"
-                data-testid="button-get-updates"
-              >
-                Get Daily Updates <ArrowRight className="h-4 w-4" />
-              </button>
             </div>
           </div>
 
@@ -847,13 +846,6 @@ export function SparksPage() {
             ))}
           </div>
         )}
-
-        {/* Growth Tools Discovery */}
-        <div className="mt-12 max-w-md mx-auto lg:max-w-none lg:grid lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-1">
-            <GrowthToolsDiscovery variant="full" title="Continue Your Growth" />
-          </div>
-        </div>
 
         {/* Real-time Ticker */}
         <div className="fixed bottom-8 right-8 z-40 hidden lg:block">
