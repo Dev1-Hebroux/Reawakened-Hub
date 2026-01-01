@@ -6,7 +6,6 @@ import { GrowthToolsSection } from "@/components/sections/GrowthToolsSection";
 import { DailySparks } from "@/components/sections/DailySparks";
 import { CommunityRooms } from "@/components/sections/CommunityRooms";
 import { DiscipleshipPaths } from "@/components/sections/DiscipleshipPaths";
-import { MissionEngine } from "@/components/sections/MissionEngine";
 import { MarqueeCTA } from "@/components/sections/MarqueeCTA";
 import { SubscriptionCapture } from "@/components/sections/SubscriptionCapture";
 import { Footer } from "@/components/layout/Footer";
@@ -287,7 +286,6 @@ export default function Home() {
         <DailySparks />
         <CommunityRooms />
         <DiscipleshipPaths />
-        <MissionEngine />
 
         <section className="py-16 bg-gradient-to-br from-primary via-primary to-blue-700 relative overflow-hidden">
           <div className="absolute inset-0 opacity-10">
