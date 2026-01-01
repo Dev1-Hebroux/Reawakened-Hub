@@ -20,6 +20,7 @@ import { WeeklyChallenge } from "@/components/WeeklyChallenge";
 import { GamificationBar } from "@/components/GamificationBar";
 import { JournalingPrompt } from "@/components/JournalingPrompt";
 import { DailyQuiz } from "@/components/DailyQuiz";
+import { LiveIntercession } from "@/components/LiveIntercession";
 
 import spark1 from "@assets/generated_images/raw_street_worship_in_brazil.png";
 import spark2 from "@assets/generated_images/testimony_of_healing_in_a_village.png";
@@ -235,6 +236,19 @@ export function SparksPage() {
     }
   };
 
+  const handleSparkReaction = (sparkId: number, reactionType: string) => {
+    if (!isAuthenticated) {
+      toast.error("Please log in to react");
+      setTimeout(() => window.location.href = "/api/login", 1000);
+      return;
+    }
+    reactionMutation.mutate({ sparkId, reactionType }, {
+      onSuccess: () => {
+        toast.success("Amen!");
+      }
+    });
+  };
+
   const toggleAudioPlayback = () => {
     if (audioRef.current) {
       if (isAudioPlaying) {
@@ -445,11 +459,47 @@ export function SparksPage() {
                      <span className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
                        <Calendar className="h-4 w-4" /> {formatDate(todaySpark.dailyDate)}
                      </span>
-                     <Share2 className="h-4 w-4 text-gray-400 cursor-pointer hover:text-white" />
+                     <div className="flex items-center gap-3">
+                       <button 
+                         onClick={() => {
+                           if (todaySpark) {
+                             handleSparkReaction(todaySpark.id, 'amen');
+                           }
+                         }}
+                         className="flex items-center gap-1.5 text-gray-400 hover:text-red-400 transition-colors group"
+                         data-testid="button-like-verse"
+                       >
+                         <Heart className="h-4 w-4 group-hover:fill-red-400" />
+                         <span className="text-xs">Amen</span>
+                       </button>
+                       <button
+                         onClick={() => {
+                           if (navigator.share) {
+                             navigator.share({
+                               title: todaySpark.title,
+                               text: todaySpark.description,
+                               url: window.location.href,
+                             });
+                           } else {
+                             navigator.clipboard.writeText(`${todaySpark.description}\n\n— ${todaySpark.title}`);
+                             toast.success("Copied to clipboard!");
+                           }
+                         }}
+                         className="text-gray-400 cursor-pointer hover:text-white transition-colors"
+                         data-testid="button-share-verse"
+                       >
+                         <Share2 className="h-4 w-4" />
+                       </button>
+                     </div>
                    </div>
-                   <p className="text-lg text-white/90 mb-4 leading-relaxed">
-                     {todaySpark.description}
-                   </p>
+                   
+                   {/* Word of Encouragement / Verse */}
+                   <div className="mb-4">
+                     <blockquote className="text-xl font-display font-semibold text-white leading-relaxed border-l-4 border-primary pl-4">
+                       "{todaySpark.description}"
+                     </blockquote>
+                   </div>
+                   
                    {viewMode === 'faith' && todaySpark.scriptureRef && (
                      <p className="text-right text-primary font-bold">— {todaySpark.scriptureRef}</p>
                    )}
@@ -572,6 +622,13 @@ export function SparksPage() {
 
       {/* Weekly Challenge */}
       <WeeklyChallenge />
+
+      {/* Live Intercession Section */}
+      <div className="bg-gradient-to-b from-gray-900 to-black border-b border-white/10">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <LiveIntercession sparkId={todaySpark?.id} />
+        </div>
+      </div>
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
