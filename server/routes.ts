@@ -1942,6 +1942,25 @@ export async function registerRoutes(
     }
   });
 
+  app.get('/api/vision/sessions/:sessionId/wdep/experiments', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const sessionId = parseInt(req.params.sessionId);
+      const wdepEntries = await storage.getWdepEntries(userId, sessionId);
+      const experiments: any[] = [];
+      for (const entry of wdepEntries) {
+        const exp = await storage.getWdepExperiment(entry.id);
+        if (exp) {
+          const plan = await storage.getWdepPlan(entry.id);
+          experiments.push({ ...exp, wdepId: entry.id, startNowAction: plan?.startNowAction || '' });
+        }
+      }
+      res.json({ ok: true, data: experiments });
+    } catch (error: any) {
+      res.status(400).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
   // ===== SELF-CONCORDANT ACTION =====
 
   app.post('/api/vision/sessions/:sessionId/sca', isAuthenticated, async (req: any, res) => {
@@ -1950,6 +1969,17 @@ export async function registerRoutes(
       const sessionId = parseInt(req.params.sessionId);
       const exercise = await storage.createScaExercise({ ...req.body, userId, sessionId });
       res.json({ ok: true, data: exercise });
+    } catch (error: any) {
+      res.status(400).json({ ok: false, error: { message: error.message } });
+    }
+  });
+
+  app.get('/api/vision/sessions/:sessionId/sca', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const sessionId = parseInt(req.params.sessionId);
+      const exercises = await storage.getScaExercises(userId, sessionId);
+      res.json({ ok: true, data: exercises });
     } catch (error: any) {
       res.status(400).json({ ok: false, error: { message: error.message } });
     }

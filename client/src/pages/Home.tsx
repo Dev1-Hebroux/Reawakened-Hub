@@ -9,11 +9,15 @@ import { DiscipleshipPaths } from "@/components/sections/DiscipleshipPaths";
 import { MarqueeCTA } from "@/components/sections/MarqueeCTA";
 import { SubscriptionCapture } from "@/components/sections/SubscriptionCapture";
 import { Footer } from "@/components/layout/Footer";
+import { VisionGetStartedCard } from "@/components/VisionGetStartedCard";
+import { VisionPromptModal } from "@/components/VisionPromptModal";
+import { WdepPinnedAction, ScaFocusCard } from "@/components/DashboardPinnedCards";
 import { ArrowRight, ShoppingBag, Flame, Heart, Globe, Zap, Rocket, HandHeart, Users, Clock, CheckCircle2, Compass, Target, Sparkles, TrendingUp } from "lucide-react";
 import { StatsBar } from "@/components/ui/StatsBar";
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
 
 import outreachImg from "@assets/generated_images/group_wearing_reawakened.one_branded_t-shirts.png";
 import capImg from "@assets/generated_images/cap_with_reawakened_embroidery.png";
@@ -55,6 +59,7 @@ const commitmentLevels = [
 export default function Home() {
   const [, navigate] = useLocation();
   const [selectedCommitment, setSelectedCommitment] = useState<string | null>(null);
+  const { isAuthenticated } = useAuth();
   
   return (
     <div className="min-h-screen bg-white text-foreground overflow-x-hidden relative">
@@ -64,12 +69,23 @@ export default function Home() {
       </div>
 
       <Navbar />
+      <VisionPromptModal />
       <main className="relative z-10">
         <Hero />
         
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6 relative z-20">
           <StatsBar variant="light" />
         </div>
+
+        {isAuthenticated && (
+          <section className="py-8 bg-gradient-to-b from-white to-gray-50/30">
+            <div className="max-w-lg mx-auto px-4 space-y-4">
+              <VisionGetStartedCard />
+              <WdepPinnedAction />
+              <ScaFocusCard />
+            </div>
+          </section>
+        )}
 
         <section className="py-12 bg-gradient-to-b from-white to-gray-50/50 relative">
           <div className="max-w-2xl mx-auto px-4">

@@ -33,6 +33,8 @@ import { VisionCheckin } from "@/pages/VisionCheckin";
 import { TrackHub } from "@/pages/TrackHub";
 import { WdepTool } from "@/pages/WdepTool";
 import { WdepExperiment } from "@/pages/WdepExperiment";
+import { WdepPdf } from "@/pages/WdepPdf";
+import { ScaPdf } from "@/pages/ScaPdf";
 import { StrengthsTool } from "@/pages/StrengthsTool";
 import { StylesTool } from "@/pages/StylesTool";
 import { EqTool } from "@/pages/EqTool";
@@ -91,6 +93,8 @@ function Router() {
       <Route path="/vision/:sessionId/growth" component={TrackHub} />
       <Route path="/vision/:sessionId/tools/wdep" component={WdepTool} />
       <Route path="/vision/:sessionId/wdep/:wdepId/experiment" component={WdepExperiment} />
+      <Route path="/vision/:sessionId/wdep/:wdepId/pdf" component={WdepPdf} />
+      <Route path="/vision/:sessionId/sca/:scaId/pdf" component={ScaPdf} />
       <Route path="/vision/:sessionId/tools/strengths" component={StrengthsTool} />
       <Route path="/vision/:sessionId/tools/styles" component={StylesTool} />
       <Route path="/vision/:sessionId/tools/eq" component={EqTool} />

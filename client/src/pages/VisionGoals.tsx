@@ -444,6 +444,16 @@ export function VisionGoals() {
                             <Button
                               variant="ghost"
                               size="sm"
+                              onClick={() => navigate(`/vision/${sessionId}/tools/wdep?goal=${encodeURIComponent(goal.title)}`)}
+                              className="text-[#4A7C7C] hover:bg-[#4A7C7C]/10"
+                              title="Run WDEP on this goal"
+                              data-testid={`wdep-goal-${goal.id}`}
+                            >
+                              <Lightbulb className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
                               onClick={() => openEditDialog(goal)}
                               className="text-[#6B7B6E] hover:text-[#2C3E2D] hover:bg-[#E8E4DE]"
                               data-testid={`edit-goal-${goal.id}`}
