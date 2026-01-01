@@ -70,9 +70,20 @@ export function SparksPage() {
   const [showSubscribe, setShowSubscribe] = useState(false);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [audioProgress, setAudioProgress] = useState(0);
+  const [viewMode, setViewMode] = useState<'reflection' | 'faith'>(() => {
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem('sparks_view_mode') as 'reflection' | 'faith') || 'reflection';
+    }
+    return 'reflection';
+  });
   const audioRef = useRef<HTMLAudioElement>(null);
   const queryClient = useQueryClient();
   const { user, isAuthenticated } = useAuth();
+
+  const handleViewModeChange = (mode: 'reflection' | 'faith') => {
+    setViewMode(mode);
+    localStorage.setItem('sparks_view_mode', mode);
+  };
 
   const { data: sparks = [], isLoading } = useQuery<Spark[]>({
     queryKey: ["/api/sparks/published"],
