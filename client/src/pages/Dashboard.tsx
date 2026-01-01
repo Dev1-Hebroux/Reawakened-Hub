@@ -296,17 +296,22 @@ function VisionStartCard() {
     queryKey: ['/api', 'goals'],
   });
   
-  const { data: visionSessions } = useQuery<any[]>({
-    queryKey: ['/api/vision/sessions'],
+  const { data: visionSessions, isLoading: visionLoading } = useQuery<any[]>({
+    queryKey: ['vision-sessions-check'],
     retry: false,
     queryFn: async () => {
-      const res = await fetch('/api/vision/sessions', { credentials: 'include' });
-      if (!res.ok) return [];
-      return res.json();
+      try {
+        const res = await fetch('/api/vision/sessions', { credentials: 'include' });
+        if (!res.ok) return [];
+        const data = await res.json();
+        return Array.isArray(data) ? data : [];
+      } catch {
+        return [];
+      }
     },
   });
   
-  const hasStartedVision = visionSessions && visionSessions.length > 0;
+  const hasStartedVision = !visionLoading && visionSessions && visionSessions.length > 0;
   const hasGoals = goals && goals.length > 0;
   
   if (hasGoals || hasStartedVision) {
