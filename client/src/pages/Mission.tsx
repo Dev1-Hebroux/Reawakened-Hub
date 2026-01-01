@@ -69,10 +69,10 @@ const features = [
 ];
 
 const stats = [
-  { label: "Nations Reached", value: "30+" },
-  { label: "Students Trained", value: "12k" },
-  { label: "Hub Partners", value: "150+" },
-  { label: "API Integrations", value: "∞" }
+  { value: "10k+", subtitle: "disciples by 2030", label: "Our Vision" },
+  { value: "50+", subtitle: "nations reached", label: "Our Goal" },
+  { value: "365", subtitle: "sparks per year", label: "Daily" },
+  { value: "12+", subtitle: "mission projects", label: "Launching" },
 ];
 
 const missionStories = [
@@ -252,12 +252,13 @@ export function MissionPage() {
         </div>
       </section>
 
-      <section className="bg-white border-b border-gray-100 relative z-20 -mt-20 max-w-6xl mx-auto rounded-2xl shadow-xl p-8 mx-4 md:mx-auto">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+      <section className="bg-white border-b border-gray-100 relative z-20 -mt-20 max-w-6xl mx-auto rounded-2xl shadow-xl p-6 md:p-8 mx-4 md:mx-auto">
+        <div className="grid grid-cols-4 gap-2 md:gap-8">
           {stats.map((stat, i) => (
             <div key={i} className="text-center" data-testid={`stat-${stat.label.toLowerCase().replace(/\s+/g, '-')}`}>
-              <div className="text-3xl md:text-4xl font-display font-bold text-gray-900 mb-1">{stat.value}</div>
-              <div className="text-sm text-gray-500 font-bold uppercase tracking-wider">{stat.label}</div>
+              <div className="text-xl md:text-3xl font-display font-bold text-gray-900">{stat.value}</div>
+              <div className="text-[9px] md:text-xs text-gray-600 leading-tight">{stat.subtitle}</div>
+              <div className="text-[8px] md:text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-0.5">{stat.label}</div>
             </div>
           ))}
         </div>

@@ -10,6 +10,7 @@ import { MarqueeCTA } from "@/components/sections/MarqueeCTA";
 import { SubscriptionCapture } from "@/components/sections/SubscriptionCapture";
 import { Footer } from "@/components/layout/Footer";
 import { ArrowRight, ShoppingBag, Flame, Heart, Globe, Zap, Rocket, HandHeart, Users, Clock, CheckCircle2 } from "lucide-react";
+import { StatsBar } from "@/components/ui/StatsBar";
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -67,20 +68,7 @@ export default function Home() {
         <Hero />
         
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6 relative z-20">
-          <div className="bg-white/95 backdrop-blur-sm rounded-xl shadow-md px-3 py-3 md:px-6 md:py-4 grid grid-cols-4 gap-1 md:gap-4 border border-gray-100">
-            {[
-              { label: "Our Vision", value: "10k+", subtitle: "disciples by 2030" },
-              { label: "Our Goal", value: "50+", subtitle: "nations reached" },
-              { label: "Daily", value: "365", subtitle: "sparks per year" },
-              { label: "Launching", value: "12+", subtitle: "mission projects" },
-            ].map((stat, i) => (
-              <div key={i} className="text-center" data-testid={`stat-home-${stat.label.toLowerCase().replace(/\s+/g, '-')}`}>
-                <div className="text-lg md:text-2xl font-bold text-gray-900 font-display">{stat.value}</div>
-                <div className="text-[9px] md:text-xs text-gray-600 leading-tight">{stat.subtitle}</div>
-                <div className="text-[8px] md:text-[10px] text-gray-400 uppercase tracking-wide font-semibold mt-0.5">{stat.label}</div>
-              </div>
-            ))}
-          </div>
+          <StatsBar variant="light" />
         </div>
 
         <section className="py-12 bg-gradient-to-b from-white to-gray-50/50 relative">

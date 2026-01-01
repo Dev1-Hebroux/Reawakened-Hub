@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { StatsBar } from "@/components/ui/StatsBar";
 import { 
   Flame, Globe2, Heart, Users, MapPin, 
   BookOpen, ArrowRight, Waves, Target
@@ -124,6 +125,10 @@ export default function AboutPage() {
           </motion.div>
         </div>
       </section>
+
+      <div className="max-w-4xl mx-auto px-4 -mt-8 relative z-20">
+        <StatsBar variant="light" />
+      </div>
 
       {/* Embrace the Boundaryless Journey */}
       <section className="py-24 bg-gray-50">
