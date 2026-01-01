@@ -8,13 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { 
   Compass, Target, Sparkles, Calendar, CheckCircle2, 
   ArrowRight, Mountain, Heart, Flame, Star, ChevronRight,
   Zap, TrendingUp, Award, Play, Users, Trophy, Clock, X,
-  BookOpen, Lightbulb, Route, Quote
+  BookOpen, Lightbulb, Route, Quote, LogIn
 } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 
 const STAGE_COLORS = {
@@ -36,6 +37,7 @@ const STAGES = [
 export function VisionPage() {
   const [, navigate] = useLocation();
   const queryClient = useQueryClient();
+  const { user, isLoading: authLoading } = useAuth();
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState(0);
   const [mode, setMode] = useState<"classic" | "faith">("classic");
@@ -43,6 +45,7 @@ export function VisionPage() {
   const [seasonLabel, setSeasonLabel] = useState("2025 Reset");
   const [themeWord, setThemeWord] = useState("");
   const [showDemoModal, setShowDemoModal] = useState(false);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
   const { data: session, isLoading } = useQuery({
     queryKey: ["/api/vision/sessions/current"],
@@ -87,22 +90,64 @@ export function VisionPage() {
     return <VisionDashboard session={session} />;
   }
 
+  const handleBeginJourney = () => {
+    if (!user) {
+      setShowLoginPrompt(true);
+    } else {
+      createSession.mutate();
+    }
+  };
+
   if (showOnboarding) {
     return (
-      <OnboardingFlow
-        step={onboardingStep}
-        setStep={setOnboardingStep}
-        mode={mode}
-        setMode={setMode}
-        seasonType={seasonType}
-        setSeasonType={setSeasonType}
-        seasonLabel={seasonLabel}
-        setSeasonLabel={setSeasonLabel}
-        themeWord={themeWord}
-        setThemeWord={setThemeWord}
-        onComplete={() => createSession.mutate()}
-        isSubmitting={createSession.isPending}
-      />
+      <>
+        <OnboardingFlow
+          step={onboardingStep}
+          setStep={setOnboardingStep}
+          mode={mode}
+          setMode={setMode}
+          seasonType={seasonType}
+          setSeasonType={setSeasonType}
+          seasonLabel={seasonLabel}
+          setSeasonLabel={setSeasonLabel}
+          themeWord={themeWord}
+          setThemeWord={setThemeWord}
+          onComplete={handleBeginJourney}
+          isSubmitting={createSession.isPending}
+        />
+        
+        {/* Login Prompt Dialog */}
+        <Dialog open={showLoginPrompt} onOpenChange={setShowLoginPrompt}>
+          <DialogContent className="max-w-md bg-white border-[#E8E4DE]">
+            <DialogHeader>
+              <div className="flex items-center justify-center mb-4">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#7C9A8E] to-[#6B8B7E] flex items-center justify-center shadow-lg">
+                  <LogIn className="w-8 h-8 text-white" />
+                </div>
+              </div>
+              <DialogTitle className="text-2xl font-bold text-center text-[#2C3E2D]">
+                Sign in to Continue
+              </DialogTitle>
+              <DialogDescription className="text-center text-[#6B7B6E] mt-2">
+                Create a free account to save your vision journey progress and access it from anywhere.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-3 mt-6">
+              <Button 
+                onClick={() => window.location.href = "/api/login"}
+                className="w-full bg-[#7C9A8E] hover:bg-[#6B8B7E] text-white py-6 rounded-xl font-semibold"
+                data-testid="button-login-vision"
+              >
+                <LogIn className="w-5 h-5 mr-2" />
+                Sign in with Replit
+              </Button>
+              <p className="text-center text-sm text-[#6B7B6E]">
+                Your progress will be saved automatically
+              </p>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </>
     );
   }
 
