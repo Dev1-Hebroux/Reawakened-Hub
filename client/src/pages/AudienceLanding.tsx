@@ -160,9 +160,9 @@ const audienceConfigs: Record<string, AudienceConfig> = {
     description: "For couples who want to build stronger foundations and navigate life together.",
     icon: <Heart className="h-6 w-6" />,
     heroEmoji: "💑",
-    gradient: "from-rose-400 via-pink-500 to-fuchsia-500",
-    accentColor: "pink",
-    bgPattern: "radial-gradient(circle at 30% 70%, rgba(244, 114, 182, 0.3) 0%, transparent 50%), radial-gradient(circle at 70% 30%, rgba(236, 72, 153, 0.3) 0%, transparent 50%)",
+    gradient: "from-[#7C9A8E] via-[#6B8B7E] to-[#5A7A6E]",
+    accentColor: "sage",
+    bgPattern: "radial-gradient(circle at 30% 70%, rgba(124, 154, 142, 0.3) 0%, transparent 50%), radial-gradient(circle at 70% 30%, rgba(107, 139, 126, 0.3) 0%, transparent 50%)",
     benefits: [
       { icon: <MessageCircle className="h-5 w-5" />, title: "Daily Prompts", desc: "Meaningful convos" },
       { icon: <Heart className="h-5 w-5" />, title: "Communication", desc: "Navigate together" },

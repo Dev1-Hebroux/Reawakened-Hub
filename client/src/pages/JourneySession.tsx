@@ -28,23 +28,23 @@ const sectionIcons: Record<string, typeof BookOpen> = {
 };
 
 const sectionColors: Record<string, string> = {
-  'welcome': 'from-green-500/20 to-emerald-500/20 border-green-500/30',
-  'scripture': 'from-blue-500/20 to-cyan-500/20 border-blue-500/30',
-  'micro-teach': 'from-yellow-500/20 to-amber-500/20 border-yellow-500/30',
-  'discussion': 'from-purple-500/20 to-violet-500/20 border-purple-500/30',
-  'practice': 'from-orange-500/20 to-red-500/20 border-orange-500/30',
-  'i-will': 'from-pink-500/20 to-rose-500/20 border-pink-500/30',
-  'prayer': 'from-indigo-500/20 to-blue-500/20 border-indigo-500/30',
+  'welcome': 'from-[#7C9A8E]/20 to-[#5A7A6E]/20 border-[#7C9A8E]/30',
+  'scripture': 'from-[#4A7C7C]/20 to-[#3A6666]/20 border-[#4A7C7C]/30',
+  'micro-teach': 'from-[#D4A574]/20 to-[#B8956A]/20 border-[#D4A574]/30',
+  'discussion': 'from-[#5A7A8E]/20 to-[#4A6A7E]/20 border-[#5A7A8E]/30',
+  'practice': 'from-[#D4A574]/20 to-[#B8956A]/20 border-[#D4A574]/30',
+  'i-will': 'from-[#6B8B7E]/20 to-[#5A7A6E]/20 border-[#6B8B7E]/30',
+  'prayer': 'from-[#4A7C7C]/20 to-[#3A6666]/20 border-[#4A7C7C]/30',
 };
 
 const iconColors: Record<string, string> = {
-  'welcome': 'text-green-400',
-  'scripture': 'text-blue-400',
-  'micro-teach': 'text-yellow-400',
-  'discussion': 'text-purple-400',
-  'practice': 'text-orange-400',
-  'i-will': 'text-pink-400',
-  'prayer': 'text-indigo-400',
+  'welcome': 'text-[#7C9A8E]',
+  'scripture': 'text-[#4A7C7C]',
+  'micro-teach': 'text-[#D4A574]',
+  'discussion': 'text-[#5A7A8E]',
+  'practice': 'text-[#D4A574]',
+  'i-will': 'text-[#6B8B7E]',
+  'prayer': 'text-[#4A7C7C]',
 };
 
 interface JourneyWeeksResponse {
@@ -332,7 +332,7 @@ export function JourneySession() {
                 <Button
                   onClick={() => createCommitment.mutate()}
                   disabled={!iWillCommitment.trim() || createCommitment.isPending}
-                  className="bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600"
+                  className="bg-gradient-to-r from-[#7C9A8E] to-[#5A7A6E] hover:from-[#6B8B7E] hover:to-[#4A6A5E]"
                   data-testid="button-save-commitment"
                 >
                   {createCommitment.isPending ? (

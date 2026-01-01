@@ -76,7 +76,7 @@ const pathwayStages: PathwayStage[] = [
     subtitle: "Spiritual Family on Mission",
     description: "As disciples mature and multiply, a microchurch naturally forms—an extended spiritual family, led by ordinary people, living in everyday Gospel community.",
     icon: Home,
-    color: "from-purple-500 to-pink-500",
+    color: "from-[#5A7A8E] to-[#4A6A7E]",
     practices: [
       "Gather regularly for fellowship, teaching, breaking bread, and prayer",
       "Practice the 'one anothers' of Scripture",

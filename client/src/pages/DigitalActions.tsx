@@ -36,7 +36,7 @@ const shareCards = [
     title: "You Are Loved", 
     message: "No matter what you've done or where you've been, God's love for you is unconditional. You are valued and precious.",
     theme: "love",
-    color: "from-pink-500 to-rose-600",
+    color: "from-[#D4A574] to-[#B8956A]",
     verse: "Romans 8:38-39"
   },
   { 

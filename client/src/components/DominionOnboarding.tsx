@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Flame, School, GraduationCap, Briefcase, Rocket, Heart, BookOpen, Sparkles, ArrowRight } from "lucide-react";
+import { X, Flame, School, GraduationCap, Briefcase, Rocket, Heart, BookOpen, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -12,27 +12,27 @@ interface DominionOnboardingProps {
 }
 
 const audiences = [
-  { id: "schools", label: "Student (15-18)", icon: School, color: "from-blue-500 to-cyan-400" },
-  { id: "universities", label: "University", icon: GraduationCap, color: "from-purple-500 to-indigo-500" },
-  { id: "early-career", label: "Young Professional", icon: Briefcase, color: "from-orange-500 to-amber-400" },
-  { id: "builders", label: "Entrepreneur/Creative", icon: Rocket, color: "from-emerald-500 to-teal-400" },
-  { id: "couples", label: "Couple", icon: Heart, color: "from-rose-500 to-pink-400" },
+  { id: "schools", label: "Student (15-18)", icon: School, color: "from-[#4A7C7C] to-[#3A6666]" },
+  { id: "universities", label: "University", icon: GraduationCap, color: "from-[#5A7A8E] to-[#4A6A7E]" },
+  { id: "early-career", label: "Young Professional", icon: Briefcase, color: "from-[#D4A574] to-[#B8956A]" },
+  { id: "builders", label: "Entrepreneur/Creative", icon: Rocket, color: "from-[#7C9A8E] to-[#5A7A6E]" },
+  { id: "couples", label: "Couple", icon: Heart, color: "from-[#6B8B7E] to-[#5A7A6E]" },
 ];
 
 const modes = [
   { 
     id: "reflection", 
     label: "Reflection Mode", 
-    icon: Sparkles,
+    icon: BookOpen,
     description: "Thoughtful quotes, questions, and actions for personal growth",
-    color: "from-amber-500 to-orange-500"
+    color: "from-[#7C9A8E] to-[#5A7A6E]"
   },
   { 
     id: "faith", 
     label: "Faith Overlay", 
     icon: BookOpen,
     description: "Includes scripture references and prayer lines",
-    color: "from-primary to-blue-600"
+    color: "from-[#4A7C7C] to-[#3A6666]"
   },
 ];
 

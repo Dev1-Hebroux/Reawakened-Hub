@@ -22,7 +22,7 @@ const weeklyData: WeeklyChallenge[] = [
     description: "This week is about understanding your true identity and finding security in belonging.",
     challenge: "Share one thing you're grateful for about who you are with someone you trust.",
     icon: <Heart className="h-6 w-6" />,
-    color: "from-rose-500 to-pink-500",
+    color: "from-[#7C9A8E] to-[#5A7A6E]",
     dateRange: "19-24 Jan"
   },
   {
@@ -32,7 +32,7 @@ const weeklyData: WeeklyChallenge[] = [
     description: "Discover the power of stillness and intentional presence in your daily life.",
     challenge: "Set aside 10 minutes of phone-free time each day this week to reflect or pray.",
     icon: <Clock className="h-6 w-6" />,
-    color: "from-purple-500 to-indigo-500",
+    color: "from-[#4A7C7C] to-[#3A6666]",
     dateRange: "25-30 Jan"
   },
   {
@@ -42,7 +42,7 @@ const weeklyData: WeeklyChallenge[] = [
     description: "Learn to navigate stress and anxiety with practical tools and deeper peace.",
     challenge: "When you feel anxious this week, try the 5-4-3-2-1 grounding technique.",
     icon: <Zap className="h-6 w-6" />,
-    color: "from-emerald-500 to-teal-500",
+    color: "from-[#6B8B7E] to-[#4A7C7C]",
     dateRange: "31 Jan - 5 Feb"
   },
   {
@@ -52,7 +52,7 @@ const weeklyData: WeeklyChallenge[] = [
     description: "Discover the courage to share your story and be a light to those around you.",
     challenge: "Share this week's spark with one friend who might need encouragement.",
     icon: <MessageCircle className="h-6 w-6" />,
-    color: "from-amber-500 to-orange-500",
+    color: "from-[#D4A574] to-[#B8956A]",
     dateRange: "6-11 Feb"
   },
   {
@@ -62,7 +62,7 @@ const weeklyData: WeeklyChallenge[] = [
     description: "Step into your calling and commit to making a difference in your world.",
     challenge: "Commit to one way you'll continue growing after DOMINION ends.",
     icon: <Globe className="h-6 w-6" />,
-    color: "from-blue-500 to-cyan-500",
+    color: "from-[#5A7A8E] to-[#4A6A7E]",
     dateRange: "12-17 Feb"
   }
 ];

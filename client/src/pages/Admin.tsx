@@ -204,7 +204,7 @@ export function AdminDashboard() {
     { label: "Sparks", value: stats?.sparks || 0, icon: Flame, color: "bg-orange-500" },
     { label: "Events", value: stats?.events || 0, icon: Calendar, color: "bg-green-500" },
     { label: "Blog Posts", value: stats?.blogPosts || 0, icon: FileText, color: "bg-purple-500" },
-    { label: "Community Posts", value: stats?.posts || 0, icon: MessageSquare, color: "bg-pink-500" },
+    { label: "Community Posts", value: stats?.posts || 0, icon: MessageSquare, color: "bg-[#D4A574]" },
     { label: "Registrations", value: stats?.registrations || 0, icon: Target, color: "bg-teal-500" },
   ];
 

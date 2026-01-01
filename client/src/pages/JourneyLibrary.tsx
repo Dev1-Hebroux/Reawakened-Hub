@@ -31,10 +31,10 @@ const levelLabels: Record<string, string> = {
 };
 
 const categoryColors: Record<string, string> = {
-  "faith-basics": "bg-blue-500/20 text-blue-400 border-blue-500/30",
-  "purpose": "bg-purple-500/20 text-purple-400 border-purple-500/30",
-  "anxiety": "bg-green-500/20 text-green-400 border-green-500/30",
-  "relationships": "bg-pink-500/20 text-pink-400 border-pink-500/30",
+  "faith-basics": "bg-[#4A7C7C]/20 text-[#4A7C7C] border-[#4A7C7C]/30",
+  "purpose": "bg-[#5A7A8E]/20 text-[#5A7A8E] border-[#5A7A8E]/30",
+  "anxiety": "bg-[#7C9A8E]/20 text-[#7C9A8E] border-[#7C9A8E]/30",
+  "relationships": "bg-[#D4A574]/20 text-[#D4A574] border-[#D4A574]/30",
 };
 
 const statusColors: Record<string, string> = {
