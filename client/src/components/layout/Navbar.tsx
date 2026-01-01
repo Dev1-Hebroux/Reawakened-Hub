@@ -63,10 +63,10 @@ export function Navbar() {
           <div className={`hidden md:block px-6 py-2.5 rounded-full border transition-all duration-300 ${scrolled ? 'bg-white/50 border-gray-200' : 'bg-transparent border-transparent'}`}>
             <div className="flex items-baseline space-x-1">
               <Link href="/"><span className={`${textColor} ${hoverColor} px-4 py-2 rounded-full text-sm font-bold transition-all cursor-pointer`} data-testid="nav-home">Home</span></Link>
-              <Link href="/pray"><span className={`${textColor} ${hoverColor} px-4 py-2 rounded-full text-sm font-bold transition-all cursor-pointer`} data-testid="nav-pray">Pray</span></Link>
-              <Link href="/missions"><span className={`${textColor} ${hoverColor} px-4 py-2 rounded-full text-sm font-bold transition-all cursor-pointer`} data-testid="nav-missions">Missions</span></Link>
-              <Link href="/give"><span className={`${textColor} ${hoverColor} px-4 py-2 rounded-full text-sm font-bold transition-all cursor-pointer`} data-testid="nav-give">Give</span></Link>
-              <Link href="/movement"><span className={`${textColor} ${hoverColor} px-4 py-2 rounded-full text-sm font-bold transition-all cursor-pointer`} data-testid="nav-movement">Movement</span></Link>
+              <Link href="/sparks"><span className={`${textColor} ${hoverColor} px-4 py-2 rounded-full text-sm font-bold transition-all cursor-pointer`} data-testid="nav-sparks">Sparks</span></Link>
+              <Link href="/community"><span className={`${textColor} ${hoverColor} px-4 py-2 rounded-full text-sm font-bold transition-all cursor-pointer`} data-testid="nav-community">Community Hub</span></Link>
+              <Link href="/mission"><span className={`${textColor} ${hoverColor} px-4 py-2 rounded-full text-sm font-bold transition-all cursor-pointer`} data-testid="nav-missions">Missions</span></Link>
+              <Link href="/blog"><span className={`${textColor} ${hoverColor} px-4 py-2 rounded-full text-sm font-bold transition-all cursor-pointer`} data-testid="nav-blog">Blog</span></Link>
               <Link href="/about"><span className={`${textColor} ${hoverColor} px-4 py-2 rounded-full text-sm font-bold transition-all cursor-pointer`} data-testid="nav-about">About</span></Link>
             </div>
           </div>
@@ -98,10 +98,10 @@ export function Navbar() {
           >
             <div className="px-4 pt-4 pb-6 space-y-2">
               <Link href="/"><span className="text-gray-800 hover:text-primary hover:bg-gray-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer" data-testid="mobile-nav-home">Home</span></Link>
-              <Link href="/pray"><span className="text-gray-800 hover:text-primary hover:bg-gray-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer" data-testid="mobile-nav-pray">Pray</span></Link>
-              <Link href="/missions"><span className="text-gray-800 hover:text-primary hover:bg-gray-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer" data-testid="mobile-nav-missions">Missions</span></Link>
-              <Link href="/give"><span className="text-gray-800 hover:text-primary hover:bg-gray-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer" data-testid="mobile-nav-give">Give</span></Link>
-              <Link href="/movement"><span className="text-gray-800 hover:text-primary hover:bg-gray-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer" data-testid="mobile-nav-movement">Movement</span></Link>
+              <Link href="/sparks"><span className="text-gray-800 hover:text-primary hover:bg-gray-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer" data-testid="mobile-nav-sparks">Sparks</span></Link>
+              <Link href="/community"><span className="text-gray-800 hover:text-primary hover:bg-gray-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer" data-testid="mobile-nav-community">Community Hub</span></Link>
+              <Link href="/mission"><span className="text-gray-800 hover:text-primary hover:bg-gray-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer" data-testid="mobile-nav-missions">Missions</span></Link>
+              <Link href="/blog"><span className="text-gray-800 hover:text-primary hover:bg-gray-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer" data-testid="mobile-nav-blog">Blog</span></Link>
               <Link href="/about"><span className="text-gray-800 hover:text-primary hover:bg-gray-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer" data-testid="mobile-nav-about">About</span></Link>
               <div className="pt-4">
                 <Button className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-6 rounded-xl" data-testid="mobile-nav-join">

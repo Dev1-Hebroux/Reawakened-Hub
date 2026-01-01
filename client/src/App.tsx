@@ -46,6 +46,7 @@ import { MissionOnboarding } from "@/pages/MissionOnboarding";
 import { DigitalActions } from "@/pages/DigitalActions";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { QuickShare } from "@/components/ui/QuickShare";
+import Profile from "@/pages/Profile";
 
 function Router() {
   return (
@@ -94,6 +95,7 @@ function Router() {
       <Route path="/mission/onboarding" component={MissionOnboarding} />
       <Route path="/give" component={GiveHub} />
       <Route path="/movement" component={MovementHub} />
+      <Route path="/profile" component={Profile} />
       <Route component={NotFound} />
     </Switch>
   );

@@ -18,36 +18,30 @@ import outreachImg from "@assets/generated_images/group_wearing_reawakened.one_b
 import capImg from "@assets/generated_images/cap_with_reawakened_embroidery.png";
 import hoodieImg from "@assets/generated_images/hoodies_with_reawakened_logo.png";
 
-const actionCards = [
+const globalImpactCards = [
   {
     title: "Pray",
-    subtitle: "Intercede for the Nations",
-    description: "Adopt a people group, join live prayer rooms, and fuel the harvest through daily intercession.",
+    subtitle: "Adopt a people group",
     icon: Heart,
-    color: "from-[#D4A574] to-[#C49466]",
-    bgColor: "bg-[#D4A574]/10",
     link: "/pray",
-    cta: "Start Praying",
   },
   {
     title: "Give",
-    subtitle: "Fuel the Mission",
-    description: "Support verified projects, sponsor digital outreach, and see your giving reach the nations.",
+    subtitle: "Support mission projects",
     icon: HandHeart,
-    color: "from-[#7C9A8E] to-[#6A8A7E]",
-    bgColor: "bg-[#7C9A8E]/10",
     link: "/give",
-    cta: "Give Now",
   },
   {
-    title: "Go Digital",
-    subtitle: "Take Action Online",
-    description: "Share your testimony, invite friends, complete training, and make disciples from anywhere.",
+    title: "Go",
+    subtitle: "Join outreach trips",
     icon: Rocket,
-    color: "from-primary to-orange-500",
-    bgColor: "bg-primary/10",
     link: "/missions",
-    cta: "Take Action",
+  },
+  {
+    title: "Movement",
+    subtitle: "Join the revival",
+    icon: Zap,
+    link: "/movement",
   },
 ];
 
@@ -212,59 +206,88 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="py-20 bg-white relative overflow-hidden">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12">
-              <span className="text-primary font-bold tracking-widest uppercase text-sm mb-2 block">Your Part in the Mission</span>
-              <h2 className="text-4xl md:text-5xl font-display font-bold text-gray-900 mb-4">Pray. Give. Go.</h2>
-              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                Every action fuels revival. Choose how you want to make an impact today.
-              </p>
-            </div>
+        <section className="py-20 bg-[#1a2744] relative overflow-hidden">
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxwYXRoIGQ9Ik0wIDBoNDB2NDBIMHoiLz48Y2lyY2xlIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wMykiIGN4PSIyMCIgY3k9IjIwIiByPSIxIi8+PC9nPjwvc3ZnPg==')] opacity-50" />
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              <motion.div
+                initial={{ opacity: 0, x: -30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+              >
+                <div className="inline-flex items-center gap-2 bg-[#D4A574] rounded-full px-4 py-2 mb-6 shadow-lg">
+                  <Globe className="h-4 w-4 text-white" />
+                  <span className="text-sm font-bold text-white">Global Impact</span>
+                </div>
+                <h2 className="text-4xl md:text-5xl font-display font-bold text-white mb-6 leading-tight">
+                  Ready to Change<br />the World?
+                </h2>
+                <p className="text-lg text-[#E8E4DE] mb-8 max-w-md">
+                  Don't just watch. Act. Reawakened is your launchpad to pray, give, and go to the nations.
+                </p>
+                <div className="flex flex-wrap gap-4">
+                  <Button 
+                    onClick={() => navigate('/mission/onboarding')}
+                    className="bg-white hover:bg-gray-100 text-[#1a2744] font-bold px-8 py-6 rounded-full shadow-xl"
+                    data-testid="button-start-mission"
+                  >
+                    Start Your Mission
+                  </Button>
+                  <Button 
+                    onClick={() => navigate('/mission')}
+                    variant="outline"
+                    className="border-2 border-white/30 text-white hover:bg-white/10 font-bold px-8 py-6 rounded-full"
+                    data-testid="button-view-projects"
+                  >
+                    View Projects
+                  </Button>
+                </div>
+              </motion.div>
 
-            <div className="grid md:grid-cols-3 gap-6">
-              {actionCards.map((card, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.1 }}
-                  className="relative group cursor-pointer"
-                  onClick={() => navigate(card.link)}
-                  data-testid={`card-action-${card.title.toLowerCase().replace(/\s+/g, '-')}`}
-                >
-                  <div className={`absolute inset-0 bg-gradient-to-br ${card.color} rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-xl`} />
-                  <div className={`relative ${card.bgColor} border border-gray-100 rounded-3xl p-8 hover:shadow-2xl transition-all duration-300 h-full group-hover:bg-white`}>
-                    <div className={`inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br ${card.color} text-white mb-6 shadow-lg`}>
-                      <card.icon className="h-8 w-8" />
+              <motion.div
+                initial={{ opacity: 0, x: 30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                className="space-y-4"
+              >
+                {globalImpactCards.map((card, i) => (
+                  <motion.div
+                    key={card.title}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: i * 0.1 }}
+                    onClick={() => navigate(card.link)}
+                    className="bg-[#243656] hover:bg-[#2a3f66] rounded-2xl p-4 flex items-center justify-between cursor-pointer transition-all group border border-[#4A7C7C]/20 shadow-lg"
+                    data-testid={`card-impact-${card.title.toLowerCase()}`}
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="h-12 w-12 rounded-xl bg-[#1a2744] flex items-center justify-center shadow-md">
+                        <card.icon className="h-6 w-6 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-white text-lg">{card.title}</h3>
+                        <p className="text-sm text-[#7C9A8E]">{card.subtitle}</p>
+                      </div>
                     </div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-1">{card.title}</h3>
-                    <p className="text-sm font-bold text-primary mb-4">{card.subtitle}</p>
-                    <p className="text-gray-600 mb-6 leading-relaxed">{card.description}</p>
-                    <Button 
-                      className={`w-full bg-gradient-to-r ${card.color} hover:opacity-90 text-white font-bold py-6 rounded-xl shadow-lg`}
-                      data-testid={`button-${card.title.toLowerCase()}`}
-                    >
-                      {card.cta} <ArrowRight className="h-4 w-4 ml-2" />
-                    </Button>
-                  </div>
-                </motion.div>
-              ))}
+                    <ArrowRight className="h-5 w-5 text-[#7C9A8E] group-hover:text-white group-hover:translate-x-1 transition-all" />
+                  </motion.div>
+                ))}
+              </motion.div>
             </div>
 
-            <div className="mt-12 text-center">
-              <p className="text-gray-500 mb-4">Join the global movement of young believers taking action</p>
+            <div className="mt-16 text-center">
+              <p className="text-[#7C9A8E] mb-4">Join the global movement of young believers taking action</p>
               <div className="flex justify-center gap-8 items-center">
                 <div className="flex items-center gap-2">
                   <div className="flex -space-x-2">
                     {[1,2,3,4,5].map(i => (
-                      <div key={i} className="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-[#D4A574] border-2 border-white flex items-center justify-center">
+                      <div key={i} className="h-8 w-8 rounded-full bg-gradient-to-br from-[#D4A574] to-[#7C9A8E] border-2 border-[#1a2744] flex items-center justify-center">
                         <Users className="h-4 w-4 text-white" />
                       </div>
                     ))}
                   </div>
-                  <span className="text-sm font-bold text-gray-700">2,500+ active missionaries</span>
+                  <span className="text-sm font-bold text-white">2,500+ active missionaries</span>
                 </div>
               </div>
             </div>
