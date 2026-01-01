@@ -701,6 +701,8 @@ export interface IStorage {
   markNotificationRead(id: number, userId: string): Promise<void>;
   markAllNotificationsRead(userId: string): Promise<void>;
   getUsersWithPushEnabled(): Promise<Array<{ userId: string; pushSubscription: string }>>;
+  getUsersForPrayerNotifications(excludeUserId: string): Promise<string[]>;
+  createBulkNotifications(notificationsData: InsertNotification[]): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -3105,6 +3107,20 @@ export class DatabaseStorage implements IStorage {
       sql`${notificationPreferences.pushSubscription} IS NOT NULL`
     ));
     return results.filter(r => r.pushSubscription !== null) as Array<{ userId: string; pushSubscription: string }>;
+  }
+
+  async getUsersForPrayerNotifications(excludeUserId: string): Promise<string[]> {
+    const allUsers = await db.select({ id: users.id }).from(users).where(sql`${users.id} != ${excludeUserId}`);
+    const disabledUsers = await db.select({ userId: notificationPreferences.userId })
+      .from(notificationPreferences)
+      .where(eq(notificationPreferences.prayerSessionAlerts, false));
+    const disabledSet = new Set(disabledUsers.map(u => u.userId));
+    return allUsers.filter(u => !disabledSet.has(u.id)).map(u => u.id);
+  }
+
+  async createBulkNotifications(notificationsData: InsertNotification[]): Promise<void> {
+    if (notificationsData.length === 0) return;
+    await db.insert(notifications).values(notificationsData);
   }
 }
 

@@ -358,22 +358,18 @@ export async function registerRoutes(
         status: 'active',
       });
       
-      // Create notifications for users with prayer session alerts enabled
+      // Create notifications for users with prayer session alerts enabled (batch operation)
       try {
-        const allUsers = await storage.getAllUsers();
-        for (const notifyUser of allUsers) {
-          if (notifyUser.id !== userId) {
-            const prefs = await storage.getNotificationPreferences(notifyUser.id);
-            if (!prefs || prefs.prayerSessionAlerts !== false) {
-              await storage.createNotification({
-                userId: notifyUser.id,
-                type: 'prayer_session',
-                title: 'Live Prayer Session',
-                body: `${session.leaderName} started "${session.title}"${session.region ? ` in ${session.region}` : ''}`,
-                data: JSON.stringify({ sessionId: session.id }),
-              });
-            }
-          }
+        const eligibleUserIds = await storage.getUsersForPrayerNotifications(userId);
+        if (eligibleUserIds.length > 0) {
+          const notificationsToCreate = eligibleUserIds.map(uid => ({
+            userId: uid,
+            type: 'prayer_session' as const,
+            title: 'Live Prayer Session',
+            body: `${session.leaderName} started "${session.title}"${session.region ? ` in ${session.region}` : ''}`,
+            data: JSON.stringify({ sessionId: session.id }),
+          }));
+          await storage.createBulkNotifications(notificationsToCreate);
         }
       } catch (notifyError) {
         console.error("Error sending notifications:", notifyError);
