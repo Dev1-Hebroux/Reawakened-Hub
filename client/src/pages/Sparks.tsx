@@ -70,32 +70,67 @@ export function SparksPage() {
   const [showSubscribe, setShowSubscribe] = useState(false);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [audioProgress, setAudioProgress] = useState(0);
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const queryClient = useQueryClient();
+  const { user, isAuthenticated } = useAuth();
+
+  const userContentMode = (user as any)?.contentMode as 'reflection' | 'faith' | undefined;
+  const userAudienceSegment = (user as any)?.audienceSegment as string | undefined;
+
   const [viewMode, setViewMode] = useState<'reflection' | 'faith'>(() => {
+    if (userContentMode) return userContentMode;
     if (typeof window !== 'undefined') {
       return (localStorage.getItem('sparks_view_mode') as 'reflection' | 'faith') || 'reflection';
     }
     return 'reflection';
   });
-  const audioRef = useRef<HTMLAudioElement>(null);
-  const queryClient = useQueryClient();
-  const { user, isAuthenticated } = useAuth();
 
-  const handleViewModeChange = (mode: 'reflection' | 'faith') => {
+  useEffect(() => {
+    if (userContentMode && userContentMode !== viewMode) {
+      setViewMode(userContentMode);
+    }
+  }, [userContentMode]);
+
+  useEffect(() => {
+    if (userAudienceSegment) {
+      localStorage.setItem('user_audience_segment', userAudienceSegment);
+    }
+  }, [userAudienceSegment]);
+
+  const handleViewModeChange = async (mode: 'reflection' | 'faith') => {
     setViewMode(mode);
     localStorage.setItem('sparks_view_mode', mode);
+    if (isAuthenticated) {
+      try {
+        await apiRequest("PATCH", "/api/auth/user/preferences", { 
+          contentMode: mode,
+          audienceSegment: userAudienceSegment ?? null,
+        });
+        queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      } catch (error) {
+        console.error("Failed to save preference:", error);
+      }
+    }
   };
 
+  const storedAudience = typeof window !== 'undefined' ? localStorage.getItem('user_audience_segment') : null;
+  const effectiveAudience = userAudienceSegment || storedAudience || '';
+  const audienceParam = effectiveAudience ? `?audience=${effectiveAudience}` : '';
+
   const { data: sparks = [], isLoading } = useQuery<Spark[]>({
-    queryKey: ["/api/sparks/published"],
+    queryKey: ["/api/sparks/published", userAudienceSegment],
+    queryFn: () => fetch(`/api/sparks/published${audienceParam}`).then(r => r.json()),
   });
 
   const { data: todaySpark, isLoading: todayLoading } = useQuery<Spark>({
-    queryKey: ["/api/sparks/today"],
+    queryKey: ["/api/sparks/today", userAudienceSegment],
+    queryFn: () => fetch(`/api/sparks/today${audienceParam}`).then(r => r.json()),
     retry: false,
   });
 
   const { data: featuredSparks = [] } = useQuery<Spark[]>({
-    queryKey: ["/api/sparks/featured"],
+    queryKey: ["/api/sparks/featured", userAudienceSegment],
+    queryFn: () => fetch(`/api/sparks/featured${audienceParam}`).then(r => r.json()),
   });
 
   const { data: subscriptions = [], isLoading: subscriptionsLoading } = useQuery<SparkSubscription[]>({

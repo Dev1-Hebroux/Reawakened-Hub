@@ -25,6 +25,23 @@ export async function registerRoutes(
     }
   });
 
+  // Update user preferences (content mode and audience segment)
+  app.patch('/api/auth/user/preferences', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const preferencesSchema = z.object({
+        contentMode: z.enum(['reflection', 'faith']).optional(),
+        audienceSegment: z.enum(['schools', 'universities', 'early-career', 'builders', 'couples']).nullable().optional(),
+      });
+      const preferences = preferencesSchema.parse(req.body);
+      const updatedUser = await storage.updateUserPreferences(userId, preferences);
+      res.json(updatedUser);
+    } catch (error: any) {
+      console.error("Error updating user preferences:", error);
+      res.status(400).json({ message: error.message || "Failed to update preferences" });
+    }
+  });
+
   // ===== COMMUNITY HUB ROUTES =====
   
   // Get all posts (with optional type filter)

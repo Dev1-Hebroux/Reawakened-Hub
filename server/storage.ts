@@ -351,6 +351,7 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
   getAllUsers(): Promise<User[]>;
+  updateUserPreferences(userId: string, preferences: { contentMode?: string; audienceSegment?: string | null }): Promise<User>;
 
   // Community Hub - Posts
   getPosts(type?: string): Promise<Post[]>;
@@ -693,6 +694,18 @@ export class DatabaseStorage implements IStorage {
 
   async getAllUsers(): Promise<User[]> {
     return db.select().from(users).orderBy(desc(users.createdAt));
+  }
+
+  async updateUserPreferences(userId: string, preferences: { contentMode?: string; audienceSegment?: string | null }): Promise<User> {
+    const updateData: Record<string, any> = { updatedAt: new Date() };
+    if (preferences.contentMode !== undefined) {
+      updateData.contentMode = preferences.contentMode;
+    }
+    if (preferences.audienceSegment !== undefined) {
+      updateData.audienceSegment = preferences.audienceSegment;
+    }
+    const [user] = await db.update(users).set(updateData).where(eq(users.id, userId)).returning();
+    return user;
   }
 
   // Posts
