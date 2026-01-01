@@ -363,11 +363,11 @@ export function SparksPage() {
              </div>
              
              <h1 className="text-4xl md:text-6xl font-display font-bold leading-tight" data-testid="text-hero-title">
-               {featuredSpark?.title || "Street Worship Erupts in Downtown"}
+               {featuredSpark?.title || "Dominion Begins with Belonging"}
              </h1>
              
              <p className="text-lg text-white/80 max-w-xl" data-testid="text-hero-description">
-               {featuredSpark?.description || "Join thousands gathering to declare Jesus over the city. Miracles are happening!"}
+               {featuredSpark?.description || "Real authority starts with security, not striving. Whether you're in school, on campus, building your career or business, or doing life as a couple, this is a simple daily reset for pressure and pace. When you know you belong, you stop performing and start living steady. Today, let your identity be your anchor."}
              </p>
              
              <div className="flex items-center gap-4 pt-4 flex-wrap">
