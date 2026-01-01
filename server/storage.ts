@@ -5,6 +5,7 @@ import {
   sparks,
   sparkReactions,
   prayerMessages,
+  prayerSessions,
   sparkSubscriptions,
   reflectionCards,
   events,
@@ -60,6 +61,8 @@ import {
   type InsertSparkReaction,
   type PrayerMessage,
   type InsertPrayerMessage,
+  type PrayerSession,
+  type InsertPrayerSession,
   type SparkSubscription,
   type InsertSparkSubscription,
   type ReflectionCard,
@@ -391,6 +394,13 @@ export interface IStorage {
   // Prayer Messages (Live Intercession)
   getPrayerMessages(sparkId?: number, limit?: number): Promise<PrayerMessage[]>;
   createPrayerMessage(message: InsertPrayerMessage): Promise<PrayerMessage>;
+
+  // Leader Prayer Sessions (Live Intercession)
+  getLeaderPrayerSessions(status?: string, region?: string): Promise<PrayerSession[]>;
+  getLeaderPrayerSession(id: number): Promise<PrayerSession | undefined>;
+  createLeaderPrayerSession(session: InsertPrayerSession): Promise<PrayerSession>;
+  endLeaderPrayerSession(id: number, leaderId: string): Promise<PrayerSession>;
+  incrementLeaderPrayerSessionParticipants(id: number): Promise<void>;
 
   // Spark Subscriptions
   getSubscriptions(userId: string): Promise<SparkSubscription[]>;
@@ -950,6 +960,47 @@ export class DatabaseStorage implements IStorage {
   async createPrayerMessage(messageData: InsertPrayerMessage): Promise<PrayerMessage> {
     const [message] = await db.insert(prayerMessages).values(messageData).returning();
     return message;
+  }
+
+  // Leader Prayer Sessions (Live Intercession)
+  async getLeaderPrayerSessions(status?: string, region?: string): Promise<PrayerSession[]> {
+    const conditions = [];
+    if (status) {
+      conditions.push(eq(prayerSessions.status, status));
+    }
+    if (region) {
+      conditions.push(eq(prayerSessions.region, region));
+    }
+    if (conditions.length > 0) {
+      return db.select().from(prayerSessions)
+        .where(and(...conditions))
+        .orderBy(desc(prayerSessions.startedAt));
+    }
+    return db.select().from(prayerSessions).orderBy(desc(prayerSessions.startedAt));
+  }
+
+  async getLeaderPrayerSession(id: number): Promise<PrayerSession | undefined> {
+    const [session] = await db.select().from(prayerSessions).where(eq(prayerSessions.id, id));
+    return session;
+  }
+
+  async createLeaderPrayerSession(sessionData: InsertPrayerSession): Promise<PrayerSession> {
+    const [session] = await db.insert(prayerSessions).values(sessionData).returning();
+    return session;
+  }
+
+  async endLeaderPrayerSession(id: number, leaderId: string): Promise<PrayerSession> {
+    const [session] = await db.update(prayerSessions)
+      .set({ status: 'ended', endedAt: new Date() })
+      .where(and(eq(prayerSessions.id, id), eq(prayerSessions.leaderId, leaderId)))
+      .returning();
+    return session;
+  }
+
+  async incrementLeaderPrayerSessionParticipants(id: number): Promise<void> {
+    await db.update(prayerSessions)
+      .set({ participantCount: sql`${prayerSessions.participantCount} + 1` })
+      .where(eq(prayerSessions.id, id));
   }
 
   // Spark Subscriptions

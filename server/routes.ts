@@ -276,6 +276,104 @@ export async function registerRoutes(
     }
   });
 
+  // ===== LEADER PRAYER SESSIONS =====
+
+  // Get active prayer sessions (public)
+  app.get('/api/leader-prayer-sessions', async (req, res) => {
+    try {
+      const status = req.query.status as string || 'active';
+      const region = req.query.region as string | undefined;
+      const sessions = await storage.getLeaderPrayerSessions(status, region);
+      res.json(sessions);
+    } catch (error) {
+      console.error("Error fetching prayer sessions:", error);
+      res.status(500).json({ message: "Failed to fetch prayer sessions" });
+    }
+  });
+
+  // Get single prayer session
+  app.get('/api/leader-prayer-sessions/:id', async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const session = await storage.getLeaderPrayerSession(id);
+      if (!session) {
+        return res.status(404).json({ message: "Prayer session not found" });
+      }
+      res.json(session);
+    } catch (error) {
+      console.error("Error fetching prayer session:", error);
+      res.status(500).json({ message: "Failed to fetch prayer session" });
+    }
+  });
+
+  // Create a prayer session (leader-only)
+  app.post('/api/leader-prayer-sessions', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      // Check if user is a leader or admin
+      if (!user || (user.role !== 'leader' && user.role !== 'admin')) {
+        return res.status(403).json({ message: "Only leaders can start prayer sessions" });
+      }
+      
+      const { title, description, region, community } = req.body;
+      
+      if (!title || title.trim().length === 0) {
+        return res.status(400).json({ message: "Title is required" });
+      }
+      
+      const session = await storage.createLeaderPrayerSession({
+        title: title.trim(),
+        description: description?.trim() || null,
+        region: region || user.region || null,
+        community: community || user.community || null,
+        leaderId: userId,
+        leaderName: `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Leader',
+        status: 'active',
+      });
+      res.status(201).json(session);
+    } catch (error: any) {
+      console.error("Error creating prayer session:", error);
+      res.status(400).json({ message: error.message || "Failed to create prayer session" });
+    }
+  });
+
+  // End a prayer session (leader-only)
+  app.post('/api/leader-prayer-sessions/:id/end', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      const id = parseInt(req.params.id);
+      
+      // Check if user is a leader or admin
+      if (!user || (user.role !== 'leader' && user.role !== 'admin')) {
+        return res.status(403).json({ message: "Only leaders can end prayer sessions" });
+      }
+      
+      const session = await storage.endLeaderPrayerSession(id, userId);
+      if (!session) {
+        return res.status(404).json({ message: "Prayer session not found or you're not the leader" });
+      }
+      res.json(session);
+    } catch (error: any) {
+      console.error("Error ending prayer session:", error);
+      res.status(400).json({ message: error.message || "Failed to end prayer session" });
+    }
+  });
+
+  // Join a prayer session (increment participant count)
+  app.post('/api/leader-prayer-sessions/:id/join', isAuthenticated, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.incrementLeaderPrayerSessionParticipants(id);
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("Error joining prayer session:", error);
+      res.status(400).json({ message: error.message || "Failed to join prayer session" });
+    }
+  });
+
   // ===== REFLECTION CARDS ROUTES =====
 
   // Get published reflection cards
