@@ -305,20 +305,46 @@ export function SparksPage() {
       {/* Daily Devotional Section */}
       <div className="bg-gray-900 border-y border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
             <div>
               <h2 className="text-2xl font-bold font-display flex items-center gap-2">
                 <BookOpen className="h-6 w-6 text-primary" /> Today's Devotional
               </h2>
               <p className="text-gray-400 text-sm">Your daily dose of scripture and inspiration.</p>
             </div>
-            <button 
-              onClick={() => setShowSubscribe(true)}
-              className="hidden md:flex items-center gap-2 text-sm font-bold text-primary hover:text-white transition-colors"
-              data-testid="button-get-updates"
-            >
-              Get Daily Updates <ArrowRight className="h-4 w-4" />
-            </button>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center bg-white/5 rounded-full p-1 border border-white/10">
+                <button
+                  onClick={() => handleViewModeChange('reflection')}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                    viewMode === 'reflection'
+                      ? 'bg-white text-black'
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                  data-testid="button-mode-reflection"
+                >
+                  Reflection
+                </button>
+                <button
+                  onClick={() => handleViewModeChange('faith')}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                    viewMode === 'faith'
+                      ? 'bg-primary text-white'
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                  data-testid="button-mode-faith"
+                >
+                  Faith Overlay
+                </button>
+              </div>
+              <button 
+                onClick={() => setShowSubscribe(true)}
+                className="hidden md:flex items-center gap-2 text-sm font-bold text-primary hover:text-white transition-colors"
+                data-testid="button-get-updates"
+              >
+                Get Daily Updates <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
           </div>
 
           {todayLoading ? (
