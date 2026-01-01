@@ -64,6 +64,7 @@ import { AdminFunnels } from "@/pages/AdminFunnels";
 import { AdminMissions } from "@/pages/AdminMissions";
 import { AdminChallenges } from "@/pages/AdminChallenges";
 import { Goals } from "@/pages/Goals";
+import { SchoolsLanding, UniversitiesLanding, EarlyCareerLanding, BuildersLanding, CouplesLanding } from "@/pages/AudienceLanding";
 
 function Router() {
   return (
@@ -74,6 +75,11 @@ function Router() {
       <Route path="/blog/:slug" component={BlogPostPage} />
       <Route path="/community" component={CommunityHub} />
       <Route path="/sparks" component={SparksPage} />
+      <Route path="/dominion/schools" component={SchoolsLanding} />
+      <Route path="/dominion/universities" component={UniversitiesLanding} />
+      <Route path="/dominion/9-5-reset" component={EarlyCareerLanding} />
+      <Route path="/dominion/builders" component={BuildersLanding} />
+      <Route path="/dominion/couples" component={CouplesLanding} />
       <Route path="/mission" component={MissionPage} />
       <Route path="/journeys" component={JourneyLibrary} />
       <Route path="/journeys/:slug" component={JourneyDetail} />
