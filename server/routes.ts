@@ -1,5 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import { z } from "zod";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { getAICoachInsights, type AICoachRequest } from "./ai-service";
@@ -3172,6 +3173,154 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Error toggling habit:", error);
       res.status(500).json({ message: "Failed to toggle habit" });
+    }
+  });
+
+  // ===== AI COACHING =====
+  
+  // Simple in-memory rate limiter for AI endpoints
+  const aiRateLimiter = new Map<string, { count: number; resetTime: number }>();
+  const AI_RATE_LIMIT = 20; // messages per window
+  const AI_RATE_WINDOW = 60 * 60 * 1000; // 1 hour
+  
+  const checkAiRateLimit = (userId: string): boolean => {
+    const now = Date.now();
+    const userLimit = aiRateLimiter.get(userId);
+    
+    if (!userLimit || now > userLimit.resetTime) {
+      aiRateLimiter.set(userId, { count: 1, resetTime: now + AI_RATE_WINDOW });
+      return true;
+    }
+    
+    if (userLimit.count >= AI_RATE_LIMIT) {
+      return false;
+    }
+    
+    userLimit.count++;
+    return true;
+  };
+  
+  // Validation schemas
+  const createSessionSchema = z.object({
+    entryPoint: z.enum(['goals', 'vision', 'growth', 'general']).optional().default('general'),
+  });
+  
+  const sendMessageSchema = z.object({
+    content: z.string().min(1).max(2000),
+  });
+  
+  // Get user's coaching sessions
+  app.get('/api/ai-coach/sessions', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const sessions = await storage.getUserAiCoachSessions(userId);
+      res.json({ sessions });
+    } catch (error) {
+      console.error("Error fetching AI coach sessions:", error);
+      res.status(500).json({ message: "Failed to fetch sessions" });
+    }
+  });
+
+  // Create new coaching session
+  app.post('/api/ai-coach/sessions', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const parsed = createSessionSchema.safeParse(req.body);
+      
+      if (!parsed.success) {
+        return res.status(400).json({ message: "Invalid entry point" });
+      }
+      
+      const session = await storage.createAiCoachSession({
+        userId,
+        entryPoint: parsed.data.entryPoint,
+        lastMessageAt: new Date(),
+      });
+      
+      res.status(201).json(session);
+    } catch (error) {
+      console.error("Error creating AI coach session:", error);
+      res.status(500).json({ message: "Failed to create session" });
+    }
+  });
+
+  // Get session messages
+  app.get('/api/ai-coach/sessions/:id/messages', isAuthenticated, async (req: any, res) => {
+    try {
+      const sessionId = parseInt(req.params.id);
+      const session = await storage.getAiCoachSession(sessionId);
+      
+      if (!session || session.userId !== req.user.claims.sub) {
+        return res.status(404).json({ message: "Session not found" });
+      }
+      
+      const messages = await storage.getAiCoachMessages(sessionId);
+      res.json({ messages });
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+      res.status(500).json({ message: "Failed to fetch messages" });
+    }
+  });
+
+  // Send message and get AI response
+  app.post('/api/ai-coach/sessions/:id/messages', isAuthenticated, async (req: any, res) => {
+    try {
+      const sessionId = parseInt(req.params.id);
+      const userId = req.user.claims.sub;
+      
+      // Validate request body
+      const parsed = sendMessageSchema.safeParse(req.body);
+      if (!parsed.success) {
+        return res.status(400).json({ message: "Message must be 1-2000 characters" });
+      }
+      
+      // Check rate limit
+      if (!checkAiRateLimit(userId)) {
+        return res.status(429).json({ message: "Too many messages. Please try again later." });
+      }
+      
+      const session = await storage.getAiCoachSession(sessionId);
+      if (!session || session.userId !== userId) {
+        return res.status(404).json({ message: "Session not found" });
+      }
+      
+      // Save user message
+      const userMessage = await storage.createAiCoachMessage({
+        sessionId,
+        sender: 'user',
+        content: parsed.data.content,
+      });
+      
+      // Get conversation history (limit to last 20 messages for context)
+      const messages = await storage.getAiCoachMessages(sessionId);
+      const recentMessages = messages.slice(-20);
+      const chatHistory = recentMessages.map(m => ({
+        role: m.sender as 'user' | 'assistant',
+        content: m.content,
+      }));
+      
+      // Get AI response
+      const { getChatCompletion } = await import('./ai-coach');
+      const aiResponse = await getChatCompletion(chatHistory, {
+        userId,
+        sessionId,
+        entryPoint: session.entryPoint,
+      });
+      
+      // Save AI response
+      const assistantMessage = await storage.createAiCoachMessage({
+        sessionId,
+        sender: 'assistant',
+        content: aiResponse,
+      });
+      
+      res.json({ 
+        userMessage, 
+        assistantMessage 
+      });
+    } catch (error) {
+      console.error("Error processing AI coach message:", error);
+      res.status(500).json({ message: "Failed to process message" });
     }
   });
 

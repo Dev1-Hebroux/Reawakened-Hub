@@ -44,6 +44,8 @@ import {
   feedbackAnswers,
   feedbackSelfAssessment,
   feedbackAggregates,
+  aiCoachSessions,
+  aiCoachMessages,
   type User,
   type UpsertUser,
   type Post,
@@ -332,6 +334,10 @@ import {
   type InsertMissionTestimony,
   type ProjectFollow,
   type InsertProjectFollow,
+  type AiCoachSession,
+  type InsertAiCoachSession,
+  type AiCoachMessage,
+  type InsertAiCoachMessage,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, sql, inArray, count } from "drizzle-orm";
@@ -642,6 +648,14 @@ export interface IStorage {
     habitTitle?: string;
   }): Promise<any>;
   toggleHabitLog(habitId: number, date: string, completed: boolean): Promise<any>;
+
+  // ===== AI COACHING =====
+  createAiCoachSession(data: InsertAiCoachSession): Promise<AiCoachSession>;
+  getAiCoachSession(id: number): Promise<AiCoachSession | undefined>;
+  getUserAiCoachSessions(userId: string): Promise<AiCoachSession[]>;
+  updateAiCoachSession(id: number, data: Partial<AiCoachSession>): Promise<AiCoachSession>;
+  createAiCoachMessage(data: InsertAiCoachMessage): Promise<AiCoachMessage>;
+  getAiCoachMessages(sessionId: number): Promise<AiCoachMessage[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -2715,9 +2729,9 @@ export class DatabaseStorage implements IStorage {
       const [newSession] = await db.insert(pathwaySessions)
         .values({
           userId: data.userId,
-          title: `${new Date().getFullYear()} Goals`,
-          currentStep: 'goals',
-          isFaithMode: true,
+          seasonType: 'new_year',
+          seasonLabel: `${new Date().getFullYear()} Goals`,
+          mode: 'faith',
         })
         .returning();
       sessionId = newSession.id;
@@ -2772,6 +2786,48 @@ export class DatabaseStorage implements IStorage {
         .returning();
       return newLog;
     }
+  }
+
+  // ===== AI COACHING =====
+  
+  async createAiCoachSession(data: InsertAiCoachSession): Promise<AiCoachSession> {
+    const [session] = await db.insert(aiCoachSessions).values(data).returning();
+    return session;
+  }
+
+  async getAiCoachSession(id: number): Promise<AiCoachSession | undefined> {
+    const [session] = await db.select().from(aiCoachSessions).where(eq(aiCoachSessions.id, id));
+    return session;
+  }
+
+  async getUserAiCoachSessions(userId: string): Promise<AiCoachSession[]> {
+    return db.select()
+      .from(aiCoachSessions)
+      .where(eq(aiCoachSessions.userId, userId))
+      .orderBy(desc(aiCoachSessions.updatedAt));
+  }
+
+  async updateAiCoachSession(id: number, data: Partial<AiCoachSession>): Promise<AiCoachSession> {
+    const [session] = await db.update(aiCoachSessions)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(aiCoachSessions.id, id))
+      .returning();
+    return session;
+  }
+
+  async createAiCoachMessage(data: InsertAiCoachMessage): Promise<AiCoachMessage> {
+    const [message] = await db.insert(aiCoachMessages).values(data).returning();
+    await db.update(aiCoachSessions)
+      .set({ lastMessageAt: new Date(), updatedAt: new Date() })
+      .where(eq(aiCoachSessions.id, data.sessionId));
+    return message;
+  }
+
+  async getAiCoachMessages(sessionId: number): Promise<AiCoachMessage[]> {
+    return db.select()
+      .from(aiCoachMessages)
+      .where(eq(aiCoachMessages.sessionId, sessionId))
+      .orderBy(aiCoachMessages.createdAt);
   }
 }
 

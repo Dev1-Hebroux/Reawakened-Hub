@@ -2086,3 +2086,33 @@ export const missionTestimonies = pgTable("mission_testimonies", {
 export const insertMissionTestimonySchema = createInsertSchema(missionTestimonies).omit({ id: true, createdAt: true });
 export type InsertMissionTestimony = z.infer<typeof insertMissionTestimonySchema>;
 export type MissionTestimony = typeof missionTestimonies.$inferSelect;
+
+
+// AI Coaching Sessions
+export const aiCoachSessions = pgTable("ai_coach_sessions", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  entryPoint: varchar("entry_point").notNull(), // 'goals', 'vision', 'growth', 'general'
+  title: varchar("title"), // auto-generated or user-provided
+  lastMessageAt: timestamp("last_message_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertAiCoachSessionSchema = createInsertSchema(aiCoachSessions).omit({ id: true, createdAt: true, updatedAt: true });
+export type InsertAiCoachSession = z.infer<typeof insertAiCoachSessionSchema>;
+export type AiCoachSession = typeof aiCoachSessions.$inferSelect;
+
+// AI Coaching Messages
+export const aiCoachMessages = pgTable("ai_coach_messages", {
+  id: serial("id").primaryKey(),
+  sessionId: integer("session_id").notNull().references(() => aiCoachSessions.id, { onDelete: 'cascade' }),
+  sender: varchar("sender").notNull(), // 'user' or 'assistant'
+  content: text("content").notNull(),
+  metadata: jsonb("metadata"), // for storing context, tokens used, etc.
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertAiCoachMessageSchema = createInsertSchema(aiCoachMessages).omit({ id: true, createdAt: true });
+export type InsertAiCoachMessage = z.infer<typeof insertAiCoachMessageSchema>;
+export type AiCoachMessage = typeof aiCoachMessages.$inferSelect;

@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { AiCoachDrawer } from "@/components/AiCoachDrawer";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
 import AboutPage from "@/pages/About";
@@ -133,6 +134,7 @@ function App() {
             <Router />
             <MobileNav />
             <QuickShare />
+            <AiCoachDrawer />
           </div>
         </TooltipProvider>
       </QueryClientProvider>
