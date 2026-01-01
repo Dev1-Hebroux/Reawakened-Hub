@@ -4,7 +4,7 @@ import {
   Heart, Play, Globe, X, Send,
   Maximize2, MoreVertical, ArrowRight,
   Mail, Rss, Smartphone, BookOpen, Clock, Calendar, Loader2, Check,
-  Headphones, Download, Volume2, Pause, HandHeart, Sparkles
+  Headphones, Download, Volume2, Pause, HandHeart
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -510,17 +510,15 @@ export function SparksPage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <div className="flex items-center justify-between mb-8">
               <div>
-                <h2 className="text-2xl font-bold font-display flex items-center gap-2">
-                  <Sparkles className="h-6 w-6 text-amber-400" /> Daily Reflection
-                </h2>
+                <h2 className="text-2xl font-bold font-display">Daily Reflection</h2>
                 <p className="text-gray-400 text-sm">Pause. Reflect. Take one small step.</p>
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-amber-500/10 to-orange-500/10 rounded-3xl p-8 border border-amber-500/20 backdrop-blur-xl">
+            <div className="rounded-3xl p-8 border backdrop-blur-xl" style={{ backgroundColor: 'rgba(74, 124, 124, 0.08)', borderColor: 'rgba(124, 154, 142, 0.2)' }}>
               <div className="max-w-3xl mx-auto space-y-6">
                 <div className="text-center">
-                  <span className="inline-flex items-center gap-2 bg-amber-500/20 text-amber-400 text-xs font-bold px-3 py-1 rounded-full mb-4">
+                  <span className="inline-flex items-center gap-2 text-xs font-bold px-3 py-1 rounded-full mb-4" style={{ backgroundColor: 'rgba(124, 154, 142, 0.15)', color: '#7C9A8E' }}>
                     {todayReflection.weekTheme || "Reflection"}
                   </span>
                   <blockquote className="text-2xl md:text-3xl font-display font-bold text-white leading-relaxed" data-testid="text-reflection-quote">
@@ -529,14 +527,14 @@ export function SparksPage() {
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-6 pt-6 border-t border-white/10">
-                  <div className="bg-white/5 rounded-2xl p-6">
-                    <h4 className="text-sm font-bold text-amber-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                  <div className="rounded-2xl p-6" style={{ backgroundColor: 'rgba(250, 248, 245, 0.03)' }}>
+                    <h4 className="text-sm font-bold uppercase tracking-wider mb-3 flex items-center gap-2" style={{ color: '#4A7C7C' }}>
                       <MessageCircle className="h-4 w-4" /> Reflect
                     </h4>
                     <p className="text-white/90" data-testid="text-reflection-question">{todayReflection.question}</p>
                   </div>
-                  <div className="bg-white/5 rounded-2xl p-6">
-                    <h4 className="text-sm font-bold text-green-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                  <div className="rounded-2xl p-6" style={{ backgroundColor: 'rgba(250, 248, 245, 0.03)' }}>
+                    <h4 className="text-sm font-bold uppercase tracking-wider mb-3 flex items-center gap-2" style={{ color: '#D4A574' }}>
                       <ArrowRight className="h-4 w-4" /> Take Action
                     </h4>
                     <p className="text-white/90" data-testid="text-reflection-action">{todayReflection.action}</p>

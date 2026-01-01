@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Link } from "wouter";
-import { Compass, Target, TrendingUp, ArrowRight, Sparkles } from "lucide-react";
+import { Compass, Target, TrendingUp, ArrowRight } from "lucide-react";
 
 const tools = [
   {
@@ -47,7 +47,6 @@ export function GrowthToolsDiscovery({
         className="bg-gradient-to-br from-[#FAF8F5] to-white rounded-2xl p-5 border border-gray-100"
       >
         <div className="flex items-center gap-2 mb-4">
-          <Sparkles className="h-5 w-5 text-[#4A7C7C]" />
           <h3 className="font-bold text-gray-900">{title}</h3>
         </div>
         
@@ -90,7 +89,7 @@ export function GrowthToolsDiscovery({
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
           <div className="w-10 h-10 rounded-xl bg-[#4A7C7C]/10 flex items-center justify-center">
-            <Sparkles className="h-5 w-5 text-[#4A7C7C]" />
+            <Compass className="h-5 w-5 text-[#4A7C7C]" />
           </div>
           <div>
             <h3 className="font-bold text-gray-900">{title}</h3>
