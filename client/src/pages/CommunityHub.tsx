@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import type { Post, User } from "@shared/schema";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { GrowthToolsDiscovery } from "@/components/GrowthToolsDiscovery";
 import {
   Select,
   SelectContent,
@@ -320,6 +321,8 @@ export function CommunityHub() {
               </div>
               <Flame className="absolute -bottom-4 -right-4 h-32 w-32 text-white/10" />
             </div>
+
+            <GrowthToolsDiscovery variant="compact" title="Grow Your Faith" />
           </div>
 
           {/* Center - Main Feed (55%) */}

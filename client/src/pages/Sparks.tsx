@@ -14,6 +14,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { toast } from "sonner";
 import type { Spark, SparkSubscription } from "@shared/schema";
+import { GrowthToolsDiscovery } from "@/components/GrowthToolsDiscovery";
 
 import spark1 from "@assets/generated_images/raw_street_worship_in_brazil.png";
 import spark2 from "@assets/generated_images/testimony_of_healing_in_a_village.png";
@@ -459,6 +460,13 @@ export function SparksPage() {
             ))}
           </div>
         )}
+
+        {/* Growth Tools Discovery */}
+        <div className="mt-12 max-w-md mx-auto lg:max-w-none lg:grid lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-1">
+            <GrowthToolsDiscovery variant="full" title="Continue Your Growth" />
+          </div>
+        </div>
 
         {/* Real-time Ticker */}
         <div className="fixed bottom-8 right-8 z-40 hidden lg:block">

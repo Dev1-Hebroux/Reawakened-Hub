@@ -6,6 +6,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AiCoachDrawer } from "@/components/AiCoachDrawer";
+import { OnboardingTour, useOnboardingTour } from "@/components/OnboardingTour";
+import { useAuth } from "@/hooks/useAuth";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
 import AboutPage from "@/pages/About";
@@ -123,19 +125,37 @@ function Router() {
   );
 }
 
+function AppContent() {
+  const { user, isAuthenticated } = useAuth() as { user: any; isAuthenticated: boolean };
+  const { showTour, completeTour } = useOnboardingTour();
+
+  return (
+    <>
+      <ScrollToTop />
+      <div className="dove-background min-h-screen relative">
+        <Toaster />
+        <Router />
+        <MobileNav />
+        <QuickShare />
+        <AiCoachDrawer />
+        {isAuthenticated && (
+          <OnboardingTour 
+            isOpen={showTour} 
+            onComplete={completeTour}
+            userName={user?.firstName}
+          />
+        )}
+      </div>
+    </>
+  );
+}
+
 function App() {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
-          <ScrollToTop />
-          <div className="dove-background min-h-screen relative">
-            <Toaster />
-            <Router />
-            <MobileNav />
-            <QuickShare />
-            <AiCoachDrawer />
-          </div>
+          <AppContent />
         </TooltipProvider>
       </QueryClientProvider>
     </ErrorBoundary>

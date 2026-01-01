@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Navbar } from "@/components/layout/Navbar";
 import { Hero } from "@/components/sections/Hero";
 import { Foundations } from "@/components/sections/Foundations";
+import { GrowthToolsSection } from "@/components/sections/GrowthToolsSection";
 import { DailySparks } from "@/components/sections/DailySparks";
 import { CommunityRooms } from "@/components/sections/CommunityRooms";
 import { DiscipleshipPaths } from "@/components/sections/DiscipleshipPaths";
@@ -134,6 +135,7 @@ export default function Home() {
         </section>
         
         <Foundations />
+        <GrowthToolsSection />
         <MarqueeCTA />
         
         <section className="py-24 bg-gray-50/50 relative overflow-hidden">

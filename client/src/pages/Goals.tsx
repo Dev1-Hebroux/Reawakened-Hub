@@ -174,24 +174,137 @@ export function Goals() {
     return (
       <div className="min-h-screen bg-[#FAF8F5]">
         <Navbar />
-        <div className="max-w-md mx-auto px-4 pt-20 pb-24">
-          <div className="text-center py-12">
-            <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Target className="h-10 w-10 text-primary" />
+        <div className="max-w-lg mx-auto px-4 pt-20 pb-24">
+          {/* Hero Section */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center mb-8"
+          >
+            <div className="inline-flex items-center gap-2 bg-[#D4A574]/10 rounded-full px-4 py-2 mb-4">
+              <Calendar className="h-4 w-4 text-[#D4A574]" />
+              <span className="text-sm font-bold text-[#D4A574]">2026 Goal Setting</span>
             </div>
-            <h1 className="text-2xl font-display font-bold text-gray-900 mb-3">
+            <div className="w-20 h-20 bg-gradient-to-br from-[#D4A574] to-[#C49464] rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+              <Target className="h-10 w-10 text-white" />
+            </div>
+            <h1 className="text-3xl font-display font-bold text-gray-900 mb-3">
               Goals & Resolutions
             </h1>
-            <p className="text-gray-600 mb-6">
-              Set meaningful goals, build daily habits, and track your progress throughout the year.
+            <p className="text-gray-600 mb-2">
+              Set meaningful goals rooted in biblical wisdom. Build habits that last.
             </p>
+            <p className="text-sm italic text-[#4A7C7C]">
+              "Commit your plans to the Lord and they will succeed" — Proverbs 16:3
+            </p>
+          </motion.div>
+
+          {/* Features Preview */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="bg-white rounded-2xl p-6 mb-6 shadow-sm border border-gray-100"
+          >
+            <h3 className="font-bold text-gray-900 mb-4">What You'll Get</h3>
+            <div className="space-y-4">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#7C9A8E]/10 flex items-center justify-center flex-shrink-0">
+                  <Target className="h-5 w-5 text-[#7C9A8E]" />
+                </div>
+                <div>
+                  <p className="font-medium text-gray-900">SMART Goal Framework</p>
+                  <p className="text-sm text-gray-500">Set Specific, Measurable, Achievable goals with deadlines</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#D4A574]/10 flex items-center justify-center flex-shrink-0">
+                  <Flame className="h-5 w-5 text-[#D4A574]" />
+                </div>
+                <div>
+                  <p className="font-medium text-gray-900">Daily Habit Tracking</p>
+                  <p className="text-sm text-gray-500">Build consistency with streaks and daily check-ins</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#4A7C7C]/10 flex items-center justify-center flex-shrink-0">
+                  <Trophy className="h-5 w-5 text-[#4A7C7C]" />
+                </div>
+                <div>
+                  <p className="font-medium text-gray-900">Milestone Celebrations</p>
+                  <p className="text-sm text-gray-500">Break big dreams into achievable milestones</p>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Sample Categories */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="mb-8"
+          >
+            <h3 className="font-bold text-gray-900 mb-3 text-center">Goal Categories</h3>
+            <div className="grid grid-cols-3 gap-2">
+              {categories.map((cat) => (
+                <div 
+                  key={cat.value}
+                  className="bg-white rounded-xl p-3 text-center shadow-sm border border-gray-100"
+                >
+                  <span className="text-2xl mb-1 block">{cat.icon}</span>
+                  <p className="text-xs font-medium text-gray-700">{cat.label.split(' ')[0]}</p>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* Biblical Foundation */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="bg-[#1a2744] rounded-2xl p-6 mb-6 text-white"
+          >
+            <h3 className="font-bold mb-4 flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-[#D4A574]" />
+              Faith-Based Approach
+            </h3>
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <CheckCircle2 className="h-4 w-4 text-green-400 flex-shrink-0" />
+                <p className="text-sm text-gray-200">Goals aligned with God's purpose for your life</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <CheckCircle2 className="h-4 w-4 text-green-400 flex-shrink-0" />
+                <p className="text-sm text-gray-200">Daily habits rooted in spiritual disciplines</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <CheckCircle2 className="h-4 w-4 text-green-400 flex-shrink-0" />
+                <p className="text-sm text-gray-200">Scripture-based encouragement along the way</p>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* CTA */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="text-center"
+          >
             <Button 
               onClick={() => window.location.href = "/api/login"}
-              className="bg-primary hover:bg-primary/90"
+              className="w-full bg-[#D4A574] hover:bg-[#C49464] text-white py-6 rounded-xl shadow-lg mb-3"
+              data-testid="button-goals-signin"
             >
-              Sign In to Get Started
+              <Target className="h-5 w-5 mr-2" />
+              Start Setting Your 2026 Goals
             </Button>
-          </div>
+            <p className="text-xs text-gray-500">
+              Free to use. Your progress saves automatically.
+            </p>
+          </motion.div>
         </div>
         <MobileNav />
       </div>
