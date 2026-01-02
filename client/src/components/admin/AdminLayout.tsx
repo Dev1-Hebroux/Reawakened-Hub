@@ -42,12 +42,9 @@ const navSections: NavSection[] = [
   },
   { 
     id: "users", 
-    label: "Users & Roles", 
+    label: "Users", 
     icon: Users, 
-    items: [
-      { id: "all-users", label: "All Users", href: "/admin/users" },
-      { id: "roles", label: "Role Management", href: "/admin/users/roles" },
-    ]
+    href: "/admin/users"
   },
   { 
     id: "content", 
@@ -60,25 +57,6 @@ const navSections: NavSection[] = [
     ]
   },
   { 
-    id: "vision", 
-    label: "Vision & Goals", 
-    icon: Compass, 
-    items: [
-      { id: "pathways", label: "Pathways", href: "/admin/vision/pathways" },
-      { id: "journeys", label: "Journeys", href: "/admin/vision/journeys" },
-    ]
-  },
-  { 
-    id: "coaching", 
-    label: "Coaching", 
-    icon: GraduationCap, 
-    items: [
-      { id: "coaches", label: "Coaches", href: "/admin/coaching/coaches" },
-      { id: "sessions", label: "Sessions", href: "/admin/coaching/sessions" },
-      { id: "labs", label: "Group Labs", href: "/admin/coaching/labs" },
-    ]
-  },
-  { 
     id: "challenges", 
     label: "Challenges", 
     icon: Trophy, 
@@ -86,13 +64,15 @@ const navSections: NavSection[] = [
   },
   { 
     id: "missions", 
-    label: "Mission Trips", 
+    label: "Mission Control", 
     icon: Map, 
-    items: [
-      { id: "projects", label: "Projects", href: "/admin/missions" },
-      { id: "registrations", label: "Registrations", href: "/admin/missions/registrations" },
-      { id: "prayer", label: "Prayer Sessions", href: "/admin/missions/prayer" },
-    ]
+    href: "/admin/missions"
+  },
+  { 
+    id: "coaching", 
+    label: "Coaching", 
+    icon: GraduationCap, 
+    href: "/admin/coaching"
   },
   { 
     id: "community", 
@@ -122,7 +102,7 @@ interface AdminLayoutProps {
 
 export function AdminLayout({ children, title, subtitle, actions, breadcrumbs }: AdminLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [expandedSections, setExpandedSections] = useState<string[]>(["content", "users"]);
+  const [expandedSections, setExpandedSections] = useState<string[]>(["content", "users", "community"]);
   const [location] = useLocation();
   const { user, isAuthenticated } = useAuth() as { user: User | null; isAuthenticated: boolean };
 
@@ -315,49 +295,51 @@ export function AdminLayout({ children, title, subtitle, actions, breadcrumbs }:
       </AnimatePresence>
 
       <div className="flex-1 lg:pl-64">
-        <header className="sticky top-0 z-30 bg-white border-b border-gray-200 h-16 flex items-center px-4 lg:px-8" data-testid="admin-header">
-          <button 
-            onClick={() => setSidebarOpen(true)}
-            className="lg:hidden p-2 -ml-2 mr-2 hover:bg-gray-100 rounded-lg"
-            data-testid="button-open-sidebar"
-          >
-            <Menu className="h-5 w-5" />
-          </button>
-          
-          <div className="flex-1">
-            {breadcrumbs && breadcrumbs.length > 0 && (
-              <nav className="flex items-center gap-1 text-sm text-gray-500 mb-0.5" data-testid="admin-breadcrumbs">
-                <Link href="/admin/dashboard">
-                  <span className="hover:text-gray-700 cursor-pointer flex items-center gap-1">
-                    <Home className="h-3.5 w-3.5" />
-                    Admin
-                  </span>
-                </Link>
-                {breadcrumbs.map((crumb, idx) => (
-                  <span key={idx} className="flex items-center gap-1">
-                    <ChevronRight className="h-3.5 w-3.5" />
-                    {crumb.href ? (
-                      <Link href={crumb.href}>
-                        <span className="hover:text-gray-700 cursor-pointer">{crumb.label}</span>
-                      </Link>
-                    ) : (
-                      <span className="text-gray-700 font-medium">{crumb.label}</span>
-                    )}
-                  </span>
-                ))}
-              </nav>
-            )}
-            <h1 className="text-xl font-display font-bold text-gray-900" data-testid="text-page-title">{title}</h1>
-            {subtitle && <p className="text-sm text-gray-500" data-testid="text-page-subtitle">{subtitle}</p>}
-          </div>
+        <header className="sticky top-0 z-30 bg-white border-b border-gray-200 min-h-16 py-3 px-4 lg:px-8" data-testid="admin-header">
+          <div className="flex items-start gap-4">
+            <button 
+              onClick={() => setSidebarOpen(true)}
+              className="lg:hidden p-2 -ml-2 hover:bg-gray-100 rounded-lg shrink-0 mt-0.5"
+              data-testid="button-open-sidebar"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+            
+            <div className="flex-1 min-w-0">
+              {breadcrumbs && breadcrumbs.length > 0 && (
+                <nav className="flex items-center gap-1 text-sm text-gray-500 mb-0.5 flex-wrap" data-testid="admin-breadcrumbs">
+                  <Link href="/admin/dashboard">
+                    <span className="hover:text-gray-700 cursor-pointer flex items-center gap-1">
+                      <Home className="h-3.5 w-3.5" />
+                      Admin
+                    </span>
+                  </Link>
+                  {breadcrumbs.map((crumb, idx) => (
+                    <span key={idx} className="flex items-center gap-1">
+                      <ChevronRight className="h-3.5 w-3.5" />
+                      {crumb.href ? (
+                        <Link href={crumb.href}>
+                          <span className="hover:text-gray-700 cursor-pointer">{crumb.label}</span>
+                        </Link>
+                      ) : (
+                        <span className="text-gray-700 font-medium">{crumb.label}</span>
+                      )}
+                    </span>
+                  ))}
+                </nav>
+              )}
+              <h1 className="text-lg sm:text-xl font-display font-bold text-gray-900 truncate" data-testid="text-page-title">{title}</h1>
+              {subtitle && <p className="text-xs sm:text-sm text-gray-500 truncate" data-testid="text-page-subtitle">{subtitle}</p>}
+            </div>
 
-          <div className="flex items-center gap-2">
-            {actions}
-            <Link href="/">
-              <Button variant="outline" size="sm" className="hidden sm:flex" data-testid="button-exit-admin">
-                <LogOut className="h-4 w-4 mr-2" /> Exit Admin
-              </Button>
-            </Link>
+            <div className="flex items-center gap-2 shrink-0">
+              {actions}
+              <Link href="/">
+                <Button variant="outline" size="sm" className="hidden sm:flex" data-testid="button-exit-admin">
+                  <LogOut className="h-4 w-4 mr-2" /> Exit Admin
+                </Button>
+              </Link>
+            </div>
           </div>
         </header>
 
