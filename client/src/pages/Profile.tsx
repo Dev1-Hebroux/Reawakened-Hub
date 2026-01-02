@@ -105,7 +105,7 @@ export default function Profile() {
               className="w-full bg-[#D4A574] hover:bg-[#C49464] text-white font-bold py-6 rounded-2xl shadow-lg mb-4"
               data-testid="button-sign-in"
             >
-              Sign In with Replit
+              Sign In
             </Button>
             
             <button 

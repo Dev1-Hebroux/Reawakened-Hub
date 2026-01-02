@@ -4,6 +4,7 @@ import { z } from "zod";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated, isAdmin, isSuperAdmin } from "./replitAuth";
 import { getAICoachInsights, type AICoachRequest } from "./ai-service";
+import { sendWelcomeEmail } from "./email";
 import { insertPostSchema, insertReactionSchema, insertSparkSchema, insertSparkReactionSchema, insertSparkSubscriptionSchema, insertEventSchema, insertEventRegistrationSchema, insertBlogPostSchema, insertEmailSubscriptionSchema, insertPrayerRequestSchema, insertTestimonySchema, insertVolunteerSignupSchema, insertMissionRegistrationSchema, insertJourneySchema, insertJourneyDaySchema, insertJourneyStepSchema, insertAlphaCohortSchema, insertAlphaCohortWeekSchema, insertAlphaCohortParticipantSchema, insertMissionProfileSchema, insertMissionPlanSchema, insertMissionAdoptionSchema, insertMissionPrayerSessionSchema, insertOpportunityInterestSchema, insertDigitalActionSchema, insertProjectFollowSchema, insertChallengeEnrollmentSchema, insertMissionTestimonySchema, insertChallengeSchema } from "@shared/schema";
 
 export async function registerRoutes(
@@ -3628,14 +3629,7 @@ export async function registerRoutes(
   // Admin - List all blog posts with filters
   app.get('/api/admin/blog-posts', isAdmin, async (req: any, res) => {
     try {
-      const status = req.query.status as string | undefined;
-      
-      let allPosts = await storage.getBlogPosts();
-      
-      if (status && status !== 'all') {
-        allPosts = allPosts.filter(p => p.status === status);
-      }
-      
+      const allPosts = await storage.getBlogPosts();
       res.json(allPosts);
     } catch (error) {
       console.error("Error fetching admin blog posts:", error);
@@ -4412,11 +4406,11 @@ export async function registerRoutes(
   // Get public coaches
   app.get('/api/coaches/public', async (req, res) => {
     try {
-      const { coaches } = await storage.getCoaches({ page: 1, pageSize: 50 });
-      const activeCoaches = coaches.filter(c => c.isActive);
+      const coaches = await storage.getCoaches();
+      const activeCoaches = coaches.filter((c: any) => c.isActive);
       
       const coachesWithUsers = await Promise.all(
-        activeCoaches.map(async (coach) => {
+        activeCoaches.map(async (coach: any) => {
           const user = await storage.getUser(coach.userId);
           return {
             ...coach,
@@ -4441,8 +4435,8 @@ export async function registerRoutes(
   // Get public cohorts
   app.get('/api/cohorts/public', async (req, res) => {
     try {
-      const { cohorts } = await storage.getCoachingCohorts({ page: 1, pageSize: 50 });
-      const openCohorts = cohorts.filter(c => c.status === 'open');
+      const cohorts = await storage.getCoachingCohorts();
+      const openCohorts = cohorts.filter((c: any) => c.status === 'open');
       res.json(openCohorts);
     } catch (error) {
       console.error("Error fetching public cohorts:", error);
@@ -4626,6 +4620,41 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Error fetching recent activity:", error);
       res.json([]);
+    }
+  });
+
+  // ===== WELCOME EMAIL ROUTE =====
+  app.post('/api/send-welcome-email', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user || !user.email) {
+        return res.status(400).json({ message: "User email not found" });
+      }
+
+      const welcomeEmailSchema = z.object({
+        prayerFocus: z.string().optional(),
+        dailyCommitment: z.number().optional(),
+        motivations: z.array(z.string()).optional(),
+      });
+
+      const data = welcomeEmailSchema.parse(req.body);
+      
+      const result = await sendWelcomeEmail(
+        user.email,
+        user.firstName || "Friend",
+        data
+      );
+
+      if (result.success) {
+        res.json({ success: true, message: "Welcome email sent" });
+      } else {
+        res.status(500).json({ success: false, message: "Failed to send email" });
+      }
+    } catch (error: any) {
+      console.error("Error sending welcome email:", error);
+      res.status(500).json({ message: error.message || "Failed to send welcome email" });
     }
   });
 

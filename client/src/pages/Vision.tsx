@@ -139,7 +139,7 @@ export function VisionPage() {
                 data-testid="button-login-vision"
               >
                 <LogIn className="w-5 h-5 mr-2" />
-                Sign in with Replit
+                Sign In
               </Button>
               <p className="text-center text-sm text-[#6B7B6E]">
                 Your progress will be saved automatically

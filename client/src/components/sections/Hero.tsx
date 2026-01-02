@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Play, Globe2, X } from "lucide-react";
 import { useState } from "react";
 import { useLocation } from "wouter";
+import { useAuth } from "@/hooks/useAuth";
 import heroImage from "@assets/generated_images/young_man_praying_with_golden_light_overlay.png";
 import visionVideo from "@assets/generated_videos/holy_spirit_dove_vision_video.mp4";
 import logoImage from "@assets/1_1765584395888.png";
@@ -11,6 +12,7 @@ import heroBgImage from "@assets/11_1767182385476.png";
 export function Hero() {
   const [showVideo, setShowVideo] = useState(false);
   const [, navigate] = useLocation();
+  const { isAuthenticated } = useAuth();
 
   return (
     <section className="relative min-h-[90vh] flex items-center pt-32 md:pt-36 pb-12 overflow-hidden">
@@ -115,10 +117,10 @@ export function Hero() {
                 size="lg" 
                 className="bg-primary hover:bg-primary/90 text-white rounded-full px-8 h-14 text-base font-bold shadow-xl shadow-orange-500/20 w-full sm:w-auto hover:-translate-y-1 transition-all"
                 data-testid="button-start-mission"
-                onClick={() => navigate('/missions')}
+                onClick={() => navigate(isAuthenticated ? '/missions' : '/mission/onboarding')}
               >
                 <Globe2 className="h-5 w-5 mr-2" />
-                Start Your Mission
+                {isAuthenticated ? 'Continue Your Mission' : 'Start Your Mission'}
               </Button>
               <Button 
                 variant="outline"

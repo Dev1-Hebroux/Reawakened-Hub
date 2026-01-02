@@ -85,10 +85,10 @@ export function Navbar() {
           <div className="hidden md:flex items-center gap-3">
             <NotificationBell isDark={useDarkTheme} />
             <Button 
-              onClick={() => navigate('/mission/onboarding')}
+              onClick={() => navigate(isAuthenticated ? '/missions' : '/mission/onboarding')}
               className={`${useDarkTheme ? 'bg-white text-primary hover:bg-gray-100' : 'bg-primary text-white hover:bg-primary/90'} font-bold px-5 py-2 rounded-full shadow-lg transition-all hover:scale-105`}
             >
-              Join Now
+              {isAuthenticated ? 'My Missions' : 'Join Now'}
             </Button>
           </div>
 
@@ -128,11 +128,11 @@ export function Navbar() {
               <Link href="/about"><span className="text-gray-800 hover:text-primary hover:bg-gray-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer" data-testid="mobile-nav-about">About</span></Link>
               <div className="pt-4">
                 <Button 
-                  onClick={() => { setIsOpen(false); navigate('/mission/onboarding'); }}
+                  onClick={() => { setIsOpen(false); navigate(isAuthenticated ? '/missions' : '/mission/onboarding'); }}
                   className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-6 rounded-xl" 
                   data-testid="mobile-nav-join"
                 >
-                  Join the Movement
+                  {isAuthenticated ? 'My Missions' : 'Join the Movement'}
                 </Button>
               </div>
             </div>
