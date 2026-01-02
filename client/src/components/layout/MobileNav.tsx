@@ -14,7 +14,7 @@ export function MobileNav() {
   ];
 
   return (
-    <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 safe-area-inset-bottom">
+    <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 safe-area-inset-bottom">
       <div className="bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.1)] border-t border-gray-200 px-1 py-2 pb-[max(env(safe-area-inset-bottom),8px)]">
         <div className="flex justify-around items-center max-w-md mx-auto">
           {navItems.map((item: any) => {
