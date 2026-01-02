@@ -3,7 +3,8 @@ import {
   Heart, MessageCircle, Share2, MapPin, 
   Video, Image as ImageIcon, Send, Globe,
   Users, Flame, Bell, Search, MoreHorizontal,
-  Phone, Video as VideoIcon, Mic, CheckCircle2, Loader2, X, ChevronLeft, ChevronRight
+  Phone, Video as VideoIcon, Mic, CheckCircle2, Loader2, X, ChevronLeft, ChevronRight,
+  Target
 } from "lucide-react";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -571,6 +572,26 @@ export function CommunityHub() {
                   </div>
                 ))}
               </div>
+            </div>
+
+            {/* Vision & Goals Card */}
+            <div 
+              onClick={() => navigate("/goals")}
+              className="bg-gradient-to-br from-[#7C9A8E] to-[#4A7C7C] rounded-[30px] p-6 text-white shadow-lg cursor-pointer hover:shadow-xl transition-all relative overflow-hidden group"
+              data-testid="card-vision-goals"
+            >
+              <div className="relative z-10">
+                <div className="flex items-center gap-2 mb-2">
+                  <Target className="h-5 w-5" />
+                  <span className="text-xs font-medium text-white/80">Growth Tool</span>
+                </div>
+                <h3 className="font-bold text-xl mb-2">Vision & Goals</h3>
+                <p className="text-white/80 text-sm mb-4">Discover your purpose, set meaningful goals, and track your progress.</p>
+                <button className="bg-white text-[#4A7C7C] px-4 py-2 rounded-full text-sm font-bold w-full group-hover:bg-white/90 transition-colors">
+                  Start Your Journey
+                </button>
+              </div>
+              <Target className="absolute -bottom-4 -right-4 h-32 w-32 text-white/10" />
             </div>
 
             {/* Quick Chat */}
