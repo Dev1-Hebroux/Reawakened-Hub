@@ -328,3 +328,83 @@ export async function sendAltarJoinConfirmation(to: string, name: string, data: 
     return { success: false, error };
   }
 }
+
+export async function sendPrayerRequestNotification(data: {
+  name: string;
+  email?: string;
+  request: string;
+  isPrivate: boolean;
+}) {
+  const prayerTeamEmail = process.env.PRAYER_TEAM_EMAIL || 'prayer@reawakened.one';
+  
+  const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>New Prayer Request</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #FAF8F5;">
+  <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+    <div style="background: linear-gradient(135deg, #D4A574 0%, #C49464 100%); border-radius: 24px; padding: 40px; text-align: center; margin-bottom: 24px;">
+      <div style="font-size: 48px; margin-bottom: 16px;">🙏</div>
+      <h1 style="color: #ffffff; font-size: 28px; margin: 0 0 12px 0; font-weight: 700;">
+        New Prayer Request
+      </h1>
+      <p style="color: rgba(255,255,255,0.9); font-size: 16px; margin: 0;">
+        Someone needs your intercession
+      </p>
+    </div>
+
+    <div style="background: #ffffff; border-radius: 16px; padding: 32px; margin-bottom: 24px; border: 1px solid #E8E4DE;">
+      <div style="margin-bottom: 20px;">
+        <p style="color: #6B7B6E; font-size: 13px; margin: 0 0 4px 0; text-transform: uppercase; letter-spacing: 0.5px;">From</p>
+        <p style="color: #1a2744; font-size: 18px; font-weight: 600; margin: 0;">${data.name}</p>
+        ${data.email ? `<p style="color: #6B7B6E; font-size: 14px; margin: 4px 0 0 0;">${data.email}</p>` : ''}
+      </div>
+      
+      <div style="margin-bottom: 20px;">
+        <p style="color: #6B7B6E; font-size: 13px; margin: 0 0 4px 0; text-transform: uppercase; letter-spacing: 0.5px;">Visibility</p>
+        <span style="display: inline-block; background: ${data.isPrivate ? '#FEF3C7' : '#D1FAE5'}; color: ${data.isPrivate ? '#92400E' : '#065F46'}; padding: 4px 12px; border-radius: 12px; font-size: 13px; font-weight: 500;">
+          ${data.isPrivate ? '🔒 Private (prayer team only)' : '🌍 Public'}
+        </span>
+      </div>
+      
+      <div style="background: #FAF8F5; border-radius: 12px; padding: 20px; border-left: 4px solid #D4A574;">
+        <p style="color: #6B7B6E; font-size: 13px; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 0.5px;">Prayer Request</p>
+        <p style="color: #1a2744; font-size: 15px; line-height: 1.6; margin: 0; white-space: pre-wrap;">${data.request}</p>
+      </div>
+    </div>
+
+    <div style="text-align: center; margin-bottom: 24px;">
+      <a href="https://reawakened.one/admin/prayer" style="display: inline-block; background: linear-gradient(135deg, #4A7C7C 0%, #3A6C6C 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 12px; font-weight: 600; font-size: 16px;">
+        View in Prayer Dashboard
+      </a>
+    </div>
+
+    <div style="text-align: center; padding: 20px; border-top: 1px solid #E8E4DE;">
+      <p style="color: #6B7B6E; font-size: 13px; margin: 0;">
+        "The prayer of a righteous person is powerful and effective." — James 5:16
+      </p>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+
+  try {
+    const result = await resend.emails.send({
+      from: 'Reawakened Prayer <prayer@reawakened.one>',
+      to: [prayerTeamEmail],
+      subject: `🙏 New Prayer Request from ${data.name}`,
+      html: htmlContent,
+    });
+
+    console.log('Prayer request notification sent successfully:', result);
+    return { success: true, data: result };
+  } catch (error) {
+    console.error('Failed to send prayer request notification:', error);
+    return { success: false, error };
+  }
+}

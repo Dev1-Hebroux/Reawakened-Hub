@@ -457,8 +457,8 @@ export function MissionPage() {
                       <Users className="h-6 w-6 text-purple-600" />
                     </div>
                     <div>
-                      <div className="font-bold text-gray-900">10,000+ Members</div>
-                      <div className="text-sm text-gray-500">Active community</div>
+                      <div className="font-bold text-gray-900">Global Members</div>
+                      <div className="text-sm text-gray-500">Active community worldwide</div>
                     </div>
                   </div>
                   <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl">
@@ -466,8 +466,8 @@ export function MissionPage() {
                       <Globe className="h-6 w-6 text-blue-600" />
                     </div>
                     <div>
-                      <div className="font-bold text-gray-900">45+ Nations</div>
-                      <div className="text-sm text-gray-500">Global presence</div>
+                      <div className="font-bold text-gray-900">Targeting 50+ Nations</div>
+                      <div className="text-sm text-gray-500">Global mission reach</div>
                     </div>
                   </div>
                   <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl">

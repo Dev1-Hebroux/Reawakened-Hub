@@ -338,6 +338,9 @@ export const prayerRequests = pgTable("prayer_requests", {
   email: varchar("email"),
   request: text("request").notNull(),
   isPrivate: varchar("is_private").default("false"),
+  status: varchar("status").default("pending"), // pending, praying, answered, archived
+  prayerNote: text("prayer_note"),
+  answeredAt: timestamp("answered_at"),
   userId: varchar("user_id").references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
 });

@@ -4,7 +4,7 @@ import { z } from "zod";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated, isAdmin, isSuperAdmin } from "./replitAuth";
 import { getAICoachInsights, type AICoachRequest } from "./ai-service";
-import { sendWelcomeEmail } from "./email";
+import { sendWelcomeEmail, sendPrayerRequestNotification } from "./email";
 import { insertPostSchema, insertReactionSchema, insertSparkSchema, insertSparkReactionSchema, insertSparkSubscriptionSchema, insertEventSchema, insertEventRegistrationSchema, insertBlogPostSchema, insertEmailSubscriptionSchema, insertPrayerRequestSchema, insertTestimonySchema, insertVolunteerSignupSchema, insertMissionRegistrationSchema, insertJourneySchema, insertJourneyDaySchema, insertJourneyStepSchema, insertAlphaCohortSchema, insertAlphaCohortWeekSchema, insertAlphaCohortParticipantSchema, insertMissionProfileSchema, insertMissionPlanSchema, insertMissionAdoptionSchema, insertMissionPrayerSessionSchema, insertOpportunityInterestSchema, insertDigitalActionSchema, insertProjectFollowSchema, insertChallengeEnrollmentSchema, insertMissionTestimonySchema, insertChallengeSchema, insertUserSettingsSchema, insertCommentSchema, insertNotificationPreferencesSchema } from "@shared/schema";
 
 export async function registerRoutes(
@@ -718,6 +718,15 @@ export async function registerRoutes(
     try {
       const requestData = insertPrayerRequestSchema.parse(req.body);
       const request = await storage.createPrayerRequest(requestData);
+      
+      // Send email notification to prayer team
+      sendPrayerRequestNotification({
+        name: requestData.name,
+        email: requestData.email || undefined,
+        request: requestData.request,
+        isPrivate: Boolean(requestData.isPrivate),
+      }).catch(err => console.error("Failed to send prayer notification email:", err));
+      
       res.status(201).json(request);
     } catch (error: any) {
       console.error("Error creating prayer request:", error);
@@ -3626,6 +3635,50 @@ export async function registerRoutes(
     }
   });
 
+  // ===== ADMIN PRAYER ROUTES =====
+  
+  // Admin - Get all prayer requests (including private)
+  app.get('/api/admin/prayer-requests', isAdmin, async (req: any, res) => {
+    try {
+      const status = req.query.status as string | undefined;
+      const requests = await storage.getAllPrayerRequests(status);
+      res.json(requests);
+    } catch (error) {
+      console.error("Error fetching admin prayer requests:", error);
+      res.status(500).json({ message: "Failed to fetch prayer requests" });
+    }
+  });
+
+  // Admin - Update prayer request status
+  app.patch('/api/admin/prayer-requests/:id', isAdmin, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { status, prayerNote } = req.body;
+      const updates: any = {};
+      if (status) updates.status = status;
+      if (prayerNote !== undefined) updates.prayerNote = prayerNote;
+      if (status === 'answered') updates.answeredAt = new Date();
+      
+      const request = await storage.updatePrayerRequest(id, updates);
+      res.json(request);
+    } catch (error: any) {
+      console.error("Error updating prayer request:", error);
+      res.status(400).json({ message: error.message || "Failed to update prayer request" });
+    }
+  });
+
+  // Admin - Delete prayer request
+  app.delete('/api/admin/prayer-requests/:id', isAdmin, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.updatePrayerRequest(id, { status: 'archived' });
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error archiving prayer request:", error);
+      res.status(500).json({ message: "Failed to archive prayer request" });
+    }
+  });
+
   // Admin - List all blog posts with filters
   app.get('/api/admin/blog-posts', isAdmin, async (req: any, res) => {
     try {
@@ -4694,9 +4747,9 @@ export async function registerRoutes(
         eventReminders: true,
         weeklyDigest: true,
       };
-      const merged = { ...defaults, ...existing, ...req.body, userId };
-      const prefsData = insertNotificationPreferencesSchema.parse(merged);
-      const prefs = await storage.upsertNotificationPreferences(prefsData);
+      const merged = { ...defaults, ...existing, ...req.body };
+      const prefsData = insertNotificationPreferencesSchema.omit({ userId: true }).parse(merged);
+      const prefs = await storage.upsertNotificationPreferences(userId, prefsData);
       res.json(prefs);
     } catch (error: any) {
       console.error("Error updating notification preferences:", error);

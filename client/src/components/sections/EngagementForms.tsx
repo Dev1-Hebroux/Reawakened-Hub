@@ -63,7 +63,7 @@ export function PrayerRequestModal({ open, onOpenChange }: FormModalProps) {
             <DialogTitle className="text-xl">Submit a Prayer Request</DialogTitle>
           </div>
           <DialogDescription>
-            Share your need and let our community stand with you in prayer.
+            Share your need and let our community stand with you in prayer. Your request will be sent to our dedicated prayer team who will intercede for you daily.
           </DialogDescription>
         </DialogHeader>
 

@@ -502,6 +502,8 @@ export interface IStorage {
   // Prayer Requests
   createPrayerRequest(request: InsertPrayerRequest): Promise<PrayerRequest>;
   getPrayerRequests(): Promise<PrayerRequest[]>;
+  getAllPrayerRequests(status?: string): Promise<PrayerRequest[]>;
+  updatePrayerRequest(id: number, updates: Partial<PrayerRequest>): Promise<PrayerRequest>;
 
   // Testimonies
   createTestimony(testimony: InsertTestimony): Promise<Testimony>;
@@ -1338,6 +1340,18 @@ export class DatabaseStorage implements IStorage {
 
   async getPrayerRequests(): Promise<PrayerRequest[]> {
     return db.select().from(prayerRequests).where(eq(prayerRequests.isPrivate, "false")).orderBy(desc(prayerRequests.createdAt));
+  }
+
+  async getAllPrayerRequests(status?: string): Promise<PrayerRequest[]> {
+    if (status) {
+      return db.select().from(prayerRequests).where(eq(prayerRequests.status, status)).orderBy(desc(prayerRequests.createdAt));
+    }
+    return db.select().from(prayerRequests).orderBy(desc(prayerRequests.createdAt));
+  }
+
+  async updatePrayerRequest(id: number, updates: Partial<PrayerRequest>): Promise<PrayerRequest> {
+    const [request] = await db.update(prayerRequests).set(updates).where(eq(prayerRequests.id, id)).returning();
+    return request;
   }
 
   // Testimonies

@@ -63,6 +63,7 @@ import { AdminSparks } from "@/pages/AdminSparks";
 import { AdminBlog } from "@/pages/AdminBlog";
 import { AdminUsers as AdminUsersLegacy } from "@/pages/AdminUsers";
 import { AdminModeration } from "@/pages/AdminModeration";
+import { AdminPrayer } from "@/pages/AdminPrayer";
 import { AdminFunnels } from "@/pages/AdminFunnels";
 import { AdminMissions } from "@/pages/AdminMissions";
 import { AdminChallenges as AdminChallengesLegacy } from "@/pages/AdminChallenges";
@@ -151,6 +152,7 @@ function Router() {
       <Route path="/admin/users" component={NewAdminUsers} />
       <Route path="/admin/users/legacy" component={AdminUsersLegacy} />
       <Route path="/admin/moderation" component={AdminModeration} />
+      <Route path="/admin/prayer" component={AdminPrayer} />
       <Route path="/admin/funnels" component={AdminFunnels} />
       <Route path="/admin/missions" component={AdminMissions} />
       <Route path="/admin/challenges" component={AdminChallenges} />
