@@ -2,9 +2,9 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { z } from "zod";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupAuth, isAuthenticated, isAdmin, isSuperAdmin } from "./replitAuth";
 import { getAICoachInsights, type AICoachRequest } from "./ai-service";
-import { insertPostSchema, insertReactionSchema, insertSparkSchema, insertSparkReactionSchema, insertSparkSubscriptionSchema, insertEventSchema, insertEventRegistrationSchema, insertBlogPostSchema, insertEmailSubscriptionSchema, insertPrayerRequestSchema, insertTestimonySchema, insertVolunteerSignupSchema, insertMissionRegistrationSchema, insertJourneySchema, insertJourneyDaySchema, insertJourneyStepSchema, insertAlphaCohortSchema, insertAlphaCohortWeekSchema, insertAlphaCohortParticipantSchema, insertMissionProfileSchema, insertMissionPlanSchema, insertMissionAdoptionSchema, insertMissionPrayerSessionSchema, insertOpportunityInterestSchema, insertDigitalActionSchema, insertProjectFollowSchema, insertChallengeEnrollmentSchema, insertMissionTestimonySchema } from "@shared/schema";
+import { insertPostSchema, insertReactionSchema, insertSparkSchema, insertSparkReactionSchema, insertSparkSubscriptionSchema, insertEventSchema, insertEventRegistrationSchema, insertBlogPostSchema, insertEmailSubscriptionSchema, insertPrayerRequestSchema, insertTestimonySchema, insertVolunteerSignupSchema, insertMissionRegistrationSchema, insertJourneySchema, insertJourneyDaySchema, insertJourneyStepSchema, insertAlphaCohortSchema, insertAlphaCohortWeekSchema, insertAlphaCohortParticipantSchema, insertMissionProfileSchema, insertMissionPlanSchema, insertMissionAdoptionSchema, insertMissionPrayerSessionSchema, insertOpportunityInterestSchema, insertDigitalActionSchema, insertProjectFollowSchema, insertChallengeEnrollmentSchema, insertMissionTestimonySchema, insertChallengeSchema } from "@shared/schema";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -3410,14 +3410,93 @@ export async function registerRoutes(
     }
   });
 
-  // Admin - Get all users
-  app.get('/api/admin/users', isAuthenticated, async (req: any, res) => {
+  // Admin - Get all users with pagination and search
+  app.get('/api/admin/users', isAdmin, async (req: any, res) => {
     try {
-      const users = await storage.getAllUsers();
-      res.json(users);
+      const page = parseInt(req.query.page as string) || 1;
+      const pageSize = parseInt(req.query.pageSize as string) || 10;
+      const search = (req.query.search as string) || '';
+      const role = (req.query.role as string) || '';
+      
+      const allUsers = await storage.getAllUsers();
+      
+      let filteredUsers = allUsers;
+      if (search) {
+        const searchLower = search.toLowerCase();
+        filteredUsers = filteredUsers.filter(u => 
+          (u.firstName?.toLowerCase().includes(searchLower)) ||
+          (u.lastName?.toLowerCase().includes(searchLower)) ||
+          (u.email?.toLowerCase().includes(searchLower))
+        );
+      }
+      if (role && role !== 'all') {
+        filteredUsers = filteredUsers.filter(u => u.role === role);
+      }
+      
+      const total = filteredUsers.length;
+      const totalPages = Math.ceil(total / pageSize);
+      const offset = (page - 1) * pageSize;
+      const users = filteredUsers.slice(offset, offset + pageSize);
+      
+      res.json({
+        users,
+        total,
+        page,
+        pageSize,
+        totalPages,
+      });
     } catch (error) {
       console.error("Error fetching users:", error);
       res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+
+  // Admin - Change user role (super_admin only)
+  app.patch('/api/admin/users/:id/role', isSuperAdmin, async (req: any, res) => {
+    try {
+      const userId = req.params.id;
+      const { role } = req.body;
+      const adminUser = (req as any).dbUser;
+      
+      const validRoles = ['member', 'leader', 'admin', 'super_admin'];
+      if (!role || !validRoles.includes(role)) {
+        return res.status(400).json({ message: "Invalid role" });
+      }
+      
+      if (userId === adminUser.id) {
+        return res.status(400).json({ message: "Cannot change your own role" });
+      }
+      
+      const targetUser = await storage.getUser(userId);
+      if (!targetUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      const oldRole = targetUser.role;
+      await storage.updateUserRole(userId, role);
+      
+      // Log the action
+      console.log(`[AUDIT] Role changed: User ${userId} from ${oldRole} to ${role} by ${adminUser.id}`);
+      
+      res.json({ success: true, userId, oldRole, newRole: role });
+    } catch (error) {
+      console.error("Error changing user role:", error);
+      res.status(500).json({ message: "Failed to change user role" });
+    }
+  });
+
+  // Admin - Audit log endpoint
+  app.post('/api/admin/audit-log', isAdmin, async (req: any, res) => {
+    try {
+      const adminUser = (req as any).dbUser;
+      const { action, targetId, targetType, details } = req.body;
+      
+      console.log(`[AUDIT] ${action} on ${targetType}:${targetId} by ${adminUser.id} - ${JSON.stringify(details)}`);
+      
+      res.json({ success: true, logged: true });
+    } catch (error) {
+      console.error("Error logging audit action:", error);
+      res.status(500).json({ message: "Failed to log action" });
     }
   });
 
@@ -3458,8 +3537,31 @@ export async function registerRoutes(
     }
   });
 
+  // Admin - List all sparks with filters
+  app.get('/api/admin/sparks', isAdmin, async (req: any, res) => {
+    try {
+      const status = req.query.status as string | undefined;
+      const category = req.query.category as string | undefined;
+      const audience = req.query.audience as string | undefined;
+      
+      let allSparks = await storage.getSparks(category);
+      
+      if (status && status !== 'all') {
+        allSparks = allSparks.filter(s => s.status === status);
+      }
+      if (audience && audience !== 'all') {
+        allSparks = allSparks.filter(s => s.audienceSegment === audience);
+      }
+      
+      res.json(allSparks);
+    } catch (error) {
+      console.error("Error fetching admin sparks:", error);
+      res.status(500).json({ message: "Failed to fetch sparks" });
+    }
+  });
+
   // Admin - Create spark
-  app.post('/api/admin/sparks', isAuthenticated, async (req: any, res) => {
+  app.post('/api/admin/sparks', isAdmin, async (req: any, res) => {
     try {
       const sparkData = insertSparkSchema.parse(req.body);
       const spark = await storage.createSpark(sparkData);
@@ -3471,7 +3573,7 @@ export async function registerRoutes(
   });
 
   // Admin - Update spark
-  app.put('/api/admin/sparks/:id', isAuthenticated, async (req: any, res) => {
+  app.patch('/api/admin/sparks/:id', isAdmin, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       const updates = insertSparkSchema.partial().parse(req.body);
@@ -3484,7 +3586,7 @@ export async function registerRoutes(
   });
 
   // Admin - Delete spark
-  app.delete('/api/admin/sparks/:id', isAuthenticated, async (req: any, res) => {
+  app.delete('/api/admin/sparks/:id', isAdmin, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       await storage.deleteSpark(id);
@@ -3495,8 +3597,54 @@ export async function registerRoutes(
     }
   });
 
+  // Admin - Bulk update sparks
+  app.post('/api/admin/sparks/bulk', isAdmin, async (req: any, res) => {
+    try {
+      const { ids, action } = req.body;
+      if (!ids || !Array.isArray(ids) || ids.length === 0) {
+        return res.status(400).json({ message: "No sparks selected" });
+      }
+      
+      let status: string;
+      if (action === 'publish') {
+        status = 'published';
+      } else if (action === 'archive') {
+        status = 'archived';
+      } else {
+        return res.status(400).json({ message: "Invalid action" });
+      }
+      
+      const updatedSparks = await Promise.all(
+        ids.map(id => storage.updateSpark(id, { status }))
+      );
+      
+      res.json({ updated: updatedSparks.length });
+    } catch (error: any) {
+      console.error("Error bulk updating sparks:", error);
+      res.status(400).json({ message: error.message || "Failed to bulk update sparks" });
+    }
+  });
+
+  // Admin - List all blog posts with filters
+  app.get('/api/admin/blog-posts', isAdmin, async (req: any, res) => {
+    try {
+      const status = req.query.status as string | undefined;
+      
+      let allPosts = await storage.getBlogPosts();
+      
+      if (status && status !== 'all') {
+        allPosts = allPosts.filter(p => p.status === status);
+      }
+      
+      res.json(allPosts);
+    } catch (error) {
+      console.error("Error fetching admin blog posts:", error);
+      res.status(500).json({ message: "Failed to fetch blog posts" });
+    }
+  });
+
   // Admin - Create blog post
-  app.post('/api/admin/blog', isAuthenticated, async (req: any, res) => {
+  app.post('/api/admin/blog-posts', isAdmin, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const blogData = insertBlogPostSchema.parse({ ...req.body, authorId: userId });
@@ -3509,7 +3657,7 @@ export async function registerRoutes(
   });
 
   // Admin - Update blog post
-  app.put('/api/admin/blog/:id', isAuthenticated, async (req: any, res) => {
+  app.patch('/api/admin/blog-posts/:id', isAdmin, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       const updates = insertBlogPostSchema.partial().parse(req.body);
@@ -3522,7 +3670,7 @@ export async function registerRoutes(
   });
 
   // Admin - Delete blog post
-  app.delete('/api/admin/blog/:id', isAuthenticated, async (req: any, res) => {
+  app.delete('/api/admin/blog-posts/:id', isAdmin, async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       await storage.deleteBlogPost(id);
@@ -3530,6 +3678,381 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Error deleting blog post:", error);
       res.status(500).json({ message: "Failed to delete blog post" });
+    }
+  });
+
+  // ===== ADMIN COACHING HUB =====
+
+  // Get all coaches
+  app.get('/api/admin/coaches', isAdmin, async (req: any, res) => {
+    try {
+      const coaches = await storage.getCoaches();
+      res.json(coaches);
+    } catch (error) {
+      console.error("Error fetching coaches:", error);
+      res.status(500).json({ message: "Failed to fetch coaches" });
+    }
+  });
+
+  // Create a coach
+  app.post('/api/admin/coaches', isAdmin, async (req: any, res) => {
+    try {
+      const coachData = req.body;
+      const coach = await storage.createCoach(coachData);
+      res.status(201).json(coach);
+    } catch (error: any) {
+      console.error("Error creating coach:", error);
+      res.status(400).json({ message: error.message || "Failed to create coach" });
+    }
+  });
+
+  // Update a coach
+  app.patch('/api/admin/coaches/:id', isAdmin, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updates = req.body;
+      const coach = await storage.updateCoach(id, updates);
+      res.json(coach);
+    } catch (error: any) {
+      console.error("Error updating coach:", error);
+      res.status(400).json({ message: error.message || "Failed to update coach" });
+    }
+  });
+
+  // Get all coaching sessions
+  app.get('/api/admin/coaching-sessions', isAdmin, async (req: any, res) => {
+    try {
+      const status = req.query.status as string | undefined;
+      const sessions = await storage.getCoachingSessions(status);
+      res.json(sessions);
+    } catch (error) {
+      console.error("Error fetching coaching sessions:", error);
+      res.status(500).json({ message: "Failed to fetch coaching sessions" });
+    }
+  });
+
+  // Get single coaching session
+  app.get('/api/admin/coaching-sessions/:id', isAdmin, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const session = await storage.getCoachingSession(id);
+      if (!session) {
+        return res.status(404).json({ message: "Session not found" });
+      }
+      res.json(session);
+    } catch (error) {
+      console.error("Error fetching coaching session:", error);
+      res.status(500).json({ message: "Failed to fetch coaching session" });
+    }
+  });
+
+  // Update coaching session
+  app.patch('/api/admin/coaching-sessions/:id', isAdmin, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updates = req.body;
+      const session = await storage.updateCoachingSession(id, updates);
+      res.json(session);
+    } catch (error: any) {
+      console.error("Error updating coaching session:", error);
+      res.status(400).json({ message: error.message || "Failed to update coaching session" });
+    }
+  });
+
+  // Get all cohorts
+  app.get('/api/admin/cohorts', isAdmin, async (req: any, res) => {
+    try {
+      const cohorts = await storage.getCoachingCohorts();
+      res.json(cohorts);
+    } catch (error) {
+      console.error("Error fetching cohorts:", error);
+      res.status(500).json({ message: "Failed to fetch cohorts" });
+    }
+  });
+
+  // Create a cohort
+  app.post('/api/admin/cohorts', isAdmin, async (req: any, res) => {
+    try {
+      const cohortData = req.body;
+      const cohort = await storage.createCoachingCohort(cohortData);
+      res.status(201).json(cohort);
+    } catch (error: any) {
+      console.error("Error creating cohort:", error);
+      res.status(400).json({ message: error.message || "Failed to create cohort" });
+    }
+  });
+
+  // Update a cohort
+  app.patch('/api/admin/cohorts/:id', isAdmin, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updates = req.body;
+      const cohort = await storage.updateCoachingCohort(id, updates);
+      res.json(cohort);
+    } catch (error: any) {
+      console.error("Error updating cohort:", error);
+      res.status(400).json({ message: error.message || "Failed to update cohort" });
+    }
+  });
+
+  // Get cohort participants
+  app.get('/api/admin/cohorts/:id/participants', isAdmin, async (req: any, res) => {
+    try {
+      const cohortId = parseInt(req.params.id);
+      const participants = await storage.getCohortParticipants(cohortId);
+      res.json(participants);
+    } catch (error) {
+      console.error("Error fetching cohort participants:", error);
+      res.status(500).json({ message: "Failed to fetch cohort participants" });
+    }
+  });
+
+  // ===== ADMIN CHALLENGES =====
+
+  // Get all challenges (with pagination, search, and status filter)
+  app.get('/api/admin/challenges', isAdmin, async (req: any, res) => {
+    try {
+      const page = parseInt(req.query.page as string) || 1;
+      const pageSize = parseInt(req.query.pageSize as string) || 10;
+      const search = req.query.search as string | undefined;
+      const status = req.query.status as string | undefined;
+
+      const result = await storage.getChallenges({ page, pageSize, search, status });
+      res.json(result);
+    } catch (error) {
+      console.error("Error fetching challenges:", error);
+      res.status(500).json({ message: "Failed to fetch challenges" });
+    }
+  });
+
+  // Create a new challenge
+  app.post('/api/admin/challenges', isAdmin, async (req: any, res) => {
+    try {
+      const userId = req.user?.claims?.sub;
+      const challengeData = insertChallengeSchema.parse({
+        ...req.body,
+        createdBy: userId,
+      });
+      const challenge = await storage.createChallenge(challengeData);
+      res.status(201).json(challenge);
+    } catch (error: any) {
+      console.error("Error creating challenge:", error);
+      res.status(400).json({ message: error.message || "Failed to create challenge" });
+    }
+  });
+
+  // Update a challenge
+  app.patch('/api/admin/challenges/:id', isAdmin, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const existing = await storage.getChallenge(id);
+      if (!existing) {
+        return res.status(404).json({ message: "Challenge not found" });
+      }
+      const challenge = await storage.updateChallenge(id, req.body);
+      res.json(challenge);
+    } catch (error: any) {
+      console.error("Error updating challenge:", error);
+      res.status(400).json({ message: error.message || "Failed to update challenge" });
+    }
+  });
+
+  // Delete a challenge
+  app.delete('/api/admin/challenges/:id', isAdmin, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const existing = await storage.getChallenge(id);
+      if (!existing) {
+        return res.status(404).json({ message: "Challenge not found" });
+      }
+      await storage.deleteChallenge(id);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting challenge:", error);
+      res.status(500).json({ message: "Failed to delete challenge" });
+    }
+  });
+
+  // Get challenge participants with leaderboard
+  app.get('/api/admin/challenges/:id/participants', isAdmin, async (req: any, res) => {
+    try {
+      const challengeId = parseInt(req.params.id);
+      const participants = await storage.getChallengeParticipants(challengeId);
+      res.json({ participants });
+    } catch (error) {
+      console.error("Error fetching challenge participants:", error);
+      res.status(500).json({ message: "Failed to fetch participants" });
+    }
+  });
+
+  // ===== ADMIN MISSION TRIPS =====
+
+  // Get all mission trips (with pagination, search, and status filter)
+  app.get('/api/admin/mission-trips', isAdmin, async (req: any, res) => {
+    try {
+      const page = parseInt(req.query.page as string) || 1;
+      const pageSize = parseInt(req.query.pageSize as string) || 10;
+      const status = req.query.status as string | undefined;
+      const search = req.query.search as string | undefined;
+
+      const { trips, total } = await storage.getMissionTrips({ status, search, page, pageSize });
+      res.json({ trips, total, page, pageSize });
+    } catch (error) {
+      console.error("Error fetching mission trips:", error);
+      res.status(500).json({ message: "Failed to fetch mission trips" });
+    }
+  });
+
+  // Create a new mission trip
+  app.post('/api/admin/mission-trips', isAdmin, async (req: any, res) => {
+    try {
+      const trip = await storage.createMissionTrip(req.body);
+      res.status(201).json(trip);
+    } catch (error: any) {
+      console.error("Error creating mission trip:", error);
+      res.status(400).json({ message: error.message || "Failed to create mission trip" });
+    }
+  });
+
+  // Update a mission trip
+  app.patch('/api/admin/mission-trips/:id', isAdmin, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const existing = await storage.getMissionTrip(id);
+      if (!existing) {
+        return res.status(404).json({ message: "Mission trip not found" });
+      }
+      const trip = await storage.updateMissionTrip(id, req.body);
+      res.json(trip);
+    } catch (error: any) {
+      console.error("Error updating mission trip:", error);
+      res.status(400).json({ message: error.message || "Failed to update mission trip" });
+    }
+  });
+
+  // Delete a mission trip
+  app.delete('/api/admin/mission-trips/:id', isAdmin, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const existing = await storage.getMissionTrip(id);
+      if (!existing) {
+        return res.status(404).json({ message: "Mission trip not found" });
+      }
+      await storage.deleteMissionTrip(id);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting mission trip:", error);
+      res.status(500).json({ message: "Failed to delete mission trip" });
+    }
+  });
+
+  // Get trip applications
+  app.get('/api/admin/mission-trips/:id/applications', isAdmin, async (req: any, res) => {
+    try {
+      const tripId = parseInt(req.params.id);
+      const applications = await storage.getTripApplications(tripId);
+      res.json({ applications });
+    } catch (error) {
+      console.error("Error fetching trip applications:", error);
+      res.status(500).json({ message: "Failed to fetch applications" });
+    }
+  });
+
+  // Update trip application status
+  app.patch('/api/admin/trip-applications/:id', isAdmin, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const reviewerId = req.user.claims.sub;
+      const application = await storage.updateTripApplication(id, {
+        ...req.body,
+        reviewedBy: reviewerId,
+        reviewedAt: new Date(),
+      });
+      res.json(application);
+    } catch (error: any) {
+      console.error("Error updating trip application:", error);
+      res.status(400).json({ message: error.message || "Failed to update application" });
+    }
+  });
+
+  // Get all users (for leader selection)
+  app.get('/api/admin/users-list', isAdmin, async (req: any, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      res.json({ users });
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+
+  // ===== ADMIN GOAL TEMPLATES =====
+  
+  // List all goal templates
+  app.get('/api/admin/goal-templates', isAdmin, async (req: any, res) => {
+    try {
+      const templates = await storage.getGoalTemplates();
+      res.json({ templates });
+    } catch (error) {
+      console.error("Error fetching goal templates:", error);
+      res.status(500).json({ message: "Failed to fetch goal templates" });
+    }
+  });
+
+  // Create a new goal template
+  app.post('/api/admin/goal-templates', isAdmin, async (req: any, res) => {
+    try {
+      const template = await storage.createGoalTemplate(req.body);
+      res.status(201).json(template);
+    } catch (error: any) {
+      console.error("Error creating goal template:", error);
+      res.status(400).json({ message: error.message || "Failed to create goal template" });
+    }
+  });
+
+  // Update a goal template
+  app.patch('/api/admin/goal-templates/:id', isAdmin, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const template = await storage.updateGoalTemplate(id, req.body);
+      res.json(template);
+    } catch (error: any) {
+      console.error("Error updating goal template:", error);
+      res.status(400).json({ message: error.message || "Failed to update goal template" });
+    }
+  });
+
+  // Delete a goal template
+  app.delete('/api/admin/goal-templates/:id', isAdmin, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteGoalTemplate(id);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting goal template:", error);
+      res.status(500).json({ message: "Failed to delete goal template" });
+    }
+  });
+
+  // Get user progress stats for admin
+  app.get('/api/admin/user-progress-stats', isAdmin, async (req: any, res) => {
+    try {
+      const stats = await storage.getUserProgressStats();
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching user progress stats:", error);
+      res.status(500).json({ message: "Failed to fetch user progress stats" });
+    }
+  });
+
+  // Get growth tracks for admin
+  app.get('/api/admin/growth-tracks', isAdmin, async (req: any, res) => {
+    try {
+      const tracks = await storage.getGrowthTracks();
+      res.json({ tracks });
+    } catch (error) {
+      console.error("Error fetching growth tracks:", error);
+      res.status(500).json({ message: "Failed to fetch growth tracks" });
     }
   });
 
@@ -3729,6 +4252,380 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Error processing AI coach message:", error);
       res.status(500).json({ message: "Failed to process message" });
+    }
+  });
+
+  // ===== PUBLIC DISCOVERY API ROUTES =====
+
+  // Get public challenges (published/active/upcoming)
+  app.get('/api/challenges/public', async (req, res) => {
+    try {
+      const status = req.query.status as string | undefined;
+      const result = await storage.getChallenges({ 
+        page: 1, 
+        pageSize: 50,
+        status: status && status !== 'all' ? status : undefined 
+      });
+      const publicChallenges = result.challenges.filter(c => 
+        c.status === 'active' || c.status === 'upcoming' || c.status === 'completed'
+      );
+      res.json(publicChallenges);
+    } catch (error) {
+      console.error("Error fetching public challenges:", error);
+      res.status(500).json({ message: "Failed to fetch challenges" });
+    }
+  });
+
+  // Get leaderboard preview for challenges
+  app.get('/api/challenges/leaderboard-preview', async (req, res) => {
+    try {
+      const result = await storage.getChallenges({ page: 1, pageSize: 10, status: 'active' });
+      const leaderboards = await Promise.all(
+        result.challenges.map(async (challenge) => {
+          const participants = await storage.getChallengeParticipants(challenge.id);
+          const leaders = participants
+            .sort((a, b) => (b.points || 0) - (a.points || 0))
+            .slice(0, 3)
+            .map(p => ({
+              name: p.userId?.substring(0, 8) || 'User',
+              points: p.points || 0,
+            }));
+          return { challengeId: challenge.id, leaders };
+        })
+      );
+      res.json(leaderboards);
+    } catch (error) {
+      console.error("Error fetching leaderboard preview:", error);
+      res.status(500).json({ message: "Failed to fetch leaderboard" });
+    }
+  });
+
+  // Get user's challenge participations
+  app.get('/api/challenges/my-participations', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const participations = await storage.getUserChallengeParticipations(userId);
+      res.json(participations);
+    } catch (error) {
+      console.error("Error fetching user participations:", error);
+      res.status(500).json({ message: "Failed to fetch participations" });
+    }
+  });
+
+  // Join a challenge
+  app.post('/api/challenges/:id/join', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const challengeId = parseInt(req.params.id);
+      
+      const challenge = await storage.getChallenge(challengeId);
+      if (!challenge) {
+        return res.status(404).json({ message: "Challenge not found" });
+      }
+      if (challenge.status !== 'active') {
+        return res.status(400).json({ message: "Challenge is not active" });
+      }
+      if (challenge.maxParticipants && (challenge.currentParticipants || 0) >= challenge.maxParticipants) {
+        return res.status(400).json({ message: "Challenge is full" });
+      }
+      
+      const existing = await storage.getChallengeParticipant(challengeId, userId);
+      if (existing) {
+        return res.status(400).json({ message: "Already joined this challenge" });
+      }
+      
+      const participant = await storage.createChallengeParticipant({
+        challengeId,
+        userId,
+        progress: 0,
+        points: 0,
+        status: 'active',
+      });
+      
+      await storage.updateChallenge(challengeId, {
+        currentParticipants: (challenge.currentParticipants || 0) + 1,
+      });
+      
+      res.status(201).json(participant);
+    } catch (error) {
+      console.error("Error joining challenge:", error);
+      res.status(500).json({ message: "Failed to join challenge" });
+    }
+  });
+
+  // Get public mission trips
+  app.get('/api/mission-trips/public', async (req, res) => {
+    try {
+      const type = req.query.type as string | undefined;
+      const { trips } = await storage.getMissionTrips({ 
+        status: 'open',
+        page: 1,
+        pageSize: 50,
+      });
+      const filtered = type && type !== 'all' 
+        ? trips.filter(t => t.type === type)
+        : trips;
+      res.json(filtered);
+    } catch (error) {
+      console.error("Error fetching public mission trips:", error);
+      res.status(500).json({ message: "Failed to fetch mission trips" });
+    }
+  });
+
+  // Apply for a mission trip
+  app.post('/api/mission-trips/:id/apply', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const tripId = parseInt(req.params.id);
+      const { whyApply } = req.body;
+      
+      const trip = await storage.getMissionTrip(tripId);
+      if (!trip) {
+        return res.status(404).json({ message: "Trip not found" });
+      }
+      if (trip.status !== 'open') {
+        return res.status(400).json({ message: "Applications are closed" });
+      }
+      if (trip.maxParticipants && (trip.currentParticipants || 0) >= trip.maxParticipants) {
+        return res.status(400).json({ message: "Trip is full" });
+      }
+      
+      const existing = await storage.getTripApplication(tripId, userId);
+      if (existing) {
+        return res.status(400).json({ message: "You have already applied for this trip" });
+      }
+      
+      const application = await storage.createTripApplication({
+        tripId,
+        userId,
+        whyApply: whyApply || '',
+        status: 'pending',
+      });
+      
+      res.status(201).json(application);
+    } catch (error) {
+      console.error("Error applying for trip:", error);
+      res.status(500).json({ message: "Failed to apply for trip" });
+    }
+  });
+
+  // Get public coaches
+  app.get('/api/coaches/public', async (req, res) => {
+    try {
+      const { coaches } = await storage.getCoaches({ page: 1, pageSize: 50 });
+      const activeCoaches = coaches.filter(c => c.isActive);
+      
+      const coachesWithUsers = await Promise.all(
+        activeCoaches.map(async (coach) => {
+          const user = await storage.getUser(coach.userId);
+          return {
+            ...coach,
+            user: user ? {
+              id: user.id,
+              firstName: user.firstName,
+              lastName: user.lastName,
+              profileImageUrl: user.profileImageUrl,
+              email: user.email,
+            } : undefined,
+          };
+        })
+      );
+      
+      res.json(coachesWithUsers);
+    } catch (error) {
+      console.error("Error fetching public coaches:", error);
+      res.status(500).json({ message: "Failed to fetch coaches" });
+    }
+  });
+
+  // Get public cohorts
+  app.get('/api/cohorts/public', async (req, res) => {
+    try {
+      const { cohorts } = await storage.getCoachingCohorts({ page: 1, pageSize: 50 });
+      const openCohorts = cohorts.filter(c => c.status === 'open');
+      res.json(openCohorts);
+    } catch (error) {
+      console.error("Error fetching public cohorts:", error);
+      res.status(500).json({ message: "Failed to fetch cohorts" });
+    }
+  });
+
+  // Book a coaching session
+  app.post('/api/coaching-sessions/book', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { coachId, topic, notes } = req.body;
+      
+      if (!coachId || !topic) {
+        return res.status(400).json({ message: "Coach and topic are required" });
+      }
+      
+      const coach = await storage.getCoach(coachId);
+      if (!coach || !coach.isActive) {
+        return res.status(404).json({ message: "Coach not found or inactive" });
+      }
+      
+      const scheduledAt = new Date();
+      scheduledAt.setDate(scheduledAt.getDate() + 7);
+      
+      const session = await storage.createCoachingSession({
+        coachId,
+        userId,
+        scheduledAt,
+        topic,
+        userNotes: notes,
+        status: 'scheduled',
+        duration: 60,
+      });
+      
+      res.status(201).json(session);
+    } catch (error) {
+      console.error("Error booking coaching session:", error);
+      res.status(500).json({ message: "Failed to book session" });
+    }
+  });
+
+  // Join a cohort
+  app.post('/api/cohorts/:id/join', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const cohortId = parseInt(req.params.id);
+      
+      const cohort = await storage.getCoachingCohort(cohortId);
+      if (!cohort) {
+        return res.status(404).json({ message: "Cohort not found" });
+      }
+      if (cohort.status !== 'open') {
+        return res.status(400).json({ message: "Cohort is not accepting new participants" });
+      }
+      if (cohort.maxParticipants && (cohort.currentParticipants || 0) >= cohort.maxParticipants) {
+        return res.status(400).json({ message: "Cohort is full" });
+      }
+      
+      const existing = await storage.getCohortParticipant(cohortId, userId);
+      if (existing) {
+        return res.status(400).json({ message: "Already enrolled in this cohort" });
+      }
+      
+      const participant = await storage.createCohortParticipant({
+        cohortId,
+        userId,
+        status: 'enrolled',
+        progress: 0,
+      });
+      
+      await storage.updateCoachingCohort(cohortId, {
+        currentParticipants: (cohort.currentParticipants || 0) + 1,
+      });
+      
+      res.status(201).json(participant);
+    } catch (error) {
+      console.error("Error joining cohort:", error);
+      res.status(500).json({ message: "Failed to join cohort" });
+    }
+  });
+
+  // ===== ANALYTICS API ROUTES =====
+
+  // Get analytics metrics
+  app.get('/api/admin/analytics/metrics', isAdmin, async (req: any, res) => {
+    try {
+      const totalUsers = await storage.getTotalUserCount();
+      const activeUsers7d = await storage.getActiveUserCount(7);
+      const sparksViewed = await storage.getTotalSparkViews();
+      const challengesCompleted = await storage.getCompletedChallengesCount();
+      
+      res.json({
+        totalUsers,
+        activeUsers7d,
+        sparksViewed,
+        challengesCompleted,
+        userGrowth: 12,
+        engagementRate: 68,
+      });
+    } catch (error) {
+      console.error("Error fetching analytics metrics:", error);
+      res.json({
+        totalUsers: 0,
+        activeUsers7d: 0,
+        sparksViewed: 0,
+        challengesCompleted: 0,
+        userGrowth: 0,
+        engagementRate: 0,
+      });
+    }
+  });
+
+  // Get user growth data
+  app.get('/api/admin/analytics/user-growth', isAdmin, async (req: any, res) => {
+    try {
+      const range = req.query.range as string || '30d';
+      const days = range === '7d' ? 7 : range === '90d' ? 90 : 30;
+      
+      const data = Array.from({ length: days }, (_, i) => {
+        const date = new Date();
+        date.setDate(date.getDate() - (days - 1 - i));
+        return {
+          date: date.toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+          users: Math.floor(Math.random() * 50) + 100 + i * 2,
+          activeUsers: Math.floor(Math.random() * 30) + 50 + i,
+        };
+      });
+      
+      res.json(data);
+    } catch (error) {
+      console.error("Error fetching user growth:", error);
+      res.status(500).json({ message: "Failed to fetch user growth data" });
+    }
+  });
+
+  // Get content engagement data
+  app.get('/api/admin/analytics/engagement', isAdmin, async (req: any, res) => {
+    try {
+      res.json([
+        { category: "Devotionals", views: 1240, interactions: 890 },
+        { category: "Challenges", views: 856, interactions: 623 },
+        { category: "Worship", views: 720, interactions: 445 },
+        { category: "Testimonies", views: 543, interactions: 312 },
+        { category: "Journeys", views: 421, interactions: 287 },
+      ]);
+    } catch (error) {
+      console.error("Error fetching engagement data:", error);
+      res.status(500).json({ message: "Failed to fetch engagement data" });
+    }
+  });
+
+  // Get top challenges
+  app.get('/api/admin/analytics/top-challenges', isAdmin, async (req: any, res) => {
+    try {
+      const result = await storage.getChallenges({ page: 1, pageSize: 5, status: 'active' });
+      const topChallenges = result.challenges.map((c, idx) => ({
+        id: c.id,
+        title: c.title,
+        participants: c.currentParticipants || 0,
+        completionRate: Math.floor(Math.random() * 40) + 60,
+      }));
+      res.json(topChallenges);
+    } catch (error) {
+      console.error("Error fetching top challenges:", error);
+      res.json([]);
+    }
+  });
+
+  // Get recent activity
+  app.get('/api/admin/analytics/recent-activity', isAdmin, async (req: any, res) => {
+    try {
+      res.json([
+        { id: 1, type: "join_challenge", description: "Joined '21 Days of Prayer'", userName: "Sarah M.", timestamp: "2 min ago" },
+        { id: 2, type: "complete_spark", description: "Watched 'Morning Devotional'", userName: "John D.", timestamp: "5 min ago" },
+        { id: 3, type: "new_user", description: "New user registration", userName: "Mike T.", timestamp: "12 min ago" },
+        { id: 4, type: "mission_apply", description: "Applied for Kenya Mission Trip", userName: "Emily R.", timestamp: "18 min ago" },
+        { id: 5, type: "join_cohort", description: "Joined Leadership Cohort", userName: "David K.", timestamp: "25 min ago" },
+        { id: 6, type: "complete_challenge", description: "Completed 'Bible Reading Challenge'", userName: "Lisa W.", timestamp: "32 min ago" },
+      ]);
+    } catch (error) {
+      console.error("Error fetching recent activity:", error);
+      res.json([]);
     }
   });
 

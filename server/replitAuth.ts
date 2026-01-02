@@ -50,15 +50,27 @@ function updateUserSession(
   user.expires_at = user.claims?.exp;
 }
 
+function getSuperAdminEmails(): string[] {
+  const emails = process.env.SUPER_ADMIN_EMAILS || '';
+  return emails.split(',').map(e => e.trim().toLowerCase()).filter(e => e.length > 0);
+}
+
 async function upsertUser(
   claims: any,
 ) {
+  const email = claims["email"]?.toLowerCase();
+  const superAdminEmails = getSuperAdminEmails();
+  const isSuperAdmin = email && superAdminEmails.includes(email);
+  
+  const existingUser = await storage.getUser(claims["sub"]);
+  
   await storage.upsertUser({
     id: claims["sub"],
     email: claims["email"],
     firstName: claims["first_name"],
     lastName: claims["last_name"],
     profileImageUrl: claims["profile_image_url"],
+    role: isSuperAdmin ? 'super_admin' : (existingUser?.role || 'member'),
   });
 }
 
@@ -158,5 +170,62 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
   } catch (error) {
     res.status(401).json({ message: "Unauthorized" });
     return;
+  }
+};
+
+export const isSuperAdmin: RequestHandler = async (req, res, next) => {
+  const user = req.user as any;
+  
+  if (!req.isAuthenticated() || !user?.claims?.sub) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+  
+  try {
+    const dbUser = await storage.getUser(user.claims.sub);
+    if (!dbUser || dbUser.role !== 'super_admin') {
+      return res.status(403).json({ message: "Super admin access required" });
+    }
+    (req as any).dbUser = dbUser;
+    return next();
+  } catch (error) {
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const isAdmin: RequestHandler = async (req, res, next) => {
+  const user = req.user as any;
+  
+  if (!req.isAuthenticated() || !user?.claims?.sub) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+  
+  try {
+    const dbUser = await storage.getUser(user.claims.sub);
+    if (!dbUser || !['admin', 'super_admin'].includes(dbUser.role || '')) {
+      return res.status(403).json({ message: "Admin access required" });
+    }
+    (req as any).dbUser = dbUser;
+    return next();
+  } catch (error) {
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const isLeaderOrAbove: RequestHandler = async (req, res, next) => {
+  const user = req.user as any;
+  
+  if (!req.isAuthenticated() || !user?.claims?.sub) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+  
+  try {
+    const dbUser = await storage.getUser(user.claims.sub);
+    if (!dbUser || !['leader', 'admin', 'super_admin'].includes(dbUser.role || '')) {
+      return res.status(403).json({ message: "Leader access required" });
+    }
+    (req as any).dbUser = dbUser;
+    return next();
+  } catch (error) {
+    return res.status(500).json({ message: "Server error" });
   }
 };

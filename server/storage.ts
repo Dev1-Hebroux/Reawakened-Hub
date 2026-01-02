@@ -347,15 +347,48 @@ import {
   type InsertAiCoachSession,
   type AiCoachMessage,
   type InsertAiCoachMessage,
+  coaches,
+  coachingSessions,
+  coachingCohorts,
+  cohortParticipants,
+  type Coach,
+  type InsertCoach,
+  type CoachingSession,
+  type InsertCoachingSession,
+  type CoachingCohort,
+  type InsertCoachingCohort,
+  type CohortParticipant,
+  type InsertCohortParticipant,
   notificationPreferences,
   notifications,
   type NotificationPreferences,
   type InsertNotificationPreferences,
   type Notification,
   type InsertNotification,
+  challenges,
+  challengeParticipants,
+  type Challenge,
+  type InsertChallenge,
+  type ChallengeParticipant,
+  type InsertChallengeParticipant,
+  missionTrips,
+  tripApplications,
+  type MissionTrip,
+  type InsertMissionTrip,
+  type TripApplication,
+  type InsertTripApplication,
+  goalTemplates,
+  visionGoals,
+  visionHabits,
+  habitLogs,
+  tracks,
+  modules,
+  pathwaySessions,
+  type GoalTemplate,
+  type InsertGoalTemplate,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, sql, inArray, count } from "drizzle-orm";
+import { eq, desc, and, sql, inArray, count, ilike, or, gte } from "drizzle-orm";
 
 // Interface for storage operations
 export interface IStorage {
@@ -703,6 +736,74 @@ export interface IStorage {
   getUsersWithPushEnabled(): Promise<Array<{ userId: string; pushSubscription: string }>>;
   getUsersForPrayerNotifications(excludeUserId: string): Promise<string[]>;
   createBulkNotifications(notificationsData: InsertNotification[]): Promise<void>;
+
+  // ===== ADMIN COACHING =====
+  getCoaches(): Promise<Coach[]>;
+  getCoach(id: number): Promise<Coach | undefined>;
+  createCoach(data: InsertCoach): Promise<Coach>;
+  updateCoach(id: number, data: Partial<InsertCoach>): Promise<Coach>;
+  getCoachingSessions(status?: string): Promise<CoachingSession[]>;
+  getCoachingSession(id: number): Promise<CoachingSession | undefined>;
+  updateCoachingSession(id: number, data: Partial<InsertCoachingSession>): Promise<CoachingSession>;
+  getCoachingCohorts(): Promise<CoachingCohort[]>;
+  getCoachingCohort(id: number): Promise<CoachingCohort | undefined>;
+  createCoachingCohort(data: InsertCoachingCohort): Promise<CoachingCohort>;
+  updateCoachingCohort(id: number, data: Partial<InsertCoachingCohort>): Promise<CoachingCohort>;
+  getCohortParticipants(cohortId: number): Promise<CohortParticipant[]>;
+
+  // ===== ADMIN CHALLENGES =====
+  getChallenges(options?: { status?: string; search?: string; page?: number; pageSize?: number }): Promise<{ challenges: Challenge[]; total: number }>;
+  getChallenge(id: number): Promise<Challenge | undefined>;
+  createChallenge(data: InsertChallenge): Promise<Challenge>;
+  updateChallenge(id: number, data: Partial<InsertChallenge>): Promise<Challenge>;
+  deleteChallenge(id: number): Promise<void>;
+  getChallengeParticipants(challengeId: number): Promise<ChallengeParticipant[]>;
+  getChallengeParticipant(challengeId: number, userId: string): Promise<ChallengeParticipant | undefined>;
+  createChallengeParticipant(data: InsertChallengeParticipant): Promise<ChallengeParticipant>;
+  getUserChallengeParticipations(userId: string): Promise<ChallengeParticipant[]>;
+
+  // ===== PUBLIC DISCOVERY =====
+  getMissionTrip(id: number): Promise<MissionTrip | undefined>;
+  getTripApplication(tripId: number, userId: string): Promise<TripApplication | undefined>;
+  createTripApplication(data: InsertTripApplication): Promise<TripApplication>;
+  getCohortParticipant(cohortId: number, userId: string): Promise<CohortParticipant | undefined>;
+  createCohortParticipant(data: InsertCohortParticipant): Promise<CohortParticipant>;
+  createCoachingSession(data: InsertCoachingSession): Promise<CoachingSession>;
+
+  // ===== ANALYTICS =====
+  getTotalUserCount(): Promise<number>;
+  getActiveUserCount(days: number): Promise<number>;
+  getTotalSparkViews(): Promise<number>;
+  getCompletedChallengesCount(): Promise<number>;
+
+  // ===== ADMIN GOAL TEMPLATES =====
+  getGoalTemplates(): Promise<GoalTemplate[]>;
+  getGoalTemplate(id: number): Promise<GoalTemplate | undefined>;
+  createGoalTemplate(data: InsertGoalTemplate): Promise<GoalTemplate>;
+  updateGoalTemplate(id: number, data: Partial<InsertGoalTemplate>): Promise<GoalTemplate>;
+  deleteGoalTemplate(id: number): Promise<void>;
+  getUserProgressStats(): Promise<{
+    totalUsersWithGoals: number;
+    averageCompletionRate: number;
+    activeJourneys: number;
+    userProgress: Array<{
+      userId: string;
+      firstName: string | null;
+      lastName: string | null;
+      profileImageUrl: string | null;
+      goalsCount: number;
+      habitsTracked: number;
+      lastActivity: Date | null;
+    }>;
+  }>;
+  getGrowthTracks(): Promise<Array<{
+    id: number;
+    key: string;
+    title: string;
+    description: string | null;
+    isEnabled: boolean;
+    modulesCount: number;
+  }>>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -723,6 +824,15 @@ export class DatabaseStorage implements IStorage {
           updatedAt: new Date(),
         },
       })
+      .returning();
+    return user;
+  }
+
+  async updateUserRole(userId: string, role: string): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ role, updatedAt: new Date() })
+      .where(eq(users.id, userId))
       .returning();
     return user;
   }
@@ -3121,6 +3231,543 @@ export class DatabaseStorage implements IStorage {
   async createBulkNotifications(notificationsData: InsertNotification[]): Promise<void> {
     if (notificationsData.length === 0) return;
     await db.insert(notifications).values(notificationsData);
+  }
+
+  // ===== ADMIN COACHING =====
+  async getCoaches(): Promise<Coach[]> {
+    return db.select().from(coaches).orderBy(desc(coaches.createdAt));
+  }
+
+  async getCoach(id: number): Promise<Coach | undefined> {
+    const [coach] = await db.select().from(coaches).where(eq(coaches.id, id));
+    return coach;
+  }
+
+  async createCoach(data: InsertCoach): Promise<Coach> {
+    const [coach] = await db.insert(coaches).values(data).returning();
+    return coach;
+  }
+
+  async updateCoach(id: number, data: Partial<InsertCoach>): Promise<Coach> {
+    const [coach] = await db.update(coaches)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(coaches.id, id))
+      .returning();
+    return coach;
+  }
+
+  async getCoachingSessions(status?: string): Promise<CoachingSession[]> {
+    if (status) {
+      return db.select().from(coachingSessions)
+        .where(eq(coachingSessions.status, status))
+        .orderBy(desc(coachingSessions.scheduledAt));
+    }
+    return db.select().from(coachingSessions).orderBy(desc(coachingSessions.scheduledAt));
+  }
+
+  async getCoachingSession(id: number): Promise<CoachingSession | undefined> {
+    const [session] = await db.select().from(coachingSessions).where(eq(coachingSessions.id, id));
+    return session;
+  }
+
+  async updateCoachingSession(id: number, data: Partial<InsertCoachingSession>): Promise<CoachingSession> {
+    const [session] = await db.update(coachingSessions)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(coachingSessions.id, id))
+      .returning();
+    return session;
+  }
+
+  async getCoachingCohorts(): Promise<CoachingCohort[]> {
+    return db.select().from(coachingCohorts).orderBy(desc(coachingCohorts.createdAt));
+  }
+
+  async getCoachingCohort(id: number): Promise<CoachingCohort | undefined> {
+    const [cohort] = await db.select().from(coachingCohorts).where(eq(coachingCohorts.id, id));
+    return cohort;
+  }
+
+  async createCoachingCohort(data: InsertCoachingCohort): Promise<CoachingCohort> {
+    const [cohort] = await db.insert(coachingCohorts).values(data).returning();
+    return cohort;
+  }
+
+  async updateCoachingCohort(id: number, data: Partial<InsertCoachingCohort>): Promise<CoachingCohort> {
+    const [cohort] = await db.update(coachingCohorts)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(coachingCohorts.id, id))
+      .returning();
+    return cohort;
+  }
+
+  async getCohortParticipants(cohortId: number): Promise<CohortParticipant[]> {
+    return db.select().from(cohortParticipants)
+      .where(eq(cohortParticipants.cohortId, cohortId))
+      .orderBy(cohortParticipants.joinedAt);
+  }
+
+  // ===== ADMIN CHALLENGES =====
+  async getChallenges(options?: { status?: string; search?: string; page?: number; pageSize?: number }): Promise<{ challenges: Challenge[]; total: number }> {
+    const page = options?.page || 1;
+    const pageSize = options?.pageSize || 10;
+    const offset = (page - 1) * pageSize;
+
+    const conditions = [];
+    if (options?.status) {
+      conditions.push(eq(challenges.status, options.status));
+    }
+    if (options?.search) {
+      conditions.push(
+        or(
+          ilike(challenges.title, `%${options.search}%`),
+          ilike(challenges.description, `%${options.search}%`)
+        )
+      );
+    }
+
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+    const [countResult] = await db
+      .select({ count: count() })
+      .from(challenges)
+      .where(whereClause);
+
+    const challengesList = await db
+      .select()
+      .from(challenges)
+      .where(whereClause)
+      .orderBy(desc(challenges.createdAt))
+      .limit(pageSize)
+      .offset(offset);
+
+    const challengeIds = challengesList.map(c => c.id);
+    let participantCounts: { challengeId: number; count: number }[] = [];
+    if (challengeIds.length > 0) {
+      participantCounts = await db
+        .select({
+          challengeId: challengeParticipants.challengeId,
+          count: count(challengeParticipants.id),
+        })
+        .from(challengeParticipants)
+        .where(inArray(challengeParticipants.challengeId, challengeIds))
+        .groupBy(challengeParticipants.challengeId);
+    }
+
+    const challengesWithCounts = challengesList.map(challenge => ({
+      ...challenge,
+      currentParticipants: participantCounts.find(p => p.challengeId === challenge.id)?.count || 0,
+    }));
+
+    return {
+      challenges: challengesWithCounts,
+      total: Number(countResult?.count || 0),
+    };
+  }
+
+  async getChallenge(id: number): Promise<Challenge | undefined> {
+    const [challenge] = await db.select().from(challenges).where(eq(challenges.id, id));
+    return challenge;
+  }
+
+  async createChallenge(data: InsertChallenge): Promise<Challenge> {
+    const [challenge] = await db.insert(challenges).values(data).returning();
+    return challenge;
+  }
+
+  async updateChallenge(id: number, data: Partial<InsertChallenge>): Promise<Challenge> {
+    const [challenge] = await db
+      .update(challenges)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(challenges.id, id))
+      .returning();
+    return challenge;
+  }
+
+  async deleteChallenge(id: number): Promise<void> {
+    await db.delete(challenges).where(eq(challenges.id, id));
+  }
+
+  async getChallengeParticipants(challengeId: number): Promise<ChallengeParticipant[]> {
+    const participants = await db
+      .select({
+        id: challengeParticipants.id,
+        challengeId: challengeParticipants.challengeId,
+        userId: challengeParticipants.userId,
+        teamId: challengeParticipants.teamId,
+        progress: challengeParticipants.progress,
+        points: challengeParticipants.points,
+        streak: challengeParticipants.streak,
+        bestStreak: challengeParticipants.bestStreak,
+        lastActionAt: challengeParticipants.lastActionAt,
+        status: challengeParticipants.status,
+        rank: challengeParticipants.rank,
+        completedAt: challengeParticipants.completedAt,
+        joinedAt: challengeParticipants.joinedAt,
+        user: {
+          id: users.id,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          profileImageUrl: users.profileImageUrl,
+        },
+      })
+      .from(challengeParticipants)
+      .leftJoin(users, eq(challengeParticipants.userId, users.id))
+      .where(eq(challengeParticipants.challengeId, challengeId))
+      .orderBy(desc(challengeParticipants.points));
+    
+    return participants as any;
+  }
+
+  async getChallengeParticipant(challengeId: number, userId: string): Promise<ChallengeParticipant | undefined> {
+    const [participant] = await db
+      .select()
+      .from(challengeParticipants)
+      .where(and(
+        eq(challengeParticipants.challengeId, challengeId),
+        eq(challengeParticipants.userId, userId)
+      ));
+    return participant;
+  }
+
+  async createChallengeParticipant(data: InsertChallengeParticipant): Promise<ChallengeParticipant> {
+    const [participant] = await db.insert(challengeParticipants).values(data).returning();
+    return participant;
+  }
+
+  async getUserChallengeParticipations(userId: string): Promise<ChallengeParticipant[]> {
+    return db
+      .select()
+      .from(challengeParticipants)
+      .where(eq(challengeParticipants.userId, userId));
+  }
+
+  // ===== ADMIN MISSION TRIPS =====
+  async getMissionTrips(options?: { status?: string; search?: string; page?: number; pageSize?: number }): Promise<{ trips: MissionTrip[]; total: number }> {
+    const page = options?.page || 1;
+    const pageSize = options?.pageSize || 10;
+    const offset = (page - 1) * pageSize;
+
+    const conditions = [];
+    if (options?.status) {
+      conditions.push(eq(missionTrips.status, options.status));
+    }
+    if (options?.search) {
+      conditions.push(
+        or(
+          ilike(missionTrips.title, `%${options.search}%`),
+          ilike(missionTrips.destination, `%${options.search}%`)
+        )
+      );
+    }
+
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+    const [countResult] = await db
+      .select({ count: count() })
+      .from(missionTrips)
+      .where(whereClause);
+
+    const tripsList = await db
+      .select()
+      .from(missionTrips)
+      .where(whereClause)
+      .orderBy(desc(missionTrips.createdAt))
+      .limit(pageSize)
+      .offset(offset);
+
+    const tripIds = tripsList.map(t => t.id);
+    let applicationCounts: { tripId: number; count: number }[] = [];
+    if (tripIds.length > 0) {
+      applicationCounts = await db
+        .select({
+          tripId: tripApplications.tripId,
+          count: count(tripApplications.id),
+        })
+        .from(tripApplications)
+        .where(inArray(tripApplications.tripId, tripIds))
+        .groupBy(tripApplications.tripId);
+    }
+
+    const tripsWithCounts = tripsList.map(trip => ({
+      ...trip,
+      currentParticipants: applicationCounts.find(a => a.tripId === trip.id)?.count || 0,
+    }));
+
+    return {
+      trips: tripsWithCounts,
+      total: Number(countResult?.count || 0),
+    };
+  }
+
+  async getMissionTrip(id: number): Promise<MissionTrip | undefined> {
+    const [trip] = await db.select().from(missionTrips).where(eq(missionTrips.id, id));
+    return trip;
+  }
+
+  async createMissionTrip(data: InsertMissionTrip): Promise<MissionTrip> {
+    const [trip] = await db.insert(missionTrips).values(data).returning();
+    return trip;
+  }
+
+  async updateMissionTrip(id: number, data: Partial<InsertMissionTrip>): Promise<MissionTrip> {
+    const [trip] = await db
+      .update(missionTrips)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(missionTrips.id, id))
+      .returning();
+    return trip;
+  }
+
+  async deleteMissionTrip(id: number): Promise<void> {
+    await db.delete(missionTrips).where(eq(missionTrips.id, id));
+  }
+
+  async getTripApplications(tripId: number): Promise<TripApplication[]> {
+    const applications = await db
+      .select({
+        id: tripApplications.id,
+        tripId: tripApplications.tripId,
+        userId: tripApplications.userId,
+        status: tripApplications.status,
+        role: tripApplications.role,
+        emergencyContact: tripApplications.emergencyContact,
+        medicalInfo: tripApplications.medicalInfo,
+        dietaryRestrictions: tripApplications.dietaryRestrictions,
+        specialSkills: tripApplications.specialSkills,
+        whyApply: tripApplications.whyApply,
+        documents: tripApplications.documents,
+        amountPaid: tripApplications.amountPaid,
+        fundraisingAmount: tripApplications.fundraisingAmount,
+        fundraisingPageUrl: tripApplications.fundraisingPageUrl,
+        notes: tripApplications.notes,
+        reviewedBy: tripApplications.reviewedBy,
+        reviewedAt: tripApplications.reviewedAt,
+        appliedAt: tripApplications.appliedAt,
+        updatedAt: tripApplications.updatedAt,
+        user: {
+          id: users.id,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          email: users.email,
+          profileImageUrl: users.profileImageUrl,
+        },
+      })
+      .from(tripApplications)
+      .leftJoin(users, eq(tripApplications.userId, users.id))
+      .where(eq(tripApplications.tripId, tripId))
+      .orderBy(desc(tripApplications.appliedAt));
+    
+    return applications as any;
+  }
+
+  async updateTripApplication(id: number, data: Partial<InsertTripApplication>): Promise<TripApplication> {
+    const [application] = await db
+      .update(tripApplications)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(tripApplications.id, id))
+      .returning();
+    return application;
+  }
+
+  async getTripApplication(tripId: number, userId: string): Promise<TripApplication | undefined> {
+    const [application] = await db
+      .select()
+      .from(tripApplications)
+      .where(and(
+        eq(tripApplications.tripId, tripId),
+        eq(tripApplications.userId, userId)
+      ));
+    return application;
+  }
+
+  async createTripApplication(data: InsertTripApplication): Promise<TripApplication> {
+    const [application] = await db.insert(tripApplications).values(data).returning();
+    return application;
+  }
+
+  async getCohortParticipant(cohortId: number, userId: string): Promise<CohortParticipant | undefined> {
+    const [participant] = await db
+      .select()
+      .from(cohortParticipants)
+      .where(and(
+        eq(cohortParticipants.cohortId, cohortId),
+        eq(cohortParticipants.userId, userId)
+      ));
+    return participant;
+  }
+
+  async createCohortParticipant(data: InsertCohortParticipant): Promise<CohortParticipant> {
+    const [participant] = await db.insert(cohortParticipants).values(data).returning();
+    return participant;
+  }
+
+  async createCoachingSession(data: InsertCoachingSession): Promise<CoachingSession> {
+    const [session] = await db.insert(coachingSessions).values(data).returning();
+    return session;
+  }
+
+  // ===== ANALYTICS =====
+  async getTotalUserCount(): Promise<number> {
+    const [result] = await db.select({ count: count() }).from(users);
+    return Number(result?.count || 0);
+  }
+
+  async getActiveUserCount(days: number): Promise<number> {
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - days);
+    const [result] = await db
+      .select({ count: count() })
+      .from(users)
+      .where(gte(users.lastActiveAt, cutoffDate));
+    return Number(result?.count || 0);
+  }
+
+  async getTotalSparkViews(): Promise<number> {
+    const [result] = await db.select({ count: count() }).from(sparkReactions);
+    return Number(result?.count || 0);
+  }
+
+  async getCompletedChallengesCount(): Promise<number> {
+    const [result] = await db
+      .select({ count: count() })
+      .from(challengeParticipants)
+      .where(eq(challengeParticipants.status, 'completed'));
+    return Number(result?.count || 0);
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return db.select().from(users).orderBy(users.firstName);
+  }
+
+  // ===== ADMIN GOAL TEMPLATES =====
+  async getGoalTemplates(): Promise<GoalTemplate[]> {
+    return db.select().from(goalTemplates).orderBy(desc(goalTemplates.createdAt));
+  }
+
+  async getGoalTemplate(id: number): Promise<GoalTemplate | undefined> {
+    const [template] = await db.select().from(goalTemplates).where(eq(goalTemplates.id, id));
+    return template;
+  }
+
+  async createGoalTemplate(data: InsertGoalTemplate): Promise<GoalTemplate> {
+    const [template] = await db.insert(goalTemplates).values(data).returning();
+    return template;
+  }
+
+  async updateGoalTemplate(id: number, data: Partial<InsertGoalTemplate>): Promise<GoalTemplate> {
+    const [template] = await db
+      .update(goalTemplates)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(goalTemplates.id, id))
+      .returning();
+    return template;
+  }
+
+  async deleteGoalTemplate(id: number): Promise<void> {
+    await db.delete(goalTemplates).where(eq(goalTemplates.id, id));
+  }
+
+  async getUserProgressStats(): Promise<{
+    totalUsersWithGoals: number;
+    averageCompletionRate: number;
+    activeJourneys: number;
+    userProgress: Array<{
+      userId: string;
+      firstName: string | null;
+      lastName: string | null;
+      profileImageUrl: string | null;
+      goalsCount: number;
+      habitsTracked: number;
+      lastActivity: Date | null;
+    }>;
+  }> {
+    const [usersWithGoalsResult] = await db
+      .select({ count: count() })
+      .from(visionGoals)
+      .innerJoin(users, eq(visionGoals.userId, users.id));
+    const totalUsersWithGoals = Number(usersWithGoalsResult?.count || 0);
+
+    const [activeJourneysResult] = await db
+      .select({ count: count() })
+      .from(pathwaySessions)
+      .where(eq(pathwaySessions.status, 'active'));
+    const activeJourneys = Number(activeJourneysResult?.count || 0);
+
+    const goalsData = await db
+      .select({
+        total: count(),
+        completed: sql<number>`count(*) filter (where ${visionGoals.status} = 'completed')`,
+      })
+      .from(visionGoals);
+    const totalGoals = Number(goalsData[0]?.total || 0);
+    const completedGoals = Number(goalsData[0]?.completed || 0);
+    const averageCompletionRate = totalGoals > 0 ? Math.round((completedGoals / totalGoals) * 100) : 0;
+
+    const userProgressData = await db
+      .select({
+        userId: users.id,
+        firstName: users.firstName,
+        lastName: users.lastName,
+        profileImageUrl: users.profileImageUrl,
+        goalsCount: sql<number>`count(distinct ${visionGoals.id})`,
+        habitsTracked: sql<number>`count(distinct ${visionHabits.id})`,
+        lastActivity: sql<Date>`max(${habitLogs.loggedAt})`,
+      })
+      .from(users)
+      .leftJoin(visionGoals, eq(users.id, visionGoals.userId))
+      .leftJoin(visionHabits, eq(users.id, visionHabits.userId))
+      .leftJoin(habitLogs, eq(visionHabits.id, habitLogs.habitId))
+      .groupBy(users.id, users.firstName, users.lastName, users.profileImageUrl)
+      .having(sql`count(distinct ${visionGoals.id}) > 0 OR count(distinct ${visionHabits.id}) > 0`)
+      .orderBy(desc(sql`max(${habitLogs.loggedAt})`))
+      .limit(50);
+
+    return {
+      totalUsersWithGoals,
+      averageCompletionRate,
+      activeJourneys,
+      userProgress: userProgressData.map(u => ({
+        userId: u.userId,
+        firstName: u.firstName,
+        lastName: u.lastName,
+        profileImageUrl: u.profileImageUrl,
+        goalsCount: Number(u.goalsCount),
+        habitsTracked: Number(u.habitsTracked),
+        lastActivity: u.lastActivity,
+      })),
+    };
+  }
+
+  async getGrowthTracks(): Promise<Array<{
+    id: number;
+    key: string;
+    title: string;
+    description: string | null;
+    isEnabled: boolean;
+    modulesCount: number;
+  }>> {
+    const tracksData = await db
+      .select({
+        id: tracks.id,
+        key: tracks.key,
+        title: tracks.title,
+        description: tracks.description,
+        isEnabled: tracks.isEnabled,
+        modulesCount: sql<number>`count(${modules.id})`,
+      })
+      .from(tracks)
+      .leftJoin(modules, eq(tracks.id, modules.trackId))
+      .groupBy(tracks.id, tracks.key, tracks.title, tracks.description, tracks.isEnabled)
+      .orderBy(tracks.orderIndex);
+
+    return tracksData.map(t => ({
+      id: t.id,
+      key: t.key,
+      title: t.title,
+      description: t.description,
+      isEnabled: t.isEnabled ?? true,
+      modulesCount: Number(t.modulesCount),
+    }));
   }
 }
 

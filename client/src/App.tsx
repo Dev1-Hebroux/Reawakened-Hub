@@ -58,12 +58,24 @@ import { AdminDashboard } from "@/pages/Admin";
 import { AdminEvents } from "@/pages/AdminEvents";
 import { AdminSparks } from "@/pages/AdminSparks";
 import { AdminBlog } from "@/pages/AdminBlog";
-import { AdminUsers } from "@/pages/AdminUsers";
+import { AdminUsers as AdminUsersLegacy } from "@/pages/AdminUsers";
 import { AdminModeration } from "@/pages/AdminModeration";
 import { AdminFunnels } from "@/pages/AdminFunnels";
 import { AdminMissions } from "@/pages/AdminMissions";
-import { AdminChallenges } from "@/pages/AdminChallenges";
+import { AdminChallenges as AdminChallengesLegacy } from "@/pages/AdminChallenges";
+import { AdminChallenges } from "@/pages/admin/Challenges";
+import { AdminDashboard as NewAdminDashboard } from "@/pages/admin/Dashboard";
+import { AdminUsers as NewAdminUsers } from "@/pages/admin/Users";
+import { ContentSparks as AdminContentSparks } from "@/pages/admin/ContentSparks";
+import { ContentBlog as AdminContentBlog } from "@/pages/admin/ContentBlog";
+import { AdminCoaching } from "@/pages/admin/Coaching";
+import { AdminMissionTrips } from "@/pages/admin/MissionTrips";
+import { AdminVisionGoals } from "@/pages/admin/VisionGoals";
+import { AnalyticsDashboard } from "@/pages/admin/Analytics";
 import { Goals } from "@/pages/Goals";
+import { ChallengesPage } from "@/pages/Challenges";
+import { MissionTripsPublic } from "@/pages/MissionTripsPublic";
+import { CoachingPublic } from "@/pages/CoachingPublic";
 import { SchoolsLanding, UniversitiesLanding, EarlyCareerLanding, BuildersLanding, CouplesLanding } from "@/pages/AudienceLanding";
 
 function Router() {
@@ -123,14 +135,25 @@ function Router() {
       <Route path="/movement" component={MovementHub} />
       <Route path="/profile" component={Profile} />
       <Route path="/admin" component={AdminDashboard} />
+      <Route path="/admin/dashboard" component={NewAdminDashboard} />
       <Route path="/admin/events" component={AdminEvents} />
-      <Route path="/admin/sparks" component={AdminSparks} />
-      <Route path="/admin/blog" component={AdminBlog} />
-      <Route path="/admin/users" component={AdminUsers} />
+      <Route path="/admin/sparks" component={AdminContentSparks} />
+      <Route path="/admin/blog" component={AdminContentBlog} />
+      <Route path="/admin/content/sparks" component={AdminContentSparks} />
+      <Route path="/admin/content/blog" component={AdminContentBlog} />
+      <Route path="/admin/users" component={NewAdminUsers} />
+      <Route path="/admin/users/legacy" component={AdminUsersLegacy} />
       <Route path="/admin/moderation" component={AdminModeration} />
       <Route path="/admin/funnels" component={AdminFunnels} />
       <Route path="/admin/missions" component={AdminMissions} />
       <Route path="/admin/challenges" component={AdminChallenges} />
+      <Route path="/admin/coaching" component={AdminCoaching} />
+      <Route path="/admin/mission-trips" component={AdminMissionTrips} />
+      <Route path="/admin/vision" component={AdminVisionGoals} />
+      <Route path="/admin/analytics" component={AnalyticsDashboard} />
+      <Route path="/challenges" component={ChallengesPage} />
+      <Route path="/mission-trips" component={MissionTripsPublic} />
+      <Route path="/coaching-public" component={CoachingPublic} />
       <Route path="/goals" component={Goals} />
       <Route component={NotFound} />
     </Switch>
