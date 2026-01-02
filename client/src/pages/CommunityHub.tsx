@@ -576,7 +576,7 @@ export function CommunityHub() {
 
             {/* Vision & Goals Card */}
             <div 
-              onClick={() => navigate("/goals")}
+              onClick={() => navigate("/vision")}
               className="bg-gradient-to-br from-[#7C9A8E] to-[#4A7C7C] rounded-[30px] p-6 text-white shadow-lg cursor-pointer hover:shadow-xl transition-all relative overflow-hidden group"
               data-testid="card-vision-goals"
             >
