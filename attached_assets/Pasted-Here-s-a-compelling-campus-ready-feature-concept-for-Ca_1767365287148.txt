@@ -1,0 +1,263 @@
+Here’s a compelling, campus-ready feature concept for **Campus Prayer Altars**—built to feel movement-driven (not “just another app”), while still being practical, measurable, and easy to scale across the UK.
+
+---
+
+## The big idea: turn campuses into mapped, living prayer centres
+
+Imagine opening the app and seeing the UK covered in active prayer points—**real students and supporters raising “altars” on real campuses**, praying weekly, sharing burdens, tracking breakthroughs, and inviting others to join.
+
+This is not a directory. It’s a movement map.
+
+---
+
+## Core concept: “Raise an Altar” on your campus
+
+### What an Altar is
+
+A **Prayer Altar** is a campus-based prayer hub (University or Sixth Form College) where:
+
+* a **Prayer Leader** (student or staff) initiates a recurring prayer commitment
+* other people **join as intercessors**
+* prayer burdens, topics, schedules, and testimonies are captured over time
+* progress is visible so momentum builds
+
+### Why it works
+
+People don’t commit long-term to vague inspiration. They commit to:
+
+* a location (my campus)
+* a people group (my generation)
+* a mission (spiritual breakthrough)
+* a rhythm (weekly prayer)
+* a community (I’m not doing this alone)
+
+---
+
+## Database foundation: UK campus directory + location data
+
+Build a structured **database of UK universities and sixth form colleges**, including:
+
+* Name, type (University / Sixth Form)
+* Location (city, postcode, lat/long)
+* Region (useful for outreach and reporting)
+* Optional metadata later: student population, chaplaincy links, CU presence, etc.
+
+This becomes the “map canvas” where altars appear.
+
+---
+
+## Key user actions (simple, powerful, repeatable)
+
+### 1) Raise an altar (become a prayer leader)
+
+A user taps **“Raise an Altar”**, selects their campus, and sets:
+
+* Altar name (e.g., “UCL Prayer Altar”)
+* Focus burdens (revival, salvations, unity, holiness, healing, etc.)
+* Weekly rhythm (day/time)
+* Visibility (public / private / invite-only)
+* Leadership role tag (student / staff / alumni / supporter)
+
+This unlocks leadership features: schedules, moderation, testimony approvals, updates.
+
+### 2) Join an altar (become an intercessor)
+
+Others can:
+
+* discover altars on the map or via directory search
+* join with a role tag: **Student / Staff / Alumni / Local Supporter**
+* commit to a schedule slot (or general participation)
+* receive weekly prompts + reminders
+
+### 3) Start a new altar if none exists
+
+If a campus has no altar, users can start one immediately—removing friction and accelerating spread.
+
+---
+
+## Map view: “Prayer heat-map” of the UK
+
+A **map of the UK** showing:
+
+* pins for active altars
+* campus coverage counts by region
+* filters (University / Sixth Form, active this week, prayer hours, focus burdens)
+
+This creates social proof and urgency:
+
+* “People are praying everywhere—why not here?”
+* “We’re close to covering every campus.”
+
+---
+
+## Feature set that makes it feel alive (and keeps people coming back)
+
+### 1) Prayer Wall (live feed per campus)
+
+A dynamic feed that lets each altar post:
+
+* prayer requests (“burdens”)
+* scripture declarations
+* short updates (“We prayed for X today…”)
+* answered prayers
+
+This makes the altar feel like a community, not a static listing.
+
+**Persuasive advantage:** People stay engaged when they can see what they’re praying into, not just that they “joined.”
+
+---
+
+### 2) Weekly Prayer Schedules (coordination that builds rhythm)
+
+Each altar can set:
+
+* weekly schedule slots (e.g., Tue 7am–8am, Thu 9pm)
+* sign-ups per slot
+* reminders and prompts
+* rotating themes (week-by-week burdens)
+
+**This is what turns intention into lifestyle.**
+
+---
+
+### 3) Prayer Stats (momentum you can measure)
+
+Track and display:
+
+* total prayer hours (per altar + national)
+* number of active intercessors
+* campuses covered (national progress bar)
+* weekly participation trends
+* streaks (personal + altar)
+
+**Persuasive advantage:** Stats turn prayer into shared achievement—without turning it into performance.
+
+---
+
+### 4) Campus Directory (searchable and filterable)
+
+A clean directory that supports:
+
+* University vs Sixth Form filtering
+* “Active altars only”
+* “Needs a leader” campuses
+* Nearby campuses (location-based)
+* Focus burden filters (revival, evangelism, mental health, unity, etc.)
+
+This becomes an outreach tool for expansion:
+
+* “Help us cover the campuses near you.”
+
+---
+
+### 5) Testimony Board (breakthrough stories that fuel faith)
+
+Each altar can post testimonies:
+
+* salvations, healing, restored relationships
+* “open doors” on campus
+* answered prayer updates
+
+With simple structure:
+
+* Title
+* What happened (short)
+* Prayer focus it relates to
+* Optional anonymity toggle
+
+**Persuasive advantage:** Testimony is the engine of movement culture.
+
+---
+
+### 6) Leaderboard + Badges (gamification done with purpose)
+
+Gamification should reward **consistency + participation**, not spiritual ego.
+
+Examples:
+
+* “Altar Builder” (raised a campus altar)
+* “Faithful Intercessor” (4-week streak)
+* “Campus Covering” (prayed for 5 campuses)
+* “Watchman” (signed up for weekly slot)
+* “Testimony Carrier” (shared 3 breakthrough reports)
+
+Leaderboards can be:
+
+* personal (self vs self: streaks)
+* altar-based (team progress)
+* region-based (friendly momentum)
+
+---
+
+## Suggested data model (clean and scalable)
+
+* **Campus** (University/Sixth Form): name, type, location, region
+* **PrayerAltar**: campus_id, name, status, visibility, created_by
+* **User**: profile, location (optional), role tags
+* **AltarMembership**: altar_id, user_id, role (leader/intercessor), identity_tag (student/staff/alumni/supporter)
+* **PrayerBurden / Topic**: altar_id, title, description, category, scripture
+* **PrayerPost** (Prayer Wall): altar_id, user_id, type (request/answer/update/scripture), content
+* **PrayerSchedule**: altar_id, recurring slot definitions
+* **PrayerSession / Check-in**: altar_id, user_id, duration, timestamp (for prayer hours)
+* **Testimony**: altar_id, user_id, content, approved_status
+* **Badge / Achievement** + **UserAchievement**
+* **StatsSnapshots** (optional): weekly aggregation for reporting
+
+---
+
+## MVP vs Next Phase (so you can ship fast)
+
+### MVP (launch-ready, high impact)
+
+* Campus directory (UK universities + sixth forms)
+* Raise an altar + join altar
+* Map view of active altars
+* Prayer wall (basic requests + answered prayer)
+* Weekly schedule + reminders
+* Simple prayer hour tracking (manual check-in)
+* Basic stats (hours, members, campuses covered)
+
+### Phase 2 (movement acceleration)
+
+* Testimony board + moderation workflow
+* Badges + streaks + leaderboards
+* Regional progress dashboards
+* “Needs a leader” recruitment feature
+* Shareable campus prayer cards (social + WhatsApp)
+* Partnerships layer (churches / ministries supporting campuses)
+
+---
+
+## The persuasion layer: how this drives commitment and revival
+
+This feature set is strong because it makes prayer:
+
+* **Visible** (map + stats)
+* **Local** (your campus)
+* **Social** (join a team)
+* **Rhythmic** (weekly schedule)
+* **Story-driven** (testimonies)
+* **Rewarding** (badges + streaks)
+* **Scalable** (directory + easy new altar creation)
+
+In other words: it builds a lifestyle, not a moment.
+
+---
+
+## Key metrics you’ll want from day one
+
+* Active altars (weekly active)
+* New altars started per week
+* % of campuses covered (by type/region)
+* Prayer hours per week (national + per altar)
+* Retention (week 1 → week 4)
+* Schedule fill rate (how many slots covered)
+* Testimonies posted / answered prayers logged
+
+---
+
+If you want, I can turn this into:
+
+1. a **PRD-style backlog** (epics, user stories, acceptance criteria),
+2. a **screen-by-screen UI inventory** (Home → Map → Campus → Altar → Wall → Schedule → Check-in → Testimonies), and
+3. a **launch plan** specifically for UK sixth forms + universities starting January 2026 (digital-first, campus-second).

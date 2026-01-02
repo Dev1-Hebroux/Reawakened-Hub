@@ -46,6 +46,7 @@ import { FeedbackResponse } from "@/pages/FeedbackResponse";
 import { CoachingLabs } from "@/pages/CoachingLabs";
 import { GroupLabs } from "@/pages/GroupLabs";
 import { PrayHub } from "@/pages/PrayHub";
+import { CampusPrayer } from "@/pages/CampusPrayer";
 import { MissionsHub } from "@/pages/MissionsHub";
 import { GiveHub } from "@/pages/GiveHub";
 import { MovementHub } from "@/pages/MovementHub";
@@ -130,6 +131,7 @@ function Router() {
       <Route path="/group-labs" component={GroupLabs} />
       <Route path="/vision/:sessionId/tools/group-labs" component={GroupLabs} />
       <Route path="/pray" component={PrayHub} />
+      <Route path="/pray/campus/:id" component={CampusPrayer} />
       <Route path="/missions" component={MissionsHub} />
       <Route path="/missions/action/:type" component={DigitalActions} />
       <Route path="/mission/onboarding" component={MissionOnboarding} />
