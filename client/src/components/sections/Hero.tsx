@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import heroImage from "@assets/generated_images/young_man_praying_with_golden_light_overlay.png";
-import visionVideo from "@assets/generated_videos/holy_spirit_dove_vision_video.mp4";
+import visionVideo from "@assets/generated_videos/reawakened_vision_promo_video.mp4";
 import logoImage from "@assets/1_1765584395888.png";
 import heroBgImage from "@assets/11_1767182385476.png";
 
