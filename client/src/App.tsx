@@ -52,7 +52,6 @@ import { MovementHub } from "@/pages/MovementHub";
 import { MissionOnboarding } from "@/pages/MissionOnboarding";
 import { DigitalActions } from "@/pages/DigitalActions";
 import { MobileNav } from "@/components/layout/MobileNav";
-import { QuickShare } from "@/components/ui/QuickShare";
 import Profile from "@/pages/Profile";
 import { AdminDashboard } from "@/pages/Admin";
 import { AdminEvents } from "@/pages/AdminEvents";
@@ -171,7 +170,6 @@ function AppContent() {
         <Toaster />
         <Router />
         <MobileNav />
-        <QuickShare />
         <AiCoachDrawer />
         {isAuthenticated && (
           <OnboardingTour 

@@ -1,10 +1,12 @@
 import { Link, useLocation } from "wouter";
-import { Menu, X, Compass } from "lucide-react";
+import { Menu, X, Compass, Sparkles } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import { NotificationBell } from "@/components/NotificationBell";
+
+const openAwakeAI = () => window.dispatchEvent(new CustomEvent('openAwakeAI'));
 
 // Brand Assets - HD Logos (278x141 larger versions)
 import logoDark from "@assets/Reawakened_278_141_logo_bigger_1767192125280.png";
@@ -83,6 +85,16 @@ export function Navbar() {
           </div>
 
           <div className="hidden md:flex items-center gap-3">
+            {isAuthenticated && (
+              <button
+                onClick={openAwakeAI}
+                className={`p-2 rounded-full transition-all ${useDarkTheme ? 'hover:bg-white/10 text-white' : 'hover:bg-gray-100 text-gray-700'}`}
+                title="Awake AI"
+                data-testid="button-awake-ai-nav"
+              >
+                <Sparkles className="h-5 w-5" />
+              </button>
+            )}
             <NotificationBell isDark={useDarkTheme} />
             <Button 
               onClick={() => navigate(isAuthenticated ? '/missions' : '/mission/onboarding')}

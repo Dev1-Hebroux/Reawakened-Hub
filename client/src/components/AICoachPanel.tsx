@@ -77,7 +77,7 @@ export function AICoachPanel({ sessionId, tool, data, title, description }: AICo
           ) : (
             <Sparkles className="w-4 h-4" />
           )}
-          {analyze.isPending ? "Analyzing..." : response ? "View AI Insights" : "Ask AI Coach"}
+          {analyze.isPending ? "Analyzing..." : response ? "View AI Insights" : "Ask Awake AI"}
         </Button>
       </motion.div>
 
@@ -103,7 +103,7 @@ export function AICoachPanel({ sessionId, tool, data, title, description }: AICo
                     <Sparkles className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-white">{title || "AI Coach Insights"}</h3>
+                    <h3 className="font-bold text-white">{title || "Awake AI Insights"}</h3>
                     <p className="text-white/80 text-sm">{description || "Personalized guidance for your journey"}</p>
                   </div>
                 </div>

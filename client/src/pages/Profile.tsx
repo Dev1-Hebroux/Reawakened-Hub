@@ -26,7 +26,7 @@ export default function Profile() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#1a2744]">
+    <div className="min-h-screen bg-white dark:bg-[#1a2744]">
       <Navbar />
       
       <main className="pt-28 pb-32 px-4">
@@ -37,13 +37,13 @@ export default function Profile() {
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-8"
           >
-            <div className="h-24 w-24 mx-auto rounded-full bg-[#243656] border-4 border-[#D4A574] flex items-center justify-center mb-4 shadow-xl">
+            <div className="h-24 w-24 mx-auto rounded-full bg-[#FAF8F5] dark:bg-[#243656] border-4 border-[#D4A574] flex items-center justify-center mb-4 shadow-xl">
               <User className="h-12 w-12 text-[#D4A574]" />
             </div>
-            <h1 className="text-2xl font-display font-bold text-white mb-1">
+            <h1 className="text-2xl font-display font-bold text-gray-900 dark:text-white mb-1">
               Welcome Back
             </h1>
-            <p className="text-[#7C9A8E]">
+            <p className="text-gray-600 dark:text-[#7C9A8E]">
               Sign in to track your journey
             </p>
           </motion.div>
@@ -57,12 +57,12 @@ export default function Profile() {
             {stats.map((stat, i) => (
               <div 
                 key={stat.label}
-                className="bg-[#243656] rounded-2xl p-4 border-2 border-[#4A7C7C]/30 shadow-lg text-center"
+                className="bg-[#FAF8F5] dark:bg-[#243656] rounded-2xl p-4 border-2 border-[#4A7C7C]/30 shadow-lg text-center"
                 data-testid={`stat-${stat.label.toLowerCase().replace(/\s+/g, '-')}`}
               >
                 <stat.icon className="h-5 w-5 text-[#D4A574] mx-auto mb-2" />
-                <div className="text-xl font-bold text-white">{stat.value}</div>
-                <div className="text-[10px] text-[#7C9A8E]">{stat.label}</div>
+                <div className="text-xl font-bold text-gray-900 dark:text-white">{stat.value}</div>
+                <div className="text-[10px] text-gray-600 dark:text-[#7C9A8E]">{stat.label}</div>
               </div>
             ))}
           </motion.div>
@@ -71,24 +71,24 @@ export default function Profile() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
-            className="bg-[#243656] rounded-3xl border-2 border-[#4A7C7C]/30 shadow-xl overflow-hidden mb-6"
+            className="bg-[#FAF8F5] dark:bg-[#243656] rounded-3xl border-2 border-gray-200 dark:border-[#4A7C7C]/30 shadow-xl overflow-hidden mb-6"
           >
             {menuItems.map((item, i) => (
               <button
                 key={item.label}
                 onClick={() => item.href !== "#" && navigate(item.href)}
-                className={`w-full flex items-center justify-between p-4 hover:bg-[#1a2744] transition-all ${
-                  i !== menuItems.length - 1 ? 'border-b border-[#4A7C7C]/20' : ''
+                className={`w-full flex items-center justify-between p-4 hover:bg-gray-100 dark:hover:bg-[#1a2744] transition-all ${
+                  i !== menuItems.length - 1 ? 'border-b border-gray-200 dark:border-[#4A7C7C]/20' : ''
                 }`}
                 data-testid={`menu-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
               >
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-xl bg-[#1a2744] flex items-center justify-center">
+                  <div className="h-10 w-10 rounded-xl bg-white dark:bg-[#1a2744] flex items-center justify-center">
                     <item.icon className="h-5 w-5 text-[#7C9A8E]" />
                   </div>
                   <div className="text-left">
-                    <div className="font-bold text-white text-sm">{item.label}</div>
-                    <div className="text-xs text-[#7C9A8E]">{item.description}</div>
+                    <div className="font-bold text-gray-900 dark:text-white text-sm">{item.label}</div>
+                    <div className="text-xs text-gray-600 dark:text-[#7C9A8E]">{item.description}</div>
                   </div>
                 </div>
                 <ChevronRight className="h-5 w-5 text-[#4A7C7C]" />
@@ -109,7 +109,7 @@ export default function Profile() {
             </Button>
             
             <button 
-              className="w-full flex items-center justify-center gap-2 text-[#7C9A8E] hover:text-white py-3 transition-all"
+              className="w-full flex items-center justify-center gap-2 text-gray-500 dark:text-[#7C9A8E] hover:text-gray-700 dark:hover:text-white py-3 transition-all"
               data-testid="button-sign-out"
             >
               <LogOut className="h-4 w-4" />

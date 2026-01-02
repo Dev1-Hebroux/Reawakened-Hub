@@ -145,7 +145,7 @@ export function VisionHabits() {
               "Create habits that support your SMART goals",
               "Check off each habit daily as you complete them",
               "Watch your streaks grow with consistent effort",
-              "Review your patterns with AI Coach insights"
+              "Review your patterns with Awake AI insights"
             ]}
           />
 

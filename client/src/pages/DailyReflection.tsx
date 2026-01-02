@@ -368,7 +368,7 @@ export function DailyReflection() {
                 </Card>
               )}
 
-              {/* AI Coaching Insight */}
+              {/* Awake AI Insight */}
               <AnimatePresence>
                 {isLoadingInsight && (
                   <motion.div
@@ -379,7 +379,7 @@ export function DailyReflection() {
                     <Card className="bg-gradient-to-br from-[#4A7C7C]/10 to-[#7C9A8E]/10 border-[#4A7C7C]/20">
                       <CardContent className="p-4 flex items-center gap-3">
                         <Loader2 className="w-5 h-5 text-[#4A7C7C] animate-spin" />
-                        <span className="text-sm text-[#4A7C7C]">Getting your personalized coaching insight...</span>
+                        <span className="text-sm text-[#4A7C7C]">Getting your personalized Awake AI insight...</span>
                       </CardContent>
                     </Card>
                   </motion.div>
@@ -395,7 +395,7 @@ export function DailyReflection() {
                       <CardContent className="p-4 space-y-3">
                         <div className="flex items-center gap-2 text-[#4A7C7C]">
                           <MessageCircle className="w-5 h-5" />
-                          <span className="font-medium text-sm">AI Coach Insight</span>
+                          <span className="font-medium text-sm">Awake AI Insight</span>
                         </div>
                         <p className="text-sm text-gray-700 leading-relaxed">{aiInsight}</p>
                       </CardContent>

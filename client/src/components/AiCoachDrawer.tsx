@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, createContext, useContext } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -31,6 +31,17 @@ interface AiCoachDrawerProps {
   entryPoint?: string;
 }
 
+interface AwakeAIContextType {
+  openAwakeAI: () => void;
+}
+
+const AwakeAIContext = createContext<AwakeAIContextType | null>(null);
+
+export function useAwakeAI() {
+  const context = useContext(AwakeAIContext);
+  return context;
+}
+
 export function AiCoachDrawer({ entryPoint = "general" }: AiCoachDrawerProps) {
   const { isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
@@ -38,6 +49,12 @@ export function AiCoachDrawer({ entryPoint = "general" }: AiCoachDrawerProps) {
   const [activeSessionId, setActiveSessionId] = useState<number | null>(null);
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleOpenAwakeAI = () => setIsOpen(true);
+    window.addEventListener('openAwakeAI', handleOpenAwakeAI);
+    return () => window.removeEventListener('openAwakeAI', handleOpenAwakeAI);
+  }, []);
 
   const { data: sessionsData } = useQuery<{ sessions: Session[] }>({
     queryKey: ["/api/ai-coach/sessions"],
@@ -98,16 +115,6 @@ export function AiCoachDrawer({ entryPoint = "general" }: AiCoachDrawerProps) {
 
   return (
     <>
-      <motion.button
-        data-testid="button-ai-coach-trigger"
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-24 right-4 z-40 bg-gradient-to-br from-[#4A7C7C] to-[#3d6666] text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-shadow"
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-      >
-        <Sparkles className="h-6 w-6" />
-      </motion.button>
-
       <AnimatePresence>
         {isOpen && (
           <>
@@ -131,7 +138,7 @@ export function AiCoachDrawer({ entryPoint = "general" }: AiCoachDrawerProps) {
                     <Bot className="h-5 w-5" />
                   </div>
                   <div>
-                    <h3 className="font-semibold">AI Coach</h3>
+                    <h3 className="font-semibold">Awake AI</h3>
                     <p className="text-xs text-white/70">Your personal growth companion</p>
                   </div>
                 </div>
@@ -151,7 +158,7 @@ export function AiCoachDrawer({ entryPoint = "general" }: AiCoachDrawerProps) {
                       <Sparkles className="h-8 w-8 text-[#4A7C7C]" />
                     </div>
                     <h2 className="text-xl font-bold text-gray-900 mb-2">
-                      Welcome to AI Coaching
+                      Welcome to Awake AI
                     </h2>
                     <p className="text-gray-600 text-sm">
                       Get personalized guidance on your goals, habits, and spiritual journey.

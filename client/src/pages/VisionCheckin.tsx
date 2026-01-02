@@ -112,7 +112,7 @@ export function VisionCheckin() {
               "Complete a quick daily check-in each morning",
               "Rate your energy and set your main focus",
               "Do a weekly review every Sunday to reflect",
-              "Use AI Coach for deeper weekly insights"
+              "Use Awake AI for deeper weekly insights"
             ]}
           />
 
