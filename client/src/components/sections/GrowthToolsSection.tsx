@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Link } from "wouter";
 import { 
-  Target, Compass, Sparkles, TrendingUp, 
+  Target, Compass, TrendingUp, 
   ArrowRight, Star, Zap, BarChart3
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -71,7 +71,7 @@ export function GrowthToolsSection() {
             viewport={{ once: true }}
             className="inline-flex items-center gap-2 bg-gradient-to-r from-violet-500/10 to-teal-500/10 backdrop-blur-sm border border-violet-200/50 rounded-full px-5 py-2.5 mb-6"
           >
-            <Sparkles className="h-4 w-4 text-violet-600" />
+            <TrendingUp className="h-4 w-4 text-violet-600" />
             <span className="text-sm font-bold bg-gradient-to-r from-violet-600 to-teal-600 bg-clip-text text-transparent">Personal Growth Tools</span>
           </motion.div>
           

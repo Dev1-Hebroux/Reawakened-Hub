@@ -3,7 +3,7 @@ import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Compass, ArrowRight, X, Sparkles, Target, TrendingUp, Heart } from "lucide-react";
+import { Compass, ArrowRight, X, Target, TrendingUp, Heart } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import type { User } from "@shared/schema";
 
@@ -90,7 +90,7 @@ export function VisionPromptModal() {
               className="w-full bg-[#7C9A8E] hover:bg-[#6B8B7E] text-white py-6 rounded-xl font-semibold"
               data-testid="button-start-vision-prompt"
             >
-              <Sparkles className="w-5 h-5 mr-2" />
+              <Compass className="w-5 h-5 mr-2" />
               Start My Vision Journey
               <ArrowRight className="w-5 h-5 ml-2" />
             </Button>

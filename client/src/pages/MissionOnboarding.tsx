@@ -17,7 +17,6 @@ import {
   Timer,
   ChevronRight,
   ChevronLeft,
-  Sparkles,
   Check,
   Target,
   Flame,
@@ -44,7 +43,7 @@ const steps = [
 ];
 
 const whyOptions = [
-  { id: "encounter", label: "Encounter God deeper", icon: Sparkles },
+  { id: "encounter", label: "Encounter God deeper", icon: Heart },
   { id: "grow", label: "Grow as a disciple", icon: Target },
   { id: "impact", label: "Make global impact", icon: Globe2 },
   { id: "community", label: "Join a movement", icon: Users },
@@ -57,7 +56,7 @@ const commitmentOptions = [
 ];
 
 const featureShowcase = [
-  { id: "sparks", icon: Sparkles, title: "Daily Sparks", description: "Start each day with devotionals", color: "bg-orange-500" },
+  { id: "sparks", icon: Flame, title: "Daily Sparks", description: "Start each day with devotionals", color: "bg-orange-500" },
   { id: "community", icon: MessageCircle, title: "Community Hub", description: "Connect with believers", color: "bg-green-500" },
   { id: "vision", icon: Compass, title: "Vision Journey", description: "Discover your purpose", color: "bg-teal-500" },
   { id: "challenges", icon: Trophy, title: "Growth Challenges", description: "Build lasting habits", color: "bg-purple-500" },
@@ -667,7 +666,7 @@ export function MissionOnboarding() {
                     <Loader2 className="h-5 w-5 animate-spin" />
                   ) : (
                     <>
-                      <Sparkles className="h-5 w-5 mr-2" />
+                      <Rocket className="h-5 w-5 mr-2" />
                       Launch My Mission
                     </>
                   )}

@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useLocation, useParams } from "wouter";
-import { ArrowRight, Lightbulb, Sparkles, Zap, Target, Heart } from "lucide-react";
+import { ArrowRight, Lightbulb, Star, Zap, Target, Heart } from "lucide-react";
 
 interface ToolLinkProps {
   tool: "wdep" | "sca" | "strengths" | "styles" | "eq";
@@ -26,7 +26,7 @@ const TOOL_CONFIG = {
   strengths: {
     name: "Strengths Discovery",
     description: "Identify your Top 5 character strengths",
-    icon: Sparkles,
+    icon: Star,
     color: "#7C9A8E",
     bgColor: "#7C9A8E/10",
   },

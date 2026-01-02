@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
 import {
-  ChevronLeft, ChevronRight, Zap, CheckCircle2, Sparkles,
+  ChevronLeft, ChevronRight, Zap, CheckCircle2,
   ArrowRight, BookOpen, Lightbulb, Target, Star, Plus, X,
   Flame, TrendingUp, Clock, Activity, GripVertical
 } from "lucide-react";

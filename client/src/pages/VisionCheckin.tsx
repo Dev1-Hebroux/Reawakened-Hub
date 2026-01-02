@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Slider } from "@/components/ui/slider";
-import { ArrowLeft, Sun, Calendar, Sparkles, Check, Lightbulb, ArrowRight } from "lucide-react";
+import { ArrowLeft, Sun, Calendar, Check, Lightbulb, ArrowRight } from "lucide-react";
 import { AICoachPanel, IntroGuide } from "@/components/AICoachPanel";
 import { ToolLinkCompact } from "@/components/ToolLink";
 
@@ -88,7 +88,7 @@ export function VisionCheckin() {
             className="text-center mb-6"
           >
             <div className="inline-flex items-center gap-2 bg-[#C17767] text-white px-4 py-2 rounded-full mb-4">
-              <Sparkles className="w-4 h-4" />
+              <Lightbulb className="w-4 h-4" />
               <span className="text-sm font-medium">Stage 5: Review</span>
             </div>
             <h1 className="text-3xl md:text-4xl font-display font-bold mb-3 text-[#2C3E2D]">
@@ -277,7 +277,7 @@ function DailyCheckin({ sessionId, isFaithMode }: { sessionId: string; isFaithMo
           {isFaithMode && (
             <div className="bg-[#9B8AA6]/10 p-5 rounded-xl border border-[#9B8AA6]/20">
               <Label htmlFor="prayerNote" className="flex items-center gap-2 text-[#9B8AA6] font-medium">
-                <Sparkles className="w-4 h-4" />
+                <Lightbulb className="w-4 h-4" />
                 Prayer Focus
               </Label>
               <Textarea
@@ -462,7 +462,7 @@ function WeeklyReview({ sessionId, isFaithMode }: { sessionId: string; isFaithMo
             <>
               <div className="bg-[#9B8AA6]/10 p-5 rounded-xl border border-[#9B8AA6]/20">
                 <Label htmlFor="gratitude" className="flex items-center gap-2 text-[#9B8AA6] font-medium">
-                  <Sparkles className="w-4 h-4" />
+                  <Lightbulb className="w-4 h-4" />
                   Gratitude
                 </Label>
                 <Textarea
@@ -478,7 +478,7 @@ function WeeklyReview({ sessionId, isFaithMode }: { sessionId: string; isFaithMo
 
               <div className="bg-[#9B8AA6]/10 p-5 rounded-xl border border-[#9B8AA6]/20">
                 <Label htmlFor="prayerFocus" className="flex items-center gap-2 text-[#9B8AA6] font-medium">
-                  <Sparkles className="w-4 h-4" />
+                  <Lightbulb className="w-4 h-4" />
                   Prayer Focus for Next Week
                 </Label>
                 <Textarea

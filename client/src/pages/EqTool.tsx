@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
 import {
-  ChevronLeft, ChevronRight, Heart, CheckCircle2, Sparkles,
+  ChevronLeft, ChevronRight, Heart, CheckCircle2,
   ArrowRight, BookOpen, Lightbulb, Eye, Users, Brain, Shield,
   Zap, Target, Star, Clock, Activity
 } from "lucide-react";

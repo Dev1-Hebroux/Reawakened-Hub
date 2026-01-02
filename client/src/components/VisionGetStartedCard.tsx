@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { 
-  Compass, ArrowRight, Play, CheckCircle2, Sparkles, 
+  Compass, ArrowRight, Play, CheckCircle2, 
   Target, TrendingUp, RotateCcw
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -159,7 +159,7 @@ export function VisionGetStartedCard() {
                   className="bg-white text-[#4A7C7C] hover:bg-white/90 font-semibold rounded-full px-6"
                   data-testid="button-continue-vision"
                 >
-                  <Sparkles className="w-4 h-4 mr-2" />
+                  <Compass className="w-4 h-4 mr-2" />
                   Continue Journey
                 </Button>
               </Link>

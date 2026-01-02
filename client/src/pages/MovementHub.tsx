@@ -15,7 +15,7 @@ import {
   ChevronRight,
   Calendar,
   Play,
-  Sparkles,
+  Quote,
   Target,
   Clock,
   Award,
@@ -324,7 +324,7 @@ export function MovementHub() {
           <div className="flex gap-2 mb-6 bg-[#243656] rounded-2xl p-1.5 border border-[#4A7C7C]/30 shadow-lg">
             {[
               { key: "challenges", label: "Challenges", icon: Trophy },
-              { key: "testimonies", label: "Stories", icon: Sparkles },
+              { key: "testimonies", label: "Stories", icon: Quote },
               { key: "prayer", label: "Prayer Wall", icon: Heart },
             ].map((tab) => (
               <button
@@ -430,7 +430,7 @@ export function MovementHub() {
                   className="w-full bg-gradient-to-r from-primary to-[#D4A574] hover:opacity-90 text-white font-bold py-6 rounded-2xl mb-2"
                   data-testid="button-share-testimony"
                 >
-                  <Sparkles className="h-5 w-5 mr-2" />
+                  <MessageCircle className="h-5 w-5 mr-2" />
                   Share Your Story
                 </Button>
                 

@@ -11,7 +11,7 @@ import { Footer } from "@/components/layout/Footer";
 import {
   ChevronLeft, Users, Calendar, Target, MessageCircle,
   CheckCircle2, ArrowRight, BookOpen, Heart, Brain,
-  Sparkles, Clock, Video, Star, Lightbulb, Flame
+  Clock, Video, Star, Lightbulb, Flame
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { AICoachPanel } from "@/components/AICoachPanel";
@@ -129,7 +129,7 @@ export function CoachingLabs() {
       <Card className="bg-[#4A7C7C]/10 border-[#4A7C7C]/20 mb-6">
         <CardContent className="p-6">
           <div className="flex items-center gap-3 mb-4">
-            <Sparkles className="w-5 h-5 text-[#4A7C7C]" />
+            <Lightbulb className="w-5 h-5 text-[#4A7C7C]" />
             <span className="font-medium text-[#2C3E2D]">What to Expect</span>
           </div>
           <ul className="space-y-3 text-left text-sm text-[#6B7B6E]">

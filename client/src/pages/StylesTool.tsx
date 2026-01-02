@@ -6,9 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import {
-  ChevronLeft, ChevronRight, Users, CheckCircle2, Sparkles,
+  ChevronLeft, ChevronRight, Users, CheckCircle2,
   ArrowRight, BookOpen, Lightbulb, MessageCircle, Zap,
-  Heart, Shield, Target, Crown, Star, Clock
+  Heart, Shield, Target, Crown, Star, Clock, Megaphone
 } from "lucide-react";
 import { AICoachPanel } from "@/components/AICoachPanel";
 
@@ -34,7 +34,7 @@ const STYLE_PROFILES = [
     color: "from-[#D4A574] to-[#C49464]",
     lightColor: "bg-[#D4A574]/10",
     textColor: "text-[#D4A574]",
-    icon: Sparkles,
+    icon: Megaphone,
     traits: ["Enthusiastic", "Creative", "Persuasive", "Optimistic"],
     strengths: ["Motivates others", "Brings energy", "Creative problem solver"],
     challenges: ["May lack follow-through", "Can be disorganized", "May talk more than listen"],

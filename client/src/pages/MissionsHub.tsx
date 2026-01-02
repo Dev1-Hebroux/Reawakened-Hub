@@ -28,8 +28,7 @@ import {
   Laptop,
   Target,
   BookOpen,
-  Play,
-  Sparkles
+  Play
 } from "lucide-react";
 import type { MissionProject, MissionOpportunity, MissionChallenge, TrainingModule } from "@shared/schema";
 
@@ -154,7 +153,7 @@ export function MissionsHub() {
                 onClick={() => navigate("/mission/onboarding")}
                 data-testid="button-start-mission"
               >
-                <Sparkles className="h-5 w-5 mr-2" />
+                <Rocket className="h-5 w-5 mr-2" />
                 Begin Setup
               </Button>
             </motion.div>

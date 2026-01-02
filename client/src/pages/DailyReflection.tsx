@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  BookOpen, Flame, Heart, Sparkles, ChevronLeft,
+  BookOpen, Flame, Heart, ChevronLeft,
   PenLine, Share2, CheckCircle2, Sun, Moon, Calendar,
   TrendingUp, MessageCircle, Loader2
 } from "lucide-react";
@@ -409,7 +409,7 @@ export function DailyReflection() {
           {!user && (
             <Card className="bg-[#D4A574]/10 border-[#D4A574]/20">
               <CardContent className="p-5 text-center">
-                <Sparkles className="w-8 h-8 text-[#D4A574] mx-auto mb-2" />
+                <BookOpen className="w-8 h-8 text-[#D4A574] mx-auto mb-2" />
                 <h3 className="font-semibold text-[#2C3E2D] mb-2">Track Your Journey</h3>
                 <p className="text-sm text-[#6B7B6E] mb-4">
                   Sign in to save your reflections, build a streak, and see your growth over time.

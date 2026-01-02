@@ -9,7 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
 import {
-  ChevronLeft, ChevronRight, Star, CheckCircle2, Sparkles,
+  ChevronLeft, ChevronRight, Star, CheckCircle2,
   ArrowRight, BookOpen, Lightbulb, Crown, Award, Medal,
   Heart, Shield, Users, Brain, Zap, Eye, Target, Compass,
   Flame, Palette, Smile, ThumbsUp, Scale, Clock, Leaf
@@ -40,7 +40,7 @@ const CHARACTER_STRENGTHS = [
   { key: "gratitude", name: "Gratitude", icon: Star, category: "Transcendence", desc: "Being thankful for good things" },
   { key: "hope", name: "Hope", icon: Flame, category: "Transcendence", desc: "Expecting the best and working to achieve it" },
   { key: "humor", name: "Humor", icon: Smile, category: "Transcendence", desc: "Liking to laugh and bring smiles to others" },
-  { key: "spirituality", name: "Spirituality", icon: Sparkles, category: "Transcendence", desc: "Having beliefs about higher purpose and meaning" },
+  { key: "spirituality", name: "Spirituality", icon: Star, category: "Transcendence", desc: "Having beliefs about higher purpose and meaning" },
 ];
 
 const CATEGORIES = ["Wisdom", "Courage", "Humanity", "Justice", "Temperance", "Transcendence"];

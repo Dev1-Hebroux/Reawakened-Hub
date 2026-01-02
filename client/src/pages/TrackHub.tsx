@@ -9,7 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import {
   Brain, Users, Crown, Lock, CheckCircle2, Play, 
-  ChevronRight, Sparkles, Star, Target, Zap, 
+  ChevronRight, Star, Target, Zap, 
   Heart, MessageCircle, Shield, Eye, Lightbulb, 
   TrendingUp, Compass, ArrowRight, Calendar, BarChart3
 } from "lucide-react";
@@ -339,7 +339,7 @@ export function TrackHub() {
             className="text-center mb-8"
           >
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#7C9A8E]/10 rounded-full mb-4">
-              <Sparkles className="w-4 h-4 text-[#7C9A8E]" />
+              <TrendingUp className="w-4 h-4 text-[#7C9A8E]" />
               <span className="text-sm font-medium text-[#7C9A8E]">Growth Tools</span>
             </div>
             <h1 className="text-3xl font-bold text-[#2C3E2D] mb-3">Track Hub</h1>

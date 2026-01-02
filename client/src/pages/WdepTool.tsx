@@ -11,13 +11,13 @@ import { Slider } from "@/components/ui/slider";
 import { Progress } from "@/components/ui/progress";
 import {
   ChevronLeft, ChevronRight, Target, Eye, Activity, 
-  Scale, Map, Rocket, CheckCircle2, Sparkles, Calendar,
-  Lightbulb, ArrowRight, BookOpen, Clock, Star, Zap
+  Scale, Map, Rocket, CheckCircle2, Calendar,
+  Lightbulb, ArrowRight, BookOpen, Clock, Star, Zap, Compass
 } from "lucide-react";
 import { AICoachPanel } from "@/components/AICoachPanel";
 
 const STEPS = [
-  { key: "intro", label: "Introduction", icon: Sparkles, color: "from-[#7C9A8E] to-[#6B8B7E]" },
+  { key: "intro", label: "Introduction", icon: Compass, color: "from-[#7C9A8E] to-[#6B8B7E]" },
   { key: "wants", label: "Wants", icon: Target, color: "from-[#4A7C7C] to-[#3A6C6C]" },
   { key: "doing", label: "Doing", icon: Activity, color: "from-[#D4A574] to-[#C49464]" },
   { key: "evaluation", label: "Evaluation", icon: Scale, color: "from-[#7C9A8E] to-[#6B8B7E]" },

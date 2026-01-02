@@ -16,7 +16,7 @@ import {
   Copy,
   Check,
   ExternalLink,
-  Sparkles,
+  Megaphone,
   Heart,
   Send,
   Loader2
@@ -280,7 +280,7 @@ export function DigitalActions() {
                     onClick={generateInviteLink}
                     data-testid="button-generate-invite"
                   >
-                    <Sparkles className="h-5 w-5 mr-2" />
+                    <Megaphone className="h-5 w-5 mr-2" />
                     Generate Invite Link
                   </Button>
                 ) : (

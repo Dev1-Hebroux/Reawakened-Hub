@@ -4,8 +4,9 @@ import { useState, useEffect, useRef } from "react";
 import { 
   ArrowRight, Flame, BookOpen, Users, Calendar, 
   GraduationCap, Briefcase, Rocket, Heart, School,
-  Sparkles, Zap, Trophy, Target, Star, Clock,
-  ChevronLeft, ChevronRight, Play, MessageCircle
+  Zap, Trophy, Target, Star, Clock,
+  ChevronLeft, ChevronRight, Play, MessageCircle,
+  Brain, Leaf, Palette, HeartHandshake
 } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/button";
@@ -75,7 +76,7 @@ const audienceConfigs: Record<string, AudienceConfig> = {
     bgPattern: "radial-gradient(circle at 30% 70%, rgba(139, 92, 246, 0.3) 0%, transparent 50%), radial-gradient(circle at 70% 30%, rgba(99, 102, 241, 0.3) 0%, transparent 50%)",
     benefits: [
       { icon: <Target className="h-5 w-5" />, title: "Uni-Focused", desc: "Content that gets it" },
-      { icon: <Sparkles className="h-5 w-5" />, title: "Mental Resilience", desc: "For exam season" },
+      { icon: <Brain className="h-5 w-5" />, title: "Mental Resilience", desc: "For exam season" },
       { icon: <Users className="h-5 w-5" />, title: "CU Network", desc: "Across campuses" },
       { icon: <BookOpen className="h-5 w-5" />, title: "Your Pace", desc: "Faith optional" }
     ],
@@ -106,7 +107,7 @@ const audienceConfigs: Record<string, AudienceConfig> = {
     benefits: [
       { icon: <Clock className="h-5 w-5" />, title: "5-Min Mornings", desc: "Before the commute" },
       { icon: <Target className="h-5 w-5" />, title: "Work Wisdom", desc: "Navigate challenges" },
-      { icon: <Sparkles className="h-5 w-5" />, title: "Inner Peace", desc: "Beyond ambition" },
+      { icon: <Leaf className="h-5 w-5" />, title: "Inner Peace", desc: "Beyond ambition" },
       { icon: <Users className="h-5 w-5" />, title: "Community", desc: "People who get it" }
     ],
     testimonials: [
@@ -134,7 +135,7 @@ const audienceConfigs: Record<string, AudienceConfig> = {
     accentColor: "emerald",
     bgPattern: "radial-gradient(circle at 20% 80%, rgba(20, 184, 166, 0.3) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(6, 182, 212, 0.3) 0%, transparent 50%)",
     benefits: [
-      { icon: <Sparkles className="h-5 w-5" />, title: "Fuel Creativity", desc: "Without hustle culture" },
+      { icon: <Palette className="h-5 w-5" />, title: "Fuel Creativity", desc: "Without hustle culture" },
       { icon: <Target className="h-5 w-5" />, title: "Sustainable", desc: "Built for the long game" },
       { icon: <Users className="h-5 w-5" />, title: "Network", desc: "Kingdom entrepreneurs" },
       { icon: <Zap className="h-5 w-5" />, title: "Challenges", desc: "Stretch your impact" }
@@ -166,7 +167,7 @@ const audienceConfigs: Record<string, AudienceConfig> = {
     benefits: [
       { icon: <MessageCircle className="h-5 w-5" />, title: "Daily Prompts", desc: "Meaningful convos" },
       { icon: <Heart className="h-5 w-5" />, title: "Communication", desc: "Navigate together" },
-      { icon: <Sparkles className="h-5 w-5" />, title: "Shared Rhythms", desc: "Build habits" },
+      { icon: <HeartHandshake className="h-5 w-5" />, title: "Shared Rhythms", desc: "Build habits" },
       { icon: <Users className="h-5 w-5" />, title: "Community", desc: "Intentional couples" }
     ],
     testimonials: [
@@ -624,7 +625,7 @@ export function AudienceLanding({ segment }: Props) {
             className="text-center mb-16"
           >
             <span className={`inline-flex items-center gap-2 bg-gradient-to-r ${config.gradient} text-white text-sm font-bold px-4 py-2 rounded-full mb-6`}>
-              <Sparkles className="h-4 w-4" /> What You'll Get
+              <Star className="h-4 w-4" /> What You'll Get
             </span>
             <h2 className="text-4xl md:text-5xl font-display font-bold mb-4">
               30 Days That Hit Different

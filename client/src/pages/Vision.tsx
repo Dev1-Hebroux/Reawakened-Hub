@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { 
-  Compass, Target, Sparkles, Calendar, CheckCircle2, 
+  Compass, Target, Calendar, CheckCircle2, 
   ArrowRight, Mountain, Heart, Flame, Star, ChevronRight,
   Zap, TrendingUp, Award, Play, Users, Trophy, Clock, X,
   BookOpen, Lightbulb, Route, Quote, LogIn
@@ -280,7 +280,7 @@ export function VisionPage() {
               transition={{ delay: 0.1 }}
               className="inline-flex items-center gap-2 bg-[#7C9A8E]/10 border border-[#7C9A8E]/30 text-[#7C9A8E] px-4 py-2 rounded-full mb-6"
             >
-              <Sparkles className="w-4 h-4 text-[#7C9A8E]" />
+              <Compass className="w-4 h-4 text-[#7C9A8E]" />
               <span className="text-sm font-medium">Life Vision & Goals Pathway</span>
             </motion.div>
             

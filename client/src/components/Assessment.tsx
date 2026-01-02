@@ -9,8 +9,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  ChevronLeft, ChevronRight, CheckCircle2, Sparkles,
-  ArrowRight, BookOpen, Lightbulb
+  ChevronLeft, ChevronRight, CheckCircle2,
+  ArrowRight, BookOpen, Lightbulb, Target
 } from "lucide-react";
 
 export interface AssessmentQuestion {
@@ -155,7 +155,7 @@ export function Assessment({
       className="text-center px-4"
     >
       <div className={`w-20 h-20 rounded-3xl bg-gradient-to-br ${colors.gradient} flex items-center justify-center mx-auto mb-6 shadow-lg`}>
-        <Sparkles className="w-10 h-10 text-white" />
+        <Target className="w-10 h-10 text-white" />
       </div>
       <h1 className="text-2xl font-bold text-[#2C3E2D] mb-3">{title}</h1>
       {subtitle && <p className="text-[#6B7B6E] mb-6 text-lg">{subtitle}</p>}

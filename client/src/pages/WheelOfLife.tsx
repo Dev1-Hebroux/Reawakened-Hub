@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, ArrowRight, Check, Target, Sparkles, CircleDot } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Target, CircleDot } from "lucide-react";
 import { AICoachPanel, IntroGuide } from "@/components/AICoachPanel";
 
 const WHEEL_CATEGORIES = [

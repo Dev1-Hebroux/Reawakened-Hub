@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { 
   Target, Plus, Check, Flame, Calendar, Trophy, 
-  Loader2, ArrowRight, Sparkles, CheckCircle2, Circle,
+  Loader2, ArrowRight, Heart, CheckCircle2, Circle, Rocket,
   X, Edit2, Trash2
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -267,7 +267,7 @@ export function Goals() {
             className="bg-[#1a2744] rounded-2xl p-6 mb-6 text-white"
           >
             <h3 className="font-bold mb-4 flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-[#D4A574]" />
+              <Heart className="h-5 w-5 text-[#D4A574]" />
               Faith-Based Approach
             </h3>
             <div className="space-y-3">
@@ -394,7 +394,7 @@ export function Goals() {
                     className="bg-white rounded-2xl p-8 text-center shadow-sm border border-gray-100"
                   >
                     <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Sparkles className="h-8 w-8 text-primary" />
+                      <Rocket className="h-8 w-8 text-primary" />
                     </div>
                     <h3 className="text-lg font-bold text-gray-900 mb-2">
                       Start Your Journey

@@ -28,7 +28,7 @@ import {
   Clock,
   Link as LinkIcon,
   ChevronRight,
-  Sparkles
+  CheckCircle
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -402,7 +402,7 @@ export function CampusPrayer() {
                 {isUserMember ? (
                   <div className="bg-primary/10 rounded-2xl p-4 text-center">
                     <span className="text-primary font-bold flex items-center justify-center gap-2">
-                      <Sparkles className="h-5 w-5" />
+                      <CheckCircle className="h-5 w-5" />
                       You're part of this altar!
                     </span>
                   </div>

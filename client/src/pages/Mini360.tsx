@@ -12,7 +12,7 @@ import { Slider } from "@/components/ui/slider";
 import {
   ChevronLeft, Users, Plus, Copy, CheckCircle2, Send, ArrowRight,
   BookOpen, Heart, MessageCircle, UserPlus, BarChart3, Mail,
-  Eye, Trash2, Share2, Sparkles, X, Lightbulb
+  Eye, Trash2, Share2, X, Lightbulb
 } from "lucide-react";
 import { format } from "date-fns";
 import { AICoachPanel } from "@/components/AICoachPanel";

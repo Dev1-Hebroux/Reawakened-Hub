@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { 
   Compass, MapPin, Clock, Users, ArrowRight, 
-  Loader2, BookOpen, Heart, Sparkles, Target, Calendar, Play
+  Loader2, BookOpen, Heart, Target, Calendar, Play
 } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -83,7 +83,7 @@ export function JourneyLibrary() {
             className="text-center mb-12"
           >
             <div className="inline-flex items-center gap-2 bg-primary/20 border border-primary/30 rounded-full px-4 py-2 mb-6">
-              <Sparkles className="h-4 w-4 text-primary" />
+              <Compass className="h-4 w-4 text-primary" />
               <span className="text-sm font-medium text-primary">Discipleship Paths</span>
             </div>
             <h1 className="text-4xl md:text-5xl font-display font-bold mb-4" data-testid="text-page-title">

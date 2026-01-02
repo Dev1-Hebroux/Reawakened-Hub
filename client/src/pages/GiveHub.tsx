@@ -12,10 +12,10 @@ import {
   Gift,
   Target,
   Users,
-  Sparkles,
   CheckCircle2,
   TrendingUp,
-  Loader2
+  Loader2,
+  Star
 } from "lucide-react";
 import type { MissionProject } from "@shared/schema";
 
@@ -90,7 +90,7 @@ export function GiveHub() {
             
             <div className="relative">
               <div className="flex items-center gap-2 mb-3">
-                <Sparkles className="h-5 w-5 text-primary" />
+                <Star className="h-5 w-5 text-primary" />
                 <span className="text-xs font-bold text-primary uppercase tracking-wider">Featured Campaign</span>
               </div>
               

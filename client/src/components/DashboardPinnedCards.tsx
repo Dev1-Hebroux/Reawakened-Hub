@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { 
   Zap, Target, CheckCircle2, Play, Flame, Calendar,
-  ArrowRight, AlertCircle, TrendingDown, Sparkles, RotateCcw
+  ArrowRight, AlertCircle, TrendingDown, RotateCcw
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -184,7 +184,7 @@ export function ScaFocusCard() {
                   className="bg-[#C17767] hover:bg-[#B16657] text-white rounded-full text-xs"
                   data-testid="button-boost-motivation"
                 >
-                  <Sparkles className="w-3 h-3 mr-1" />
+                  <Zap className="w-3 h-3 mr-1" />
                   Boost Motivation
                 </Button>
               </Link>

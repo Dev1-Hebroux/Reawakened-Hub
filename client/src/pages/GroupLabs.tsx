@@ -11,7 +11,7 @@ import { Footer } from "@/components/layout/Footer";
 import {
   ChevronLeft, Users, Calendar, Target, MessageCircle,
   CheckCircle2, ArrowRight, BookOpen, Heart, Brain,
-  Sparkles, Clock, Video, Star, Lightbulb, Flame,
+  Clock, Video, Star, Lightbulb, Flame,
   Award, Crown, Shield, Zap
 } from "lucide-react";
 import { format, addDays } from "date-fns";
@@ -304,7 +304,7 @@ export function GroupLabs() {
         <Card className="bg-[#7C9A8E]/10 border-[#7C9A8E]/20 mb-6">
           <CardContent className="p-4">
             <h3 className="font-medium text-[#2C3E2D] mb-3 flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-[#7C9A8E]" />
+              <Lightbulb className="w-4 h-4 text-[#7C9A8E]" />
               What You'll Learn
             </h3>
             <ul className="space-y-2 text-sm text-[#6B7B6E]">

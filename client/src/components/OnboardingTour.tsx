@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "wouter";
 import { 
   X, ArrowRight, ArrowLeft, Compass, Target, TrendingUp,
-  Sparkles, Heart, MessageCircle, Users, BookOpen, CheckCircle2
+  Heart, MessageCircle, Users, BookOpen, CheckCircle2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -18,7 +18,7 @@ const tourSteps = [
     id: "welcome",
     title: "Welcome to Reawakened!",
     description: "You've joined a community of young believers pursuing God's purpose. Let us show you around.",
-    icon: Sparkles,
+    icon: Heart,
     color: "#D4A574",
     scripture: "Jeremiah 29:11",
     scriptureText: "For I know the plans I have for you",

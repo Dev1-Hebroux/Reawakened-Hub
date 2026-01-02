@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   ChevronLeft, Calendar, Users, Clock, CheckCircle2, User,
   MessageSquare, Send, BookOpen, Lightbulb, Heart, ArrowRight,
-  CalendarPlus, CalendarCheck, Sparkles, Award
+  CalendarPlus, CalendarCheck, Award
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { AICoachPanel } from "@/components/AICoachPanel";

@@ -14,7 +14,7 @@ import {
   Loader2,
   RefreshCw,
   HandHeart,
-  Sparkles
+  PartyPopper
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -142,7 +142,7 @@ export function AdminPrayer() {
     { 
       label: "Answered", 
       value: stats.answered, 
-      icon: Sparkles, 
+      icon: PartyPopper, 
       color: "bg-green-500",
       subtext: "Testimonies"
     },

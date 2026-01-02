@@ -12,7 +12,7 @@ import { Footer } from "@/components/layout/Footer";
 import { VisionGetStartedCard } from "@/components/VisionGetStartedCard";
 import { VisionPromptModal } from "@/components/VisionPromptModal";
 import { WdepPinnedAction, ScaFocusCard } from "@/components/DashboardPinnedCards";
-import { ArrowRight, ShoppingBag, Flame, Heart, Globe, Zap, Rocket, HandHeart, Users, Clock, CheckCircle2, Compass, Target, Sparkles, TrendingUp } from "lucide-react";
+import { ArrowRight, ShoppingBag, Flame, Heart, Globe, Zap, Rocket, HandHeart, Users, Clock, CheckCircle2, Compass, Target, TrendingUp } from "lucide-react";
 import { StatsBar } from "@/components/ui/StatsBar";
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
@@ -221,7 +221,7 @@ export default function Home() {
                 className="bg-[#7C9A8E] hover:bg-[#6B8B7E] text-white font-bold px-8 py-6 rounded-full shadow-lg hover:shadow-xl transition-all"
                 data-testid="button-start-vision-home"
               >
-                <Sparkles className="h-5 w-5 mr-2" />
+                <Compass className="h-5 w-5 mr-2" />
                 Start Your Vision Journey
                 <ArrowRight className="h-5 w-5 ml-2" />
               </Button>

@@ -17,7 +17,7 @@ import {
   Flame,
   BookOpen,
   Send,
-  Sparkles,
+  Lightbulb,
   Loader2,
   Check,
   X,
@@ -516,7 +516,7 @@ export function PrayHub() {
           >
             <div className="flex items-center gap-3 mb-4">
               <div className="h-12 w-12 rounded-full bg-[#D4A574]/30 flex items-center justify-center">
-                <Sparkles className="h-6 w-6 text-[#D4A574]" />
+                <Lightbulb className="h-6 w-6 text-[#D4A574]" />
               </div>
               <div>
                 <h3 className="font-bold text-white">Spirit-Led Prompt</h3>
