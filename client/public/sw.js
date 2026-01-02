@@ -1,8 +1,10 @@
-const CACHE_NAME = 'reawakened-v1';
+const CACHE_NAME = 'reawakened-v2';
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',
-  '/favicon.png'
+  '/favicon.png',
+  '/icon-192.png',
+  '/icon-512.png'
 ];
 
 self.addEventListener('install', (event) => {
@@ -32,23 +34,41 @@ self.addEventListener('fetch', (event) => {
   
   const url = new URL(event.request.url);
   
+  if (url.pathname.startsWith('/api/auth/') || 
+      url.pathname.startsWith('/api/login') || 
+      url.pathname.startsWith('/api/logout') ||
+      url.pathname.startsWith('/api/callback') ||
+      url.pathname.includes('replit.com')) {
+    return;
+  }
+
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(
-      fetch(event.request).catch(() => {
-        return new Response(JSON.stringify({ error: 'Offline' }), {
-          status: 503,
-          headers: { 'Content-Type': 'application/json' }
-        });
-      })
+      fetch(event.request, { credentials: 'include' })
+        .then((response) => response)
+        .catch(() => {
+          return new Response(JSON.stringify({ error: 'You appear to be offline' }), {
+            status: 503,
+            headers: { 'Content-Type': 'application/json' }
+          });
+        })
     );
     return;
   }
 
   if (event.request.mode === 'navigate') {
     event.respondWith(
-      fetch(event.request).catch(() => {
-        return caches.match('/') || new Response('Offline', { status: 503 });
-      })
+      fetch(event.request)
+        .then((response) => {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, clone);
+          });
+          return response;
+        })
+        .catch(() => {
+          return caches.match('/') || new Response('You appear to be offline', { status: 503 });
+        })
     );
     return;
   }
