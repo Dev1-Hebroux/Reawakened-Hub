@@ -392,6 +392,30 @@ import {
   type InsertUserSettings,
   type Comment,
   type InsertComment,
+  prayerFocusGroups,
+  ukCampuses,
+  campusAltars,
+  altarMembers,
+  prayerSubscriptions,
+  prayerWallEntries,
+  prayerLogs,
+  prayerReminders,
+  type PrayerFocusGroup,
+  type InsertPrayerFocusGroup,
+  type UkCampus,
+  type InsertUkCampus,
+  type CampusAltar,
+  type InsertCampusAltar,
+  type AltarMember,
+  type InsertAltarMember,
+  type PrayerSubscription,
+  type InsertPrayerSubscription,
+  type PrayerWallEntry,
+  type InsertPrayerWallEntry,
+  type PrayerLog,
+  type InsertPrayerLog,
+  type PrayerReminder,
+  type InsertPrayerReminder,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, sql, inArray, count, ilike, or, gte } from "drizzle-orm";
@@ -819,6 +843,49 @@ export interface IStorage {
   getCommentsByPost(postId: number): Promise<Comment[]>;
   createComment(comment: InsertComment): Promise<Comment>;
   deleteComment(id: number, userId: string): Promise<void>;
+
+  // ===== PRAYER MOVEMENT =====
+  // Prayer Focus Groups
+  getPrayerFocusGroups(category?: string): Promise<PrayerFocusGroup[]>;
+  getPrayerFocusGroup(id: number): Promise<PrayerFocusGroup | undefined>;
+  createPrayerFocusGroup(group: InsertPrayerFocusGroup): Promise<PrayerFocusGroup>;
+  updatePrayerFocusGroup(id: number, updates: Partial<InsertPrayerFocusGroup>): Promise<PrayerFocusGroup>;
+
+  // UK Campuses
+  getUkCampuses(type?: string, region?: string): Promise<UkCampus[]>;
+  getUkCampus(id: number): Promise<UkCampus | undefined>;
+  searchUkCampuses(query: string): Promise<UkCampus[]>;
+  createUkCampus(campus: InsertUkCampus): Promise<UkCampus>;
+
+  // Campus Altars
+  getCampusAltars(status?: string): Promise<CampusAltar[]>;
+  getCampusAltar(id: number): Promise<CampusAltar | undefined>;
+  getCampusAltarByCampus(campusId: number): Promise<CampusAltar | undefined>;
+  createCampusAltar(altar: InsertCampusAltar): Promise<CampusAltar>;
+  updateCampusAltar(id: number, updates: Partial<InsertCampusAltar>): Promise<CampusAltar>;
+
+  // Altar Members
+  getAltarMembers(altarId: number): Promise<AltarMember[]>;
+  getAltarMember(altarId: number, userId: string): Promise<AltarMember | undefined>;
+  createAltarMember(member: InsertAltarMember): Promise<AltarMember>;
+  updateAltarMember(id: number, updates: Partial<InsertAltarMember>): Promise<AltarMember>;
+
+  // Prayer Subscriptions
+  getPrayerSubscriptions(userId: string): Promise<PrayerSubscription[]>;
+  getPrayerSubscription(userId: string, focusGroupId?: number, altarId?: number): Promise<PrayerSubscription | undefined>;
+  createPrayerSubscription(subscription: InsertPrayerSubscription): Promise<PrayerSubscription>;
+  updatePrayerSubscription(id: number, updates: Partial<InsertPrayerSubscription>): Promise<PrayerSubscription>;
+  deletePrayerSubscription(id: number): Promise<void>;
+
+  // Prayer Wall
+  getPrayerWallEntries(focusGroupId?: number, altarId?: number, limit?: number): Promise<PrayerWallEntry[]>;
+  createPrayerWallEntry(entry: InsertPrayerWallEntry): Promise<PrayerWallEntry>;
+  updatePrayerWallEntry(id: number, updates: Partial<InsertPrayerWallEntry>): Promise<PrayerWallEntry>;
+  incrementPrayerCount(entryId: number): Promise<void>;
+
+  // Prayer Logs
+  createPrayerLog(log: InsertPrayerLog): Promise<PrayerLog>;
+  getPrayerStats(): Promise<{ totalHours: number; totalIntercessors: number; campusesCovered: number }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -3858,6 +3925,225 @@ export class DatabaseStorage implements IStorage {
     await db
       .delete(comments)
       .where(and(eq(comments.id, id), eq(comments.userId, userId)));
+  }
+
+  // ===== PRAYER MOVEMENT =====
+  
+  // Prayer Focus Groups
+  async getPrayerFocusGroups(category?: string): Promise<PrayerFocusGroup[]> {
+    if (category) {
+      return db.select().from(prayerFocusGroups)
+        .where(and(eq(prayerFocusGroups.category, category), eq(prayerFocusGroups.isActive, true)))
+        .orderBy(prayerFocusGroups.name);
+    }
+    return db.select().from(prayerFocusGroups)
+      .where(eq(prayerFocusGroups.isActive, true))
+      .orderBy(prayerFocusGroups.name);
+  }
+
+  async getPrayerFocusGroup(id: number): Promise<PrayerFocusGroup | undefined> {
+    const [group] = await db.select().from(prayerFocusGroups).where(eq(prayerFocusGroups.id, id));
+    return group;
+  }
+
+  async createPrayerFocusGroup(group: InsertPrayerFocusGroup): Promise<PrayerFocusGroup> {
+    const [result] = await db.insert(prayerFocusGroups).values(group).returning();
+    return result;
+  }
+
+  async updatePrayerFocusGroup(id: number, updates: Partial<InsertPrayerFocusGroup>): Promise<PrayerFocusGroup> {
+    const [result] = await db.update(prayerFocusGroups)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(prayerFocusGroups.id, id))
+      .returning();
+    return result;
+  }
+
+  // UK Campuses
+  async getUkCampuses(type?: string, region?: string): Promise<UkCampus[]> {
+    let conditions = [];
+    if (type) conditions.push(eq(ukCampuses.type, type));
+    if (region) conditions.push(eq(ukCampuses.region, region));
+    
+    if (conditions.length > 0) {
+      return db.select().from(ukCampuses).where(and(...conditions)).orderBy(ukCampuses.name);
+    }
+    return db.select().from(ukCampuses).orderBy(ukCampuses.name);
+  }
+
+  async getUkCampus(id: number): Promise<UkCampus | undefined> {
+    const [campus] = await db.select().from(ukCampuses).where(eq(ukCampuses.id, id));
+    return campus;
+  }
+
+  async searchUkCampuses(query: string): Promise<UkCampus[]> {
+    return db.select().from(ukCampuses)
+      .where(or(
+        ilike(ukCampuses.name, `%${query}%`),
+        ilike(ukCampuses.city, `%${query}%`)
+      ))
+      .orderBy(ukCampuses.name)
+      .limit(20);
+  }
+
+  async createUkCampus(campus: InsertUkCampus): Promise<UkCampus> {
+    const [result] = await db.insert(ukCampuses).values(campus).returning();
+    return result;
+  }
+
+  // Campus Altars
+  async getCampusAltars(status?: string): Promise<CampusAltar[]> {
+    if (status) {
+      return db.select().from(campusAltars).where(eq(campusAltars.status, status)).orderBy(desc(campusAltars.memberCount));
+    }
+    return db.select().from(campusAltars).orderBy(desc(campusAltars.memberCount));
+  }
+
+  async getCampusAltar(id: number): Promise<CampusAltar | undefined> {
+    const [altar] = await db.select().from(campusAltars).where(eq(campusAltars.id, id));
+    return altar;
+  }
+
+  async getCampusAltarByCampus(campusId: number): Promise<CampusAltar | undefined> {
+    const [altar] = await db.select().from(campusAltars).where(eq(campusAltars.campusId, campusId));
+    return altar;
+  }
+
+  async createCampusAltar(altar: InsertCampusAltar): Promise<CampusAltar> {
+    const [result] = await db.insert(campusAltars).values(altar).returning();
+    // Update campus hasAltar flag
+    await db.update(ukCampuses).set({ hasAltar: true }).where(eq(ukCampuses.id, altar.campusId));
+    return result;
+  }
+
+  async updateCampusAltar(id: number, updates: Partial<InsertCampusAltar>): Promise<CampusAltar> {
+    const [result] = await db.update(campusAltars)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(campusAltars.id, id))
+      .returning();
+    return result;
+  }
+
+  // Altar Members
+  async getAltarMembers(altarId: number): Promise<AltarMember[]> {
+    return db.select().from(altarMembers).where(eq(altarMembers.altarId, altarId)).orderBy(desc(altarMembers.prayerHours));
+  }
+
+  async getAltarMember(altarId: number, userId: string): Promise<AltarMember | undefined> {
+    const [member] = await db.select().from(altarMembers)
+      .where(and(eq(altarMembers.altarId, altarId), eq(altarMembers.userId, userId)));
+    return member;
+  }
+
+  async createAltarMember(member: InsertAltarMember): Promise<AltarMember> {
+    const [result] = await db.insert(altarMembers).values(member).returning();
+    // Increment altar member count
+    await db.update(campusAltars)
+      .set({ memberCount: sql`${campusAltars.memberCount} + 1` })
+      .where(eq(campusAltars.id, member.altarId));
+    return result;
+  }
+
+  async updateAltarMember(id: number, updates: Partial<InsertAltarMember>): Promise<AltarMember> {
+    const [result] = await db.update(altarMembers).set(updates).where(eq(altarMembers.id, id)).returning();
+    return result;
+  }
+
+  // Prayer Subscriptions
+  async getPrayerSubscriptions(userId: string): Promise<PrayerSubscription[]> {
+    return db.select().from(prayerSubscriptions).where(eq(prayerSubscriptions.userId, userId));
+  }
+
+  async getPrayerSubscription(userId: string, focusGroupId?: number, altarId?: number): Promise<PrayerSubscription | undefined> {
+    let conditions = [eq(prayerSubscriptions.userId, userId)];
+    if (focusGroupId) conditions.push(eq(prayerSubscriptions.focusGroupId, focusGroupId));
+    if (altarId) conditions.push(eq(prayerSubscriptions.altarId, altarId));
+    
+    const [subscription] = await db.select().from(prayerSubscriptions).where(and(...conditions));
+    return subscription;
+  }
+
+  async createPrayerSubscription(subscription: InsertPrayerSubscription): Promise<PrayerSubscription> {
+    const [result] = await db.insert(prayerSubscriptions).values(subscription).returning();
+    // Increment intercessor count on focus group if applicable
+    if (subscription.focusGroupId) {
+      await db.update(prayerFocusGroups)
+        .set({ intercessorCount: sql`${prayerFocusGroups.intercessorCount} + 1` })
+        .where(eq(prayerFocusGroups.id, subscription.focusGroupId));
+    }
+    return result;
+  }
+
+  async updatePrayerSubscription(id: number, updates: Partial<InsertPrayerSubscription>): Promise<PrayerSubscription> {
+    const [result] = await db.update(prayerSubscriptions)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(prayerSubscriptions.id, id))
+      .returning();
+    return result;
+  }
+
+  async deletePrayerSubscription(id: number): Promise<void> {
+    await db.delete(prayerSubscriptions).where(eq(prayerSubscriptions.id, id));
+  }
+
+  // Prayer Wall
+  async getPrayerWallEntries(focusGroupId?: number, altarId?: number, limit: number = 50): Promise<PrayerWallEntry[]> {
+    let conditions = [eq(prayerWallEntries.status, "active")];
+    if (focusGroupId) conditions.push(eq(prayerWallEntries.focusGroupId, focusGroupId));
+    if (altarId) conditions.push(eq(prayerWallEntries.altarId, altarId));
+    
+    return db.select().from(prayerWallEntries)
+      .where(and(...conditions))
+      .orderBy(desc(prayerWallEntries.createdAt))
+      .limit(limit);
+  }
+
+  async createPrayerWallEntry(entry: InsertPrayerWallEntry): Promise<PrayerWallEntry> {
+    const [result] = await db.insert(prayerWallEntries).values(entry).returning();
+    return result;
+  }
+
+  async updatePrayerWallEntry(id: number, updates: Partial<InsertPrayerWallEntry>): Promise<PrayerWallEntry> {
+    const [result] = await db.update(prayerWallEntries)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(prayerWallEntries.id, id))
+      .returning();
+    return result;
+  }
+
+  async incrementPrayerCount(entryId: number): Promise<void> {
+    await db.update(prayerWallEntries)
+      .set({ prayerCount: sql`${prayerWallEntries.prayerCount} + 1` })
+      .where(eq(prayerWallEntries.id, entryId));
+  }
+
+  // Prayer Logs
+  async createPrayerLog(log: InsertPrayerLog): Promise<PrayerLog> {
+    const [result] = await db.insert(prayerLogs).values(log).returning();
+    return result;
+  }
+
+  async getPrayerStats(): Promise<{ totalHours: number; totalIntercessors: number; campusesCovered: number }> {
+    // Get total prayer hours
+    const [hoursResult] = await db.select({
+      totalMinutes: sql<number>`COALESCE(SUM(${prayerLogs.durationMinutes}), 0)`
+    }).from(prayerLogs);
+    
+    // Get unique intercessors
+    const [intercessorsResult] = await db.select({
+      count: sql<number>`COUNT(DISTINCT ${prayerSubscriptions.userId})`
+    }).from(prayerSubscriptions);
+    
+    // Get campuses with altars
+    const [campusesResult] = await db.select({
+      count: sql<number>`COUNT(*)`
+    }).from(campusAltars).where(eq(campusAltars.status, "active"));
+    
+    return {
+      totalHours: Math.floor(Number(hoursResult?.totalMinutes || 0) / 60),
+      totalIntercessors: Number(intercessorsResult?.count || 0),
+      campusesCovered: Number(campusesResult?.count || 0),
+    };
   }
 }
 

@@ -4820,5 +4820,305 @@ export async function registerRoutes(
     }
   });
 
+  // ===== PRAYER MOVEMENT ROUTES =====
+
+  // Get prayer focus groups (nations/people groups)
+  app.get('/api/prayer/focus-groups', async (req, res) => {
+    try {
+      const category = req.query.category as string | undefined;
+      const groups = await storage.getPrayerFocusGroups(category);
+      res.json(groups);
+    } catch (error) {
+      console.error("Error fetching prayer focus groups:", error);
+      res.status(500).json({ message: "Failed to fetch prayer focus groups" });
+    }
+  });
+
+  // Get single prayer focus group
+  app.get('/api/prayer/focus-groups/:id', async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const group = await storage.getPrayerFocusGroup(id);
+      if (!group) {
+        return res.status(404).json({ message: "Focus group not found" });
+      }
+      res.json(group);
+    } catch (error) {
+      console.error("Error fetching prayer focus group:", error);
+      res.status(500).json({ message: "Failed to fetch prayer focus group" });
+    }
+  });
+
+  // Get UK campuses
+  app.get('/api/prayer/uk-campuses', async (req, res) => {
+    try {
+      const type = req.query.type as string | undefined;
+      const region = req.query.region as string | undefined;
+      const campuses = await storage.getUkCampuses(type, region);
+      res.json(campuses);
+    } catch (error) {
+      console.error("Error fetching UK campuses:", error);
+      res.status(500).json({ message: "Failed to fetch UK campuses" });
+    }
+  });
+
+  // Search UK campuses
+  app.get('/api/prayer/uk-campuses/search', async (req, res) => {
+    try {
+      const query = req.query.q as string;
+      if (!query) {
+        return res.status(400).json({ message: "Search query required" });
+      }
+      const campuses = await storage.searchUkCampuses(query);
+      res.json(campuses);
+    } catch (error) {
+      console.error("Error searching UK campuses:", error);
+      res.status(500).json({ message: "Failed to search UK campuses" });
+    }
+  });
+
+  // Get single UK campus
+  app.get('/api/prayer/uk-campuses/:id', async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const campus = await storage.getUkCampus(id);
+      if (!campus) {
+        return res.status(404).json({ message: "Campus not found" });
+      }
+      res.json(campus);
+    } catch (error) {
+      console.error("Error fetching UK campus:", error);
+      res.status(500).json({ message: "Failed to fetch UK campus" });
+    }
+  });
+
+  // Get campus altars
+  app.get('/api/prayer/altars', async (req, res) => {
+    try {
+      const status = req.query.status as string | undefined;
+      const altars = await storage.getCampusAltars(status);
+      res.json(altars);
+    } catch (error) {
+      console.error("Error fetching campus altars:", error);
+      res.status(500).json({ message: "Failed to fetch campus altars" });
+    }
+  });
+
+  // Get single campus altar
+  app.get('/api/prayer/altars/:id', async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const altar = await storage.getCampusAltar(id);
+      if (!altar) {
+        return res.status(404).json({ message: "Altar not found" });
+      }
+      res.json(altar);
+    } catch (error) {
+      console.error("Error fetching campus altar:", error);
+      res.status(500).json({ message: "Failed to fetch campus altar" });
+    }
+  });
+
+  // Create campus altar (protected)
+  app.post('/api/prayer/altars', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const altarSchema = z.object({
+        campusId: z.number(),
+        name: z.string(),
+        description: z.string().optional(),
+        meetingSchedule: z.string().optional(),
+        meetingLink: z.string().optional(),
+        whatsappGroup: z.string().optional(),
+        prayerPoints: z.array(z.string()).optional(),
+        scriptures: z.array(z.string()).optional(),
+      });
+      const data = altarSchema.parse(req.body);
+      const altar = await storage.createCampusAltar({ ...data, leaderId: userId });
+      res.status(201).json(altar);
+    } catch (error: any) {
+      console.error("Error creating campus altar:", error);
+      res.status(400).json({ message: error.message || "Failed to create campus altar" });
+    }
+  });
+
+  // Get altar members
+  app.get('/api/prayer/altars/:id/members', async (req, res) => {
+    try {
+      const altarId = parseInt(req.params.id);
+      const members = await storage.getAltarMembers(altarId);
+      res.json(members);
+    } catch (error) {
+      console.error("Error fetching altar members:", error);
+      res.status(500).json({ message: "Failed to fetch altar members" });
+    }
+  });
+
+  // Join campus altar (protected)
+  app.post('/api/prayer/altars/:id/join', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const altarId = parseInt(req.params.id);
+      
+      // Check if already a member
+      const existing = await storage.getAltarMember(altarId, userId);
+      if (existing) {
+        return res.status(400).json({ message: "Already a member of this altar" });
+      }
+
+      const memberSchema = z.object({
+        affiliation: z.enum(['student', 'staff', 'alumni', 'local_supporter']),
+        receiveReminders: z.boolean().optional(),
+        reminderFrequency: z.enum(['daily', 'weekly']).optional(),
+      });
+      const data = memberSchema.parse(req.body);
+      
+      const member = await storage.createAltarMember({
+        altarId,
+        userId,
+        ...data,
+      });
+      res.status(201).json(member);
+    } catch (error: any) {
+      console.error("Error joining altar:", error);
+      res.status(400).json({ message: error.message || "Failed to join altar" });
+    }
+  });
+
+  // Get user's prayer subscriptions
+  app.get('/api/prayer/subscriptions', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const subscriptions = await storage.getPrayerSubscriptions(userId);
+      res.json(subscriptions);
+    } catch (error) {
+      console.error("Error fetching prayer subscriptions:", error);
+      res.status(500).json({ message: "Failed to fetch prayer subscriptions" });
+    }
+  });
+
+  // Subscribe to a focus group (adopt a nation)
+  app.post('/api/prayer/subscriptions', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const subscriptionSchema = z.object({
+        focusGroupId: z.number().optional(),
+        altarId: z.number().optional(),
+        type: z.enum(['nation', 'campus']),
+        receiveReminders: z.boolean().optional(),
+        reminderFrequency: z.enum(['daily', 'weekly']).optional(),
+        reminderTime: z.string().optional(),
+      });
+      const data = subscriptionSchema.parse(req.body);
+      
+      // Check if already subscribed
+      const existing = await storage.getPrayerSubscription(userId, data.focusGroupId, data.altarId);
+      if (existing) {
+        return res.status(400).json({ message: "Already subscribed to this focus" });
+      }
+
+      const subscription = await storage.createPrayerSubscription({
+        userId,
+        ...data,
+        emailConfirmed: true, // Auto-confirm for now
+      });
+      res.status(201).json(subscription);
+    } catch (error: any) {
+      console.error("Error creating prayer subscription:", error);
+      res.status(400).json({ message: error.message || "Failed to create prayer subscription" });
+    }
+  });
+
+  // Delete prayer subscription
+  app.delete('/api/prayer/subscriptions/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deletePrayerSubscription(id);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting prayer subscription:", error);
+      res.status(500).json({ message: "Failed to delete prayer subscription" });
+    }
+  });
+
+  // Get prayer wall entries
+  app.get('/api/prayer/wall', async (req, res) => {
+    try {
+      const focusGroupId = req.query.focusGroupId ? parseInt(req.query.focusGroupId as string) : undefined;
+      const altarId = req.query.altarId ? parseInt(req.query.altarId as string) : undefined;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
+      const entries = await storage.getPrayerWallEntries(focusGroupId, altarId, limit);
+      res.json(entries);
+    } catch (error) {
+      console.error("Error fetching prayer wall:", error);
+      res.status(500).json({ message: "Failed to fetch prayer wall" });
+    }
+  });
+
+  // Create prayer wall entry (protected)
+  app.post('/api/prayer/wall', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const entrySchema = z.object({
+        focusGroupId: z.number().optional(),
+        altarId: z.number().optional(),
+        type: z.enum(['request', 'praise', 'testimony', 'answered']),
+        content: z.string().min(1),
+        isAnonymous: z.boolean().optional(),
+      });
+      const data = entrySchema.parse(req.body);
+      const entry = await storage.createPrayerWallEntry({ userId, ...data });
+      res.status(201).json(entry);
+    } catch (error: any) {
+      console.error("Error creating prayer wall entry:", error);
+      res.status(400).json({ message: error.message || "Failed to create prayer wall entry" });
+    }
+  });
+
+  // Pray for a wall entry (increment prayer count)
+  app.post('/api/prayer/wall/:id/pray', isAuthenticated, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.incrementPrayerCount(id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error incrementing prayer count:", error);
+      res.status(500).json({ message: "Failed to record prayer" });
+    }
+  });
+
+  // Log a prayer session
+  app.post('/api/prayer/logs', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const logSchema = z.object({
+        subscriptionId: z.number().optional(),
+        altarMemberId: z.number().optional(),
+        focusGroupId: z.number().optional(),
+        altarId: z.number().optional(),
+        durationMinutes: z.number().min(1),
+        notes: z.string().optional(),
+        prayerPoints: z.array(z.string()).optional(),
+      });
+      const data = logSchema.parse(req.body);
+      const log = await storage.createPrayerLog({ userId, ...data });
+      res.status(201).json(log);
+    } catch (error: any) {
+      console.error("Error logging prayer:", error);
+      res.status(400).json({ message: error.message || "Failed to log prayer" });
+    }
+  });
+
+  // Get prayer stats
+  app.get('/api/prayer/stats', async (req, res) => {
+    try {
+      const stats = await storage.getPrayerStats();
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching prayer stats:", error);
+      res.status(500).json({ message: "Failed to fetch prayer stats" });
+    }
+  });
+
   return httpServer;
 }
