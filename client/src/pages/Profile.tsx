@@ -7,7 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 
 export default function Profile() {
   const [, navigate] = useLocation();
-  const { user, isAuthenticated, isLoading } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   
   const isAdmin = user?.role === 'admin' || user?.role === 'super_admin';
 
@@ -47,13 +47,13 @@ export default function Profile() {
           >
             <div className="h-24 w-24 mx-auto rounded-full bg-[#FAF8F5] dark:bg-[#243656] border-4 border-[#D4A574] flex items-center justify-center mb-4 shadow-xl overflow-hidden">
               {isAuthenticated && user?.profileImageUrl ? (
-                <img src={user.profileImageUrl} alt={user.username || "User"} className="h-full w-full object-cover" />
+                <img src={user.profileImageUrl} alt={user.firstName || "User"} className="h-full w-full object-cover" />
               ) : (
                 <User className="h-12 w-12 text-[#D4A574]" />
               )}
             </div>
             <h1 className="text-2xl font-display font-bold text-gray-900 dark:text-white mb-1">
-              {isAuthenticated ? (user?.firstName || user?.username || "Welcome Back") : "Welcome"}
+              {isAuthenticated ? (user?.firstName || "Welcome Back") : "Welcome"}
             </h1>
             <p className="text-gray-600 dark:text-[#7C9A8E]">
               {isAuthenticated ? (user?.email || "Your spiritual journey awaits") : "Sign in to track your journey"}

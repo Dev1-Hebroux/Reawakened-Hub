@@ -123,6 +123,7 @@ export function Navbar() {
             className="md:hidden bg-white border-b border-gray-100 shadow-lg"
           >
             <div className="px-4 pt-4 pb-6 space-y-2">
+              <Link href="/"><span className="text-gray-800 hover:text-primary hover:bg-gray-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer" data-testid="mobile-nav-home">Home</span></Link>
               {isAuthenticated && (
                 <Link href="/vision">
                   <span className="text-gray-800 hover:text-primary hover:bg-gray-50 px-3 py-2 rounded-lg text-base font-bold cursor-pointer flex items-center gap-2" data-testid="mobile-nav-vision">
