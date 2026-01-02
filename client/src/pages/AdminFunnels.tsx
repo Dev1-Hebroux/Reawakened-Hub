@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { AdminLayout } from "./Admin";
+import { AdminLayout } from "@/components/admin/AdminLayout";
 import { TrendingUp, Users, Target, Flame, BookOpen, Loader2, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -46,6 +46,7 @@ export function AdminFunnels() {
     <AdminLayout 
       title="Funnel Dashboard" 
       subtitle="Track user journeys and conversion rates"
+      breadcrumbs={[{ label: "Community" }, { label: "Funnels" }]}
     >
       {isLoading ? (
         <div className="flex items-center justify-center py-20">
@@ -138,7 +139,7 @@ export function AdminFunnels() {
                   <p className="font-medium text-gray-900">Optimize Onboarding Completion</p>
                   <p className="text-sm text-gray-500">
                     {missionProfiles.length > 0 
-                      ? `${100 - (missionProfiles.filter((p: any) => p.focusAreas?.length > 0).length / missionProfiles.length * 100).toFixed(0)}% of users don't complete their profile. Consider adding progress indicators.`
+                      ? `${(100 - (missionProfiles.filter((p: any) => p.focusAreas?.length > 0).length / missionProfiles.length) * 100).toFixed(0)}% of users don't complete their profile. Consider adding progress indicators.`
                       : "Start tracking onboarding to see insights here."}
                   </p>
                 </div>

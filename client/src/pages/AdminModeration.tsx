@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { AdminLayout } from "./Admin";
+import { AdminLayout } from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { MessageSquare, Check, X, Loader2, AlertTriangle, Heart } from "lucide-react";
 import { motion } from "framer-motion";
@@ -38,6 +38,7 @@ export function AdminModeration() {
     <AdminLayout 
       title="Moderation Queue" 
       subtitle="Review and manage community content"
+      breadcrumbs={[{ label: "Community" }, { label: "Moderation" }]}
     >
       <Tabs defaultValue="posts" className="w-full">
         <TabsList className="mb-6">
@@ -176,7 +177,7 @@ export function AdminModeration() {
                       {testimony.isApproved === "true" ? "Approved" : "Pending"}
                     </span>
                   </div>
-                  <p className="text-gray-700">{testimony.testimony}</p>
+                  <p className="text-gray-700">{testimony.story}</p>
                   {testimony.email && (
                     <p className="text-sm text-gray-500 mt-2">Email: {testimony.email}</p>
                   )}

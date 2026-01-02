@@ -459,7 +459,7 @@ export function AdminCoaching() {
                             <div className="flex items-center gap-3">
                               {coach.photoUrl || user?.profileImageUrl ? (
                                 <img 
-                                  src={coach.photoUrl || user?.profileImageUrl} 
+                                  src={coach.photoUrl || user?.profileImageUrl || undefined} 
                                   alt="" 
                                   className="h-10 w-10 rounded-full object-cover" 
                                 />
