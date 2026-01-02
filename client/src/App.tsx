@@ -166,7 +166,7 @@ function AppContent() {
   return (
     <>
       <ScrollToTop />
-      <div className="dove-background min-h-screen relative pb-20 lg:pb-0">
+      <div className="dove-background min-h-screen relative pb-20 xl:pb-0">
         <Toaster />
         <Router />
         <MobileNav />
