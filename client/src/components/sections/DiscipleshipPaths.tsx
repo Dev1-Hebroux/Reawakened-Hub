@@ -1,9 +1,35 @@
 import { motion } from "framer-motion";
-import { CheckCircle2, Lock, Play, ArrowRight, Loader2 } from "lucide-react";
+import { CheckCircle2, Lock, Play, Loader2, Target, BookOpen, Map } from "lucide-react";
 import { Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
-import pathBg from "@assets/generated_images/woman_looking_at_a_city_skyline_at_sunset.png";
+
+const pathwayCards = [
+  { 
+    href: "/vision", 
+    label: "Vision & Goals", 
+    icon: Target, 
+    description: "Design your life vision, set meaningful goals, and track daily habits.",
+    color: "#7C9A8E",
+    cta: "Start Planning"
+  },
+  { 
+    href: "/journeys", 
+    label: "Faith Guides", 
+    icon: BookOpen, 
+    description: "Guided paths for faith basics, finding purpose, and overcoming anxiety.",
+    color: "#D4A574",
+    cta: "Explore Guides"
+  },
+  { 
+    href: "/pathway", 
+    label: "Missionary Pathway", 
+    icon: Map, 
+    description: "Your journey from seeker to equipped global missionary.",
+    color: "#1a2744",
+    cta: "Begin Pathway"
+  },
+];
 
 type UserJourneyWithDetails = {
   id: number;
@@ -173,34 +199,44 @@ export function DiscipleshipPaths() {
             </div>
           </motion.div>
 
-          {/* Card 2: Visual Promo - Browse All Journeys */}
+          {/* Card 2: All Three Pathways */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
             viewport={{ once: true }}
-            className="rounded-[40px] overflow-hidden relative min-h-[500px] group"
-            data-testid="card-discipleship-browse"
+            className="space-y-4"
+            data-testid="card-pathways-grid"
           >
-            <img 
-              src={pathBg} 
-              alt="Woman looking at city" 
-              className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-            
-            <div className="absolute bottom-10 left-10 right-10 text-white z-10">
-              <h3 className="text-3xl font-display font-bold mb-4">Explore All Journeys</h3>
-              <p className="text-white/80 mb-8">Discover guided paths for faith basics, finding purpose, overcoming anxiety, and building relationships.</p>
-              <Link href="/journeys">
-                <button 
-                  className="bg-white text-gray-900 font-bold px-8 py-4 rounded-full hover:bg-gray-100 transition-colors w-full sm:w-auto flex items-center justify-center sm:inline-flex gap-2"
-                  data-testid="button-browse-journeys"
+            {pathwayCards.map((pathway, index) => (
+              <Link key={pathway.href} href={pathway.href}>
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.4, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                  className="group cursor-pointer bg-white rounded-2xl p-5 border border-gray-100 hover:shadow-lg hover:border-gray-200 transition-all flex items-center gap-4"
+                  data-testid={`card-pathway-${pathway.label.toLowerCase().replace(/\s+/g, '-')}`}
                 >
-                  Browse Journey Library <ArrowRight className="h-5 w-5" />
-                </button>
+                  <div 
+                    className="h-14 w-14 rounded-2xl flex items-center justify-center flex-shrink-0 transition-transform group-hover:scale-110"
+                    style={{ backgroundColor: `${pathway.color}15` }}
+                  >
+                    <pathway.icon className="h-7 w-7" style={{ color: pathway.color }} />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-bold text-gray-900 text-lg group-hover:text-primary transition-colors">{pathway.label}</h4>
+                    <p className="text-gray-500 text-sm">{pathway.description}</p>
+                  </div>
+                  <div 
+                    className="px-4 py-2 rounded-full text-sm font-bold text-white flex-shrink-0 transition-transform group-hover:scale-105"
+                    style={{ backgroundColor: pathway.color }}
+                  >
+                    {pathway.cta}
+                  </div>
+                </motion.div>
               </Link>
-            </div>
+            ))}
           </motion.div>
 
         </div>

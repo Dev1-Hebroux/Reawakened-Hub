@@ -4,7 +4,7 @@ import {
   Video, Image as ImageIcon, Send, Globe,
   Users, Flame, Bell, Search, MoreHorizontal,
   Phone, Video as VideoIcon, Mic, CheckCircle2, Loader2, X, ChevronLeft, ChevronRight,
-  Target
+  Target, BookOpen, Compass
 } from "lucide-react";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -577,21 +577,61 @@ export function CommunityHub() {
             {/* Vision & Goals Card */}
             <div 
               onClick={() => navigate("/vision")}
-              className="bg-gradient-to-br from-[#7C9A8E] to-[#4A7C7C] rounded-[30px] p-6 text-white shadow-lg cursor-pointer hover:shadow-xl transition-all relative overflow-hidden group"
+              className="bg-gradient-to-br from-[#7C9A8E] to-[#4A7C7C] rounded-[30px] p-5 text-white shadow-lg cursor-pointer hover:shadow-xl transition-all relative overflow-hidden group"
               data-testid="card-vision-goals"
             >
               <div className="relative z-10">
                 <div className="flex items-center gap-2 mb-2">
-                  <Target className="h-5 w-5" />
-                  <span className="text-xs font-medium text-white/80">Growth Tool</span>
+                  <Target className="h-4 w-4" />
+                  <span className="text-xs font-medium text-white/80">Pathway</span>
                 </div>
-                <h3 className="font-bold text-xl mb-2">Vision & Goals</h3>
-                <p className="text-white/80 text-sm mb-4">Discover your purpose, set meaningful goals, and track your progress.</p>
-                <button className="bg-white text-[#4A7C7C] px-4 py-2 rounded-full text-sm font-bold w-full group-hover:bg-white/90 transition-colors">
-                  Start Your Journey
+                <h3 className="font-bold text-lg mb-1">Vision & Goals</h3>
+                <p className="text-white/80 text-xs mb-3">Design your life vision and set meaningful goals.</p>
+                <button className="bg-white text-[#4A7C7C] px-3 py-1.5 rounded-full text-xs font-bold w-full group-hover:bg-white/90 transition-colors">
+                  Start Journey
                 </button>
               </div>
-              <Target className="absolute -bottom-4 -right-4 h-32 w-32 text-white/10" />
+              <Target className="absolute -bottom-2 -right-2 h-20 w-20 text-white/10" />
+            </div>
+
+            {/* Faith Guides Card */}
+            <div 
+              onClick={() => navigate("/journeys")}
+              className="bg-gradient-to-br from-[#D4A574] to-[#B8956A] rounded-[30px] p-5 text-white shadow-lg cursor-pointer hover:shadow-xl transition-all relative overflow-hidden group"
+              data-testid="card-faith-guides"
+            >
+              <div className="relative z-10">
+                <div className="flex items-center gap-2 mb-2">
+                  <BookOpen className="h-4 w-4" />
+                  <span className="text-xs font-medium text-white/80">Pathway</span>
+                </div>
+                <h3 className="font-bold text-lg mb-1">Faith Guides</h3>
+                <p className="text-white/80 text-xs mb-3">Guided paths to grow in faith and find purpose.</p>
+                <button className="bg-white text-[#B8956A] px-3 py-1.5 rounded-full text-xs font-bold w-full group-hover:bg-white/90 transition-colors">
+                  Explore Guides
+                </button>
+              </div>
+              <BookOpen className="absolute -bottom-2 -right-2 h-20 w-20 text-white/10" />
+            </div>
+
+            {/* Missionary Pathway Card */}
+            <div 
+              onClick={() => navigate("/pathway")}
+              className="bg-gradient-to-br from-[#1a2744] to-[#2d3a52] rounded-[30px] p-5 text-white shadow-lg cursor-pointer hover:shadow-xl transition-all relative overflow-hidden group"
+              data-testid="card-missionary-pathway"
+            >
+              <div className="relative z-10">
+                <div className="flex items-center gap-2 mb-2">
+                  <Compass className="h-4 w-4" />
+                  <span className="text-xs font-medium text-white/80">Pathway</span>
+                </div>
+                <h3 className="font-bold text-lg mb-1">Missionary Pathway</h3>
+                <p className="text-white/80 text-xs mb-3">Your journey from seeker to global missionary.</p>
+                <button className="bg-white text-[#1a2744] px-3 py-1.5 rounded-full text-xs font-bold w-full group-hover:bg-white/90 transition-colors">
+                  Start Pathway
+                </button>
+              </div>
+              <Compass className="absolute -bottom-2 -right-2 h-20 w-20 text-white/10" />
             </div>
 
             {/* Quick Chat */}

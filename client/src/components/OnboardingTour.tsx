@@ -66,7 +66,7 @@ const tourSteps = [
   {
     id: "aicoach",
     title: "Awake AI",
-    description: "Get personalized guidance on your goals, habits, and spiritual journey. Access Awake AI from the navigation bar anytime.",
+    description: "Get personalized guidance on your goals, habits, and faith journey. Access Awake AI from the navigation bar anytime.",
     icon: MessageCircle,
     color: "#4A7C7C",
     cta: "Got It!",

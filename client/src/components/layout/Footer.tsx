@@ -80,7 +80,8 @@ export function Footer() {
               <li><a href="/sparks" className="hover:text-primary transition-colors" data-testid="link-footer-sparks">Daily Sparks</a></li>
               <li><a href="/community" className="hover:text-primary transition-colors" data-testid="link-footer-community">Community Hub</a></li>
               <li><a href="/vision" className="hover:text-primary transition-colors" data-testid="link-footer-vision">Vision & Goals</a></li>
-              <li><a href="/journeys" className="hover:text-primary transition-colors" data-testid="link-footer-journeys">Spiritual Journeys</a></li>
+              <li><a href="/journeys" className="hover:text-primary transition-colors" data-testid="link-footer-journeys">Faith Guides</a></li>
+              <li><a href="/pathway" className="hover:text-primary transition-colors" data-testid="link-footer-pathway">Missionary Pathway</a></li>
               <li><a href="/blog" className="hover:text-primary transition-colors" data-testid="link-footer-blog">Blog</a></li>
               <li><a href="/mission" className="hover:text-primary transition-colors" data-testid="link-footer-mission">Mission</a></li>
             </ul>

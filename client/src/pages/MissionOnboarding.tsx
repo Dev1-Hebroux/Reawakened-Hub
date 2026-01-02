@@ -412,7 +412,7 @@ export function MissionOnboarding() {
                   What Awaits You
                 </h2>
                 <p className="text-white/60 mb-6 text-center">
-                  Discover the tools for your spiritual journey
+                  Discover the tools for your faith journey
                 </p>
                 <div className="space-y-3">
                   {featureShowcase.map((feature, index) => (
