@@ -169,7 +169,6 @@ function AppContent() {
       <div className="dove-background min-h-screen relative pb-20 xl:pb-0">
         <Toaster />
         <Router />
-        <MobileNav />
         <AiCoachDrawer />
         {isAuthenticated && (
           <OnboardingTour 
@@ -179,6 +178,7 @@ function AppContent() {
           />
         )}
       </div>
+      <MobileNav />
     </>
   );
 }
