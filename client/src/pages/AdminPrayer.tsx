@@ -12,12 +12,14 @@ import {
   Globe,
   MessageSquare,
   Loader2,
-  RefreshCw
+  RefreshCw,
+  HandHeart,
+  Sparkles
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -51,10 +53,10 @@ interface PrayerRequest {
 }
 
 const statusColors: Record<string, string> = {
-  pending: "bg-yellow-100 text-yellow-800",
-  praying: "bg-blue-100 text-blue-800",
-  answered: "bg-green-100 text-green-800",
-  archived: "bg-gray-100 text-gray-600",
+  pending: "bg-yellow-100 text-yellow-800 border-yellow-200",
+  praying: "bg-blue-100 text-blue-800 border-blue-200",
+  answered: "bg-green-100 text-green-800 border-green-200",
+  archived: "bg-gray-100 text-gray-600 border-gray-200",
 };
 
 const statusIcons: Record<string, any> = {
@@ -115,202 +117,208 @@ export function AdminPrayer() {
     answered: requests.filter(r => r.status === "answered").length,
   };
 
+  const metricCards = [
+    { 
+      label: "Total Requests", 
+      value: stats.total, 
+      icon: MessageSquare, 
+      color: "bg-gray-500",
+      subtext: "All time"
+    },
+    { 
+      label: "Pending", 
+      value: stats.pending, 
+      icon: Clock, 
+      color: "bg-yellow-500",
+      subtext: "Awaiting prayer"
+    },
+    { 
+      label: "Being Prayed For", 
+      value: stats.praying, 
+      icon: HandHeart, 
+      color: "bg-blue-500",
+      subtext: "Active intercession"
+    },
+    { 
+      label: "Answered", 
+      value: stats.answered, 
+      icon: Sparkles, 
+      color: "bg-green-500",
+      subtext: "Testimonies"
+    },
+  ];
+
   return (
-    <AdminLayout title="Prayer Dashboard" subtitle="Manage prayer requests from your community">
-      <div className="space-y-6">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <AdminLayout 
+      title="Prayer Dashboard" 
+      subtitle="Manage prayer requests from your community"
+      breadcrumbs={[{ label: "Dashboard", href: "/admin/dashboard" }, { label: "Prayer" }]}
+    >
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8" data-testid="prayer-metrics-grid">
+        {metricCards.map((metric, i) => (
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
+            key={metric.label}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm"
+            transition={{ delay: i * 0.05 }}
           >
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-gray-100">
-                <MessageSquare className="h-5 w-5 text-gray-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
-                <p className="text-xs text-gray-500">Total Requests</p>
-              </div>
-            </div>
+            <Card className="border-0 shadow-sm" data-testid={`metric-card-${metric.label.toLowerCase().replace(/\s/g, '-')}`}>
+              <CardContent className="p-6">
+                <div className="flex items-start justify-between">
+                  <div className={`p-3 rounded-xl ${metric.color}`}>
+                    <metric.icon className="h-5 w-5 text-white" />
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <p className="text-3xl font-bold text-gray-900">{metric.value}</p>
+                  <div className="text-sm text-gray-500 font-medium">{metric.label}</div>
+                  <div className="text-xs text-gray-400 mt-1">{metric.subtext}</div>
+                </div>
+              </CardContent>
+            </Card>
           </motion.div>
+        ))}
+      </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm"
-          >
+      <Card className="border-0 shadow-sm mb-6">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-yellow-100">
-                <Clock className="h-5 w-5 text-yellow-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-gray-900">{stats.pending}</p>
-                <p className="text-xs text-gray-500">Pending</p>
-              </div>
+              <Filter className="h-4 w-4 text-gray-500" />
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-[180px]" data-testid="select-status-filter">
+                  <SelectValue placeholder="Filter by status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Requests</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="praying">Being Prayed For</SelectItem>
+                  <SelectItem value="answered">Answered</SelectItem>
+                  <SelectItem value="archived">Archived</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm"
-          >
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-blue-100">
-                <Heart className="h-5 w-5 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-gray-900">{stats.praying}</p>
-                <p className="text-xs text-gray-500">Being Prayed For</p>
-              </div>
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm"
-          >
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-green-100">
-                <CheckCircle className="h-5 w-5 text-green-600" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-gray-900">{stats.answered}</p>
-                <p className="text-xs text-gray-500">Answered</p>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Filter className="h-4 w-4 text-gray-500" />
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[180px]" data-testid="select-status-filter">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Requests</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="praying">Being Prayed For</SelectItem>
-                <SelectItem value="answered">Answered</SelectItem>
-                <SelectItem value="archived">Archived</SelectItem>
-              </SelectContent>
-            </Select>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => refetch()}
+              data-testid="button-refresh-prayers"
+            >
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Refresh
+            </Button>
           </div>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => refetch()}
-            data-testid="button-refresh-prayers"
-          >
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh
-          </Button>
-        </div>
+        </CardContent>
+      </Card>
 
-        {isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          </div>
-        ) : requests.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-xl border border-gray-100">
+      {isLoading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      ) : requests.length === 0 ? (
+        <Card className="border-0 shadow-sm">
+          <CardContent className="text-center py-12">
             <Heart className="h-12 w-12 text-gray-300 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900">No prayer requests</h3>
             <p className="text-gray-500 mt-1">Prayer requests from your community will appear here.</p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {requests.map((request, i) => {
-              const StatusIcon = statusIcons[request.status || "pending"] || Clock;
-              return (
-                <motion.div
-                  key={request.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.05 }}
-                  className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow"
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-4">
+          {requests.map((request, i) => {
+            const StatusIcon = statusIcons[request.status || "pending"] || Clock;
+            return (
+              <motion.div
+                key={request.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.03 }}
+              >
+                <Card 
+                  className="border-0 shadow-sm hover:shadow-md transition-shadow"
                   data-testid={`card-prayer-request-${request.id}`}
                 >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-3 mb-2">
-                        <span className="font-semibold text-gray-900">{request.name}</span>
-                        {request.isPrivate === "true" ? (
-                          <Badge variant="secondary" className="gap-1">
-                            <Lock className="h-3 w-3" /> Private
+                  <CardContent className="p-5">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-3 mb-2 flex-wrap">
+                          <span className="font-semibold text-gray-900">{request.name}</span>
+                          {request.isPrivate === "true" ? (
+                            <Badge variant="secondary" className="gap-1 text-xs">
+                              <Lock className="h-3 w-3" /> Private
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="gap-1 text-xs">
+                              <Globe className="h-3 w-3" /> Public
+                            </Badge>
+                          )}
+                          <Badge className={`gap-1 text-xs border ${statusColors[request.status || "pending"]}`}>
+                            <StatusIcon className="h-3 w-3" />
+                            {request.status === "praying" ? "Being Prayed For" : (request.status || "pending")}
                           </Badge>
-                        ) : (
-                          <Badge variant="outline" className="gap-1">
-                            <Globe className="h-3 w-3" /> Public
-                          </Badge>
-                        )}
-                        <Badge className={`gap-1 ${statusColors[request.status || "pending"]}`}>
-                          <StatusIcon className="h-3 w-3" />
-                          {request.status || "pending"}
-                        </Badge>
-                      </div>
-                      <p className="text-gray-600 whitespace-pre-wrap mb-3">{request.request}</p>
-                      <div className="flex items-center gap-4 text-sm text-gray-400">
-                        <span>{format(new Date(request.createdAt), "MMM d, yyyy 'at' h:mm a")}</span>
-                        {request.email && (
-                          <span className="flex items-center gap-1">
-                            <Mail className="h-3 w-3" /> {request.email}
-                          </span>
-                        )}
-                      </div>
-                      {request.prayerNote && (
-                        <div className="mt-3 p-3 bg-blue-50 rounded-lg border-l-4 border-blue-400">
-                          <p className="text-sm text-blue-800">
-                            <strong>Prayer Team Note:</strong> {request.prayerNote}
-                          </p>
                         </div>
-                      )}
+                        <p className="text-gray-600 whitespace-pre-wrap mb-3 leading-relaxed">{request.request}</p>
+                        <div className="flex items-center gap-4 text-sm text-gray-400">
+                          <span>{format(new Date(request.createdAt), "MMM d, yyyy 'at' h:mm a")}</span>
+                          {request.email && (
+                            <span className="flex items-center gap-1">
+                              <Mail className="h-3 w-3" /> {request.email}
+                            </span>
+                          )}
+                          {request.answeredAt && (
+                            <span className="text-green-600 flex items-center gap-1">
+                              <CheckCircle className="h-3 w-3" /> Answered {format(new Date(request.answeredAt), "MMM d")}
+                            </span>
+                          )}
+                        </div>
+                        {request.prayerNote && (
+                          <div className="mt-3 p-3 bg-blue-50 rounded-lg border-l-4 border-blue-400">
+                            <p className="text-sm text-blue-800">
+                              <strong>Prayer Team Note:</strong> {request.prayerNote}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex flex-col gap-2 shrink-0">
+                        <Select 
+                          value={request.status || "pending"} 
+                          onValueChange={(value) => handleStatusChange(request.id, value)}
+                        >
+                          <SelectTrigger className="w-[140px]" data-testid={`select-status-${request.id}`}>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="pending">Pending</SelectItem>
+                            <SelectItem value="praying">Praying</SelectItem>
+                            <SelectItem value="answered">Answered</SelectItem>
+                            <SelectItem value="archived">Archive</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedRequest(request);
+                            setPrayerNote(request.prayerNote || "");
+                          }}
+                          data-testid={`button-add-note-${request.id}`}
+                        >
+                          {request.prayerNote ? "Edit Note" : "Add Note"}
+                        </Button>
+                      </div>
                     </div>
-                    <div className="flex flex-col gap-2">
-                      <Select 
-                        value={request.status || "pending"} 
-                        onValueChange={(value) => handleStatusChange(request.id, value)}
-                      >
-                        <SelectTrigger className="w-[140px]" data-testid={`select-status-${request.id}`}>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="pending">Pending</SelectItem>
-                          <SelectItem value="praying">Praying</SelectItem>
-                          <SelectItem value="answered">Answered</SelectItem>
-                          <SelectItem value="archived">Archive</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setSelectedRequest(request);
-                          setPrayerNote(request.prayerNote || "");
-                        }}
-                        data-testid={`button-add-note-${request.id}`}
-                      >
-                        Add Note
-                      </Button>
-                    </div>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            );
+          })}
+        </div>
+      )}
 
       <Dialog open={!!selectedRequest} onOpenChange={() => setSelectedRequest(null)}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Add Prayer Team Note</DialogTitle>
+            <DialogTitle>Prayer Team Note</DialogTitle>
             <DialogDescription>
               Add a note for the prayer team about this request from {selectedRequest?.name}.
             </DialogDescription>

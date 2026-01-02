@@ -99,6 +99,7 @@ const navSections: NavSection[] = [
     label: "Community", 
     icon: Heart, 
     items: [
+      { id: "prayer", label: "Prayer Dashboard", href: "/admin/prayer" },
       { id: "moderation", label: "Moderation", href: "/admin/moderation" },
       { id: "funnels", label: "Funnels", href: "/admin/funnels" },
     ]
