@@ -1,11 +1,15 @@
 import { motion } from "framer-motion";
 import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/button";
-import { User, Settings, Award, Heart, Globe, Clock, ChevronRight, LogOut, Bell, Shield } from "lucide-react";
+import { User, Settings, Award, Heart, Globe, Clock, ChevronRight, LogOut, Bell, Shield, LayoutDashboard } from "lucide-react";
 import { useLocation } from "wouter";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Profile() {
   const [, navigate] = useLocation();
+  const { user } = useAuth();
+  
+  const isAdmin = user?.role === 'admin' || user?.role === 'super_admin';
 
   const stats = [
     { label: "Days Active", value: "12", icon: Clock },
@@ -18,6 +22,7 @@ export default function Profile() {
     { label: "Notifications", description: "Manage alerts", icon: Bell, href: "#" },
     { label: "Privacy & Security", description: "Account settings", icon: Shield, href: "#" },
     { label: "Settings", description: "App preferences", icon: Settings, href: "#" },
+    ...(isAdmin ? [{ label: "Admin Portal", description: "Manage platform", icon: LayoutDashboard, href: "/admin" }] : []),
   ];
 
   return (
