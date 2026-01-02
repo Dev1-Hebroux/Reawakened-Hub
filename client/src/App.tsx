@@ -91,6 +91,7 @@ function Router() {
       <Route path="/blog/:slug" component={BlogPostPage} />
       <Route path="/community" component={CommunityHub} />
       <Route path="/sparks" component={SparksPage} />
+      <Route path="/sparks/:id" component={SparksPage} />
       <Route path="/dominion/schools" component={SchoolsLanding} />
       <Route path="/dominion/universities" component={UniversitiesLanding} />
       <Route path="/dominion/9-5-reset" component={EarlyCareerLanding} />

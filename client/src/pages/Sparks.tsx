@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRoute, useLocation } from "wouter";
 import { Navbar } from "@/components/layout/Navbar";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
@@ -70,6 +71,10 @@ interface ReactionCounts {
 }
 
 export function SparksPage() {
+  const [, params] = useRoute("/sparks/:id");
+  const [, navigate] = useLocation();
+  const sparkIdFromUrl = params?.id ? parseInt(params.id, 10) : null;
+  
   const [activeFilter, setActiveFilter] = useState("All");
   const [selectedSpark, setSelectedSpark] = useState<Spark | null>(null);
   const [showSubscribe, setShowSubscribe] = useState(false);
@@ -147,6 +152,32 @@ export function SparksPage() {
     queryKey: ["/api/sparks/featured", userAudienceSegment],
     queryFn: () => fetch(`/api/sparks/featured${audienceParam}`).then(r => r.json()),
   });
+
+  // Auto-open spark modal when accessing /sparks/:id directly
+  useEffect(() => {
+    if (sparkIdFromUrl && sparks.length > 0 && !selectedSpark) {
+      const spark = sparks.find(s => s.id === sparkIdFromUrl);
+      if (spark) {
+        setSelectedSpark(spark);
+      } else {
+        // Check featured sparks too
+        const featured = featuredSparks.find(s => s.id === sparkIdFromUrl);
+        if (featured) {
+          setSelectedSpark(featured);
+        } else if (todaySpark?.id === sparkIdFromUrl) {
+          setSelectedSpark(todaySpark);
+        }
+      }
+    }
+  }, [sparkIdFromUrl, sparks, featuredSparks, todaySpark, selectedSpark]);
+
+  // Update URL when modal is closed
+  const handleCloseSparkModal = () => {
+    setSelectedSpark(null);
+    if (sparkIdFromUrl) {
+      navigate("/sparks", { replace: true });
+    }
+  };
 
   const { data: subscriptions = [], isLoading: subscriptionsLoading } = useQuery<SparkSubscription[]>({
     queryKey: ["/api/subscriptions"],
@@ -1060,7 +1091,7 @@ export function SparksPage() {
             className="fixed inset-0 z-[60] bg-black/90 backdrop-blur-xl flex items-center justify-center p-4 md:p-8"
           >
             <button 
-              onClick={() => setSelectedSpark(null)}
+              onClick={handleCloseSparkModal}
               className="absolute top-4 right-4 md:top-8 md:right-8 text-white/50 hover:text-white transition-colors z-50"
               data-testid="button-close-spark-modal"
             >
