@@ -1,6 +1,10 @@
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
+
+if (!resend) {
+  console.warn('RESEND_API_KEY not configured - email functionality will be disabled');
+}
 
 export async function sendWelcomeEmail(to: string, name: string, data: {
   prayerFocus?: string;
@@ -88,6 +92,11 @@ export async function sendWelcomeEmail(to: string, name: string, data: {
 </body>
 </html>
   `;
+
+  if (!resend) {
+    console.warn('Resend not configured, skipping welcome email');
+    return { success: false, error: 'Email service not configured' };
+  }
 
   try {
     const result = await resend.emails.send({
@@ -189,6 +198,11 @@ export async function sendPrayerReminderEmail(to: string, name: string, data: {
 </body>
 </html>
   `;
+
+  if (!resend) {
+    console.warn('Resend not configured, skipping prayer reminder email');
+    return { success: false, error: 'Email service not configured' };
+  }
 
   try {
     const result = await resend.emails.send({
@@ -313,6 +327,11 @@ export async function sendAltarJoinConfirmation(to: string, name: string, data: 
 </html>
   `;
 
+  if (!resend) {
+    console.warn('Resend not configured, skipping altar join confirmation email');
+    return { success: false, error: 'Email service not configured' };
+  }
+
   try {
     const result = await resend.emails.send({
       from: 'Reawakened <noreply@reawakened.one>',
@@ -392,6 +411,11 @@ export async function sendPrayerRequestNotification(data: {
 </body>
 </html>
   `;
+
+  if (!resend) {
+    console.warn('Resend not configured, skipping prayer request notification');
+    return { success: false, error: 'Email service not configured' };
+  }
 
   try {
     const result = await resend.emails.send({
