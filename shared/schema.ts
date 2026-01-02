@@ -2244,3 +2244,256 @@ export const aiCoachMessages = pgTable("ai_coach_messages", {
 export const insertAiCoachMessageSchema = createInsertSchema(aiCoachMessages).omit({ id: true, createdAt: true });
 export type InsertAiCoachMessage = z.infer<typeof insertAiCoachMessageSchema>;
 export type AiCoachMessage = typeof aiCoachMessages.$inferSelect;
+
+// ===== ADMIN PORTAL TABLES =====
+
+// Coaches - Human coaches for 1-on-1 and group sessions
+export const coaches = pgTable("coaches", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  specialties: text("specialties").array(), // 'career', 'faith', 'relationships', 'leadership'
+  bio: text("bio"),
+  photoUrl: varchar("photo_url"),
+  hourlyRate: integer("hourly_rate"), // in cents, null = free
+  availability: jsonb("availability"), // { monday: ['09:00-12:00', '14:00-17:00'], ... }
+  maxSessionsPerWeek: integer("max_sessions_per_week").default(10),
+  isActive: boolean("is_active").default(true),
+  rating: integer("rating").default(0), // 0-500 (5.00 stars)
+  totalSessions: integer("total_sessions").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertCoachSchema = createInsertSchema(coaches).omit({ id: true, createdAt: true, updatedAt: true });
+export type InsertCoach = z.infer<typeof insertCoachSchema>;
+export type Coach = typeof coaches.$inferSelect;
+
+// Coaching Sessions - 1-on-1 bookings
+export const coachingSessions = pgTable("coaching_sessions", {
+  id: serial("id").primaryKey(),
+  coachId: integer("coach_id").notNull().references(() => coaches.id),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  scheduledAt: timestamp("scheduled_at").notNull(),
+  duration: integer("duration").default(60), // minutes
+  status: varchar("status").default("scheduled"), // 'scheduled', 'confirmed', 'in_progress', 'completed', 'cancelled', 'no_show'
+  meetingLink: varchar("meeting_link"),
+  topic: varchar("topic"),
+  notes: text("notes"), // coach's private notes
+  userNotes: text("user_notes"), // user's prep notes
+  actionItems: text("action_items").array(),
+  rating: integer("rating"), // 1-5 stars
+  feedback: text("feedback"),
+  cancelledAt: timestamp("cancelled_at"),
+  cancelReason: text("cancel_reason"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertCoachingSessionSchema = createInsertSchema(coachingSessions).omit({ id: true, createdAt: true, updatedAt: true });
+export type InsertCoachingSession = z.infer<typeof insertCoachingSessionSchema>;
+export type CoachingSession = typeof coachingSessions.$inferSelect;
+
+// Coaching Cohorts - Group coaching programs
+export const coachingCohorts = pgTable("coaching_cohorts", {
+  id: serial("id").primaryKey(),
+  coachId: integer("coach_id").notNull().references(() => coaches.id),
+  title: varchar("title").notNull(),
+  description: text("description"),
+  topic: varchar("topic").notNull(), // 'leadership', 'vision', 'faith', 'career', 'relationships'
+  imageUrl: varchar("image_url"),
+  maxParticipants: integer("max_participants").default(12),
+  currentParticipants: integer("current_participants").default(0),
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date"),
+  sessionCount: integer("session_count").default(8), // number of group sessions
+  schedule: jsonb("schedule"), // { dayOfWeek: 'Tuesday', time: '19:00', timezone: 'UTC' }
+  meetingLink: varchar("meeting_link"),
+  price: integer("price"), // in cents, null = free
+  status: varchar("status").default("draft"), // 'draft', 'open', 'in_progress', 'completed', 'cancelled'
+  resources: jsonb("resources"), // array of { title, url, sessionNumber }
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertCoachingCohortSchema = createInsertSchema(coachingCohorts).omit({ id: true, createdAt: true, updatedAt: true });
+export type InsertCoachingCohort = z.infer<typeof insertCoachingCohortSchema>;
+export type CoachingCohort = typeof coachingCohorts.$inferSelect;
+
+// Cohort Participants
+export const cohortParticipants = pgTable("cohort_participants", {
+  id: serial("id").primaryKey(),
+  cohortId: integer("cohort_id").notNull().references(() => coachingCohorts.id, { onDelete: 'cascade' }),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  status: varchar("status").default("enrolled"), // 'enrolled', 'active', 'completed', 'dropped'
+  progress: integer("progress").default(0), // sessions attended
+  accountabilityPartnerId: varchar("accountability_partner_id").references(() => users.id),
+  joinedAt: timestamp("joined_at").defaultNow(),
+  completedAt: timestamp("completed_at"),
+});
+
+export const insertCohortParticipantSchema = createInsertSchema(cohortParticipants).omit({ id: true, joinedAt: true });
+export type InsertCohortParticipant = z.infer<typeof insertCohortParticipantSchema>;
+export type CohortParticipant = typeof cohortParticipants.$inferSelect;
+
+// Challenges - Competitions and growth challenges
+export const challenges = pgTable("challenges", {
+  id: serial("id").primaryKey(),
+  title: varchar("title").notNull(),
+  description: text("description"),
+  type: varchar("type").notNull(), // 'individual', 'team', 'community'
+  category: varchar("category").notNull(), // 'prayer', 'reading', 'outreach', 'habits', 'giving', 'fitness'
+  imageUrl: varchar("image_url"),
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date").notNull(),
+  goal: integer("goal").notNull(), // target number (days, actions, etc.)
+  goalUnit: varchar("goal_unit").notNull(), // 'days', 'prayers', 'chapters', 'actions', 'hours'
+  pointsPerAction: integer("points_per_action").default(10),
+  maxParticipants: integer("max_participants"), // null = unlimited
+  currentParticipants: integer("current_participants").default(0),
+  rewards: jsonb("rewards"), // { first: 'Badge', completion: 'Certificate' }
+  rules: text("rules").array(),
+  status: varchar("status").default("draft"), // 'draft', 'upcoming', 'active', 'completed', 'cancelled'
+  isFeatured: boolean("is_featured").default(false),
+  createdBy: varchar("created_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertChallengeSchema = createInsertSchema(challenges).omit({ id: true, createdAt: true, updatedAt: true });
+export type InsertChallenge = z.infer<typeof insertChallengeSchema>;
+export type Challenge = typeof challenges.$inferSelect;
+
+// Challenge Participants
+export const challengeParticipants = pgTable("challenge_participants", {
+  id: serial("id").primaryKey(),
+  challengeId: integer("challenge_id").notNull().references(() => challenges.id, { onDelete: 'cascade' }),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  teamId: integer("team_id"), // for team challenges
+  progress: integer("progress").default(0),
+  points: integer("points").default(0),
+  streak: integer("streak").default(0),
+  bestStreak: integer("best_streak").default(0),
+  lastActionAt: timestamp("last_action_at"),
+  status: varchar("status").default("active"), // 'active', 'completed', 'dropped'
+  rank: integer("rank"),
+  completedAt: timestamp("completed_at"),
+  joinedAt: timestamp("joined_at").defaultNow(),
+});
+
+export const insertChallengeParticipantSchema = createInsertSchema(challengeParticipants).omit({ id: true, joinedAt: true });
+export type InsertChallengeParticipant = z.infer<typeof insertChallengeParticipantSchema>;
+export type ChallengeParticipant = typeof challengeParticipants.$inferSelect;
+
+// Challenge Progress Logs
+export const challengeLogs = pgTable("challenge_logs", {
+  id: serial("id").primaryKey(),
+  participantId: integer("participant_id").notNull().references(() => challengeParticipants.id, { onDelete: 'cascade' }),
+  action: varchar("action").notNull(), // 'check_in', 'prayer', 'read', 'workout', etc.
+  points: integer("points").default(0),
+  note: text("note"),
+  proofUrl: varchar("proof_url"), // optional photo/screenshot
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertChallengeLogSchema = createInsertSchema(challengeLogs).omit({ id: true, createdAt: true });
+export type InsertChallengeLog = z.infer<typeof insertChallengeLogSchema>;
+export type ChallengeLog = typeof challengeLogs.$inferSelect;
+
+// Mission Trips - Outreach planning
+export const missionTrips = pgTable("mission_trips", {
+  id: serial("id").primaryKey(),
+  title: varchar("title").notNull(),
+  description: text("description"),
+  destination: varchar("destination").notNull(), // 'Kenya', 'Brazil', 'Local - Downtown'
+  country: varchar("country"),
+  type: varchar("type").notNull(), // 'international', 'domestic', 'local'
+  imageUrl: varchar("image_url"),
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date").notNull(),
+  applicationDeadline: timestamp("application_deadline"),
+  minParticipants: integer("min_participants").default(5),
+  maxParticipants: integer("max_participants").default(20),
+  currentParticipants: integer("current_participants").default(0),
+  cost: integer("cost"), // total trip cost in cents
+  depositAmount: integer("deposit_amount"), // required deposit
+  fundraisingGoal: integer("fundraising_goal"),
+  currentFundraising: integer("current_fundraising").default(0),
+  requirements: text("requirements").array(), // ['passport', 'vaccinations', 'background_check']
+  activities: text("activities").array(), // ['construction', 'teaching', 'medical', 'evangelism']
+  itinerary: jsonb("itinerary"), // array of { day, title, description, activities }
+  leaderId: varchar("leader_id").references(() => users.id),
+  status: varchar("status").default("draft"), // 'draft', 'open', 'closed', 'in_progress', 'completed', 'cancelled'
+  meetingLink: varchar("meeting_link"), // for info sessions
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertMissionTripSchema = createInsertSchema(missionTrips).omit({ id: true, createdAt: true, updatedAt: true });
+export type InsertMissionTrip = z.infer<typeof insertMissionTripSchema>;
+export type MissionTrip = typeof missionTrips.$inferSelect;
+
+// Trip Applications
+export const tripApplications = pgTable("trip_applications", {
+  id: serial("id").primaryKey(),
+  tripId: integer("trip_id").notNull().references(() => missionTrips.id, { onDelete: 'cascade' }),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  status: varchar("status").default("pending"), // 'pending', 'approved', 'rejected', 'waitlisted', 'withdrawn'
+  role: varchar("role"), // 'participant', 'team_leader', 'medical', 'logistics'
+  emergencyContact: jsonb("emergency_contact"), // { name, phone, relationship }
+  medicalInfo: text("medical_info"),
+  dietaryRestrictions: text("dietary_restrictions"),
+  specialSkills: text("special_skills").array(),
+  whyApply: text("why_apply"),
+  documents: jsonb("documents"), // array of { type, url, verified }
+  amountPaid: integer("amount_paid").default(0),
+  fundraisingAmount: integer("fundraising_amount").default(0),
+  fundraisingPageUrl: varchar("fundraising_page_url"),
+  notes: text("notes"), // admin notes
+  reviewedBy: varchar("reviewed_by").references(() => users.id),
+  reviewedAt: timestamp("reviewed_at"),
+  appliedAt: timestamp("applied_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertTripApplicationSchema = createInsertSchema(tripApplications).omit({ id: true, appliedAt: true, updatedAt: true });
+export type InsertTripApplication = z.infer<typeof insertTripApplicationSchema>;
+export type TripApplication = typeof tripApplications.$inferSelect;
+
+// Admin Audit Logs - Track all admin actions
+export const adminAuditLogs = pgTable("admin_audit_logs", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  action: varchar("action").notNull(), // 'role_change', 'content_publish', 'user_ban', etc.
+  targetType: varchar("target_type"), // 'user', 'spark', 'challenge', 'trip', etc.
+  targetId: varchar("target_id"),
+  previousValue: jsonb("previous_value"),
+  newValue: jsonb("new_value"),
+  ipAddress: varchar("ip_address"),
+  userAgent: text("user_agent"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertAdminAuditLogSchema = createInsertSchema(adminAuditLogs).omit({ id: true, createdAt: true });
+export type InsertAdminAuditLog = z.infer<typeof insertAdminAuditLogSchema>;
+export type AdminAuditLog = typeof adminAuditLogs.$inferSelect;
+
+// Goal Templates - Pre-built goals for users
+export const goalTemplates = pgTable("goal_templates", {
+  id: serial("id").primaryKey(),
+  title: varchar("title").notNull(),
+  description: text("description"),
+  category: varchar("category").notNull(), // 'faith', 'career', 'health', 'relationships', 'finance', 'personal'
+  iconName: varchar("icon_name"),
+  suggestedMilestones: jsonb("suggested_milestones"), // array of milestone templates
+  suggestedHabits: jsonb("suggested_habits"), // array of habit templates
+  timeframe: varchar("timeframe"), // '30_days', '90_days', '6_months', '1_year'
+  difficulty: varchar("difficulty"), // 'beginner', 'intermediate', 'advanced'
+  isActive: boolean("is_active").default(true),
+  usageCount: integer("usage_count").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertGoalTemplateSchema = createInsertSchema(goalTemplates).omit({ id: true, createdAt: true, updatedAt: true });
+export type InsertGoalTemplate = z.infer<typeof insertGoalTemplateSchema>;
+export type GoalTemplate = typeof goalTemplates.$inferSelect;
