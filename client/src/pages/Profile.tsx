@@ -1,15 +1,23 @@
 import { motion } from "framer-motion";
 import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/button";
-import { User, Settings, Award, Heart, Globe, Clock, ChevronRight, LogOut, Bell, Shield, LayoutDashboard } from "lucide-react";
+import { User, Settings, Award, Heart, Globe, Clock, ChevronRight, LogOut, Bell, Shield, LayoutDashboard, LogIn } from "lucide-react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function Profile() {
   const [, navigate] = useLocation();
-  const { user } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
   
   const isAdmin = user?.role === 'admin' || user?.role === 'super_admin';
+
+  const handleSignIn = () => {
+    window.location.href = "/api/login";
+  };
+
+  const handleSignOut = () => {
+    window.location.href = "/api/logout";
+  };
 
   const stats = [
     { label: "Days Active", value: "12", icon: Clock },
@@ -37,15 +45,24 @@ export default function Profile() {
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-8"
           >
-            <div className="h-24 w-24 mx-auto rounded-full bg-[#FAF8F5] dark:bg-[#243656] border-4 border-[#D4A574] flex items-center justify-center mb-4 shadow-xl">
-              <User className="h-12 w-12 text-[#D4A574]" />
+            <div className="h-24 w-24 mx-auto rounded-full bg-[#FAF8F5] dark:bg-[#243656] border-4 border-[#D4A574] flex items-center justify-center mb-4 shadow-xl overflow-hidden">
+              {isAuthenticated && user?.profileImageUrl ? (
+                <img src={user.profileImageUrl} alt={user.username || "User"} className="h-full w-full object-cover" />
+              ) : (
+                <User className="h-12 w-12 text-[#D4A574]" />
+              )}
             </div>
             <h1 className="text-2xl font-display font-bold text-gray-900 dark:text-white mb-1">
-              Welcome Back
+              {isAuthenticated ? (user?.firstName || user?.username || "Welcome Back") : "Welcome"}
             </h1>
             <p className="text-gray-600 dark:text-[#7C9A8E]">
-              Sign in to track your journey
+              {isAuthenticated ? (user?.email || "Your spiritual journey awaits") : "Sign in to track your journey"}
             </p>
+            {isAuthenticated && isAdmin && (
+              <span className="inline-block mt-2 px-3 py-1 text-xs font-medium rounded-full bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300">
+                {user?.role === 'super_admin' ? 'Super Admin' : 'Admin'}
+              </span>
+            )}
           </motion.div>
 
           <motion.div
@@ -101,20 +118,25 @@ export default function Profile() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <Button 
-              className="w-full bg-[#D4A574] hover:bg-[#C49464] text-white font-bold py-6 rounded-2xl shadow-lg mb-4"
-              data-testid="button-sign-in"
-            >
-              Sign In
-            </Button>
-            
-            <button 
-              className="w-full flex items-center justify-center gap-2 text-gray-500 dark:text-[#7C9A8E] hover:text-gray-700 dark:hover:text-white py-3 transition-all"
-              data-testid="button-sign-out"
-            >
-              <LogOut className="h-4 w-4" />
-              <span className="text-sm font-medium">Sign Out</span>
-            </button>
+            {!isAuthenticated ? (
+              <Button 
+                onClick={handleSignIn}
+                className="w-full bg-[#D4A574] hover:bg-[#C49464] text-white font-bold py-6 rounded-2xl shadow-lg"
+                data-testid="button-sign-in"
+              >
+                <LogIn className="h-5 w-5 mr-2" />
+                Sign In with Replit
+              </Button>
+            ) : (
+              <button 
+                onClick={handleSignOut}
+                className="w-full flex items-center justify-center gap-2 text-gray-500 dark:text-[#7C9A8E] hover:text-red-500 dark:hover:text-red-400 py-3 transition-all border border-gray-200 dark:border-[#4A7C7C]/30 rounded-2xl"
+                data-testid="button-sign-out"
+              >
+                <LogOut className="h-4 w-4" />
+                <span className="text-sm font-medium">Sign Out</span>
+              </button>
+            )}
           </motion.div>
           
         </div>

@@ -67,7 +67,6 @@ export function Navbar() {
           
           <div className={`hidden md:block px-4 py-1.5 rounded-full border transition-all duration-300 ${scrolled ? 'bg-white/50 border-gray-200' : 'bg-transparent border-transparent'}`}>
             <div className="flex items-baseline space-x-0.5">
-              <Link href="/"><span className={`${textColor} ${hoverColor} px-3 py-1.5 rounded-full text-sm font-bold transition-all cursor-pointer`} data-testid="nav-home">Home</span></Link>
               {isAuthenticated && (
                 <Link href="/vision">
                   <span className={`${textColor} ${hoverColor} px-3 py-1.5 rounded-full text-sm font-bold transition-all cursor-pointer inline-flex items-center gap-1`} data-testid="nav-vision">
@@ -124,7 +123,6 @@ export function Navbar() {
             className="md:hidden bg-white border-b border-gray-100 shadow-lg"
           >
             <div className="px-4 pt-4 pb-6 space-y-2">
-              <Link href="/"><span className="text-gray-800 hover:text-primary hover:bg-gray-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer" data-testid="mobile-nav-home">Home</span></Link>
               {isAuthenticated && (
                 <Link href="/vision">
                   <span className="text-gray-800 hover:text-primary hover:bg-gray-50 px-3 py-2 rounded-lg text-base font-bold cursor-pointer flex items-center gap-2" data-testid="mobile-nav-vision">
