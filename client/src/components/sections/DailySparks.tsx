@@ -26,7 +26,7 @@ export function DailySparks() {
           <div className="space-y-4">
             <span className="text-primary font-bold tracking-wider uppercase text-sm">Daily Inspiration</span>
             <h2 className="text-4xl md:text-5xl font-display font-bold text-gray-900 leading-tight">
-              Ignite Your <br /><span className="text-primary">Faith Journey</span>
+              Ignite Your <br /><span className="text-primary">Spiritual Journey</span>
             </h2>
           </div>
           <Link href="/sparks">

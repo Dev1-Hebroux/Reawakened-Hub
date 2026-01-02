@@ -87,7 +87,7 @@ export function JourneyLibrary() {
               <span className="text-sm font-medium text-primary">Discipleship Paths</span>
             </div>
             <h1 className="text-4xl md:text-5xl font-display font-bold mb-4" data-testid="text-page-title">
-              Your Faith Guide Starts Here
+              Your Spiritual Journey Starts Here
             </h1>
             <p className="text-lg text-gray-400 max-w-2xl mx-auto">
               Discover guided paths designed to help you grow in faith, find purpose, and deepen your walk with Jesus.

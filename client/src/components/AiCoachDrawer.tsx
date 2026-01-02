@@ -161,7 +161,7 @@ export function AiCoachDrawer({ entryPoint = "general" }: AiCoachDrawerProps) {
                       Welcome to Awake AI
                     </h2>
                     <p className="text-gray-600 text-sm">
-                      Get personalized guidance on your goals, habits, and faith journey.
+                      Get personalized guidance on your goals, habits, and spiritual journey.
                     </p>
                   </div>
 
