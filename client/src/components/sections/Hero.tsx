@@ -165,7 +165,7 @@ export function Hero() {
                 </div>
                 <div>
                   <p className="font-bold text-gray-900 text-sm">Global Impact</p>
-                  <p className="text-xs text-gray-500">45 Nations Reached</p>
+                  <p className="text-xs text-gray-500">50 Nations Reached</p>
                 </div>
               </div>
 

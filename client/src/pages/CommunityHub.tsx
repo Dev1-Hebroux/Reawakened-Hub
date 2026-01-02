@@ -13,7 +13,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { toast } from "sonner";
-import type { Post, User } from "@shared/schema";
+import type { Post, User, Comment } from "@shared/schema";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { GrowthToolsDiscovery } from "@/components/GrowthToolsDiscovery";
@@ -29,7 +29,8 @@ import userAvatar from "@assets/generated_images/diverse_group_taking_a_selfie.p
 import feedImg from "@assets/generated_images/hands_typing_on_a_phone_with_bible_in_background.png";
 import storyImg from "@assets/generated_images/young_woman_speaking_passionately_into_camera.png";
 
-type PostWithUser = Post & { user: User; reactionCount?: number };
+type PostWithUser = Post & { user: User; reactionCount?: number; commentCount?: number };
+type CommentWithUser = Comment & { user: User };
 
 const stories = [
   { id: 1, name: "Your Story", img: userAvatar, isUser: true, route: null, action: "create" },
@@ -53,6 +54,8 @@ export function CommunityHub() {
   const [viewingStory, setViewingStory] = useState<typeof stories[0] | null>(null);
   const [storyIndex, setStoryIndex] = useState(0);
   const [isListening, setIsListening] = useState(false);
+  const [expandedComments, setExpandedComments] = useState<number[]>([]);
+  const [commentInputs, setCommentInputs] = useState<Record<number, string>>({});
   
   const { user, isAuthenticated } = useAuth() as { user: User | null; isAuthenticated: boolean; isLoading: boolean };
   const queryClient = useQueryClient();
@@ -167,6 +170,71 @@ export function CommunityHub() {
       }
     },
   });
+
+  // Fetch comments for expanded posts
+  const { data: commentsData = {}, isLoading: isLoadingComments } = useQuery<Record<number, CommentWithUser[]>>({
+    queryKey: ["/api/posts/comments", ...expandedComments],
+    queryFn: async () => {
+      if (expandedComments.length === 0) return {};
+      const results: Record<number, CommentWithUser[]> = {};
+      await Promise.all(
+        expandedComments.map(async (postId) => {
+          const res = await fetch(`/api/posts/${postId}/comments`);
+          if (res.ok) {
+            results[postId] = await res.json();
+          }
+        })
+      );
+      return results;
+    },
+    enabled: expandedComments.length > 0,
+  });
+
+  // Create comment mutation
+  const createCommentMutation = useMutation({
+    mutationFn: async (data: { postId: number; content: string }) => {
+      const res = await apiRequest("POST", `/api/posts/${data.postId}/comments`, { content: data.content });
+      return res.json();
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/posts/comments"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/posts"] });
+      setCommentInputs(prev => ({ ...prev, [variables.postId]: "" }));
+      toast.success("Comment posted!");
+    },
+    onError: (error: Error) => {
+      if (isUnauthorizedError(error)) {
+        toast.error("Please log in to comment");
+        setTimeout(() => window.location.href = "/api/login", 1000);
+      } else {
+        toast.error("Failed to post comment");
+      }
+    },
+  });
+
+  const toggleComments = (postId: number) => {
+    setExpandedComments(prev => {
+      if (prev.includes(postId)) {
+        return prev.filter(id => id !== postId);
+      } else {
+        return [...prev, postId];
+      }
+    });
+  };
+
+  const handleSubmitComment = (postId: number) => {
+    const content = commentInputs[postId]?.trim();
+    if (!content) {
+      toast.error("Please enter a comment");
+      return;
+    }
+    if (!isAuthenticated) {
+      toast.error("Please log in to comment");
+      setTimeout(() => window.location.href = "/api/login", 1000);
+      return;
+    }
+    createCommentMutation.mutate({ postId, content });
+  };
 
   const handleCreatePost = () => {
     if (!newPostContent.trim()) {
@@ -532,15 +600,121 @@ export function CommunityHub() {
                           {post.reactionCount || 0}
                         </span>
                       </button>
-                      <button className="flex items-center gap-2 text-gray-500 hover:text-blue-500 transition-colors">
+                      <button 
+                        data-testid={`button-comment-${post.id}`}
+                        onClick={() => toggleComments(post.id)}
+                        className={`flex items-center gap-2 transition-colors ${expandedComments.includes(post.id) ? 'text-blue-500' : 'text-gray-500 hover:text-blue-500'}`}
+                      >
                         <MessageCircle className="h-5 w-5" />
-                        <span className="text-sm font-medium">0</span>
+                        <span className="text-sm font-medium" data-testid={`text-comments-${post.id}`}>
+                          {post.commentCount || 0}
+                        </span>
                       </button>
                       <button className="flex items-center gap-2 text-gray-500 hover:text-green-500 transition-colors">
                         <Share2 className="h-5 w-5" />
                         <span className="text-sm font-medium">0</span>
                       </button>
                     </div>
+
+                    {/* Collapsible Comment Section */}
+                    <AnimatePresence>
+                      {expandedComments.includes(post.id) && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="overflow-hidden"
+                          data-testid={`comments-section-${post.id}`}
+                        >
+                          <div className="pt-4 border-t border-gray-100 mt-4">
+                            {/* Comments List */}
+                            <div className="space-y-4 mb-4 max-h-[300px] overflow-y-auto">
+                              {isLoadingComments && !commentsData[post.id] ? (
+                                <div className="flex items-center justify-center py-4" data-testid={`comments-loading-${post.id}`}>
+                                  <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
+                                </div>
+                              ) : commentsData[post.id]?.length === 0 || !commentsData[post.id] ? (
+                                <p className="text-gray-500 text-sm text-center py-4" data-testid={`comments-empty-${post.id}`}>
+                                  No comments yet. Be the first to comment!
+                                </p>
+                              ) : (
+                                commentsData[post.id]?.map((comment) => (
+                                  <div key={comment.id} className="flex gap-3" data-testid={`comment-${comment.id}`}>
+                                    <div className="h-8 w-8 rounded-full overflow-hidden bg-gray-100 flex-shrink-0">
+                                      <img 
+                                        src={comment.user?.profileImageUrl || userAvatar} 
+                                        alt={comment.user?.firstName || "User"} 
+                                        className="w-full h-full object-cover"
+                                        data-testid={`comment-avatar-${comment.id}`}
+                                      />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <div className="bg-gray-50 rounded-2xl px-4 py-2">
+                                        <h5 className="font-semibold text-sm text-gray-900" data-testid={`comment-author-${comment.id}`}>
+                                          {comment.user?.firstName} {comment.user?.lastName}
+                                        </h5>
+                                        <p className="text-sm text-gray-700" data-testid={`comment-content-${comment.id}`}>
+                                          {comment.content}
+                                        </p>
+                                      </div>
+                                      <span className="text-xs text-gray-500 ml-4" data-testid={`comment-time-${comment.id}`}>
+                                        {formatTimeAgo(comment.createdAt!)}
+                                      </span>
+                                    </div>
+                                  </div>
+                                ))
+                              )}
+                            </div>
+
+                            {/* Comment Input */}
+                            {isAuthenticated ? (
+                              <div className="flex gap-3" data-testid={`comment-input-section-${post.id}`}>
+                                <div className="h-8 w-8 rounded-full overflow-hidden bg-gray-100 flex-shrink-0">
+                                  <img 
+                                    src={user?.profileImageUrl || userAvatar} 
+                                    alt={user?.firstName || "User"} 
+                                    className="w-full h-full object-cover" 
+                                  />
+                                </div>
+                                <div className="flex-1 flex gap-2">
+                                  <input
+                                    type="text"
+                                    data-testid={`input-comment-${post.id}`}
+                                    value={commentInputs[post.id] || ""}
+                                    onChange={(e) => setCommentInputs(prev => ({ ...prev, [post.id]: e.target.value }))}
+                                    onKeyDown={(e) => e.key === "Enter" && handleSubmitComment(post.id)}
+                                    placeholder="Write a comment..."
+                                    className="flex-1 bg-gray-50 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#7C9A8E]/30"
+                                  />
+                                  <button
+                                    data-testid={`button-submit-comment-${post.id}`}
+                                    onClick={() => handleSubmitComment(post.id)}
+                                    disabled={!commentInputs[post.id]?.trim() || createCommentMutation.isPending}
+                                    className="bg-[#7C9A8E] text-white p-2 rounded-full hover:bg-[#6B8B7E] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                  >
+                                    {createCommentMutation.isPending ? (
+                                      <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                      <Send className="h-4 w-4" />
+                                    )}
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="text-center py-2" data-testid={`comment-login-prompt-${post.id}`}>
+                                <button
+                                  onClick={() => window.location.href = "/api/login"}
+                                  className="text-primary font-medium text-sm hover:underline"
+                                >
+                                  Log in to comment
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                 </motion.div>
               ))

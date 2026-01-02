@@ -894,25 +894,37 @@ export class DatabaseStorage implements IStorage {
       ? await query.where(eq(posts.type, type))
       : await query;
 
-    // Get reaction counts for all posts
+    // Get reaction and comment counts for all posts
     const postIds = results.map(p => p.id);
     let reactionCounts: { postId: number; count: number }[] = [];
+    let commentCounts: { postId: number; count: number }[] = [];
     
     if (postIds.length > 0) {
-      reactionCounts = await db
-        .select({
-          postId: reactions.postId,
-          count: count(reactions.id),
-        })
-        .from(reactions)
-        .where(inArray(reactions.postId, postIds))
-        .groupBy(reactions.postId);
+      [reactionCounts, commentCounts] = await Promise.all([
+        db
+          .select({
+            postId: reactions.postId,
+            count: count(reactions.id),
+          })
+          .from(reactions)
+          .where(inArray(reactions.postId, postIds))
+          .groupBy(reactions.postId),
+        db
+          .select({
+            postId: comments.postId,
+            count: count(comments.id),
+          })
+          .from(comments)
+          .where(inArray(comments.postId, postIds))
+          .groupBy(comments.postId),
+      ]);
     }
 
-    // Map reaction counts to posts
+    // Map reaction and comment counts to posts
     const postsWithCounts = results.map(post => ({
       ...post,
       reactionCount: reactionCounts.find(r => r.postId === post.id)?.count || 0,
+      commentCount: commentCounts.find(c => c.postId === post.id)?.count || 0,
     }));
 
     return postsWithCounts;
@@ -3810,12 +3822,28 @@ export class DatabaseStorage implements IStorage {
   }
 
   // ===== COMMENTS =====
-  async getCommentsByPost(postId: number): Promise<Comment[]> {
-    return db
-      .select()
+  async getCommentsByPost(postId: number): Promise<any[]> {
+    const results = await db
+      .select({
+        id: comments.id,
+        postId: comments.postId,
+        userId: comments.userId,
+        content: comments.content,
+        createdAt: comments.createdAt,
+        updatedAt: comments.updatedAt,
+        user: {
+          id: users.id,
+          email: users.email,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          profileImageUrl: users.profileImageUrl,
+        },
+      })
       .from(comments)
+      .leftJoin(users, eq(comments.userId, users.id))
       .where(eq(comments.postId, postId))
       .orderBy(desc(comments.createdAt));
+    return results;
   }
 
   async createComment(comment: InsertComment): Promise<Comment> {

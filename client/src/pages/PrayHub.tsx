@@ -375,6 +375,15 @@ export function PrayHub() {
                           ? "bg-red-500 hover:bg-red-600 text-white" 
                           : "bg-white/10 hover:bg-white/20 text-white"
                         }
+                        onClick={() => {
+                          if (room.status === "live" || room.scheduleType === "always_on") {
+                            toast.success("Joining prayer room...");
+                            navigate(`/pray/room/${room.id}`);
+                          } else {
+                            toast.success("Reminder set! We'll notify you when this session starts.");
+                          }
+                        }}
+                        data-testid={`button-room-action-${room.id}`}
                       >
                         {room.status === "live" || room.scheduleType === "always_on" ? "Join" : "Remind Me"}
                       </Button>
@@ -411,12 +420,22 @@ export function PrayHub() {
               <Button 
                 variant="outline" 
                 className="flex-1 border-white/20 text-white hover:bg-white/10 font-bold py-5 rounded-2xl"
+                onClick={() => navigate("/reflection")}
+                data-testid="button-journal"
               >
                 <BookOpen className="h-4 w-4 mr-2" />
                 Journal
               </Button>
               <Button 
                 className="flex-1 bg-[#D4A574] hover:bg-[#D4A574]/90 text-white font-bold py-5 rounded-2xl"
+                onClick={() => {
+                  if (!isAuthenticated) {
+                    toast.error("Please sign in to send encouragement");
+                    return;
+                  }
+                  navigate("/community");
+                  toast.success("Share your encouragement with the community!");
+                }}
                 data-testid="button-send-encouragement"
               >
                 <Send className="h-4 w-4 mr-2" />
