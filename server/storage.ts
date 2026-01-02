@@ -386,6 +386,12 @@ import {
   pathwaySessions,
   type GoalTemplate,
   type InsertGoalTemplate,
+  userSettings,
+  comments,
+  type UserSettings,
+  type InsertUserSettings,
+  type Comment,
+  type InsertComment,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, sql, inArray, count, ilike, or, gte } from "drizzle-orm";
@@ -804,6 +810,15 @@ export interface IStorage {
     isEnabled: boolean;
     modulesCount: number;
   }>>;
+
+  // ===== USER SETTINGS =====
+  getUserSettings(userId: string): Promise<UserSettings | null>;
+  upsertUserSettings(settings: InsertUserSettings): Promise<UserSettings>;
+
+  // ===== COMMENTS =====
+  getCommentsByPost(postId: number): Promise<Comment[]>;
+  createComment(comment: InsertComment): Promise<Comment>;
+  deleteComment(id: number, userId: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -3768,6 +3783,53 @@ export class DatabaseStorage implements IStorage {
       isEnabled: t.isEnabled ?? true,
       modulesCount: Number(t.modulesCount),
     }));
+  }
+
+  // ===== USER SETTINGS =====
+  async getUserSettings(userId: string): Promise<UserSettings | null> {
+    const [settings] = await db
+      .select()
+      .from(userSettings)
+      .where(eq(userSettings.userId, userId));
+    return settings || null;
+  }
+
+  async upsertUserSettings(settings: InsertUserSettings): Promise<UserSettings> {
+    const [result] = await db
+      .insert(userSettings)
+      .values(settings)
+      .onConflictDoUpdate({
+        target: userSettings.userId,
+        set: {
+          ...settings,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    return result;
+  }
+
+  // ===== COMMENTS =====
+  async getCommentsByPost(postId: number): Promise<Comment[]> {
+    return db
+      .select()
+      .from(comments)
+      .where(eq(comments.postId, postId))
+      .orderBy(desc(comments.createdAt));
+  }
+
+  async createComment(comment: InsertComment): Promise<Comment> {
+    const [result] = await db
+      .insert(comments)
+      .values(comment)
+      .returning();
+    return result;
+  }
+
+  async deleteComment(id: number, userId: string): Promise<void> {
+    await db
+      .delete(comments)
+      .where(and(eq(comments.id, id), eq(comments.userId, userId)));
   }
 }
 

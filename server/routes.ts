@@ -5,7 +5,7 @@ import { storage } from "./storage";
 import { setupAuth, isAuthenticated, isAdmin, isSuperAdmin } from "./replitAuth";
 import { getAICoachInsights, type AICoachRequest } from "./ai-service";
 import { sendWelcomeEmail } from "./email";
-import { insertPostSchema, insertReactionSchema, insertSparkSchema, insertSparkReactionSchema, insertSparkSubscriptionSchema, insertEventSchema, insertEventRegistrationSchema, insertBlogPostSchema, insertEmailSubscriptionSchema, insertPrayerRequestSchema, insertTestimonySchema, insertVolunteerSignupSchema, insertMissionRegistrationSchema, insertJourneySchema, insertJourneyDaySchema, insertJourneyStepSchema, insertAlphaCohortSchema, insertAlphaCohortWeekSchema, insertAlphaCohortParticipantSchema, insertMissionProfileSchema, insertMissionPlanSchema, insertMissionAdoptionSchema, insertMissionPrayerSessionSchema, insertOpportunityInterestSchema, insertDigitalActionSchema, insertProjectFollowSchema, insertChallengeEnrollmentSchema, insertMissionTestimonySchema, insertChallengeSchema } from "@shared/schema";
+import { insertPostSchema, insertReactionSchema, insertSparkSchema, insertSparkReactionSchema, insertSparkSubscriptionSchema, insertEventSchema, insertEventRegistrationSchema, insertBlogPostSchema, insertEmailSubscriptionSchema, insertPrayerRequestSchema, insertTestimonySchema, insertVolunteerSignupSchema, insertMissionRegistrationSchema, insertJourneySchema, insertJourneyDaySchema, insertJourneyStepSchema, insertAlphaCohortSchema, insertAlphaCohortWeekSchema, insertAlphaCohortParticipantSchema, insertMissionProfileSchema, insertMissionPlanSchema, insertMissionAdoptionSchema, insertMissionPrayerSessionSchema, insertOpportunityInterestSchema, insertDigitalActionSchema, insertProjectFollowSchema, insertChallengeEnrollmentSchema, insertMissionTestimonySchema, insertChallengeSchema, insertUserSettingsSchema, insertCommentSchema, insertNotificationPreferencesSchema } from "@shared/schema";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -4620,6 +4620,168 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Error fetching recent activity:", error);
       res.json([]);
+    }
+  });
+
+  // ===== USER SETTINGS ROUTES =====
+  
+  // Get current user's settings
+  app.get('/api/user/settings', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const settings = await storage.getUserSettings(userId);
+      res.json(settings || {});
+    } catch (error) {
+      console.error("Error fetching user settings:", error);
+      res.status(500).json({ message: "Failed to fetch user settings" });
+    }
+  });
+
+  // Update user settings (handles partial updates)
+  app.put('/api/user/settings', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const existing = await storage.getUserSettings(userId);
+      const defaults = {
+        theme: 'system',
+        language: 'en',
+        profileVisibility: 'public',
+        showEmail: false,
+        showLocation: true,
+        allowMessaging: true,
+      };
+      const merged = { ...defaults, ...existing, ...req.body, userId };
+      const settingsData = insertUserSettingsSchema.parse(merged);
+      const settings = await storage.upsertUserSettings(settingsData);
+      res.json(settings);
+    } catch (error: any) {
+      console.error("Error updating user settings:", error);
+      res.status(400).json({ message: error.message || "Failed to update user settings" });
+    }
+  });
+
+  // ===== NOTIFICATION PREFERENCES ROUTES =====
+
+  // Get notification preferences
+  app.get('/api/notification-preferences', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const prefs = await storage.getNotificationPreferences(userId);
+      res.json(prefs || {
+        pushEnabled: true,
+        emailEnabled: true,
+        prayerSessionAlerts: true,
+        newSparkAlerts: true,
+        eventReminders: true,
+        weeklyDigest: true,
+      });
+    } catch (error) {
+      console.error("Error fetching notification preferences:", error);
+      res.status(500).json({ message: "Failed to fetch notification preferences" });
+    }
+  });
+
+  // Update notification preferences
+  app.put('/api/notification-preferences', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const existing = await storage.getNotificationPreferences(userId);
+      const defaults = {
+        pushEnabled: true,
+        emailEnabled: true,
+        prayerSessionAlerts: true,
+        newSparkAlerts: true,
+        eventReminders: true,
+        weeklyDigest: true,
+      };
+      const merged = { ...defaults, ...existing, ...req.body, userId };
+      const prefsData = insertNotificationPreferencesSchema.parse(merged);
+      const prefs = await storage.upsertNotificationPreferences(prefsData);
+      res.json(prefs);
+    } catch (error: any) {
+      console.error("Error updating notification preferences:", error);
+      res.status(400).json({ message: error.message || "Failed to update notification preferences" });
+    }
+  });
+
+  // ===== COMMENTS ROUTES =====
+  
+  // Get comments for a post
+  app.get('/api/posts/:postId/comments', async (req, res) => {
+    try {
+      const postId = parseInt(req.params.postId);
+      const comments = await storage.getCommentsByPost(postId);
+      res.json(comments);
+    } catch (error) {
+      console.error("Error fetching comments:", error);
+      res.status(500).json({ message: "Failed to fetch comments" });
+    }
+  });
+
+  // Create a comment (protected)
+  app.post('/api/posts/:postId/comments', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const postId = parseInt(req.params.postId);
+      const commentData = insertCommentSchema.parse({ ...req.body, userId, postId });
+      const comment = await storage.createComment(commentData);
+      res.status(201).json(comment);
+    } catch (error: any) {
+      console.error("Error creating comment:", error);
+      res.status(400).json({ message: error.message || "Failed to create comment" });
+    }
+  });
+
+  // Delete a comment (protected, must be owner)
+  app.delete('/api/comments/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const id = parseInt(req.params.id);
+      await storage.deleteComment(id, userId);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+      res.status(500).json({ message: "Failed to delete comment" });
+    }
+  });
+
+  // ===== NOTIFICATIONS ROUTES =====
+  
+  // Get user's notifications (protected)
+  app.get('/api/notifications', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
+      const notifications = await storage.getNotifications(userId, limit);
+      res.json(notifications);
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+      res.status(500).json({ message: "Failed to fetch notifications" });
+    }
+  });
+
+  // Mark notification as read
+  app.post('/api/notifications/:id/read', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const id = parseInt(req.params.id);
+      await storage.markNotificationRead(id, userId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+      res.status(500).json({ message: "Failed to mark notification as read" });
+    }
+  });
+
+  // Mark all notifications as read
+  app.post('/api/notifications/read-all', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      await storage.markAllNotificationsRead(userId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error marking all notifications as read:", error);
+      res.status(500).json({ message: "Failed to mark all notifications as read" });
     }
   });
 

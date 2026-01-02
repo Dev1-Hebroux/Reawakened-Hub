@@ -53,6 +53,9 @@ import { MissionOnboarding } from "@/pages/MissionOnboarding";
 import { DigitalActions } from "@/pages/DigitalActions";
 import { MobileNav } from "@/components/layout/MobileNav";
 import Profile from "@/pages/Profile";
+import Notifications from "@/pages/Notifications";
+import Settings from "@/pages/Settings";
+import Privacy from "@/pages/Privacy";
 import { AdminDashboard } from "@/pages/Admin";
 import { AdminEvents } from "@/pages/AdminEvents";
 import { AdminSparks } from "@/pages/AdminSparks";
@@ -133,6 +136,9 @@ function Router() {
       <Route path="/give" component={GiveHub} />
       <Route path="/movement" component={MovementHub} />
       <Route path="/profile" component={Profile} />
+      <Route path="/notifications" component={Notifications} />
+      <Route path="/settings" component={Settings} />
+      <Route path="/privacy" component={Privacy} />
       <Route path="/admin" component={AdminDashboard} />
       <Route path="/admin/dashboard" component={NewAdminDashboard} />
       <Route path="/admin/events" component={AdminEvents} />

@@ -27,9 +27,9 @@ export default function Profile() {
 
   const menuItems = [
     { label: "My Journey", description: "View your progress", icon: Globe, href: "/vision" },
-    { label: "Notifications", description: "Manage alerts", icon: Bell, href: "#" },
-    { label: "Privacy & Security", description: "Account settings", icon: Shield, href: "#" },
-    { label: "Settings", description: "App preferences", icon: Settings, href: "#" },
+    { label: "Notifications", description: "Manage alerts", icon: Bell, href: "/notifications" },
+    { label: "Privacy & Security", description: "Account settings", icon: Shield, href: "/privacy" },
+    { label: "Settings", description: "App preferences", icon: Settings, href: "/settings" },
     ...(isAdmin ? [{ label: "Admin Portal", description: "Manage platform", icon: LayoutDashboard, href: "/admin" }] : []),
   ];
 

@@ -270,8 +270,8 @@ export function BlogGrid() {
             {/* Post Grid - Rest of posts */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {filteredPosts.slice(1).map((post, i) => (
+                <Link key={post.id} href={`/blog/${post.slug}`}>
                 <motion.div
-                  key={post.id}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.1 }}
@@ -338,6 +338,7 @@ export function BlogGrid() {
                     </div>
                   </div>
                 </motion.div>
+                </Link>
               ))}
             </div>
           </>

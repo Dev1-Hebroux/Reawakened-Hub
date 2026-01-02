@@ -2497,3 +2497,38 @@ export const goalTemplates = pgTable("goal_templates", {
 export const insertGoalTemplateSchema = createInsertSchema(goalTemplates).omit({ id: true, createdAt: true, updatedAt: true });
 export type InsertGoalTemplate = z.infer<typeof insertGoalTemplateSchema>;
 export type GoalTemplate = typeof goalTemplates.$inferSelect;
+
+// User Settings/Preferences (extends notification preferences)
+export const userSettings = pgTable("user_settings", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().unique().references(() => users.id, { onDelete: 'cascade' }),
+  // Privacy settings
+  profileVisibility: varchar("profile_visibility").default("public"), // 'public', 'community', 'private'
+  showEmail: boolean("show_email").default(false),
+  showLocation: boolean("show_location").default(true),
+  allowMessaging: boolean("allow_messaging").default(true),
+  // App preferences
+  theme: varchar("theme").default("system"), // 'light', 'dark', 'system'
+  language: varchar("language").default("en"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertUserSettingsSchema = createInsertSchema(userSettings).omit({ id: true, createdAt: true, updatedAt: true });
+export type InsertUserSettings = z.infer<typeof insertUserSettingsSchema>;
+export type UserSettings = typeof userSettings.$inferSelect;
+
+// Comments on posts
+export const comments = pgTable("comments", {
+  id: serial("id").primaryKey(),
+  postId: integer("post_id").notNull().references(() => posts.id, { onDelete: 'cascade' }),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  content: text("content").notNull(),
+  parentId: integer("parent_id"), // for nested replies
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertCommentSchema = createInsertSchema(comments).omit({ id: true, createdAt: true, updatedAt: true });
+export type InsertComment = z.infer<typeof insertCommentSchema>;
+export type Comment = typeof comments.$inferSelect;

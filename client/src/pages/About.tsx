@@ -45,19 +45,22 @@ const visionCards = [
     title: "Global Awakening",
     description: "We aspire to be at the forefront of a global awakening, where the watchmen and gatekeepers of our faith stand tall against the tides of change.",
     icon: Globe2,
-    image: mapImg
+    image: mapImg,
+    href: "/mission"
   },
   {
     title: "Revival Prayers",
     description: "Hearts incubated by the Holy Spirit, as exemplified in John 4:1-48, where Grace and empathy transcend cultural and geographic barriers.",
     icon: Flame,
-    image: prayerImg
+    image: prayerImg,
+    href: "/sparks"
   },
   {
     title: "Empowerment",
     description: "Empower and inspire one another, fostering a generation of leaders and believers who are equipped to navigate the complexities of this era with faith as their compass.",
     icon: Heart,
-    image: worshipImg
+    image: worshipImg,
+    href: "/community"
   }
 ];
 
@@ -113,9 +116,11 @@ export default function AboutPage() {
             <p className="text-orange-200 font-bold text-lg">— Joel 2:28</p>
 
             <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button size="lg" className="bg-white text-primary hover:bg-gray-100 rounded-full px-10 h-16 text-lg font-bold shadow-xl w-full sm:w-auto">
-                Join The Movement
-              </Button>
+              <Link href="/mission/onboarding">
+                <Button size="lg" className="bg-white text-primary hover:bg-gray-100 rounded-full px-10 h-16 text-lg font-bold shadow-xl w-full sm:w-auto">
+                  Join The Movement
+                </Button>
+              </Link>
               <Link href="/community">
                 <Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white/10 rounded-full px-10 h-16 text-lg font-bold w-full sm:w-auto">
                   Enter Community
@@ -149,9 +154,11 @@ export default function AboutPage() {
               <p className="text-lg text-gray-500 mb-8 leading-relaxed">
                 Our vision is not just an organization; it's a movement, a vibrant community of watchmen and gatekeepers committed to spiritual awakening and revival across The United Kingdom, Europe, The Americas, The Middle East, Africa, and Asia.
               </p>
-              <Button className="bg-primary text-white hover:bg-primary/90 rounded-full px-8 py-6 font-bold text-lg">
-                Join The Movement <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
+              <Link href="/mission/onboarding">
+                <Button className="bg-primary text-white hover:bg-primary/90 rounded-full px-8 py-6 font-bold text-lg">
+                  Join The Movement <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
             </motion.div>
             
             <motion.div
@@ -241,9 +248,11 @@ export default function AboutPage() {
                   <div className="p-8">
                     <h3 className="text-xl font-display font-bold text-gray-900 mb-4">{card.title}</h3>
                     <p className="text-gray-500 mb-6">{card.description}</p>
-                    <button className="inline-flex items-center gap-2 bg-gray-100 text-gray-900 px-6 py-3 rounded-full font-bold hover:bg-gray-200 transition-colors">
-                      Learn More
-                    </button>
+                    <Link href={card.href}>
+                      <button className="inline-flex items-center gap-2 bg-gray-100 text-gray-900 px-6 py-3 rounded-full font-bold hover:bg-gray-200 transition-colors">
+                        Learn More
+                      </button>
+                    </Link>
                   </div>
                 </div>
               </motion.div>
@@ -316,9 +325,11 @@ export default function AboutPage() {
               Share your passion and God's amazing works in your community. Be part of a generation rising for revival and spiritual awakening.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button size="lg" className="bg-white text-primary hover:bg-gray-100 rounded-full px-10 h-16 text-lg font-bold shadow-xl w-full sm:w-auto">
-                Get Started Today
-              </Button>
+              <Link href="/mission/onboarding">
+                <Button size="lg" className="bg-white text-primary hover:bg-gray-100 rounded-full px-10 h-16 text-lg font-bold shadow-xl w-full sm:w-auto">
+                  Get Started Today
+                </Button>
+              </Link>
               <Link href="/community">
                 <Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white/10 rounded-full px-10 h-16 text-lg font-bold w-full sm:w-auto">
                   Contact Us
