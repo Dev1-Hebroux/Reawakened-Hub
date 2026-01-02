@@ -1,21 +1,24 @@
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Play, Globe2, X } from "lucide-react";
+import { Play, Globe2 } from "lucide-react";
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
+import { VisionModal } from "@/components/VisionModal";
 import heroImage from "@assets/generated_images/young_man_praying_with_golden_light_overlay.png";
-import visionVideo from "@assets/generated_videos/reawakened_vision_promo_video.mp4";
 import logoImage from "@assets/1_1765584395888.png";
 import heroBgImage from "@assets/11_1767182385476.png";
 
 export function Hero() {
-  const [showVideo, setShowVideo] = useState(false);
+  const [showVisionModal, setShowVisionModal] = useState(false);
   const [, navigate] = useLocation();
   const { isAuthenticated } = useAuth();
 
   return (
     <section className="relative min-h-[90vh] flex items-center pt-32 md:pt-36 pb-12 overflow-hidden">
+      {/* Vision Modal */}
+      <VisionModal isOpen={showVisionModal} onClose={() => setShowVisionModal(false)} />
+
       {/* Background Image with Rich Gradient Overlay */}
       <div className="absolute inset-0 z-0">
         <img 
@@ -26,40 +29,6 @@ export function Hero() {
         <div className="absolute inset-0 bg-gradient-to-br from-[#7C9A8E]/20 via-[#D4A574]/15 to-[#4A7C7C]/20" />
         <div className="absolute inset-0 bg-gradient-to-r from-[#FFF8F3]/90 via-[#FFF8F3]/70 to-transparent" />
       </div>
-      
-      {/* Video Modal */}
-      <AnimatePresence>
-        {showVideo && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-[#1a2744]/95 flex items-center justify-center p-4"
-            onClick={() => setShowVideo(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.8, opacity: 0 }}
-              className="relative w-full max-w-4xl"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <button
-                onClick={() => setShowVideo(false)}
-                className="absolute -top-12 right-0 text-white hover:text-primary transition-colors"
-              >
-                <X className="h-8 w-8" />
-              </button>
-              <video
-                src={visionVideo}
-                controls
-                autoPlay
-                className="w-full rounded-2xl shadow-2xl"
-              />
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* Decorative Circles - More Vibrant */}
       <div className="absolute top-10 left-10 w-80 h-80 bg-gradient-to-br from-[#D4A574]/40 to-orange-300/30 rounded-full blur-3xl" />
@@ -135,7 +104,7 @@ export function Hero() {
             </div>
             <div 
               className="flex items-center gap-3 cursor-pointer group justify-center sm:justify-start mt-2"
-              onClick={() => setShowVideo(true)}
+              onClick={() => setShowVisionModal(true)}
               data-testid="button-watch-video"
             >
               <div className="h-12 w-12 rounded-full bg-white border border-gray-100 shadow-lg flex items-center justify-center group-hover:scale-110 transition-transform text-primary">
