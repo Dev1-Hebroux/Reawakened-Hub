@@ -2532,3 +2532,175 @@ export const comments = pgTable("comments", {
 export const insertCommentSchema = createInsertSchema(comments).omit({ id: true, createdAt: true, updatedAt: true });
 export type InsertComment = z.infer<typeof insertCommentSchema>;
 export type Comment = typeof comments.$inferSelect;
+
+// ==========================================
+// PRAYER MOVEMENT TABLES
+// ==========================================
+
+// Prayer Focus Groups - Nations and people groups to pray for
+export const prayerFocusGroups = pgTable("prayer_focus_groups", {
+  id: serial("id").primaryKey(),
+  name: varchar("name").notNull(),
+  region: varchar("region").notNull(), // 'United Kingdom', 'Nigeria', 'EU - France', etc.
+  country: varchar("country"),
+  population: varchar("population"), // '45M+', '2.5M+', etc.
+  description: text("description"),
+  imageUrl: varchar("image_url"),
+  prayerPoints: text("prayer_points").array(), // Key things to pray for
+  scriptures: text("scriptures").array(), // Relevant Bible verses
+  category: varchar("category").default("nation"), // 'nation', 'unreached', 'campus', 'city'
+  isActive: boolean("is_active").default(true),
+  intercessorCount: integer("intercessor_count").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertPrayerFocusGroupSchema = createInsertSchema(prayerFocusGroups).omit({ id: true, createdAt: true, updatedAt: true });
+export type InsertPrayerFocusGroup = z.infer<typeof insertPrayerFocusGroupSchema>;
+export type PrayerFocusGroup = typeof prayerFocusGroups.$inferSelect;
+
+// UK Campus Directory - Universities and Sixth Forms
+export const ukCampuses = pgTable("uk_campuses", {
+  id: serial("id").primaryKey(),
+  name: varchar("name").notNull(),
+  type: varchar("type").notNull(), // 'university', 'sixth_form'
+  city: varchar("city").notNull(),
+  region: varchar("region"), // 'London', 'South East', 'Scotland', etc.
+  postcode: varchar("postcode"),
+  latitude: varchar("latitude"),
+  longitude: varchar("longitude"),
+  studentPopulation: integer("student_population"),
+  website: varchar("website"),
+  imageUrl: varchar("image_url"),
+  hasAltar: boolean("has_altar").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertUkCampusSchema = createInsertSchema(ukCampuses).omit({ id: true, createdAt: true });
+export type InsertUkCampus = z.infer<typeof insertUkCampusSchema>;
+export type UkCampus = typeof ukCampuses.$inferSelect;
+
+// Campus Prayer Altars - Prayer groups at specific campuses
+export const campusAltars = pgTable("campus_altars", {
+  id: serial("id").primaryKey(),
+  campusId: integer("campus_id").notNull().references(() => ukCampuses.id, { onDelete: 'cascade' }),
+  name: varchar("name").notNull(), // Custom name or campus name + " Prayer Altar"
+  description: text("description"),
+  leaderId: varchar("leader_id").references(() => users.id),
+  meetingSchedule: text("meeting_schedule"), // 'Every Tuesday 7pm', etc.
+  meetingLink: varchar("meeting_link"), // Online meeting link
+  whatsappGroup: varchar("whatsapp_group"),
+  prayerPoints: text("prayer_points").array(),
+  scriptures: text("scriptures").array(),
+  memberCount: integer("member_count").default(0),
+  prayerHours: integer("prayer_hours").default(0), // Total logged prayer hours
+  status: varchar("status").default("active"), // 'active', 'inactive', 'pending'
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertCampusAltarSchema = createInsertSchema(campusAltars).omit({ id: true, createdAt: true, updatedAt: true });
+export type InsertCampusAltar = z.infer<typeof insertCampusAltarSchema>;
+export type CampusAltar = typeof campusAltars.$inferSelect;
+
+// Altar Members - Users who joined a campus altar
+export const altarMembers = pgTable("altar_members", {
+  id: serial("id").primaryKey(),
+  altarId: integer("altar_id").notNull().references(() => campusAltars.id, { onDelete: 'cascade' }),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  role: varchar("role").default("intercessor"), // 'intercessor', 'leader', 'coordinator'
+  affiliation: varchar("affiliation").notNull(), // 'student', 'staff', 'alumni', 'local_supporter'
+  prayerHours: integer("prayer_hours").default(0),
+  streak: integer("streak").default(0),
+  bestStreak: integer("best_streak").default(0),
+  lastPrayedAt: timestamp("last_prayed_at"),
+  receiveReminders: boolean("receive_reminders").default(true),
+  reminderFrequency: varchar("reminder_frequency").default("daily"), // 'daily', 'weekly', 'custom'
+  joinedAt: timestamp("joined_at").defaultNow(),
+});
+
+export const insertAltarMemberSchema = createInsertSchema(altarMembers).omit({ id: true, joinedAt: true });
+export type InsertAltarMember = z.infer<typeof insertAltarMemberSchema>;
+export type AltarMember = typeof altarMembers.$inferSelect;
+
+// Prayer Subscriptions - Users who adopted a focus group/nation
+export const prayerSubscriptions = pgTable("prayer_subscriptions", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  focusGroupId: integer("focus_group_id").references(() => prayerFocusGroups.id, { onDelete: 'cascade' }),
+  altarId: integer("altar_id").references(() => campusAltars.id, { onDelete: 'cascade' }),
+  type: varchar("type").notNull(), // 'nation', 'campus'
+  prayerHours: integer("prayer_hours").default(0),
+  streak: integer("streak").default(0),
+  bestStreak: integer("best_streak").default(0),
+  lastPrayedAt: timestamp("last_prayed_at"),
+  receiveReminders: boolean("receive_reminders").default(true),
+  reminderFrequency: varchar("reminder_frequency").default("daily"), // 'daily', 'weekly', 'custom'
+  reminderTime: varchar("reminder_time").default("09:00"), // Preferred reminder time
+  emailConfirmed: boolean("email_confirmed").default(false),
+  status: varchar("status").default("active"), // 'active', 'paused', 'completed'
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertPrayerSubscriptionSchema = createInsertSchema(prayerSubscriptions).omit({ id: true, createdAt: true, updatedAt: true });
+export type InsertPrayerSubscription = z.infer<typeof insertPrayerSubscriptionSchema>;
+export type PrayerSubscription = typeof prayerSubscriptions.$inferSelect;
+
+// Prayer Wall Entries - Prayer requests and answered prayers
+export const prayerWallEntries = pgTable("prayer_wall_entries", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  focusGroupId: integer("focus_group_id").references(() => prayerFocusGroups.id, { onDelete: 'cascade' }),
+  altarId: integer("altar_id").references(() => campusAltars.id, { onDelete: 'cascade' }),
+  type: varchar("type").notNull(), // 'request', 'praise', 'testimony', 'answered'
+  content: text("content").notNull(),
+  isAnonymous: boolean("is_anonymous").default(false),
+  prayerCount: integer("prayer_count").default(0), // How many people prayed for this
+  isAnswered: boolean("is_answered").default(false),
+  answeredAt: timestamp("answered_at"),
+  answeredTestimony: text("answered_testimony"),
+  status: varchar("status").default("active"), // 'active', 'hidden', 'flagged'
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertPrayerWallEntrySchema = createInsertSchema(prayerWallEntries).omit({ id: true, createdAt: true, updatedAt: true });
+export type InsertPrayerWallEntry = z.infer<typeof insertPrayerWallEntrySchema>;
+export type PrayerWallEntry = typeof prayerWallEntries.$inferSelect;
+
+// Prayer Logs - Track individual prayer sessions
+export const prayerLogs = pgTable("prayer_logs", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  subscriptionId: integer("subscription_id").references(() => prayerSubscriptions.id, { onDelete: 'set null' }),
+  altarMemberId: integer("altar_member_id").references(() => altarMembers.id, { onDelete: 'set null' }),
+  focusGroupId: integer("focus_group_id").references(() => prayerFocusGroups.id, { onDelete: 'set null' }),
+  altarId: integer("altar_id").references(() => campusAltars.id, { onDelete: 'set null' }),
+  durationMinutes: integer("duration_minutes").notNull(),
+  notes: text("notes"),
+  prayerPoints: text("prayer_points").array(), // Which points they prayed for
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertPrayerLogSchema = createInsertSchema(prayerLogs).omit({ id: true, createdAt: true });
+export type InsertPrayerLog = z.infer<typeof insertPrayerLogSchema>;
+export type PrayerLog = typeof prayerLogs.$inferSelect;
+
+// Prayer Reminders Queue - Scheduled email reminders
+export const prayerReminders = pgTable("prayer_reminders", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  subscriptionId: integer("subscription_id").references(() => prayerSubscriptions.id, { onDelete: 'cascade' }),
+  altarMemberId: integer("altar_member_id").references(() => altarMembers.id, { onDelete: 'cascade' }),
+  scheduledFor: timestamp("scheduled_for").notNull(),
+  prayerPoints: text("prayer_points").array(),
+  scriptures: text("scriptures").array(),
+  status: varchar("status").default("pending"), // 'pending', 'sent', 'failed'
+  sentAt: timestamp("sent_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertPrayerReminderSchema = createInsertSchema(prayerReminders).omit({ id: true, createdAt: true });
+export type InsertPrayerReminder = z.infer<typeof insertPrayerReminderSchema>;
+export type PrayerReminder = typeof prayerReminders.$inferSelect;

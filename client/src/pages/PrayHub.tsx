@@ -121,11 +121,37 @@ export function PrayHub() {
   const hasAdoption = !!activeAdoption;
   const streak = streakData?.streak || 0;
 
-  const displayFocuses = focuses.length > 0 ? focuses.slice(0, 3) : [
+  const allFocusGroups = [
+    // Africa
     { id: 1, name: "Unreached Youth in North Africa", region: "North Africa", population: "45M+" },
-    { id: 2, name: "Urban Professionals in Tokyo", region: "East Asia", population: "14M+" },
-    { id: 3, name: "Rural Communities in South India", region: "South Asia", population: "120M+" },
+    { id: 2, name: "Nigerian Campus Revival", region: "Nigeria", population: "35M+" },
+    { id: 3, name: "Horn of Africa Unreached", region: "East Africa", population: "28M+" },
+    // UK
+    { id: 4, name: "UK University Students", region: "United Kingdom", population: "2.5M+" },
+    { id: 5, name: "British Sixth Form Students", region: "United Kingdom", population: "1.2M+" },
+    { id: 6, name: "London Urban Professionals", region: "United Kingdom", population: "4M+" },
+    // Americas
+    { id: 7, name: "Brazilian Youth Movement", region: "Brazil", population: "50M+" },
+    { id: 8, name: "US College Campuses", region: "America", population: "20M+" },
+    // Europe
+    { id: 9, name: "French Urban Youth", region: "EU - France", population: "8M+" },
+    { id: 10, name: "German Student Networks", region: "EU - Germany", population: "3M+" },
+    { id: 11, name: "Spanish Young Professionals", region: "EU - Spain", population: "6M+" },
+    // Middle East
+    { id: 12, name: "Saudi Arabian Seekers", region: "Saudi Arabia", population: "15M+" },
+    { id: 13, name: "Gulf Region Professionals", region: "Middle East", population: "12M+" },
+    // Asia
+    { id: 14, name: "Chinese Underground Church", region: "China", population: "100M+" },
+    { id: 15, name: "Urban Professionals in Tokyo", region: "East Asia", population: "14M+" },
+    { id: 16, name: "Rural Communities in South India", region: "South Asia", population: "120M+" },
+    // Unreached People Groups
+    { id: 17, name: "Himalayan Mountain Peoples", region: "Central Asia", population: "8M+" },
+    { id: 18, name: "Indonesian Island Communities", region: "Southeast Asia", population: "25M+" },
+    { id: 19, name: "Central Asian Nomads", region: "Central Asia", population: "5M+" },
+    { id: 20, name: "Amazonian Tribal Groups", region: "South America", population: "2M+" },
   ];
+
+  const displayFocuses = focuses.length > 0 ? focuses.slice(0, 3) : allFocusGroups.slice(0, 3);
 
   const displayRooms = liveRooms.length > 0 ? liveRooms : [
     { id: 1, title: "24/7 Global Prayer Room", scheduleType: "always_on", maxParticipants: 47, status: "live" },
