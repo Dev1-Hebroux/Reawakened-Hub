@@ -104,7 +104,8 @@ export function Hero() {
             </h1>
 
             <p className="text-lg md:text-xl text-gray-600 max-w-lg leading-relaxed">
-              Reawakened is the digital hub for a generation ready to encounter Jesus, find their purpose, and change the world.
+              <span className="text-[clamp(1.5rem,4vw,2rem)] md:text-[2.5rem] font-display font-black text-primary block mb-2 tracking-tight drop-shadow-sm">Reawakened</span>
+              is the digital hub for a generation ready to encounter Jesus, find their purpose, and change the world.
             </p>
 
             <blockquote className="text-base md:text-lg text-gray-600 max-w-lg leading-relaxed border-l-4 border-primary/30 pl-4 italic bg-white/50 py-3 rounded-r-lg">

@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, createContext, useContext } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  MessageCircle, X, Send, Loader2, Sparkles, 
+  MessageCircle, X, Send, Loader2, 
   ChevronRight, Bot, User as UserIcon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -155,7 +155,7 @@ export function AiCoachDrawer({ entryPoint = "general" }: AiCoachDrawerProps) {
                 <div className="flex-1 flex flex-col p-6">
                   <div className="text-center mb-8">
                     <div className="w-16 h-16 bg-[#4A7C7C]/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Sparkles className="h-8 w-8 text-[#4A7C7C]" />
+                      <Bot className="h-8 w-8 text-[#4A7C7C]" />
                     </div>
                     <h2 className="text-xl font-bold text-gray-900 mb-2">
                       Welcome to Awake AI

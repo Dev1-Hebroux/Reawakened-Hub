@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Menu, X, Compass, Sparkles } from "lucide-react";
+import { Menu, X, Compass, Bot } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
@@ -91,7 +91,7 @@ export function Navbar() {
                 title="Awake AI"
                 data-testid="button-awake-ai-nav"
               >
-                <Sparkles className="h-5 w-5" />
+                <Bot className="h-5 w-5" />
               </button>
             )}
             <NotificationBell isDark={useDarkTheme} />

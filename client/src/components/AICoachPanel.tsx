@@ -3,7 +3,7 @@ import { useMutation } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Sparkles, ChevronDown, ChevronUp, Lightbulb, Target, Heart, BookOpen, X, Loader2 } from "lucide-react";
+import { Bot, ChevronDown, ChevronUp, Lightbulb, Target, Heart, BookOpen, X, Loader2 } from "lucide-react";
 
 interface AICoachPanelProps {
   sessionId?: string | number;
@@ -75,7 +75,7 @@ export function AICoachPanel({ sessionId, tool, data, title, description }: AICo
           {analyze.isPending ? (
             <Loader2 className="w-4 h-4 animate-spin" />
           ) : (
-            <Sparkles className="w-4 h-4" />
+            <Bot className="w-4 h-4" />
           )}
           {analyze.isPending ? "Analyzing..." : response ? "View AI Insights" : "Ask Awake AI"}
         </Button>
@@ -100,7 +100,7 @@ export function AICoachPanel({ sessionId, tool, data, title, description }: AICo
               <div className="bg-gradient-to-r from-[#7C9A8E] to-[#4A7C7C] p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
-                    <Sparkles className="w-5 h-5 text-white" />
+                    <Bot className="w-5 h-5 text-white" />
                   </div>
                   <div>
                     <h3 className="font-bold text-white">{title || "Awake AI Insights"}</h3>
@@ -204,7 +204,7 @@ export function AICoachPanel({ sessionId, tool, data, title, description }: AICo
                   variant="outline"
                   className="w-full border-[#7C9A8E] text-[#7C9A8E] hover:bg-[#7C9A8E]/10"
                 >
-                  {analyze.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Sparkles className="w-4 h-4 mr-2" />}
+                  {analyze.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Bot className="w-4 h-4 mr-2" />}
                   Get Fresh Insights
                 </Button>
               </div>
