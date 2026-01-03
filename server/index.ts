@@ -20,21 +20,10 @@ declare module "http" {
 
 app.use(
   helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
-        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-        fontSrc: ["'self'", "https://fonts.gstatic.com"],
-        imgSrc: ["'self'", "data:", "blob:", "https:"],
-        connectSrc: ["'self'", "https:", "wss:"],
-        frameSrc: ["'self'"],
-        objectSrc: ["'none'"],
-        upgradeInsecureRequests: [],
-      },
-    },
+    contentSecurityPolicy: false,
     crossOriginEmbedderPolicy: false,
-    crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
+    crossOriginOpenerPolicy: false,
+    crossOriginResourcePolicy: false,
   })
 );
 
