@@ -243,7 +243,7 @@ export function ReadingPlansPage() {
               <p className="text-white/80 italic text-sm leading-relaxed">
                 "Your word is a lamp for my feet, a light on my path."
               </p>
-              <p className="text-primary text-xs mt-2 font-medium">— Psalm 119:105</p>
+              <p className="text-white/80 text-xs mt-2 font-medium">— Psalm 119:105</p>
             </div>
             
             {/* Streak Badge */}
@@ -545,15 +545,15 @@ export function ReadingPlansPage() {
                       <button
                         key={level.id}
                         onClick={() => setSelectedMaturityLevel(level.id)}
-                        className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
+                        className={`w-full p-4 rounded-xl border-2 text-left transition-all cursor-pointer ${
                           selectedMaturityLevel === level.id 
-                            ? "border-primary bg-primary/10" 
-                            : "border-white/10 hover:border-white/30 bg-white/5"
+                            ? "border-primary bg-primary/20 ring-2 ring-primary/50" 
+                            : "border-white/20 hover:border-white/40 bg-white/5"
                         }`}
                         data-testid={`onboarding-maturity-${level.id}`}
                       >
-                        <p className="font-semibold text-white">{level.label}</p>
-                        <p className="text-sm text-white/50">{level.description}</p>
+                        <p className="font-bold text-white">{level.label}</p>
+                        <p className="text-sm text-white/60">{level.description}</p>
                       </button>
                     ))}
                   </div>
