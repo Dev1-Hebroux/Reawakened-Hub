@@ -605,7 +605,7 @@ export function SparkDetail() {
             
             {activeSection === 'context' && spark.contextBackground && (
               <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
-                <div className="flex items-center gap-2 mb-4 text-primary">
+                <div className="flex items-center gap-2 mb-4 text-amber-400">
                   <Sparkles className="h-5 w-5" />
                   <h3 className="font-bold">Historical Context</h3>
                 </div>
@@ -621,12 +621,9 @@ export function SparkDetail() {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.15 }}
-                    className="flex items-start gap-4 bg-white/5 rounded-xl p-4 border border-white/10"
+                    className="bg-white/5 rounded-xl p-5 border border-white/10"
                   >
-                    <div className="h-8 w-8 bg-primary/20 rounded-full flex items-center justify-center text-primary font-bold text-sm flex-shrink-0">
-                      {i + 1}
-                    </div>
-                    <p className="text-white leading-relaxed pt-1">{point}</p>
+                    <p className="text-white leading-relaxed">{point}</p>
                   </motion.div>
                 ))}
               </div>
