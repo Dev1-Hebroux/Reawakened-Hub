@@ -181,15 +181,15 @@ function AppContent() {
         <Toaster />
         <Router />
         <AiCoachDrawer />
-        {isAuthenticated && (
-          <OnboardingTour 
-            isOpen={showTour} 
-            onComplete={completeTour}
-            userName={user?.firstName}
-          />
-        )}
       </div>
       <MobileNav />
+      {isAuthenticated && (
+        <OnboardingTour 
+          isOpen={showTour} 
+          onComplete={completeTour}
+          userName={user?.firstName}
+        />
+      )}
     </>
   );
 }

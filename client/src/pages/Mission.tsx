@@ -204,7 +204,7 @@ export function MissionPage() {
       <VolunteerModal open={volunteerModalOpen} onOpenChange={setVolunteerModalOpen} />
       <MissionTripModal open={missionModalOpen} onOpenChange={setMissionModalOpen} />
       
-      <section className="relative h-[80vh] flex items-center justify-center overflow-hidden bg-black">
+      <section className="relative pt-20 md:pt-24 min-h-[85vh] flex items-center justify-center overflow-hidden bg-black">
         <div className="absolute inset-0 z-0">
           <img 
             src={heroBg} 

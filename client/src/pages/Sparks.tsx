@@ -372,7 +372,7 @@ export function SparksPage() {
       <GamificationBar />
       
       {/* Hero / Live Now Section */}
-      <section className="relative h-[60vh] md:h-[70vh] w-full overflow-hidden">
+      <section className="relative pt-20 md:pt-24 min-h-[70vh] md:min-h-[80vh] w-full overflow-hidden">
         <div className="absolute inset-0">
           <img 
             src={featuredSpark?.thumbnailUrl || spark1} 

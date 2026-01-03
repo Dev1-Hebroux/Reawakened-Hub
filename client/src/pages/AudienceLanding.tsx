@@ -452,7 +452,7 @@ export function AudienceLanding({ segment }: Props) {
       <Navbar />
       
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center overflow-hidden pt-16">
+      <section className="relative min-h-screen flex items-center overflow-hidden pt-20 md:pt-24">
         <div className="absolute inset-0" style={{ background: config.bgPattern }} />
         <FloatingParticles accentColor={config.accentColor} />
         
