@@ -112,6 +112,7 @@ export const sparks = pgTable("sparks", {
   reflectionQuestion: text("reflection_question"), // journaling prompt
   scenarioVignette: text("scenario_vignette"), // relatable real-life scenario
   shareableVersion: text("shareable_version"), // 1-minute shareable version
+  narrationAudioUrl: varchar("narration_audio_url"), // pre-generated TTS audio URL
   createdAt: timestamp("created_at").defaultNow(),
 });
 

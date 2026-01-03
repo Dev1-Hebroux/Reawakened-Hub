@@ -2,6 +2,8 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { z } from "zod";
 import OpenAI from "openai";
+import * as fs from "fs";
+import * as path from "path";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated, isAdmin, isSuperAdmin } from "./replitAuth";
 import { getAICoachInsights, type AICoachRequest } from "./ai-service";
@@ -371,6 +373,80 @@ export async function registerRoutes(
     } catch (error: any) {
       console.error("Error generating TTS:", error);
       res.status(500).json({ message: error.message || "Failed to generate audio" });
+    }
+  });
+
+  // Pre-generate and cache narration audio for a spark (admin only)
+  app.post('/api/admin/sparks/:id/generate-narration', isAdmin, async (req: any, res) => {
+    try {
+      const sparkId = parseInt(req.params.id);
+      const spark = await storage.getSpark(sparkId);
+      
+      if (!spark) {
+        return res.status(404).json({ message: "Spark not found" });
+      }
+      
+      if (!spark.fullTeaching) {
+        return res.status(400).json({ message: "Spark has no teaching content to narrate" });
+      }
+      
+      // Check if already has narration
+      if (spark.narrationAudioUrl) {
+        return res.status(400).json({ message: "Narration already exists", url: spark.narrationAudioUrl });
+      }
+      
+      const truncatedText = spark.fullTeaching.slice(0, 4096);
+      
+      const mp3 = await openai.audio.speech.create({
+        model: "tts-1-hd",
+        voice: 'nova',
+        input: truncatedText,
+        speed: 0.95,
+      });
+      
+      const buffer = Buffer.from(await mp3.arrayBuffer());
+      
+      // Save to file
+      const audioDir = path.resolve(__dirname, "..", "attached_assets", "generated_audio");
+      if (!fs.existsSync(audioDir)) {
+        fs.mkdirSync(audioDir, { recursive: true });
+      }
+      
+      const filename = `spark_${sparkId}_narration_${Date.now()}.mp3`;
+      const filepath = path.join(audioDir, filename);
+      fs.writeFileSync(filepath, buffer);
+      
+      // Update spark with narration URL
+      const audioUrl = `/attached_assets/generated_audio/${filename}`;
+      await storage.updateSpark(sparkId, { narrationAudioUrl: audioUrl });
+      
+      res.json({ 
+        success: true, 
+        url: audioUrl,
+        size: buffer.length,
+        sparkId 
+      });
+    } catch (error: any) {
+      console.error("Error generating narration:", error);
+      res.status(500).json({ message: error.message || "Failed to generate narration" });
+    }
+  });
+
+  // Serve cached narration audio with Range support for efficient streaming
+  app.get('/api/sparks/:id/narration', async (req, res) => {
+    try {
+      const sparkId = parseInt(req.params.id);
+      const spark = await storage.getSpark(sparkId);
+      
+      if (!spark || !spark.narrationAudioUrl) {
+        return res.status(404).json({ message: "Narration not found" });
+      }
+      
+      // Redirect to the static file
+      res.redirect(spark.narrationAudioUrl);
+    } catch (error) {
+      console.error("Error serving narration:", error);
+      res.status(500).json({ message: "Failed to serve narration" });
     }
   });
 

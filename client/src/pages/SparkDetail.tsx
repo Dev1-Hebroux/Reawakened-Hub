@@ -71,6 +71,7 @@ export function SparkDetail() {
   const audioRef = useRef<HTMLAudioElement>(null);
   const ttsAudioRef = useRef<HTMLAudioElement | null>(null);
   const ttsUrlRef = useRef<string | null>(null);
+  const ttsBlobUrlRef = useRef<boolean>(false);
   const ttsSparkIdRef = useRef<number | null>(null);
   const [isLoadingTTS, setIsLoadingTTS] = useState(false);
 
@@ -118,7 +119,7 @@ export function SparkDetail() {
 
   useEffect(() => {
     return () => {
-      if (ttsUrlRef.current) {
+      if (ttsUrlRef.current && ttsBlobUrlRef.current) {
         URL.revokeObjectURL(ttsUrlRef.current);
       }
       if (ttsAudioRef.current) {
@@ -232,10 +233,11 @@ export function SparkDetail() {
     }
     
     if (ttsSparkIdRef.current !== sparkId) {
-      if (ttsUrlRef.current) {
+      if (ttsUrlRef.current && ttsBlobUrlRef.current) {
         URL.revokeObjectURL(ttsUrlRef.current);
-        ttsUrlRef.current = null;
       }
+      ttsUrlRef.current = null;
+      ttsBlobUrlRef.current = false;
       if (ttsAudioRef.current) {
         ttsAudioRef.current.pause();
         ttsAudioRef.current = null;
@@ -251,26 +253,36 @@ export function SparkDetail() {
     setIsLoadingTTS(true);
     
     try {
-      const response = await fetch('/api/tts/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          text: spark.fullTeaching,
-          voice: 'nova'
-        }),
-      });
+      let audioUrl: string;
       
-      if (!response.ok) {
-        throw new Error('Failed to generate audio');
+      // Use pre-generated narration if available, otherwise generate on-the-fly
+      let isBlobUrl = false;
+      if (spark.narrationAudioUrl) {
+        audioUrl = spark.narrationAudioUrl;
+      } else {
+        const response = await fetch('/api/tts/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            text: spark.fullTeaching,
+            voice: 'nova'
+          }),
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to generate audio');
+        }
+        
+        const audioBlob = await response.blob();
+        audioUrl = URL.createObjectURL(audioBlob);
+        isBlobUrl = true;
       }
       
-      const audioBlob = await response.blob();
-      const audioUrl = URL.createObjectURL(audioBlob);
-      
-      if (ttsUrlRef.current) {
+      if (ttsUrlRef.current && ttsBlobUrlRef.current) {
         URL.revokeObjectURL(ttsUrlRef.current);
       }
       ttsUrlRef.current = audioUrl;
+      ttsBlobUrlRef.current = isBlobUrl;
       
       const ttsAudio = new Audio(audioUrl);
       ttsAudioRef.current = ttsAudio;
