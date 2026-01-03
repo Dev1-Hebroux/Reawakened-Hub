@@ -378,8 +378,16 @@ export async function registerRoutes(
 
   // Pre-generate and cache narration audio for a spark (admin only)
   app.post('/api/admin/sparks/:id/generate-narration', isAdmin, async (req: any, res) => {
+    let filepath: string | null = null;
+    
     try {
       const sparkId = parseInt(req.params.id);
+      
+      // Validate sparkId
+      if (isNaN(sparkId) || sparkId <= 0) {
+        return res.status(400).json({ message: "Invalid spark ID" });
+      }
+      
       const spark = await storage.getSpark(sparkId);
       
       if (!spark) {
@@ -406,19 +414,27 @@ export async function registerRoutes(
       
       const buffer = Buffer.from(await mp3.arrayBuffer());
       
-      // Save to file
+      // Save to file with sanitized filename (only sparkId and timestamp)
       const audioDir = path.resolve(__dirname, "..", "attached_assets", "generated_audio");
       if (!fs.existsSync(audioDir)) {
         fs.mkdirSync(audioDir, { recursive: true });
       }
       
       const filename = `spark_${sparkId}_narration_${Date.now()}.mp3`;
-      const filepath = path.join(audioDir, filename);
+      filepath = path.join(audioDir, filename);
       fs.writeFileSync(filepath, buffer);
       
-      // Update spark with narration URL
+      // Update spark with narration URL - if this fails, clean up the file
       const audioUrl = `/attached_assets/generated_audio/${filename}`;
-      await storage.updateSpark(sparkId, { narrationAudioUrl: audioUrl });
+      try {
+        await storage.updateSpark(sparkId, { narrationAudioUrl: audioUrl });
+      } catch (dbError) {
+        // Clean up file if database update fails
+        if (filepath && fs.existsSync(filepath)) {
+          fs.unlinkSync(filepath);
+        }
+        throw dbError;
+      }
       
       res.json({ 
         success: true, 
@@ -428,6 +444,10 @@ export async function registerRoutes(
       });
     } catch (error: any) {
       console.error("Error generating narration:", error);
+      // Clean up file on any error
+      if (filepath && fs.existsSync(filepath)) {
+        try { fs.unlinkSync(filepath); } catch {}
+      }
       res.status(500).json({ message: error.message || "Failed to generate narration" });
     }
   });
