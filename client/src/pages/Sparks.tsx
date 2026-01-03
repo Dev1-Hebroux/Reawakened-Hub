@@ -369,11 +369,8 @@ export function SparksPage() {
         onComplete={() => setShowOnboarding(false)}
       />
       
-      {/* Gamification Bar */}
-      <GamificationBar />
-      
       {/* Hero / Live Now Section */}
-      <section className="relative min-h-[60vh] md:min-h-[70vh] w-full overflow-hidden">
+      <section className="relative mt-16 md:mt-[72px] min-h-[60vh] md:min-h-[70vh] w-full overflow-hidden">
         <div className="absolute inset-0">
           <img 
             src={featuredSpark?.thumbnailUrl || spark1} 
