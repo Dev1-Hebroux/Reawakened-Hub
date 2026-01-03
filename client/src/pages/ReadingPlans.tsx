@@ -13,15 +13,32 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 
+import peaceImage from "@assets/stock_images/peaceful_nature_scen_fe6f1282.jpg";
+import prayerImage from "@assets/stock_images/person_praying_hands_2c083135.jpg";
+import leadershipImage from "@assets/stock_images/business_leader_prof_05517ed1.jpg";
+import relationshipsImage from "@assets/stock_images/happy_family_togethe_b54439f5.jpg";
+import identityImage from "@assets/stock_images/person_standing_conf_d8ff5fd8.jpg";
+
+const TOPIC_IMAGES: Record<string, string> = {
+  anxiety: peaceImage,
+  prayer: prayerImage,
+  worship: prayerImage,
+  leadership: leadershipImage,
+  purpose: leadershipImage,
+  relationships: relationshipsImage,
+  identity: identityImage,
+  faith: peaceImage,
+};
+
 const TOPICS = [
-  { id: "prayer", label: "Prayer", icon: "🙏", gradient: "from-indigo-600 to-purple-600", bgIcon: "🙏" },
-  { id: "faith", label: "Faith", icon: "✨", gradient: "from-amber-500 to-orange-600", bgIcon: "✨" },
-  { id: "identity", label: "Identity", icon: "🪞", gradient: "from-rose-500 to-pink-600", bgIcon: "🪞" },
-  { id: "anxiety", label: "Anxiety & Peace", icon: "🕊️", gradient: "from-sky-500 to-cyan-600", bgIcon: "🕊️" },
-  { id: "relationships", label: "Relationships", icon: "💕", gradient: "from-pink-500 to-rose-600", bgIcon: "💕" },
-  { id: "leadership", label: "Leadership", icon: "👑", gradient: "from-amber-600 to-yellow-500", bgIcon: "👑" },
-  { id: "purpose", label: "Purpose", icon: "🎯", gradient: "from-emerald-500 to-teal-600", bgIcon: "🎯" },
-  { id: "worship", label: "Worship", icon: "🎵", gradient: "from-violet-500 to-purple-600", bgIcon: "🎵" },
+  { id: "prayer", label: "Prayer", icon: "🙏" },
+  { id: "faith", label: "Faith", icon: "✨" },
+  { id: "identity", label: "Identity", icon: "🪞" },
+  { id: "anxiety", label: "Anxiety & Peace", icon: "🕊️" },
+  { id: "relationships", label: "Relationships", icon: "💕" },
+  { id: "leadership", label: "Leadership", icon: "👑" },
+  { id: "purpose", label: "Purpose", icon: "🎯" },
+  { id: "worship", label: "Worship", icon: "🎵" },
 ];
 
 const MATURITY_LEVELS = [
@@ -199,31 +216,21 @@ export function ReadingPlansPage() {
     <div className="min-h-screen bg-[#1a2744]">
       <Navbar />
       
-      {/* Hero Section with Floating Scripture */}
-      <div className="relative overflow-hidden pt-24 pb-12">
-        {/* Ambient Background Effects */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-20 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl animate-pulse" />
-          <div className="absolute bottom-10 right-1/4 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "1s" }} />
-          <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "2s" }} />
-        </div>
-        
-        <div className="container mx-auto px-4 relative z-10">
+      {/* Hero Section - Clean & Minimal */}
+      <div className="pt-24 pb-12">
+        <div className="container mx-auto px-4">
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="max-w-2xl mx-auto text-center"
           >
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-5 py-2.5 mb-6 border border-white/10">
+            <div className="inline-flex items-center gap-2 bg-white/10 rounded-full px-4 py-2 mb-6">
               <BookOpen className="h-4 w-4 text-primary" />
-              <span className="text-sm font-bold text-white/90 uppercase tracking-wider">Bible Reading Plans</span>
+              <span className="text-sm font-bold text-white uppercase tracking-wider">Bible Reading Plans</span>
             </div>
             
             <h1 className="text-4xl md:text-5xl font-display font-bold text-white mb-4 leading-tight">
-              Grow Deeper in{" "}
-              <span className="bg-gradient-to-r from-primary to-amber-400 bg-clip-text text-transparent">
-                God's Word
-              </span>
+              Grow Deeper in God's Word
             </h1>
             
             <p className="text-lg text-white/70 mb-8 max-w-xl mx-auto">
@@ -231,39 +238,23 @@ export function ReadingPlansPage() {
               Build consistent habits and transform your faith.
             </p>
 
-            {/* Floating Scripture */}
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-              className="bg-white/5 backdrop-blur-md rounded-2xl p-5 mb-8 border border-white/10 max-w-md mx-auto"
-            >
+            {/* Scripture Quote */}
+            <div className="bg-[#19233b] rounded-2xl p-5 mb-8 border border-white/10 max-w-md mx-auto">
               <p className="text-white/80 italic text-sm leading-relaxed">
                 "Your word is a lamp for my feet, a light on my path."
               </p>
               <p className="text-primary text-xs mt-2 font-medium">— Psalm 119:105</p>
-            </motion.div>
+            </div>
             
             {/* Streak Badge */}
             {user && streak && streak.streak > 0 && (
-              <motion.div 
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="inline-flex items-center gap-3 bg-gradient-to-r from-orange-500/20 to-amber-500/20 backdrop-blur rounded-full px-6 py-3 border border-orange-500/30"
-              >
-                <div className="relative">
-                  <Flame className="h-7 w-7 text-orange-400" />
-                  <motion.div 
-                    className="absolute inset-0 bg-orange-400/50 rounded-full blur-md"
-                    animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0.2, 0.5] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  />
-                </div>
+              <div className="inline-flex items-center gap-3 bg-orange-500/20 rounded-full px-5 py-3 border border-orange-500/40">
+                <Flame className="h-6 w-6 text-orange-400" />
                 <div className="text-left">
-                  <p className="text-2xl font-bold text-white">{streak.streak}</p>
-                  <p className="text-xs text-orange-300/80">Day Streak</p>
+                  <p className="text-xl font-bold text-white">{streak.streak}</p>
+                  <p className="text-xs text-orange-300">Day Streak</p>
                 </div>
-              </motion.div>
+              </div>
             )}
           </motion.div>
         </div>
@@ -275,38 +266,36 @@ export function ReadingPlansPage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-gradient-to-r from-primary via-primary to-amber-600 rounded-3xl p-6 mb-8 text-white relative overflow-hidden"
+            className="bg-primary rounded-2xl p-5 mb-8 text-white"
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-30" />
-            <div className="relative flex items-center justify-between flex-wrap gap-4">
+            <div className="flex items-center justify-between flex-wrap gap-4">
               <div className="flex items-center gap-4">
-                <div className="h-16 w-16 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center">
-                  <Play className="h-8 w-8 text-white" />
+                <div className="h-14 w-14 rounded-xl bg-white/20 flex items-center justify-center">
+                  <Play className="h-7 w-7 text-white" />
                 </div>
                 <div>
                   <p className="text-white/80 text-sm font-medium mb-1">Continue Your Journey</p>
-                  <h3 className="text-xl font-bold">{activeEnrollment.plan.title}</h3>
+                  <h3 className="text-lg font-bold">{activeEnrollment.plan.title}</h3>
                   <p className="text-white/70 text-sm mt-1">Day {activeEnrollment.currentDay} of {activeEnrollment.plan.durationDays}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-4">
-                <div className="text-center bg-white/10 rounded-xl px-4 py-2">
-                  <Flame className="h-5 w-5 mx-auto text-orange-300 mb-1" />
+              <div className="flex items-center gap-3">
+                <div className="text-center bg-white/10 rounded-xl px-3 py-2">
+                  <Flame className="h-4 w-4 mx-auto text-orange-300 mb-1" />
                   <p className="text-sm font-bold">{activeEnrollment.currentStreak} days</p>
                 </div>
                 <Link href={`/reading-plans/${activeEnrollment.planId}`}>
-                  <Button variant="secondary" size="lg" className="gap-2 font-bold shadow-lg" data-testid="button-continue-reading">
+                  <Button variant="secondary" className="gap-2 font-semibold" data-testid="button-continue-reading">
                     <Play className="h-4 w-4" />
                     Continue
                   </Button>
                 </Link>
               </div>
             </div>
-            <div className="mt-5 bg-white/20 rounded-full h-2.5 overflow-hidden">
-              <motion.div 
-                className="bg-white rounded-full h-2.5"
-                initial={{ width: 0 }}
-                animate={{ width: `${(activeEnrollment.progress.filter(p => p.completed).length / activeEnrollment.plan.durationDays) * 100}%` }}
+            <div className="mt-4 bg-white/20 rounded-full h-2 overflow-hidden">
+              <div 
+                className="bg-white rounded-full h-2 transition-all"
+                style={{ width: `${(activeEnrollment.progress.filter(p => p.completed).length / activeEnrollment.plan.durationDays) * 100}%` }}
               />
             </div>
           </motion.div>
@@ -317,18 +306,18 @@ export function ReadingPlansPage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-gradient-to-br from-amber-500/20 to-orange-500/10 backdrop-blur rounded-3xl p-6 mb-8 border border-amber-500/20"
+            className="bg-[#19233b] rounded-2xl p-5 mb-8 border border-white/10"
           >
             <div className="flex items-start gap-4">
-              <div className="h-14 w-14 rounded-2xl bg-amber-500/20 flex items-center justify-center flex-shrink-0">
-                <Sparkles className="h-7 w-7 text-amber-400" />
+              <div className="h-12 w-12 rounded-xl bg-primary flex items-center justify-center flex-shrink-0">
+                <Sparkles className="h-6 w-6 text-white" />
               </div>
               <div className="flex-1">
                 <h3 className="text-lg font-bold text-white mb-1">Personalize Your Journey</h3>
                 <p className="text-white/60 mb-4">
                   Tell us about your interests and spiritual journey to get personalized reading plan recommendations.
                 </p>
-                <Button onClick={handleStartOnboarding} className="gap-2 bg-amber-500 hover:bg-amber-600" data-testid="button-personalize">
+                <Button onClick={handleStartOnboarding} className="gap-2 bg-primary hover:bg-primary/90" data-testid="button-personalize">
                   <Heart className="h-4 w-4" />
                   Get Started
                 </Button>
@@ -337,7 +326,7 @@ export function ReadingPlansPage() {
           </motion.div>
         )}
 
-        {/* Featured Plans Carousel */}
+        {/* Featured Plans - Vertical Stack */}
         {featuredPlans.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -345,19 +334,18 @@ export function ReadingPlansPage() {
             className="mb-10"
           >
             <div className="flex items-center gap-3 mb-6">
-              <div className="h-10 w-10 rounded-xl bg-amber-500/20 flex items-center justify-center">
-                <Star className="h-5 w-5 text-amber-400" />
+              <div className="h-10 w-10 rounded-xl bg-primary/20 flex items-center justify-center">
+                <Star className="h-5 w-5 text-primary" />
               </div>
               <h2 className="text-2xl font-display font-bold text-white">Featured</h2>
             </div>
-            <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 scrollbar-hide">
+            <div className="space-y-4">
               {featuredPlans.map((plan, i) => (
                 <motion.div
                   key={plan.id}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.1 }}
-                  className="flex-shrink-0 w-72"
                 >
                   <PlanCard 
                     plan={plan} 
@@ -380,8 +368,8 @@ export function ReadingPlansPage() {
             className="mb-10"
           >
             <div className="flex items-center gap-3 mb-6">
-              <div className="h-10 w-10 rounded-xl bg-purple-500/20 flex items-center justify-center">
-                <Target className="h-5 w-5 text-purple-400" />
+              <div className="h-10 w-10 rounded-xl bg-primary/20 flex items-center justify-center">
+                <Target className="h-5 w-5 text-primary" />
               </div>
               <h2 className="text-2xl font-display font-bold text-white">Recommended for You</h2>
             </div>
@@ -453,7 +441,7 @@ export function ReadingPlansPage() {
           <div className="flex flex-wrap gap-2 mb-4">
             <Badge 
               variant={selectedMaturity === null ? "default" : "outline"}
-              className={`cursor-pointer transition-all ${selectedMaturity === null ? "bg-[#7C9A8E]" : "bg-white/5 border-white/20 text-white/70 hover:bg-white/10"}`}
+              className={`cursor-pointer transition-all ${selectedMaturity === null ? "bg-primary" : "bg-white/5 border-white/20 text-white/70 hover:bg-white/10"}`}
               onClick={() => setSelectedMaturity(null)}
             >
               All Levels
@@ -462,7 +450,7 @@ export function ReadingPlansPage() {
               <Badge
                 key={level.id}
                 variant={selectedMaturity === level.id ? "default" : "outline"}
-                className={`cursor-pointer transition-all ${selectedMaturity === level.id ? "bg-[#7C9A8E]" : "bg-white/5 border-white/20 text-white/70 hover:bg-white/10"}`}
+                className={`cursor-pointer transition-all ${selectedMaturity === level.id ? "bg-primary" : "bg-white/5 border-white/20 text-white/70 hover:bg-white/10"}`}
                 onClick={() => setSelectedMaturity(level.id)}
                 data-testid={`filter-maturity-${level.id}`}
               >
@@ -475,7 +463,7 @@ export function ReadingPlansPage() {
           <div className="flex flex-wrap gap-2">
             <Badge 
               variant={selectedDuration === null ? "default" : "outline"}
-              className={`cursor-pointer transition-all ${selectedDuration === null ? "bg-[#D4A574]" : "bg-white/5 border-white/20 text-white/70 hover:bg-white/10"}`}
+              className={`cursor-pointer transition-all ${selectedDuration === null ? "bg-primary" : "bg-white/5 border-white/20 text-white/70 hover:bg-white/10"}`}
               onClick={() => setSelectedDuration(null)}
             >
               Any Duration
@@ -484,7 +472,7 @@ export function ReadingPlansPage() {
               <Badge
                 key={duration.days}
                 variant={selectedDuration === duration.days ? "default" : "outline"}
-                className={`cursor-pointer transition-all ${selectedDuration === duration.days ? "bg-[#D4A574]" : "bg-white/5 border-white/20 text-white/70 hover:bg-white/10"}`}
+                className={`cursor-pointer transition-all ${selectedDuration === duration.days ? "bg-primary" : "bg-white/5 border-white/20 text-white/70 hover:bg-white/10"}`}
                 onClick={() => setSelectedDuration(duration.days)}
                 data-testid={`filter-duration-${duration.days}`}
               >
@@ -633,50 +621,32 @@ function PlanCard({
 }) {
   const maturityLabel = MATURITY_LEVELS.find(m => m.id === plan.maturityLevel)?.label || plan.maturityLevel;
   const primaryTopic = plan.topics?.[0] || "faith";
-  const topicData = TOPICS.find(t => t.id === primaryTopic) || TOPICS[1];
+  const topicImage = TOPIC_IMAGES[primaryTopic] || peaceImage;
   
   return (
-    <motion.div
-      whileHover={{ y: -4, scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-      className="bg-[#243656] rounded-2xl shadow-xl border border-white/10 overflow-hidden group cursor-pointer h-full"
-    >
-      {/* Cover Image/Gradient */}
+    <div className="bg-[#19233b] rounded-2xl border border-white/10 overflow-hidden">
+      {/* Cover Image */}
       <div 
-        className={`h-44 relative overflow-hidden bg-gradient-to-br ${topicData.gradient}`}
-        style={plan.coverImageUrl ? { 
-          backgroundImage: `linear-gradient(to bottom, transparent 0%, rgba(26,39,68,0.8) 100%), url(${plan.coverImageUrl})`,
+        className="h-40 relative overflow-hidden"
+        style={{ 
+          backgroundImage: `linear-gradient(to bottom, transparent 30%, rgba(25,35,59,0.95) 100%), url(${plan.coverImageUrl || topicImage})`,
           backgroundSize: "cover",
           backgroundPosition: "center"
-        } : {}}
+        }}
       >
-        {/* Decorative Elements */}
-        {!plan.coverImageUrl && (
-          <>
-            <div className="absolute inset-0 flex items-center justify-center opacity-20">
-              <span className="text-8xl">{topicData.bgIcon}</span>
-            </div>
-            <div className="absolute top-4 right-4 w-20 h-20 rounded-full bg-white/10 blur-xl" />
-            <div className="absolute bottom-4 left-4 w-16 h-16 rounded-full bg-black/10 blur-lg" />
-          </>
-        )}
-        
         {/* Badges */}
         <div className="absolute top-3 left-3 flex gap-2">
           {plan.featured && (
-            <Badge className="bg-amber-500 text-white border-0 shadow-lg">
+            <Badge className="bg-primary text-white border-0">
               <Star className="h-3 w-3 mr-1" /> Featured
             </Badge>
           )}
         </div>
         {enrolled && (
-          <Badge className="absolute top-3 right-3 bg-green-500 text-white border-0 shadow-lg">
+          <Badge className="absolute top-3 right-3 bg-green-500 text-white border-0">
             <Check className="h-3 w-3 mr-1" /> Enrolled
           </Badge>
         )}
-
-        {/* Glowing Border Effect */}
-        <div className="absolute inset-0 border-2 border-white/0 group-hover:border-white/20 transition-all rounded-t-2xl" />
       </div>
       
       <div className="p-5">
@@ -737,7 +707,7 @@ function PlanCard({
           )}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
 

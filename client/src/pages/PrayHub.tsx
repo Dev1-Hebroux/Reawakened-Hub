@@ -399,7 +399,7 @@ export function PrayHub() {
                 Nations
               </Button>
               <Button 
-                className="bg-[#4A7C7C] hover:bg-[#4A7C7C]/90 text-white font-semibold py-4 rounded-xl"
+                className="bg-primary hover:bg-primary/90 text-white font-semibold py-4 rounded-xl"
                 onClick={() => { setAdoptType("campus"); setShowAdoptModal(true); }}
                 data-testid="button-adopt-campus"
               >
@@ -417,7 +417,7 @@ export function PrayHub() {
             className="bg-[#19233b] rounded-2xl p-5 mb-6 border border-white/10"
           >
             <div className="flex items-center gap-3 mb-4">
-              <div className="h-12 w-12 rounded-xl bg-[#4A7C7C] flex items-center justify-center">
+              <div className="h-12 w-12 rounded-xl bg-primary flex items-center justify-center">
                 <Timer className="h-6 w-6 text-white" />
               </div>
               <div>
@@ -452,7 +452,7 @@ export function PrayHub() {
                       onClick={() => setSelectedTimer(mins)}
                       className={`flex-1 py-3 rounded-xl font-semibold text-sm transition-colors ${
                         selectedTimer === mins 
-                          ? 'bg-[#4A7C7C] text-white' 
+                          ? 'bg-primary text-white' 
                           : 'bg-white/5 text-white/60 hover:bg-white/10'
                       }`}
                       data-testid={`timer-${mins}`}
@@ -463,7 +463,7 @@ export function PrayHub() {
                 </div>
                 
                 <Button 
-                  className="w-full bg-[#4A7C7C] hover:bg-[#4A7C7C]/90 text-white font-semibold py-5 rounded-xl"
+                  className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-5 rounded-xl"
                   onClick={startTimer}
                   data-testid="button-start-timer"
                 >
@@ -552,11 +552,11 @@ export function PrayHub() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="bg-gradient-to-br from-[#D4A574]/20 to-[#7C9A8E]/20 backdrop-blur-md rounded-3xl p-6 border border-white/10"
+            className="bg-[#19233b] rounded-2xl p-5 border border-white/10"
           >
             <div className="flex items-center gap-3 mb-4">
-              <div className="h-12 w-12 rounded-full bg-[#D4A574]/30 flex items-center justify-center">
-                <Lightbulb className="h-6 w-6 text-[#D4A574]" />
+              <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center">
+                <Lightbulb className="h-5 w-5 text-white" />
               </div>
               <div>
                 <h3 className="font-bold text-white">Spirit-Led Prompt</h3>
@@ -581,7 +581,7 @@ export function PrayHub() {
                 Journal
               </Button>
               <Button 
-                className="flex-1 bg-[#D4A574] hover:bg-[#D4A574]/90 text-white font-bold py-5 rounded-2xl"
+                className="flex-1 bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-xl"
                 onClick={() => {
                   if (!isAuthenticated) {
                     toast.error("Please sign in to send encouragement");
@@ -714,7 +714,7 @@ export function PrayHub() {
                 </>
               ) : (
                 <>
-                  <GraduationCap className="h-5 w-5 text-[#4A7C7C]" />
+                  <GraduationCap className="h-5 w-5 text-primary" />
                   Pray for UK Campuses
                 </>
               )}
@@ -726,7 +726,7 @@ export function PrayHub() {
               <TabsTrigger value="nation" className="data-[state=active]:bg-primary data-[state=active]:text-white">
                 Nations
               </TabsTrigger>
-              <TabsTrigger value="campus" className="data-[state=active]:bg-[#4A7C7C] data-[state=active]:text-white">
+              <TabsTrigger value="campus" className="data-[state=active]:bg-primary data-[state=active]:text-white">
                 UK Campuses
               </TabsTrigger>
             </TabsList>
@@ -835,19 +835,19 @@ export function PrayHub() {
                       whileHover={{ scale: 1.01 }}
                       whileTap={{ scale: 0.99 }}
                       className={`bg-white/5 hover:bg-white/10 rounded-xl p-3 cursor-pointer border border-white/5 ${
-                        selectedCampus?.id === campus.id ? 'ring-2 ring-[#4A7C7C]' : ''
+                        selectedCampus?.id === campus.id ? 'ring-2 ring-primary' : ''
                       }`}
                       onClick={() => setSelectedCampus(campus)}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
-                            campus.type === 'university' ? 'bg-[#4A7C7C]/20' : 'bg-[#D4A574]/20'
+                            campus.type === 'university' ? 'bg-primary/20' : 'bg-primary/10'
                           }`}>
                             {campus.type === 'university' ? (
-                              <Building className="h-5 w-5 text-[#4A7C7C]" />
+                              <Building className="h-5 w-5 text-primary" />
                             ) : (
-                              <GraduationCap className="h-5 w-5 text-[#D4A574]" />
+                              <GraduationCap className="h-5 w-5 text-primary" />
                             )}
                           </div>
                           <div>
@@ -876,7 +876,7 @@ export function PrayHub() {
 
               {selectedCampus && (
                 <Button
-                  className="w-full bg-[#4A7C7C] hover:bg-[#4A7C7C]/90 text-white font-bold py-5 rounded-2xl mt-4"
+                  className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-5 rounded-2xl mt-4"
                   onClick={() => navigate(`/pray/campus/${selectedCampus.id}`)}
                   data-testid="button-pray-for-campus"
                 >
