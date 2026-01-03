@@ -103,6 +103,15 @@ export const sparks = pgTable("sparks", {
   thumbnailPrompt: text("thumbnail_prompt"), // AI generation prompt
   weekTheme: varchar("week_theme"), // e.g. "Week 1: Identity & Belonging"
   audienceSegment: varchar("audience_segment"), // 'schools', 'universities', 'early-career', 'builders', 'couples'
+  // Enhanced devotional content fields
+  fullPassage: text("full_passage"), // complete Bible passage text
+  fullTeaching: text("full_teaching"), // 3-5 paragraph teaching
+  contextBackground: text("context_background"), // historical/theological context
+  applicationPoints: text("application_points").array(), // array of practical takeaways
+  todayAction: text("today_action"), // daily action step
+  reflectionQuestion: text("reflection_question"), // journaling prompt
+  scenarioVignette: text("scenario_vignette"), // relatable real-life scenario
+  shareableVersion: text("shareable_version"), // 1-minute shareable version
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -128,6 +137,56 @@ export const insertSparkReactionSchema = createInsertSchema(sparkReactions).omit
 });
 export type InsertSparkReaction = z.infer<typeof insertSparkReactionSchema>;
 export type SparkReaction = typeof sparkReactions.$inferSelect;
+
+// Spark Bookmarks - saved devotionals
+export const sparkBookmarks = pgTable("spark_bookmarks", {
+  id: serial("id").primaryKey(),
+  sparkId: integer("spark_id").notNull().references(() => sparks.id, { onDelete: 'cascade' }),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertSparkBookmarkSchema = createInsertSchema(sparkBookmarks).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertSparkBookmark = z.infer<typeof insertSparkBookmarkSchema>;
+export type SparkBookmark = typeof sparkBookmarks.$inferSelect;
+
+// Spark Journals - user reflections on devotionals
+export const sparkJournals = pgTable("spark_journals", {
+  id: serial("id").primaryKey(),
+  sparkId: integer("spark_id").notNull().references(() => sparks.id, { onDelete: 'cascade' }),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  textContent: text("text_content"),
+  audioUrl: varchar("audio_url"), // for voice recordings
+  audioDuration: integer("audio_duration"), // seconds
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertSparkJournalSchema = createInsertSchema(sparkJournals).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export type InsertSparkJournal = z.infer<typeof insertSparkJournalSchema>;
+export type SparkJournal = typeof sparkJournals.$inferSelect;
+
+// Spark Action Completions - tracking completed daily actions
+export const sparkActionCompletions = pgTable("spark_action_completions", {
+  id: serial("id").primaryKey(),
+  sparkId: integer("spark_id").notNull().references(() => sparks.id, { onDelete: 'cascade' }),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  completedAt: timestamp("completed_at").defaultNow(),
+});
+
+export const insertSparkActionCompletionSchema = createInsertSchema(sparkActionCompletions).omit({
+  id: true,
+  completedAt: true,
+});
+export type InsertSparkActionCompletion = z.infer<typeof insertSparkActionCompletionSchema>;
+export type SparkActionCompletion = typeof sparkActionCompletions.$inferSelect;
 
 // Prayer Messages for Live Intercession
 export const prayerMessages = pgTable("prayer_messages", {
