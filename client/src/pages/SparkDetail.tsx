@@ -70,6 +70,8 @@ export function SparkDetail() {
   
   const audioRef = useRef<HTMLAudioElement>(null);
   const ttsAudioRef = useRef<HTMLAudioElement | null>(null);
+  const ttsUrlRef = useRef<string | null>(null);
+  const ttsSparkIdRef = useRef<number | null>(null);
   const [isLoadingTTS, setIsLoadingTTS] = useState(false);
 
   const { data: spark, isLoading } = useQuery<Spark>({
@@ -113,6 +115,17 @@ export function SparkDetail() {
     if (actionStatus?.completed) setActionCompleted(true);
     if (streakData?.streak) setStreak(streakData.streak);
   }, [bookmarkStatus, actionStatus, streakData]);
+
+  useEffect(() => {
+    return () => {
+      if (ttsUrlRef.current) {
+        URL.revokeObjectURL(ttsUrlRef.current);
+      }
+      if (ttsAudioRef.current) {
+        ttsAudioRef.current.pause();
+      }
+    };
+  }, []);
 
   const bookmarkMutation = useMutation({
     mutationFn: async () => {
@@ -162,28 +175,67 @@ export function SparkDetail() {
     onError: () => toast.error("Please sign in to save reflections"),
   });
 
-  const togglePlayback = () => {
+  const safePlay = async (audio: HTMLAudioElement) => {
+    try {
+      await audio.play();
+      return true;
+    } catch (err) {
+      if ((err as Error).name !== 'AbortError') {
+        console.error("Audio play error:", err);
+      }
+      return false;
+    }
+  };
+
+  const togglePlayback = async () => {
     if (!audioRef.current) return;
     if (isPlaying) {
       audioRef.current.pause();
-      window.speechSynthesis.cancel();
+      if (ttsAudioRef.current) {
+        ttsAudioRef.current.pause();
+      }
       setIsSpeaking(false);
     } else {
-      audioRef.current.play();
+      await safePlay(audioRef.current);
     }
     setIsPlaying(!isPlaying);
   };
 
   const startTextToSpeech = async () => {
     if (!spark?.fullTeaching) return;
+    if (isLoadingTTS) return;
     
     if (isSpeaking && ttsAudioRef.current) {
       ttsAudioRef.current.pause();
-      ttsAudioRef.current = null;
       setIsSpeaking(false);
       if (audioRef.current) {
         audioRef.current.pause();
         setIsPlaying(false);
+      }
+      return;
+    }
+    
+    if (ttsSparkIdRef.current !== sparkId) {
+      if (ttsUrlRef.current) {
+        URL.revokeObjectURL(ttsUrlRef.current);
+        ttsUrlRef.current = null;
+      }
+      if (ttsAudioRef.current) {
+        ttsAudioRef.current.pause();
+        ttsAudioRef.current = null;
+      }
+      ttsSparkIdRef.current = sparkId;
+    }
+    
+    if (ttsAudioRef.current && ttsUrlRef.current) {
+      const played = await safePlay(ttsAudioRef.current);
+      if (played) {
+        setIsSpeaking(true);
+        if (audioRef.current && !isPlaying) {
+          audioRef.current.volume = 0.3;
+          await safePlay(audioRef.current);
+          setIsPlaying(true);
+        }
       }
       return;
     }
@@ -207,13 +259,17 @@ export function SparkDetail() {
       const audioBlob = await response.blob();
       const audioUrl = URL.createObjectURL(audioBlob);
       
+      if (ttsUrlRef.current) {
+        URL.revokeObjectURL(ttsUrlRef.current);
+      }
+      ttsUrlRef.current = audioUrl;
+      
       const ttsAudio = new Audio(audioUrl);
       ttsAudioRef.current = ttsAudio;
+      ttsSparkIdRef.current = sparkId;
       
       ttsAudio.onended = () => {
         setIsSpeaking(false);
-        URL.revokeObjectURL(audioUrl);
-        ttsAudioRef.current = null;
       };
       
       ttsAudio.onerror = () => {
@@ -222,13 +278,15 @@ export function SparkDetail() {
         toast.error("Audio playback failed");
       };
       
-      await ttsAudio.play();
-      setIsSpeaking(true);
-      
-      if (audioRef.current && !isPlaying) {
-        audioRef.current.volume = 0.3;
-        audioRef.current.play();
-        setIsPlaying(true);
+      const played = await safePlay(ttsAudio);
+      if (played) {
+        setIsSpeaking(true);
+        
+        if (audioRef.current && !isPlaying) {
+          audioRef.current.volume = 0.3;
+          await safePlay(audioRef.current);
+          setIsPlaying(true);
+        }
       }
     } catch (error) {
       console.error("TTS error:", error);
