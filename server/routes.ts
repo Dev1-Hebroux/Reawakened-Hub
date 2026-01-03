@@ -403,7 +403,17 @@ export async function registerRoutes(
         return res.status(400).json({ message: "Narration already exists", url: spark.narrationAudioUrl });
       }
       
-      const truncatedText = spark.fullTeaching.slice(0, 4096);
+      // Build narration text: scripture reference + passage + teaching
+      let narrationText = '';
+      if (spark.scriptureRef) {
+        narrationText += spark.scriptureRef + '. ';
+      }
+      if (spark.fullPassage) {
+        narrationText += spark.fullPassage + ' ';
+      }
+      narrationText += spark.fullTeaching;
+      
+      const truncatedText = narrationText.slice(0, 4096);
       
       const mp3 = await openai.audio.speech.create({
         model: "tts-1-hd",

@@ -260,11 +260,23 @@ export function SparkDetail() {
       if (spark.narrationAudioUrl) {
         audioUrl = spark.narrationAudioUrl;
       } else {
+        // Build narration text: scripture passage first, then teaching
+        let narrationText = '';
+        if (spark.scriptureRef) {
+          narrationText += spark.scriptureRef + '. ';
+        }
+        if (spark.fullPassage) {
+          narrationText += spark.fullPassage + ' ';
+        }
+        if (spark.fullTeaching) {
+          narrationText += spark.fullTeaching;
+        }
+        
         const response = await fetch('/api/tts/generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
-            text: spark.fullTeaching,
+            text: narrationText,
             voice: 'nova'
           }),
         });
@@ -471,9 +483,11 @@ export function SparkDetail() {
                     <p className="text-white font-semibold">
                       {isLoadingTTS ? "Generating Audio..." : isSpeaking ? "Playing Devotional" : "Listen to Devotional"}
                     </p>
-                    <p className="text-white/60 text-sm">
-                      {isLoadingTTS ? "Please wait a moment" : isSpeaking ? `with ${selectedTrack.name}` : "Natural voice + ambient music"}
-                    </p>
+                    {isSpeaking && (
+                      <p className="text-white/60 text-sm">
+                        with {selectedTrack.name}
+                      </p>
+                    )}
                   </div>
                 </div>
                 
