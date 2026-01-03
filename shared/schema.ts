@@ -2907,3 +2907,93 @@ export const prayerPodSessions = pgTable("prayer_pod_sessions", {
 export const insertPrayerPodSessionSchema = createInsertSchema(prayerPodSessions).omit({ id: true, createdAt: true });
 export type InsertPrayerPodSession = z.infer<typeof insertPrayerPodSessionSchema>;
 export type PrayerPodSession = typeof prayerPodSessions.$inferSelect;
+
+// ===== BIBLE READING PLANS =====
+
+// Reading Plans - Curated multi-day Bible reading plans
+export const readingPlans = pgTable("reading_plans", {
+  id: serial("id").primaryKey(),
+  title: varchar("title").notNull(),
+  description: text("description").notNull(),
+  coverImageUrl: varchar("cover_image_url"),
+  durationDays: integer("duration_days").notNull(), // 7, 14, 21, 30
+  maturityLevel: varchar("maturity_level").notNull(), // 'new-believer', 'growing', 'mature'
+  topics: text("topics").array(), // ['prayer', 'faith', 'relationships', 'anxiety', 'identity', 'leadership']
+  featured: boolean("featured").default(false),
+  enrollmentCount: integer("enrollment_count").default(0),
+  averageRating: integer("average_rating"), // 1-5 scale, stored as integer (multiply by 100 for precision)
+  status: varchar("status").default("draft"), // 'draft', 'published', 'archived'
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertReadingPlanSchema = createInsertSchema(readingPlans).omit({ id: true, createdAt: true, enrollmentCount: true });
+export type InsertReadingPlan = z.infer<typeof insertReadingPlanSchema>;
+export type ReadingPlan = typeof readingPlans.$inferSelect;
+
+// Reading Plan Days - Individual days within a plan
+export const readingPlanDays = pgTable("reading_plan_days", {
+  id: serial("id").primaryKey(),
+  planId: integer("plan_id").notNull().references(() => readingPlans.id, { onDelete: 'cascade' }),
+  dayNumber: integer("day_number").notNull(),
+  title: varchar("title").notNull(),
+  scriptureRef: varchar("scripture_ref").notNull(), // e.g., "John 3:16-21"
+  scriptureText: text("scripture_text").notNull(), // Full passage text
+  devotionalContent: text("devotional_content").notNull(), // Brief teaching/context
+  reflectionQuestion: text("reflection_question"),
+  prayerPrompt: text("prayer_prompt"),
+  actionStep: text("action_step"),
+});
+
+export const insertReadingPlanDaySchema = createInsertSchema(readingPlanDays).omit({ id: true });
+export type InsertReadingPlanDay = z.infer<typeof insertReadingPlanDaySchema>;
+export type ReadingPlanDay = typeof readingPlanDays.$inferSelect;
+
+// User Spiritual Profile - Interests and maturity for recommendations
+export const userSpiritualProfiles = pgTable("user_spiritual_profiles", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  maturityLevel: varchar("maturity_level").default("growing"), // 'new-believer', 'growing', 'mature'
+  interests: text("interests").array(), // topics they're interested in
+  completedPlansCount: integer("completed_plans_count").default(0),
+  totalReadingDays: integer("total_reading_days").default(0),
+  longestStreak: integer("longest_streak").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertUserSpiritualProfileSchema = createInsertSchema(userSpiritualProfiles).omit({ id: true, createdAt: true, updatedAt: true, completedPlansCount: true, totalReadingDays: true, longestStreak: true });
+export type InsertUserSpiritualProfile = z.infer<typeof insertUserSpiritualProfileSchema>;
+export type UserSpiritualProfile = typeof userSpiritualProfiles.$inferSelect;
+
+// User Plan Enrollments - Tracks which plans a user has joined
+export const userPlanEnrollments = pgTable("user_plan_enrollments", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  planId: integer("plan_id").notNull().references(() => readingPlans.id, { onDelete: 'cascade' }),
+  status: varchar("status").default("active"), // 'active', 'paused', 'completed', 'abandoned'
+  currentDay: integer("current_day").default(1),
+  startedAt: timestamp("started_at").defaultNow(),
+  completedAt: timestamp("completed_at"),
+  currentStreak: integer("current_streak").default(0),
+  lastReadAt: timestamp("last_read_at"),
+});
+
+export const insertUserPlanEnrollmentSchema = createInsertSchema(userPlanEnrollments).omit({ id: true, startedAt: true, completedAt: true, currentStreak: true, lastReadAt: true });
+export type InsertUserPlanEnrollment = z.infer<typeof insertUserPlanEnrollmentSchema>;
+export type UserPlanEnrollment = typeof userPlanEnrollments.$inferSelect;
+
+// User Reading Progress - Daily completion tracking
+export const userReadingProgress = pgTable("user_reading_progress", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  enrollmentId: integer("enrollment_id").notNull().references(() => userPlanEnrollments.id, { onDelete: 'cascade' }),
+  planDayId: integer("plan_day_id").notNull().references(() => readingPlanDays.id, { onDelete: 'cascade' }),
+  dayNumber: integer("day_number").notNull(),
+  completed: boolean("completed").default(false),
+  journalEntry: text("journal_entry"),
+  completedAt: timestamp("completed_at"),
+});
+
+export const insertUserReadingProgressSchema = createInsertSchema(userReadingProgress).omit({ id: true, completedAt: true });
+export type InsertUserReadingProgress = z.infer<typeof insertUserReadingProgressSchema>;
+export type UserReadingProgress = typeof userReadingProgress.$inferSelect;
