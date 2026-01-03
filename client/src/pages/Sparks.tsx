@@ -21,6 +21,7 @@ import { GamificationBar } from "@/components/GamificationBar";
 import { JournalingPrompt } from "@/components/JournalingPrompt";
 import { DailyQuiz } from "@/components/DailyQuiz";
 import { LiveIntercession } from "@/components/LiveIntercession";
+import { COMMUNITY_LINKS } from "@/lib/config";
 
 import spark1 from "@assets/generated_images/raw_street_worship_in_brazil.png";
 import spark2 from "@assets/generated_images/testimony_of_healing_in_a_village.png";
@@ -1009,12 +1010,22 @@ export function SparksPage() {
 
               <div className="border-t border-white/10 pt-6 space-y-3">
                 <p className="text-center text-sm text-gray-400 mb-4">Or get updates via:</p>
-                <button className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold py-4 rounded-xl flex items-center justify-center gap-3 transition-colors" data-testid="button-join-whatsapp">
+                <a 
+                  href={COMMUNITY_LINKS.whatsapp}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold py-4 rounded-xl flex items-center justify-center gap-3 transition-colors" 
+                  data-testid="button-join-whatsapp"
+                >
                   <MessageCircle className="h-5 w-5" /> Join WhatsApp Community
-                </button>
-                <button className="w-full bg-white hover:bg-gray-100 text-black font-bold py-4 rounded-xl flex items-center justify-center gap-3 transition-colors" data-testid="button-subscribe-email">
+                </a>
+                <a 
+                  href="mailto:sparks@reawakened.one?subject=Subscribe%20to%20Daily%20Sparks&body=Hi%2C%20I%20would%20like%20to%20subscribe%20to%20receive%20daily%20Spark%20devotionals%20via%20email."
+                  className="w-full bg-white hover:bg-gray-100 text-black font-bold py-4 rounded-xl flex items-center justify-center gap-3 transition-colors" 
+                  data-testid="button-subscribe-email"
+                >
                   <Mail className="h-5 w-5" /> Subscribe via Email
-                </button>
+                </a>
               </div>
 
               <p className="text-center text-xs text-gray-500 mt-6">
