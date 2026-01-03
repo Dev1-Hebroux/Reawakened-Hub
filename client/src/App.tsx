@@ -81,6 +81,7 @@ import { ChallengesPage } from "@/pages/Challenges";
 import { MissionTripsPublic } from "@/pages/MissionTripsPublic";
 import { CoachingPublic } from "@/pages/CoachingPublic";
 import { SchoolsLanding, UniversitiesLanding, EarlyCareerLanding, BuildersLanding, CouplesLanding } from "@/pages/AudienceLanding";
+import { PWAInstallBanner } from "@/components/PWAInstallBanner";
 
 function Router() {
   return (
@@ -183,6 +184,7 @@ function AppContent() {
         <AiCoachDrawer />
       </div>
       <MobileNav />
+      <PWAInstallBanner />
       {isAuthenticated && (
         <OnboardingTour 
           isOpen={showTour} 
