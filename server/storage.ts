@@ -440,6 +440,21 @@ import {
   type InsertPrayerPodMessage,
   type PrayerPodSession,
   type InsertPrayerPodSession,
+  readingPlans,
+  readingPlanDays,
+  userSpiritualProfiles,
+  userPlanEnrollments,
+  userReadingProgress,
+  type ReadingPlan,
+  type InsertReadingPlan,
+  type ReadingPlanDay,
+  type InsertReadingPlanDay,
+  type UserSpiritualProfile,
+  type InsertUserSpiritualProfile,
+  type UserPlanEnrollment,
+  type InsertUserPlanEnrollment,
+  type UserReadingProgress,
+  type InsertUserReadingProgress,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, sql, inArray, count, ilike, or, gte } from "drizzle-orm";
@@ -945,6 +960,31 @@ export interface IStorage {
   getPrayerPodMessages(podId: number, limit?: number): Promise<PrayerPodMessage[]>;
   createPrayerPodMessage(message: InsertPrayerPodMessage): Promise<PrayerPodMessage>;
   getUserPrayerPods(userId: string): Promise<PrayerPod[]>;
+
+  // Bible Reading Plans
+  getReadingPlans(filters?: { topic?: string; maturityLevel?: string; durationDays?: number }): Promise<ReadingPlan[]>;
+  getReadingPlan(id: number): Promise<ReadingPlan | undefined>;
+  createReadingPlan(plan: InsertReadingPlan): Promise<ReadingPlan>;
+  getReadingPlanDays(planId: number): Promise<ReadingPlanDay[]>;
+  getReadingPlanDay(planId: number, dayNumber: number): Promise<ReadingPlanDay | undefined>;
+  createReadingPlanDay(day: InsertReadingPlanDay): Promise<ReadingPlanDay>;
+  
+  // User Spiritual Profiles
+  getUserSpiritualProfile(userId: string): Promise<UserSpiritualProfile | undefined>;
+  upsertUserSpiritualProfile(profile: InsertUserSpiritualProfile): Promise<UserSpiritualProfile>;
+  
+  // User Plan Enrollments
+  getUserPlanEnrollments(userId: string): Promise<UserPlanEnrollment[]>;
+  getUserPlanEnrollment(userId: string, planId: number): Promise<UserPlanEnrollment | undefined>;
+  createUserPlanEnrollment(enrollment: InsertUserPlanEnrollment): Promise<UserPlanEnrollment>;
+  updateUserPlanEnrollment(id: number, updates: Partial<UserPlanEnrollment>): Promise<UserPlanEnrollment>;
+  
+  // User Reading Progress
+  getUserReadingProgress(enrollmentId: number): Promise<UserReadingProgress[]>;
+  createUserReadingProgress(progress: InsertUserReadingProgress): Promise<UserReadingProgress>;
+  completeReadingDay(enrollmentId: number, planDayId: number, journalEntry?: string): Promise<UserReadingProgress>;
+  getUserReadingStreak(userId: string): Promise<number>;
+  getRecommendedPlans(userId: string): Promise<ReadingPlan[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -4374,6 +4414,253 @@ export class DatabaseStorage implements IStorage {
     if (memberships.length === 0) return [];
     const podIds = memberships.map(m => m.podId);
     return db.select().from(prayerPods).where(inArray(prayerPods.id, podIds));
+  }
+
+  // ===== BIBLE READING PLANS =====
+  
+  async getReadingPlans(filters?: { topic?: string; maturityLevel?: string; durationDays?: number }): Promise<ReadingPlan[]> {
+    let conditions = [eq(readingPlans.status, 'published')];
+    
+    if (filters?.maturityLevel) {
+      conditions.push(eq(readingPlans.maturityLevel, filters.maturityLevel));
+    }
+    if (filters?.durationDays) {
+      conditions.push(eq(readingPlans.durationDays, filters.durationDays));
+    }
+    
+    const plans = await db.select().from(readingPlans)
+      .where(and(...conditions))
+      .orderBy(desc(readingPlans.featured), desc(readingPlans.enrollmentCount));
+    
+    // Filter by topic if specified
+    if (filters?.topic) {
+      return plans.filter(plan => plan.topics?.includes(filters.topic!));
+    }
+    return plans;
+  }
+
+  async getReadingPlan(id: number): Promise<ReadingPlan | undefined> {
+    const [plan] = await db.select().from(readingPlans).where(eq(readingPlans.id, id));
+    return plan;
+  }
+
+  async createReadingPlan(plan: InsertReadingPlan): Promise<ReadingPlan> {
+    const [created] = await db.insert(readingPlans).values(plan).returning();
+    return created;
+  }
+
+  async getReadingPlanDays(planId: number): Promise<ReadingPlanDay[]> {
+    return db.select().from(readingPlanDays)
+      .where(eq(readingPlanDays.planId, planId))
+      .orderBy(readingPlanDays.dayNumber);
+  }
+
+  async getReadingPlanDay(planId: number, dayNumber: number): Promise<ReadingPlanDay | undefined> {
+    const [day] = await db.select().from(readingPlanDays)
+      .where(and(eq(readingPlanDays.planId, planId), eq(readingPlanDays.dayNumber, dayNumber)));
+    return day;
+  }
+
+  async createReadingPlanDay(day: InsertReadingPlanDay): Promise<ReadingPlanDay> {
+    const [created] = await db.insert(readingPlanDays).values(day).returning();
+    return created;
+  }
+
+  // User Spiritual Profiles
+  async getUserSpiritualProfile(userId: string): Promise<UserSpiritualProfile | undefined> {
+    const [profile] = await db.select().from(userSpiritualProfiles)
+      .where(eq(userSpiritualProfiles.userId, userId));
+    return profile;
+  }
+
+  async upsertUserSpiritualProfile(profile: InsertUserSpiritualProfile): Promise<UserSpiritualProfile> {
+    const existing = await this.getUserSpiritualProfile(profile.userId);
+    if (existing) {
+      const [updated] = await db.update(userSpiritualProfiles)
+        .set({ ...profile, updatedAt: new Date() })
+        .where(eq(userSpiritualProfiles.userId, profile.userId))
+        .returning();
+      return updated;
+    }
+    const [created] = await db.insert(userSpiritualProfiles).values(profile).returning();
+    return created;
+  }
+
+  // User Plan Enrollments
+  async getUserPlanEnrollments(userId: string): Promise<UserPlanEnrollment[]> {
+    return db.select().from(userPlanEnrollments)
+      .where(eq(userPlanEnrollments.userId, userId))
+      .orderBy(desc(userPlanEnrollments.startedAt));
+  }
+
+  async getUserPlanEnrollment(userId: string, planId: number): Promise<UserPlanEnrollment | undefined> {
+    const [enrollment] = await db.select().from(userPlanEnrollments)
+      .where(and(eq(userPlanEnrollments.userId, userId), eq(userPlanEnrollments.planId, planId)));
+    return enrollment;
+  }
+
+  async createUserPlanEnrollment(enrollment: InsertUserPlanEnrollment): Promise<UserPlanEnrollment> {
+    const [created] = await db.insert(userPlanEnrollments).values(enrollment).returning();
+    // Increment enrollment count on plan
+    await db.update(readingPlans)
+      .set({ enrollmentCount: sql`${readingPlans.enrollmentCount} + 1` })
+      .where(eq(readingPlans.id, enrollment.planId));
+    return created;
+  }
+
+  async updateUserPlanEnrollment(id: number, updates: Partial<UserPlanEnrollment>): Promise<UserPlanEnrollment> {
+    const [updated] = await db.update(userPlanEnrollments)
+      .set(updates)
+      .where(eq(userPlanEnrollments.id, id))
+      .returning();
+    return updated;
+  }
+
+  // User Reading Progress
+  async getUserReadingProgress(enrollmentId: number): Promise<UserReadingProgress[]> {
+    return db.select().from(userReadingProgress)
+      .where(eq(userReadingProgress.enrollmentId, enrollmentId))
+      .orderBy(userReadingProgress.dayNumber);
+  }
+
+  async createUserReadingProgress(progress: InsertUserReadingProgress): Promise<UserReadingProgress> {
+    const [created] = await db.insert(userReadingProgress).values(progress).returning();
+    return created;
+  }
+
+  async completeReadingDay(enrollmentId: number, planDayId: number, journalEntry?: string): Promise<UserReadingProgress> {
+    // Get the enrollment to find the day number
+    const [enrollment] = await db.select().from(userPlanEnrollments)
+      .where(eq(userPlanEnrollments.id, enrollmentId));
+    
+    const [planDay] = await db.select().from(readingPlanDays)
+      .where(eq(readingPlanDays.id, planDayId));
+    
+    // Check if progress already exists
+    const [existing] = await db.select().from(userReadingProgress)
+      .where(and(
+        eq(userReadingProgress.enrollmentId, enrollmentId),
+        eq(userReadingProgress.planDayId, planDayId)
+      ));
+    
+    if (existing) {
+      const [updated] = await db.update(userReadingProgress)
+        .set({ completed: true, completedAt: new Date(), journalEntry: journalEntry || existing.journalEntry })
+        .where(eq(userReadingProgress.id, existing.id))
+        .returning();
+      return updated;
+    }
+    
+    const [created] = await db.insert(userReadingProgress).values({
+      userId: enrollment.userId,
+      enrollmentId,
+      planDayId,
+      dayNumber: planDay.dayNumber,
+      completed: true,
+      journalEntry,
+    }).returning();
+    
+    // Update enrollment's current day and streak
+    const now = new Date();
+    const lastRead = enrollment.lastReadAt;
+    let newStreak = enrollment.currentStreak || 0;
+    
+    if (lastRead) {
+      const daysSinceLastRead = Math.floor((now.getTime() - lastRead.getTime()) / (1000 * 60 * 60 * 24));
+      if (daysSinceLastRead <= 1) {
+        newStreak += 1;
+      } else {
+        newStreak = 1;
+      }
+    } else {
+      newStreak = 1;
+    }
+    
+    // Get the plan to check if completed
+    const plan = await this.getReadingPlan(enrollment.planId);
+    const isCompleted = planDay.dayNumber >= (plan?.durationDays || 0);
+    
+    await db.update(userPlanEnrollments)
+      .set({
+        currentDay: planDay.dayNumber + 1,
+        currentStreak: newStreak,
+        lastReadAt: now,
+        status: isCompleted ? 'completed' : 'active',
+        completedAt: isCompleted ? now : undefined,
+      })
+      .where(eq(userPlanEnrollments.id, enrollmentId));
+    
+    // Update user's spiritual profile stats
+    if (isCompleted) {
+      await db.update(userSpiritualProfiles)
+        .set({
+          completedPlansCount: sql`${userSpiritualProfiles.completedPlansCount} + 1`,
+          totalReadingDays: sql`${userSpiritualProfiles.totalReadingDays} + 1`,
+          longestStreak: sql`GREATEST(${userSpiritualProfiles.longestStreak}, ${newStreak})`,
+        })
+        .where(eq(userSpiritualProfiles.userId, enrollment.userId));
+    } else {
+      await db.update(userSpiritualProfiles)
+        .set({
+          totalReadingDays: sql`${userSpiritualProfiles.totalReadingDays} + 1`,
+          longestStreak: sql`GREATEST(${userSpiritualProfiles.longestStreak}, ${newStreak})`,
+        })
+        .where(eq(userSpiritualProfiles.userId, enrollment.userId));
+    }
+    
+    return created;
+  }
+
+  async getUserReadingStreak(userId: string): Promise<number> {
+    const enrollments = await db.select().from(userPlanEnrollments)
+      .where(eq(userPlanEnrollments.userId, userId))
+      .orderBy(desc(userPlanEnrollments.lastReadAt));
+    
+    if (enrollments.length === 0) return 0;
+    
+    // Return the highest current streak from active enrollments
+    return Math.max(...enrollments.map(e => e.currentStreak || 0));
+  }
+
+  async getRecommendedPlans(userId: string): Promise<ReadingPlan[]> {
+    const profile = await this.getUserSpiritualProfile(userId);
+    const enrollments = await this.getUserPlanEnrollments(userId);
+    const enrolledPlanIds = enrollments.map(e => e.planId);
+    
+    // Get all published plans
+    let plans = await db.select().from(readingPlans)
+      .where(eq(readingPlans.status, 'published'))
+      .orderBy(desc(readingPlans.featured), desc(readingPlans.enrollmentCount));
+    
+    // Filter out already enrolled plans
+    plans = plans.filter(p => !enrolledPlanIds.includes(p.id));
+    
+    if (!profile) {
+      return plans.slice(0, 6);
+    }
+    
+    // Score plans based on user profile
+    const scoredPlans = plans.map(plan => {
+      let score = 0;
+      
+      // Match maturity level
+      if (plan.maturityLevel === profile.maturityLevel) score += 10;
+      
+      // Match interests
+      if (profile.interests && plan.topics) {
+        const matchingTopics = plan.topics.filter(t => profile.interests!.includes(t));
+        score += matchingTopics.length * 5;
+      }
+      
+      // Boost featured plans
+      if (plan.featured) score += 3;
+      
+      return { plan, score };
+    });
+    
+    // Sort by score and return top recommendations
+    scoredPlans.sort((a, b) => b.score - a.score);
+    return scoredPlans.slice(0, 6).map(sp => sp.plan);
   }
 }
 

@@ -5619,5 +5619,228 @@ export async function registerRoutes(
     }
   });
 
+  // ===== BIBLE READING PLANS =====
+
+  // Get all reading plans with optional filters
+  app.get('/api/reading-plans', async (req, res) => {
+    try {
+      const { topic, maturityLevel, durationDays } = req.query;
+      const filters: { topic?: string; maturityLevel?: string; durationDays?: number } = {};
+      if (topic) filters.topic = topic as string;
+      if (maturityLevel) filters.maturityLevel = maturityLevel as string;
+      if (durationDays) filters.durationDays = parseInt(durationDays as string);
+      
+      const plans = await storage.getReadingPlans(filters);
+      res.json(plans);
+    } catch (error) {
+      console.error("Error fetching reading plans:", error);
+      res.status(500).json({ message: "Failed to fetch reading plans" });
+    }
+  });
+
+  // Get recommended plans for user
+  app.get('/api/reading-plans/recommended', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const plans = await storage.getRecommendedPlans(userId);
+      res.json(plans);
+    } catch (error) {
+      console.error("Error fetching recommended plans:", error);
+      res.status(500).json({ message: "Failed to fetch recommendations" });
+    }
+  });
+
+  // Get a single reading plan with days
+  app.get('/api/reading-plans/:id', async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const plan = await storage.getReadingPlan(id);
+      if (!plan) {
+        return res.status(404).json({ message: "Plan not found" });
+      }
+      const days = await storage.getReadingPlanDays(id);
+      res.json({ ...plan, days });
+    } catch (error) {
+      console.error("Error fetching reading plan:", error);
+      res.status(500).json({ message: "Failed to fetch reading plan" });
+    }
+  });
+
+  // Create a reading plan (admin only)
+  app.post('/api/reading-plans', isAuthenticated, async (req: any, res) => {
+    try {
+      const planSchema = z.object({
+        title: z.string().min(1),
+        description: z.string().min(1),
+        coverImageUrl: z.string().optional(),
+        durationDays: z.number().min(1),
+        maturityLevel: z.enum(['new-believer', 'growing', 'mature']),
+        topics: z.array(z.string()).optional(),
+        featured: z.boolean().optional(),
+        status: z.enum(['draft', 'published', 'archived']).optional(),
+      });
+      const data = planSchema.parse(req.body);
+      const plan = await storage.createReadingPlan(data);
+      res.status(201).json(plan);
+    } catch (error: any) {
+      console.error("Error creating reading plan:", error);
+      res.status(400).json({ message: error.message || "Failed to create reading plan" });
+    }
+  });
+
+  // Add a day to a reading plan (admin only)
+  app.post('/api/reading-plans/:id/days', isAuthenticated, async (req: any, res) => {
+    try {
+      const planId = parseInt(req.params.id);
+      const daySchema = z.object({
+        dayNumber: z.number().min(1),
+        title: z.string().min(1),
+        scriptureRef: z.string().min(1),
+        scriptureText: z.string().min(1),
+        devotionalContent: z.string().min(1),
+        reflectionQuestion: z.string().optional(),
+        prayerPrompt: z.string().optional(),
+        actionStep: z.string().optional(),
+      });
+      const data = daySchema.parse(req.body);
+      const day = await storage.createReadingPlanDay({ ...data, planId });
+      res.status(201).json(day);
+    } catch (error: any) {
+      console.error("Error creating reading plan day:", error);
+      res.status(400).json({ message: error.message || "Failed to add day to plan" });
+    }
+  });
+
+  // Get a specific day of a reading plan
+  app.get('/api/reading-plans/:id/days/:dayNumber', async (req, res) => {
+    try {
+      const planId = parseInt(req.params.id);
+      const dayNumber = parseInt(req.params.dayNumber);
+      const day = await storage.getReadingPlanDay(planId, dayNumber);
+      if (!day) {
+        return res.status(404).json({ message: "Day not found" });
+      }
+      res.json(day);
+    } catch (error) {
+      console.error("Error fetching reading plan day:", error);
+      res.status(500).json({ message: "Failed to fetch day" });
+    }
+  });
+
+  // ===== USER SPIRITUAL PROFILE =====
+
+  // Get user's spiritual profile
+  app.get('/api/user/spiritual-profile', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const profile = await storage.getUserSpiritualProfile(userId);
+      res.json(profile || null);
+    } catch (error) {
+      console.error("Error fetching spiritual profile:", error);
+      res.status(500).json({ message: "Failed to fetch profile" });
+    }
+  });
+
+  // Create or update user's spiritual profile
+  app.post('/api/user/spiritual-profile', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const profileSchema = z.object({
+        maturityLevel: z.enum(['new-believer', 'growing', 'mature']).optional(),
+        interests: z.array(z.string()).optional(),
+      });
+      const data = profileSchema.parse(req.body);
+      const profile = await storage.upsertUserSpiritualProfile({ userId, ...data });
+      res.json(profile);
+    } catch (error: any) {
+      console.error("Error updating spiritual profile:", error);
+      res.status(400).json({ message: error.message || "Failed to update profile" });
+    }
+  });
+
+  // ===== USER PLAN ENROLLMENTS =====
+
+  // Get user's enrolled plans
+  app.get('/api/user/reading-plans', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const enrollments = await storage.getUserPlanEnrollments(userId);
+      
+      // Fetch plan details for each enrollment
+      const enrichedEnrollments = await Promise.all(
+        enrollments.map(async (enrollment) => {
+          const plan = await storage.getReadingPlan(enrollment.planId);
+          const progress = await storage.getUserReadingProgress(enrollment.id);
+          return { ...enrollment, plan, progress };
+        })
+      );
+      
+      res.json(enrichedEnrollments);
+    } catch (error) {
+      console.error("Error fetching user's reading plans:", error);
+      res.status(500).json({ message: "Failed to fetch enrolled plans" });
+    }
+  });
+
+  // Enroll in a reading plan
+  app.post('/api/reading-plans/:id/enroll', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const planId = parseInt(req.params.id);
+      
+      // Check if already enrolled
+      const existing = await storage.getUserPlanEnrollment(userId, planId);
+      if (existing && existing.status === 'active') {
+        return res.status(400).json({ message: "Already enrolled in this plan" });
+      }
+      
+      const enrollment = await storage.createUserPlanEnrollment({ userId, planId });
+      res.status(201).json(enrollment);
+    } catch (error: any) {
+      console.error("Error enrolling in plan:", error);
+      res.status(400).json({ message: error.message || "Failed to enroll in plan" });
+    }
+  });
+
+  // Complete a reading day
+  app.post('/api/reading-plans/:planId/days/:dayNumber/complete', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const planId = parseInt(req.params.planId);
+      const dayNumber = parseInt(req.params.dayNumber);
+      const { journalEntry } = req.body;
+      
+      // Get enrollment
+      const enrollment = await storage.getUserPlanEnrollment(userId, planId);
+      if (!enrollment) {
+        return res.status(400).json({ message: "Not enrolled in this plan" });
+      }
+      
+      // Get the plan day
+      const planDay = await storage.getReadingPlanDay(planId, dayNumber);
+      if (!planDay) {
+        return res.status(404).json({ message: "Day not found" });
+      }
+      
+      const progress = await storage.completeReadingDay(enrollment.id, planDay.id, journalEntry);
+      res.json(progress);
+    } catch (error: any) {
+      console.error("Error completing reading day:", error);
+      res.status(400).json({ message: error.message || "Failed to complete day" });
+    }
+  });
+
+  // Get user's reading streak
+  app.get('/api/user/reading-streak', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const streak = await storage.getUserReadingStreak(userId);
+      res.json({ streak });
+    } catch (error) {
+      console.error("Error fetching reading streak:", error);
+      res.status(500).json({ message: "Failed to fetch streak" });
+    }
+  });
+
   return httpServer;
 }

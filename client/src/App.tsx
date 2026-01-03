@@ -68,6 +68,8 @@ const Goals = lazy(() => import("@/pages/Goals").then(m => ({ default: m.Goals }
 const ChallengesPage = lazy(() => import("@/pages/Challenges").then(m => ({ default: m.ChallengesPage })));
 const MissionTripsPublic = lazy(() => import("@/pages/MissionTripsPublic").then(m => ({ default: m.MissionTripsPublic })));
 const CoachingPublic = lazy(() => import("@/pages/CoachingPublic").then(m => ({ default: m.CoachingPublic })));
+const ReadingPlans = lazy(() => import("@/pages/ReadingPlans").then(m => ({ default: m.ReadingPlansPage })));
+const ReadingPlanDetail = lazy(() => import("@/pages/ReadingPlanDetail").then(m => ({ default: m.ReadingPlanDetail })));
 
 const AdminDashboard = lazy(() => import("@/pages/Admin").then(m => ({ default: m.AdminDashboard })));
 const AdminEvents = lazy(() => import("@/pages/AdminEvents").then(m => ({ default: m.AdminEvents })));
@@ -155,6 +157,8 @@ function Router() {
         <Route path="/pray" component={PrayHub} />
         <Route path="/pray/campus/:id" component={CampusPrayer} />
         <Route path="/pray/pods" component={PrayerPods} />
+        <Route path="/reading-plans" component={ReadingPlans} />
+        <Route path="/reading-plans/:id" component={ReadingPlanDetail} />
         <Route path="/missions" component={MissionsHub} />
         <Route path="/missions/action/:type" component={DigitalActions} />
         <Route path="/mission/onboarding" component={MissionOnboarding} />
