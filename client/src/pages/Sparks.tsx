@@ -30,10 +30,34 @@ import spark3 from "@assets/generated_images/underground_prayer_meeting.png";
 import spark4 from "@assets/generated_images/student_sharing_gospel_on_campus.png";
 import dailyBg from "@assets/generated_images/cinematic_sunrise_devotional_background.png";
 
+import identityImage from "@assets/generated_images/worship_gathering_devotional_image.png";
+import prayerImage from "@assets/generated_images/prayer_and_presence_devotional.png";
+import peaceImage from "@assets/generated_images/peace_and_calm_devotional.png";
+import boldImage from "@assets/generated_images/bold_witness_devotional_image.png";
+import commissionImage from "@assets/generated_images/commission_missions_devotional.png";
+
+const weekThemeImages: Record<string, string> = {
+  "Week 1: Identity & Belonging": identityImage,
+  "Week 2: Prayer & Presence": prayerImage,
+  "Week 3: Peace & Anxiety": peaceImage,
+  "Week 4: Bold Witness": boldImage,
+  "Week 5: Commission": commissionImage,
+};
+
 const defaultThumbnails = [spark1, spark2, spark3, spark4];
 
 function getDefaultThumbnail(index: number) {
   return defaultThumbnails[index % defaultThumbnails.length];
+}
+
+function getSparkImage(spark: Spark, fallbackIndex: number = 0) {
+  if (spark.imageUrl || spark.thumbnailUrl) {
+    return spark.imageUrl || spark.thumbnailUrl;
+  }
+  if (spark.weekTheme && weekThemeImages[spark.weekTheme]) {
+    return weekThemeImages[spark.weekTheme];
+  }
+  return getDefaultThumbnail(fallbackIndex);
 }
 
 const pillars = ["All", "daily-devotional", "worship", "testimony"];
@@ -363,7 +387,7 @@ export function SparksPage() {
       <section className="relative mt-16 md:mt-[72px] w-full">
         <div className="absolute inset-0">
           <img 
-            src={featuredSpark?.thumbnailUrl || spark1} 
+            src={featuredSpark ? getSparkImage(featuredSpark, 0) : identityImage} 
             alt="Live Spark" 
             className="w-full h-full object-cover opacity-60"
           />
@@ -463,7 +487,7 @@ export function SparksPage() {
                 className="relative aspect-video rounded-2xl overflow-hidden group cursor-pointer border border-white/10"
                 data-testid="card-today-spark"
               >
-                <img src={todaySpark.thumbnailUrl || dailyBg} alt={todaySpark.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                <img src={getSparkImage(todaySpark, 0)} alt={todaySpark.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                 <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors flex items-center justify-center">
                   <div className="h-16 w-16 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 group-hover:scale-110 transition-transform">
                     <Play className="h-8 w-8 fill-white text-white ml-1" />
@@ -837,7 +861,7 @@ export function SparksPage() {
                 data-testid={`card-spark-${spark.id}`}
               >
                 <img 
-                  src={spark.imageUrl || spark.thumbnailUrl || getDefaultThumbnail(i)} 
+                  src={getSparkImage(spark, i)} 
                   alt={spark.title} 
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-80 group-hover:opacity-100" 
                 />
@@ -1102,7 +1126,7 @@ export function SparksPage() {
               <div className="relative w-full max-w-md aspect-[9/16] bg-black rounded-[30px] overflow-hidden shadow-2xl border border-white/10 flex-shrink-0">
                 {/* Background image for all types */}
                 <img 
-                  src={selectedSpark.imageUrl || selectedSpark.thumbnailUrl || spark1} 
+                  src={getSparkImage(selectedSpark, 0)} 
                   alt={selectedSpark.title} 
                   className="w-full h-full object-cover" 
                 />

@@ -22,6 +22,25 @@ import music3 from "@assets/DappyTKeys_-_Background_Music_-_03_Background_Music_
 import music4 from "@assets/DappyTKeys_-_Background_Music_-_04_Background_Music_-_4_1767469511634.mp3";
 import music5 from "@assets/DappyTKeys_-_Background_Music_-_05_Background_Music_-_5_1767469511635.mp3";
 
+import identityImage from "@assets/generated_images/worship_gathering_devotional_image.png";
+import prayerImage from "@assets/generated_images/prayer_and_presence_devotional.png";
+import peaceImage from "@assets/generated_images/peace_and_calm_devotional.png";
+import boldImage from "@assets/generated_images/bold_witness_devotional_image.png";
+import commissionImage from "@assets/generated_images/commission_missions_devotional.png";
+
+const weekThemeImages: Record<string, string> = {
+  "Week 1: Identity & Belonging": identityImage,
+  "Week 2: Prayer & Presence": prayerImage,
+  "Week 3: Peace & Anxiety": peaceImage,
+  "Week 4: Bold Witness": boldImage,
+  "Week 5: Commission": commissionImage,
+  "identity": identityImage,
+  "prayer": prayerImage,
+  "peace": peaceImage,
+  "witness": boldImage,
+  "commission": commissionImage,
+};
+
 const backgroundTracks = [
   { id: "track1", name: "Peaceful Dawn", url: music1 },
   { id: "track2", name: "Gentle Waters", url: music2 },
@@ -261,11 +280,11 @@ export function SparkDetail() {
       <div className="relative pt-16">
         <div className="absolute inset-0 h-[50vh]">
           <img 
-            src={spark.thumbnailUrl || "/placeholder-spark.jpg"} 
+            src={spark.thumbnailUrl || (spark.weekTheme && weekThemeImages[spark.weekTheme]) || identityImage} 
             alt={spark.title}
-            className="w-full h-full object-cover opacity-40"
+            className="w-full h-full object-cover opacity-50"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/80 to-black" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/70 to-black" />
         </div>
         
         <div className="relative z-10 max-w-3xl mx-auto px-4 py-8">
@@ -309,7 +328,7 @@ export function SparkDetail() {
             className="space-y-6"
           >
             <div className="flex items-center gap-3 flex-wrap">
-              <span className="bg-primary/20 text-primary text-xs font-bold px-3 py-1.5 rounded-full border border-primary/30">
+              <span className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg">
                 {spark.weekTheme || "DOMINION Campaign"}
               </span>
               {spark.dailyDate && (
@@ -593,17 +612,68 @@ export function SparkDetail() {
               
               <AnimatePresence mode="wait">
                 {!showJournal ? (
-                  <motion.button
+                  <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    onClick={() => setShowJournal(true)}
-                    className="w-full py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-medium border border-white/10 transition-all flex items-center justify-center gap-2"
-                    data-testid="button-start-journal"
+                    className="flex flex-col gap-3"
                   >
-                    <Mic className="h-5 w-5" />
-                    Write Your Reflection
-                  </motion.button>
+                    <button
+                      onClick={() => setShowJournal(true)}
+                      className="w-full py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-medium border border-white/10 transition-all flex items-center justify-center gap-2"
+                      data-testid="button-write-reflection"
+                    >
+                      <MessageCircle className="h-5 w-5" />
+                      Write Your Reflection
+                    </button>
+                    {('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) && (
+                      <button
+                        onClick={() => {
+                          setShowJournal(true);
+                          try {
+                            const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
+                            const recognition = new SpeechRecognition();
+                            recognition.continuous = true;
+                            recognition.interimResults = true;
+                            recognition.lang = 'en-GB';
+                            
+                            recognition.onresult = (event: any) => {
+                              let transcript = '';
+                              for (let i = 0; i < event.results.length; i++) {
+                                transcript += event.results[i][0].transcript;
+                              }
+                              setJournalText(transcript);
+                            };
+                            
+                            recognition.onerror = (event: any) => {
+                              setIsRecording(false);
+                              if (event.error === 'not-allowed') {
+                                toast.error("Microphone access denied. Please allow microphone in your browser settings.");
+                              } else if (event.error === 'no-speech') {
+                                toast.info("No speech detected. Try speaking closer to the microphone.");
+                              } else {
+                                toast.error("Voice recording error. Please try again or type your reflection.");
+                              }
+                            };
+                            
+                            recognition.onend = () => setIsRecording(false);
+                            
+                            (window as any).currentRecognition = recognition;
+                            recognition.start();
+                            setIsRecording(true);
+                          } catch (err) {
+                            toast.error("Could not start voice recording. Please type your reflection instead.");
+                            setIsRecording(false);
+                          }
+                        }}
+                        className="w-full py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-medium transition-all flex items-center justify-center gap-2"
+                        data-testid="button-voice-reflection"
+                      >
+                        <Mic className="h-5 w-5" />
+                        Or Speak Your Reflection
+                      </button>
+                    )}
+                  </motion.div>
                 ) : (
                   <motion.div
                     initial={{ opacity: 0, height: 0 }}
@@ -611,6 +681,23 @@ export function SparkDetail() {
                     exit={{ opacity: 0, height: 0 }}
                     className="space-y-4"
                   >
+                    {isRecording && (
+                      <div className="flex items-center justify-center gap-3 py-4 bg-red-500/10 rounded-xl border border-red-500/30 mb-4">
+                        <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
+                        <span className="text-red-400 font-medium">Recording... Speak now</span>
+                        <button
+                          onClick={() => {
+                            if ((window as any).currentRecognition) {
+                              (window as any).currentRecognition.stop();
+                            }
+                            setIsRecording(false);
+                          }}
+                          className="ml-2 px-3 py-1 bg-red-500/20 rounded-lg text-red-400 text-sm hover:bg-red-500/30"
+                        >
+                          Stop
+                        </button>
+                      </div>
+                    )}
                     <Textarea
                       value={journalText}
                       onChange={(e) => setJournalText(e.target.value)}
@@ -621,7 +708,13 @@ export function SparkDetail() {
                     <div className="flex gap-3">
                       <Button
                         variant="outline"
-                        onClick={() => setShowJournal(false)}
+                        onClick={() => {
+                          setShowJournal(false);
+                          if ((window as any).currentRecognition) {
+                            (window as any).currentRecognition.stop();
+                          }
+                          setIsRecording(false);
+                        }}
                         className="flex-1 border-white/20 text-white hover:bg-white/10"
                       >
                         Cancel
