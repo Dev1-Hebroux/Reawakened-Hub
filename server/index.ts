@@ -4,6 +4,7 @@ import { serveStatic } from "./static";
 import { createServer } from "http";
 import path from "path";
 import { fileURLToPath } from "url";
+import { securityHeaders } from "./securityHeaders";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -16,6 +17,8 @@ declare module "http" {
     rawBody: unknown;
   }
 }
+
+app.use(securityHeaders);
 
 app.use(
   express.json({
