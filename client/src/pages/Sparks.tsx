@@ -373,7 +373,7 @@ export function SparksPage() {
       <GamificationBar />
       
       {/* Hero / Live Now Section */}
-      <section className="relative pt-20 md:pt-24 min-h-[70vh] md:min-h-[80vh] w-full overflow-hidden">
+      <section className="relative min-h-[60vh] md:min-h-[70vh] w-full overflow-hidden">
         <div className="absolute inset-0">
           <img 
             src={featuredSpark?.thumbnailUrl || spark1} 
@@ -383,7 +383,7 @@ export function SparksPage() {
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
         </div>
         
-        <div className="absolute left-0 right-0 bottom-0 top-20 md:top-24 flex items-end p-6 md:p-12 max-w-7xl mx-auto w-full">
+        <div className="absolute inset-0 flex items-end p-6 md:p-12 max-w-7xl mx-auto w-full">
           <div className="w-full md:w-1/2 space-y-4">
              <div className="flex items-center gap-2">
                <span className="bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider animate-pulse flex items-center gap-1">

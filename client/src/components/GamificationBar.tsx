@@ -56,7 +56,7 @@ export function GamificationBar() {
 
   if (!isAuthenticated) {
     return (
-      <div className="border-b" style={{ backgroundColor: 'rgba(15, 26, 25, 0.8)', borderColor: 'rgba(250, 248, 245, 0.08)' }}>
+      <div className="border-b mt-16 md:mt-[72px]" style={{ backgroundColor: 'rgba(15, 26, 25, 0.8)', borderColor: 'rgba(250, 248, 245, 0.08)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
           <div className="flex items-center justify-center gap-3" style={{ color: 'rgba(250, 248, 245, 0.5)' }}>
             <Flame className="h-4 w-4" style={{ color: '#7C9A8E' }} />
@@ -71,7 +71,7 @@ export function GamificationBar() {
   const earnedBadgeCodes = progress?.badges?.map(b => b.badge?.code) || [];
 
   return (
-    <div className="border-b" style={{ backgroundColor: 'rgba(15, 26, 25, 0.6)', borderColor: 'rgba(250, 248, 245, 0.08)' }}>
+    <div className="border-b mt-16 md:mt-[72px]" style={{ backgroundColor: 'rgba(15, 26, 25, 0.6)', borderColor: 'rgba(250, 248, 245, 0.08)' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-5">
