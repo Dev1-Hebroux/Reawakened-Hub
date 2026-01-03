@@ -1,9 +1,12 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { z } from "zod";
+import OpenAI from "openai";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated, isAdmin, isSuperAdmin } from "./replitAuth";
 import { getAICoachInsights, type AICoachRequest } from "./ai-service";
+
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 import { sendWelcomeEmail, sendPrayerRequestNotification } from "./email";
 import { insertPostSchema, insertReactionSchema, insertSparkSchema, insertSparkReactionSchema, insertSparkSubscriptionSchema, insertEventSchema, insertEventRegistrationSchema, insertBlogPostSchema, insertEmailSubscriptionSchema, insertPrayerRequestSchema, insertTestimonySchema, insertVolunteerSignupSchema, insertMissionRegistrationSchema, insertJourneySchema, insertJourneyDaySchema, insertJourneyStepSchema, insertAlphaCohortSchema, insertAlphaCohortWeekSchema, insertAlphaCohortParticipantSchema, insertMissionProfileSchema, insertMissionPlanSchema, insertMissionAdoptionSchema, insertMissionPrayerSessionSchema, insertOpportunityInterestSchema, insertDigitalActionSchema, insertProjectFollowSchema, insertChallengeEnrollmentSchema, insertMissionTestimonySchema, insertChallengeSchema, insertUserSettingsSchema, insertCommentSchema, insertNotificationPreferencesSchema } from "@shared/schema";
 
@@ -331,6 +334,43 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Error fetching streak:", error);
       res.status(500).json({ message: "Failed to fetch streak" });
+    }
+  });
+
+  // ===== TEXT-TO-SPEECH (TTS) =====
+  
+  // Generate natural voice audio from text using OpenAI TTS
+  app.post('/api/tts/generate', async (req, res) => {
+    try {
+      const { text, voice = 'nova' } = req.body;
+      
+      if (!text || typeof text !== 'string') {
+        return res.status(400).json({ message: "Text is required" });
+      }
+      
+      // Limit text length to avoid excessive API costs
+      const truncatedText = text.slice(0, 4096);
+      
+      const mp3 = await openai.audio.speech.create({
+        model: "tts-1-hd",
+        voice: voice as 'alloy' | 'echo' | 'fable' | 'onyx' | 'nova' | 'shimmer',
+        input: truncatedText,
+        speed: 0.95,
+      });
+      
+      // Get the audio buffer
+      const buffer = Buffer.from(await mp3.arrayBuffer());
+      
+      res.set({
+        'Content-Type': 'audio/mpeg',
+        'Content-Length': buffer.length,
+        'Cache-Control': 'public, max-age=86400',
+      });
+      
+      res.send(buffer);
+    } catch (error: any) {
+      console.error("Error generating TTS:", error);
+      res.status(500).json({ message: error.message || "Failed to generate audio" });
     }
   });
 
@@ -4967,6 +5007,209 @@ export async function registerRoutes(
     } catch (error: any) {
       console.error("Error sending welcome email:", error);
       res.status(500).json({ message: error.message || "Failed to send welcome email" });
+    }
+  });
+
+  // ===== PRAYER PODS (Partner Finder) =====
+
+  // Get available prayer pods
+  app.get('/api/prayer-pods', async (req, res) => {
+    try {
+      const status = req.query.status as string | undefined;
+      const pods = await storage.getPrayerPods(status);
+      res.json(pods);
+    } catch (error) {
+      console.error("Error fetching prayer pods:", error);
+      res.status(500).json({ message: "Failed to fetch prayer pods" });
+    }
+  });
+
+  // Get user's prayer pods
+  app.get('/api/prayer-pods/my-pods', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const pods = await storage.getUserPrayerPods(userId);
+      res.json(pods);
+    } catch (error) {
+      console.error("Error fetching user's prayer pods:", error);
+      res.status(500).json({ message: "Failed to fetch your pods" });
+    }
+  });
+
+  // Get single prayer pod
+  app.get('/api/prayer-pods/:id', async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const pod = await storage.getPrayerPod(id);
+      if (!pod) {
+        return res.status(404).json({ message: "Pod not found" });
+      }
+      res.json(pod);
+    } catch (error) {
+      console.error("Error fetching prayer pod:", error);
+      res.status(500).json({ message: "Failed to fetch prayer pod" });
+    }
+  });
+
+  // Create a new prayer pod
+  app.post('/api/prayer-pods', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const podData = { ...req.body, createdBy: userId };
+      const pod = await storage.createPrayerPod(podData);
+      await storage.createPrayerPodMember({ podId: pod.id, userId, role: 'leader' });
+      res.status(201).json(pod);
+    } catch (error: any) {
+      console.error("Error creating prayer pod:", error);
+      res.status(400).json({ message: error.message || "Failed to create pod" });
+    }
+  });
+
+  // Get pod members
+  app.get('/api/prayer-pods/:id/members', async (req, res) => {
+    try {
+      const podId = parseInt(req.params.id);
+      const members = await storage.getPrayerPodMembers(podId);
+      res.json(members);
+    } catch (error) {
+      console.error("Error fetching pod members:", error);
+      res.status(500).json({ message: "Failed to fetch members" });
+    }
+  });
+
+  // Join a pod (with safety checks)
+  app.post('/api/prayer-pods/:id/join', isAuthenticated, async (req: any, res) => {
+    try {
+      const podId = parseInt(req.params.id);
+      const userId = req.user.claims.sub;
+      
+      const existing = await storage.getPrayerPodMember(podId, userId);
+      if (existing) {
+        return res.status(400).json({ message: "Already a member of this pod" });
+      }
+      
+      const pod = await storage.getPrayerPod(podId);
+      if (!pod) {
+        return res.status(404).json({ message: "Pod not found" });
+      }
+      
+      const members = await storage.getPrayerPodMembers(podId);
+      if (members.length >= (pod.capacity || 6)) {
+        return res.status(400).json({ message: "Pod is full" });
+      }
+      
+      const member = await storage.createPrayerPodMember({ podId, userId, role: 'member' });
+      res.status(201).json(member);
+    } catch (error: any) {
+      console.error("Error joining pod:", error);
+      res.status(400).json({ message: error.message || "Failed to join pod" });
+    }
+  });
+
+  // Leave a pod
+  app.delete('/api/prayer-pods/:id/leave', isAuthenticated, async (req: any, res) => {
+    try {
+      const podId = parseInt(req.params.id);
+      const userId = req.user.claims.sub;
+      
+      const member = await storage.getPrayerPodMember(podId, userId);
+      if (!member) {
+        return res.status(404).json({ message: "Not a member of this pod" });
+      }
+      
+      await storage.deletePrayerPodMember(member.id);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error leaving pod:", error);
+      res.status(500).json({ message: "Failed to leave pod" });
+    }
+  });
+
+  // Get pod messages
+  app.get('/api/prayer-pods/:id/messages', isAuthenticated, async (req: any, res) => {
+    try {
+      const podId = parseInt(req.params.id);
+      const userId = req.user.claims.sub;
+      
+      const member = await storage.getPrayerPodMember(podId, userId);
+      if (!member) {
+        return res.status(403).json({ message: "Not a member of this pod" });
+      }
+      
+      const limit = parseInt(req.query.limit as string) || 50;
+      const messages = await storage.getPrayerPodMessages(podId, limit);
+      res.json(messages);
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+      res.status(500).json({ message: "Failed to fetch messages" });
+    }
+  });
+
+  // Send message to pod
+  app.post('/api/prayer-pods/:id/messages', isAuthenticated, async (req: any, res) => {
+    try {
+      const podId = parseInt(req.params.id);
+      const userId = req.user.claims.sub;
+      
+      const member = await storage.getPrayerPodMember(podId, userId);
+      if (!member) {
+        return res.status(403).json({ message: "Not a member of this pod" });
+      }
+      
+      if (member.isMuted) {
+        return res.status(403).json({ message: "You are muted in this pod" });
+      }
+      
+      const { content, type, isAnonymous } = req.body;
+      const message = await storage.createPrayerPodMessage({ podId, userId, content, type, isAnonymous });
+      res.status(201).json(message);
+    } catch (error: any) {
+      console.error("Error sending message:", error);
+      res.status(400).json({ message: error.message || "Failed to send message" });
+    }
+  });
+
+  // Report a member (safety feature)
+  app.post('/api/prayer-pods/:id/report', isAuthenticated, async (req: any, res) => {
+    try {
+      const podId = parseInt(req.params.id);
+      const reporterId = req.user.claims.sub;
+      const { reportedUserId, category, description } = req.body;
+      
+      const report = await storage.createPrayerPodReport({
+        reporterId,
+        podId,
+        reportedUserId,
+        category,
+        description,
+      });
+      res.status(201).json({ message: "Report submitted for review" });
+    } catch (error: any) {
+      console.error("Error submitting report:", error);
+      res.status(400).json({ message: error.message || "Failed to submit report" });
+    }
+  });
+
+  // Get/update user's pod preferences
+  app.get('/api/prayer-pods/preferences/me', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const prefs = await storage.getPrayerPodPreferences(userId);
+      res.json(prefs || {});
+    } catch (error) {
+      console.error("Error fetching preferences:", error);
+      res.status(500).json({ message: "Failed to fetch preferences" });
+    }
+  });
+
+  app.put('/api/prayer-pods/preferences/me', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const prefs = await storage.upsertPrayerPodPreferences({ ...req.body, userId });
+      res.json(prefs);
+    } catch (error: any) {
+      console.error("Error updating preferences:", error);
+      res.status(400).json({ message: error.message || "Failed to update preferences" });
     }
   });
 

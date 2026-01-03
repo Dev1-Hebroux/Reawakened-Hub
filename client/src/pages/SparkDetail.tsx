@@ -50,7 +50,8 @@ export function SparkDetail() {
   const [streak, setStreak] = useState(0);
   
   const audioRef = useRef<HTMLAudioElement>(null);
-  const speechRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const ttsAudioRef = useRef<HTMLAudioElement | null>(null);
+  const [isLoadingTTS, setIsLoadingTTS] = useState(false);
 
   const { data: spark, isLoading } = useQuery<Spark>({
     queryKey: ["/api/sparks", sparkId],
@@ -154,28 +155,67 @@ export function SparkDetail() {
     setIsPlaying(!isPlaying);
   };
 
-  const startTextToSpeech = () => {
+  const startTextToSpeech = async () => {
     if (!spark?.fullTeaching) return;
     
-    if (isSpeaking) {
-      window.speechSynthesis.cancel();
+    if (isSpeaking && ttsAudioRef.current) {
+      ttsAudioRef.current.pause();
+      ttsAudioRef.current = null;
       setIsSpeaking(false);
+      if (audioRef.current) {
+        audioRef.current.pause();
+        setIsPlaying(false);
+      }
       return;
     }
 
-    const utterance = new SpeechSynthesisUtterance(spark.fullTeaching);
-    utterance.rate = 0.9;
-    utterance.pitch = 1;
-    utterance.onend = () => setIsSpeaking(false);
-    utterance.onerror = () => setIsSpeaking(false);
+    setIsLoadingTTS(true);
     
-    speechRef.current = utterance;
-    window.speechSynthesis.speak(utterance);
-    setIsSpeaking(true);
-    
-    if (audioRef.current && !isPlaying) {
-      audioRef.current.play();
-      setIsPlaying(true);
+    try {
+      const response = await fetch('/api/tts/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          text: spark.fullTeaching,
+          voice: 'nova'
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to generate audio');
+      }
+      
+      const audioBlob = await response.blob();
+      const audioUrl = URL.createObjectURL(audioBlob);
+      
+      const ttsAudio = new Audio(audioUrl);
+      ttsAudioRef.current = ttsAudio;
+      
+      ttsAudio.onended = () => {
+        setIsSpeaking(false);
+        URL.revokeObjectURL(audioUrl);
+        ttsAudioRef.current = null;
+      };
+      
+      ttsAudio.onerror = () => {
+        setIsSpeaking(false);
+        setIsLoadingTTS(false);
+        toast.error("Audio playback failed");
+      };
+      
+      await ttsAudio.play();
+      setIsSpeaking(true);
+      
+      if (audioRef.current && !isPlaying) {
+        audioRef.current.volume = 0.3;
+        audioRef.current.play();
+        setIsPlaying(true);
+      }
+    } catch (error) {
+      console.error("TTS error:", error);
+      toast.error("Could not generate audio");
+    } finally {
+      setIsLoadingTTS(false);
     }
   };
 
@@ -298,80 +338,123 @@ export function SparkDetail() {
                 className="relative"
               >
                 <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-primary via-primary/60 to-transparent rounded-full" />
-                <blockquote className="pl-6 text-xl md:text-2xl font-display leading-relaxed text-white/90 italic">
+                <blockquote className="pl-6 text-xl md:text-2xl font-display leading-relaxed text-white italic">
                   "{spark.fullPassage}"
                 </blockquote>
               </motion.div>
             )}
             
-            <div className="flex items-center gap-4 py-4">
-              <div className="relative">
-                <button
-                  onClick={togglePlayback}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-full font-medium transition-all ${
-                    isPlaying 
-                      ? 'bg-primary text-white' 
-                      : 'bg-white/10 text-white hover:bg-white/20 border border-white/10'
-                  }`}
-                  data-testid="button-play-music"
-                >
-                  {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-                  {isPlaying ? "Pause Music" : "Background Music"}
-                </button>
+            {/* Unified Audio Player */}
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="bg-gradient-to-r from-primary/20 via-primary/10 to-transparent rounded-2xl p-5 border border-primary/30 backdrop-blur-sm"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <motion.button
+                    whileTap={{ scale: 0.9 }}
+                    onClick={startTextToSpeech}
+                    disabled={isLoadingTTS}
+                    className={`h-14 w-14 rounded-full flex items-center justify-center transition-all shadow-lg ${
+                      isLoadingTTS 
+                        ? 'bg-gray-600 text-white cursor-wait'
+                        : isSpeaking 
+                          ? 'bg-primary text-white shadow-primary/40' 
+                          : 'bg-white text-black hover:scale-105'
+                    }`}
+                    data-testid="button-play-devotional"
+                  >
+                    {isLoadingTTS ? (
+                      <div className="h-6 w-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    ) : isSpeaking ? (
+                      <Pause className="h-6 w-6" />
+                    ) : (
+                      <Play className="h-6 w-6 ml-0.5" />
+                    )}
+                  </motion.button>
+                  
+                  <div>
+                    <p className="text-white font-semibold">
+                      {isLoadingTTS ? "Generating Audio..." : isSpeaking ? "Playing Devotional" : "Listen to Devotional"}
+                    </p>
+                    <p className="text-white/60 text-sm">
+                      {isLoadingTTS ? "Please wait a moment" : isSpeaking ? `with ${selectedTrack.name}` : "Natural voice + ambient music"}
+                    </p>
+                  </div>
+                </div>
                 
-                <button
-                  onClick={() => setShowTrackPicker(!showTrackPicker)}
-                  className="ml-2 p-2 rounded-full bg-white/5 hover:bg-white/10 transition-all"
-                >
-                  {showTrackPicker ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                </button>
-                
-                <AnimatePresence>
-                  {showTrackPicker && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className="absolute top-full left-0 mt-2 w-48 bg-gray-900/95 backdrop-blur-md rounded-xl border border-white/10 overflow-hidden shadow-2xl z-20"
+                <div className="flex items-center gap-2">
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowTrackPicker(!showTrackPicker)}
+                      className="flex items-center gap-2 px-3 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white text-sm font-medium transition-all border border-white/10"
                     >
-                      {backgroundTracks.map((track) => (
-                        <button
-                          key={track.id}
-                          onClick={() => {
-                            setSelectedTrack(track);
-                            setShowTrackPicker(false);
-                            if (isPlaying && audioRef.current) {
-                              audioRef.current.src = track.url;
-                              audioRef.current.play();
-                            }
-                          }}
-                          className={`w-full px-4 py-3 text-left text-sm transition-colors ${
-                            selectedTrack.id === track.id 
-                              ? 'bg-primary/20 text-primary' 
-                              : 'text-white/70 hover:bg-white/10 hover:text-white'
-                          }`}
+                      <Volume2 className="h-4 w-4" />
+                      <span className="hidden sm:inline">{selectedTrack.name}</span>
+                      {showTrackPicker ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                    </button>
+                    
+                    <AnimatePresence>
+                      {showTrackPicker && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                          className="absolute top-full right-0 mt-2 w-52 bg-gray-900/98 backdrop-blur-xl rounded-xl border border-white/20 overflow-hidden shadow-2xl z-20"
                         >
-                          {track.name}
-                        </button>
-                      ))}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                          <div className="px-4 py-3 border-b border-white/10">
+                            <p className="text-xs font-bold text-white/50 uppercase tracking-wider">Ambient Music</p>
+                          </div>
+                          {backgroundTracks.map((track) => (
+                            <button
+                              key={track.id}
+                              onClick={() => {
+                                setSelectedTrack(track);
+                                setShowTrackPicker(false);
+                                if (audioRef.current) {
+                                  audioRef.current.src = track.url;
+                                  if (isPlaying || isSpeaking) {
+                                    audioRef.current.play();
+                                  }
+                                }
+                              }}
+                              className={`w-full px-4 py-3 text-left text-sm transition-all flex items-center gap-3 ${
+                                selectedTrack.id === track.id 
+                                  ? 'bg-primary/20 text-primary' 
+                                  : 'text-white hover:bg-white/10'
+                              }`}
+                            >
+                              <div className={`h-2 w-2 rounded-full ${selectedTrack.id === track.id ? 'bg-primary' : 'bg-white/30'}`} />
+                              {track.name}
+                            </button>
+                          ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                </div>
               </div>
               
-              <button
-                onClick={startTextToSpeech}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-full font-medium transition-all ${
-                  isSpeaking 
-                    ? 'bg-green-600 text-white' 
-                    : 'bg-white/10 text-white hover:bg-white/20 border border-white/10'
-                }`}
-                data-testid="button-listen"
-              >
-                {isSpeaking ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-                {isSpeaking ? "Stop Reading" : "Listen"}
-              </button>
-            </div>
+              {isSpeaking && (
+                <motion.div 
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  className="mt-4 flex items-center gap-3"
+                >
+                  <div className="flex-1 h-1 bg-white/20 rounded-full overflow-hidden">
+                    <motion.div 
+                      className="h-full bg-primary"
+                      initial={{ width: "0%" }}
+                      animate={{ width: "100%" }}
+                      transition={{ duration: 60, ease: "linear" }}
+                    />
+                  </div>
+                  <span className="text-xs text-white/60">Reading...</span>
+                </motion.div>
+              )}
+            </motion.div>
           </motion.div>
           
           <div className="flex items-center gap-2 border-b border-white/10 mt-8">
@@ -382,7 +465,7 @@ export function SparkDetail() {
                 className={`px-4 py-3 text-sm font-medium transition-all capitalize ${
                   activeSection === section 
                     ? 'text-primary border-b-2 border-primary' 
-                    : 'text-white/60 hover:text-white'
+                    : 'text-gray-300 hover:text-white'
                 }`}
                 data-testid={`tab-${section}`}
               >
@@ -406,7 +489,7 @@ export function SparkDetail() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.1 }}
-                    className="text-white/85 leading-relaxed mb-6"
+                    className="text-white leading-relaxed mb-6 text-lg"
                   >
                     {paragraph}
                   </motion.p>
@@ -420,7 +503,7 @@ export function SparkDetail() {
                   <Sparkles className="h-5 w-5" />
                   <h3 className="font-bold">Historical Context</h3>
                 </div>
-                <p className="text-white/80 leading-relaxed">{spark.contextBackground}</p>
+                <p className="text-white leading-relaxed text-lg">{spark.contextBackground}</p>
               </div>
             )}
             
@@ -437,7 +520,7 @@ export function SparkDetail() {
                     <div className="h-8 w-8 bg-primary/20 rounded-full flex items-center justify-center text-primary font-bold text-sm flex-shrink-0">
                       {i + 1}
                     </div>
-                    <p className="text-white/85 leading-relaxed pt-1">{point}</p>
+                    <p className="text-white leading-relaxed pt-1">{point}</p>
                   </motion.div>
                 ))}
               </div>
@@ -464,7 +547,7 @@ export function SparkDetail() {
                 )}
               </div>
               
-              <p className="text-white/90 leading-relaxed mb-6">{spark.todayAction}</p>
+              <p className="text-white leading-relaxed mb-6 text-lg">{spark.todayAction}</p>
               
               <motion.button
                 whileTap={{ scale: 0.95 }}
@@ -504,7 +587,7 @@ export function SparkDetail() {
                 <h3 className="font-bold">Reflection Question</h3>
               </div>
               
-              <p className="text-white/90 text-lg leading-relaxed mb-6 italic">
+              <p className="text-white text-lg leading-relaxed mb-6 italic">
                 "{spark.reflectionQuestion}"
               </p>
               
@@ -570,7 +653,7 @@ export function SparkDetail() {
                 <Heart className="h-5 w-5" />
                 <h3 className="font-bold">Real-Life Moment</h3>
               </div>
-              <p className="text-white/85 leading-relaxed italic">{spark.scenarioVignette}</p>
+              <p className="text-white leading-relaxed italic text-lg">{spark.scenarioVignette}</p>
             </motion.div>
           )}
           

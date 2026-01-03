@@ -387,12 +387,6 @@ import {
   type TripApplication,
   type InsertTripApplication,
   goalTemplates,
-  visionGoals,
-  visionHabits,
-  habitLogs,
-  tracks,
-  modules,
-  pathwaySessions,
   type GoalTemplate,
   type InsertGoalTemplate,
   userSettings,
@@ -425,6 +419,27 @@ import {
   type InsertPrayerLog,
   type PrayerReminder,
   type InsertPrayerReminder,
+  prayerPods,
+  prayerPodMembers,
+  prayerPodPreferences,
+  prayerPodRequests,
+  prayerPodReports,
+  prayerPodMessages,
+  prayerPodSessions,
+  type PrayerPod,
+  type InsertPrayerPod,
+  type PrayerPodMember,
+  type InsertPrayerPodMember,
+  type PrayerPodPreferences,
+  type InsertPrayerPodPreferences,
+  type PrayerPodRequest,
+  type InsertPrayerPodRequest,
+  type PrayerPodReport,
+  type InsertPrayerPodReport,
+  type PrayerPodMessage,
+  type InsertPrayerPodMessage,
+  type PrayerPodSession,
+  type InsertPrayerPodSession,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, sql, inArray, count, ilike, or, gte } from "drizzle-orm";
@@ -910,6 +925,26 @@ export interface IStorage {
   // Prayer Logs
   createPrayerLog(log: InsertPrayerLog): Promise<PrayerLog>;
   getPrayerStats(): Promise<{ totalHours: number; totalIntercessors: number; campusesCovered: number }>;
+
+  // ===== PRAYER PODS =====
+  getPrayerPods(status?: string): Promise<PrayerPod[]>;
+  getPrayerPod(id: number): Promise<PrayerPod | undefined>;
+  createPrayerPod(pod: InsertPrayerPod): Promise<PrayerPod>;
+  updatePrayerPod(id: number, updates: Partial<InsertPrayerPod>): Promise<PrayerPod>;
+  getPrayerPodMembers(podId: number): Promise<PrayerPodMember[]>;
+  getPrayerPodMember(podId: number, userId: string): Promise<PrayerPodMember | undefined>;
+  createPrayerPodMember(member: InsertPrayerPodMember): Promise<PrayerPodMember>;
+  updatePrayerPodMember(id: number, updates: Partial<InsertPrayerPodMember>): Promise<PrayerPodMember>;
+  deletePrayerPodMember(id: number): Promise<void>;
+  getPrayerPodPreferences(userId: string): Promise<PrayerPodPreferences | undefined>;
+  upsertPrayerPodPreferences(prefs: InsertPrayerPodPreferences): Promise<PrayerPodPreferences>;
+  createPrayerPodRequest(request: InsertPrayerPodRequest): Promise<PrayerPodRequest>;
+  getPrayerPodRequests(podId: number): Promise<PrayerPodRequest[]>;
+  updatePrayerPodRequest(id: number, updates: Partial<InsertPrayerPodRequest>): Promise<PrayerPodRequest>;
+  createPrayerPodReport(report: InsertPrayerPodReport): Promise<PrayerPodReport>;
+  getPrayerPodMessages(podId: number, limit?: number): Promise<PrayerPodMessage[]>;
+  createPrayerPodMessage(message: InsertPrayerPodMessage): Promise<PrayerPodMessage>;
+  getUserPrayerPods(userId: string): Promise<PrayerPod[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -4246,6 +4281,99 @@ export class DatabaseStorage implements IStorage {
       totalIntercessors: Number(intercessorsResult?.count || 0),
       campusesCovered: Number(campusesResult?.count || 0),
     };
+  }
+
+  // ===== PRAYER PODS =====
+  async getPrayerPods(status?: string): Promise<PrayerPod[]> {
+    if (status) {
+      return db.select().from(prayerPods).where(eq(prayerPods.status, status)).orderBy(desc(prayerPods.createdAt));
+    }
+    return db.select().from(prayerPods).where(eq(prayerPods.status, 'active')).orderBy(desc(prayerPods.createdAt));
+  }
+
+  async getPrayerPod(id: number): Promise<PrayerPod | undefined> {
+    const [pod] = await db.select().from(prayerPods).where(eq(prayerPods.id, id));
+    return pod;
+  }
+
+  async createPrayerPod(pod: InsertPrayerPod): Promise<PrayerPod> {
+    const [created] = await db.insert(prayerPods).values(pod).returning();
+    return created;
+  }
+
+  async updatePrayerPod(id: number, updates: Partial<InsertPrayerPod>): Promise<PrayerPod> {
+    const [updated] = await db.update(prayerPods).set({ ...updates, updatedAt: new Date() }).where(eq(prayerPods.id, id)).returning();
+    return updated;
+  }
+
+  async getPrayerPodMembers(podId: number): Promise<PrayerPodMember[]> {
+    return db.select().from(prayerPodMembers).where(eq(prayerPodMembers.podId, podId));
+  }
+
+  async getPrayerPodMember(podId: number, userId: string): Promise<PrayerPodMember | undefined> {
+    const [member] = await db.select().from(prayerPodMembers).where(and(eq(prayerPodMembers.podId, podId), eq(prayerPodMembers.userId, userId)));
+    return member;
+  }
+
+  async createPrayerPodMember(member: InsertPrayerPodMember): Promise<PrayerPodMember> {
+    const [created] = await db.insert(prayerPodMembers).values(member).returning();
+    return created;
+  }
+
+  async updatePrayerPodMember(id: number, updates: Partial<InsertPrayerPodMember>): Promise<PrayerPodMember> {
+    const [updated] = await db.update(prayerPodMembers).set({ ...updates, lastActiveAt: new Date() }).where(eq(prayerPodMembers.id, id)).returning();
+    return updated;
+  }
+
+  async deletePrayerPodMember(id: number): Promise<void> {
+    await db.delete(prayerPodMembers).where(eq(prayerPodMembers.id, id));
+  }
+
+  async getPrayerPodPreferences(userId: string): Promise<PrayerPodPreferences | undefined> {
+    const [prefs] = await db.select().from(prayerPodPreferences).where(eq(prayerPodPreferences.userId, userId));
+    return prefs;
+  }
+
+  async upsertPrayerPodPreferences(prefs: InsertPrayerPodPreferences): Promise<PrayerPodPreferences> {
+    const [result] = await db.insert(prayerPodPreferences).values(prefs)
+      .onConflictDoUpdate({ target: prayerPodPreferences.userId, set: { ...prefs, updatedAt: new Date() } })
+      .returning();
+    return result;
+  }
+
+  async createPrayerPodRequest(request: InsertPrayerPodRequest): Promise<PrayerPodRequest> {
+    const [created] = await db.insert(prayerPodRequests).values(request).returning();
+    return created;
+  }
+
+  async getPrayerPodRequests(podId: number): Promise<PrayerPodRequest[]> {
+    return db.select().from(prayerPodRequests).where(eq(prayerPodRequests.podId, podId));
+  }
+
+  async updatePrayerPodRequest(id: number, updates: Partial<InsertPrayerPodRequest>): Promise<PrayerPodRequest> {
+    const [updated] = await db.update(prayerPodRequests).set({ ...updates, reviewedAt: new Date() }).where(eq(prayerPodRequests.id, id)).returning();
+    return updated;
+  }
+
+  async createPrayerPodReport(report: InsertPrayerPodReport): Promise<PrayerPodReport> {
+    const [created] = await db.insert(prayerPodReports).values(report).returning();
+    return created;
+  }
+
+  async getPrayerPodMessages(podId: number, limit: number = 50): Promise<PrayerPodMessage[]> {
+    return db.select().from(prayerPodMessages).where(eq(prayerPodMessages.podId, podId)).orderBy(desc(prayerPodMessages.createdAt)).limit(limit);
+  }
+
+  async createPrayerPodMessage(message: InsertPrayerPodMessage): Promise<PrayerPodMessage> {
+    const [created] = await db.insert(prayerPodMessages).values(message).returning();
+    return created;
+  }
+
+  async getUserPrayerPods(userId: string): Promise<PrayerPod[]> {
+    const memberships = await db.select().from(prayerPodMembers).where(and(eq(prayerPodMembers.userId, userId), eq(prayerPodMembers.status, 'active')));
+    if (memberships.length === 0) return [];
+    const podIds = memberships.map(m => m.podId);
+    return db.select().from(prayerPods).where(inArray(prayerPods.id, podIds));
   }
 }
 

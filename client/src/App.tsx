@@ -54,6 +54,7 @@ const FeedbackResponse = lazy(() => import("@/pages/FeedbackResponse").then(m =>
 const CoachingLabs = lazy(() => import("@/pages/CoachingLabs").then(m => ({ default: m.CoachingLabs })));
 const GroupLabs = lazy(() => import("@/pages/GroupLabs").then(m => ({ default: m.GroupLabs })));
 const CampusPrayer = lazy(() => import("@/pages/CampusPrayer").then(m => ({ default: m.CampusPrayer })));
+const PrayerPods = lazy(() => import("@/pages/PrayerPods"));
 const MissionsHub = lazy(() => import("@/pages/MissionsHub").then(m => ({ default: m.MissionsHub })));
 const GiveHub = lazy(() => import("@/pages/GiveHub").then(m => ({ default: m.GiveHub })));
 const MovementHub = lazy(() => import("@/pages/MovementHub").then(m => ({ default: m.MovementHub })));
@@ -153,6 +154,7 @@ function Router() {
         <Route path="/vision/:sessionId/tools/group-labs" component={GroupLabs} />
         <Route path="/pray" component={PrayHub} />
         <Route path="/pray/campus/:id" component={CampusPrayer} />
+        <Route path="/pray/pods" component={PrayerPods} />
         <Route path="/missions" component={MissionsHub} />
         <Route path="/missions/action/:type" component={DigitalActions} />
         <Route path="/mission/onboarding" component={MissionOnboarding} />

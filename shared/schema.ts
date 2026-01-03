@@ -2766,3 +2766,143 @@ export const prayerReminders = pgTable("prayer_reminders", {
 export const insertPrayerReminderSchema = createInsertSchema(prayerReminders).omit({ id: true, createdAt: true });
 export type InsertPrayerReminder = z.infer<typeof insertPrayerReminderSchema>;
 export type PrayerReminder = typeof prayerReminders.$inferSelect;
+
+// ===== PRAYER PARTNER/POD FINDER =====
+
+// Prayer Pods - Small groups for shared prayer
+export const prayerPods = pgTable("prayer_pods", {
+  id: serial("id").primaryKey(),
+  name: varchar("name").notNull(),
+  description: text("description"),
+  region: varchar("region"),
+  ageBracketMin: integer("age_bracket_min").default(15),
+  ageBracketMax: integer("age_bracket_max").default(99),
+  meetingFormat: varchar("meeting_format").default("text"), // 'text', 'audio', 'video'
+  status: varchar("status").default("active"), // 'active', 'full', 'paused', 'archived'
+  visibility: varchar("visibility").default("public"), // 'public', 'private', 'invite-only'
+  capacity: integer("capacity").default(6),
+  prayerTopics: text("prayer_topics").array(),
+  meetingDays: text("meeting_days").array(), // ['monday', 'wednesday', 'friday']
+  meetingTime: varchar("meeting_time"), // '19:00'
+  createdBy: varchar("created_by").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertPrayerPodSchema = createInsertSchema(prayerPods).omit({ id: true, createdAt: true, updatedAt: true });
+export type InsertPrayerPod = z.infer<typeof insertPrayerPodSchema>;
+export type PrayerPod = typeof prayerPods.$inferSelect;
+
+// Prayer Pod Members - Users in a pod
+export const prayerPodMembers = pgTable("prayer_pod_members", {
+  id: serial("id").primaryKey(),
+  podId: integer("pod_id").notNull().references(() => prayerPods.id, { onDelete: 'cascade' }),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  role: varchar("role").default("member"), // 'member', 'leader', 'co-leader'
+  displayName: varchar("display_name"), // Anonymous display name
+  status: varchar("status").default("active"), // 'active', 'muted', 'left', 'removed'
+  isMuted: boolean("is_muted").default(false),
+  notificationsEnabled: boolean("notifications_enabled").default(true),
+  joinedAt: timestamp("joined_at").defaultNow(),
+  lastActiveAt: timestamp("last_active_at").defaultNow(),
+});
+
+export const insertPrayerPodMemberSchema = createInsertSchema(prayerPodMembers).omit({ id: true, joinedAt: true, lastActiveAt: true });
+export type InsertPrayerPodMember = z.infer<typeof insertPrayerPodMemberSchema>;
+export type PrayerPodMember = typeof prayerPodMembers.$inferSelect;
+
+// Prayer Pod Preferences - User preferences for matching
+export const prayerPodPreferences = pgTable("prayer_pod_preferences", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  preferredTopics: text("preferred_topics").array(),
+  availabilitySlots: text("availability_slots").array(), // ['monday-morning', 'wednesday-evening']
+  preferredGenderMix: varchar("preferred_gender_mix").default("mixed"), // 'mixed', 'same', 'no-preference'
+  maxPodSize: integer("max_pod_size").default(6),
+  preferredMeetingFormat: varchar("preferred_meeting_format").default("text"), // 'text', 'audio', 'video'
+  region: varchar("region"),
+  ageGroup: varchar("age_group"), // '15-17', '18-25', '26-35', '36-45'
+  isMinor: boolean("is_minor").default(false),
+  guardianConsent: boolean("guardian_consent").default(false),
+  guardianEmail: varchar("guardian_email"),
+  visibilityOptIn: boolean("visibility_opt_in").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertPrayerPodPreferencesSchema = createInsertSchema(prayerPodPreferences).omit({ id: true, createdAt: true, updatedAt: true });
+export type InsertPrayerPodPreferences = z.infer<typeof insertPrayerPodPreferencesSchema>;
+export type PrayerPodPreferences = typeof prayerPodPreferences.$inferSelect;
+
+// Prayer Pod Requests - Join requests with safety checks
+export const prayerPodRequests = pgTable("prayer_pod_requests", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  podId: integer("pod_id").references(() => prayerPods.id, { onDelete: 'cascade' }),
+  status: varchar("status").default("pending"), // 'pending', 'approved', 'rejected', 'expired'
+  guardianConsent: boolean("guardian_consent").default(false),
+  riskFlags: text("risk_flags").array(),
+  reviewedBy: varchar("reviewed_by").references(() => users.id),
+  reviewNotes: text("review_notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  reviewedAt: timestamp("reviewed_at"),
+});
+
+export const insertPrayerPodRequestSchema = createInsertSchema(prayerPodRequests).omit({ id: true, createdAt: true, reviewedAt: true });
+export type InsertPrayerPodRequest = z.infer<typeof insertPrayerPodRequestSchema>;
+export type PrayerPodRequest = typeof prayerPodRequests.$inferSelect;
+
+// Prayer Pod Reports - Safety reporting system
+export const prayerPodReports = pgTable("prayer_pod_reports", {
+  id: serial("id").primaryKey(),
+  reporterId: varchar("reporter_id").notNull().references(() => users.id),
+  podId: integer("pod_id").references(() => prayerPods.id, { onDelete: 'cascade' }),
+  reportedUserId: varchar("reported_user_id").references(() => users.id),
+  category: varchar("category").notNull(), // 'inappropriate', 'harassment', 'spam', 'safety', 'other'
+  description: text("description").notNull(),
+  evidence: text("evidence").array(),
+  status: varchar("status").default("pending"), // 'pending', 'investigating', 'resolved', 'dismissed'
+  resolution: text("resolution"),
+  resolvedBy: varchar("resolved_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  resolvedAt: timestamp("resolved_at"),
+});
+
+export const insertPrayerPodReportSchema = createInsertSchema(prayerPodReports).omit({ id: true, createdAt: true, resolvedAt: true });
+export type InsertPrayerPodReport = z.infer<typeof insertPrayerPodReportSchema>;
+export type PrayerPodReport = typeof prayerPodReports.$inferSelect;
+
+// Prayer Pod Messages - In-pod communication
+export const prayerPodMessages = pgTable("prayer_pod_messages", {
+  id: serial("id").primaryKey(),
+  podId: integer("pod_id").notNull().references(() => prayerPods.id, { onDelete: 'cascade' }),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  type: varchar("type").default("message"), // 'message', 'prayer_request', 'praise', 'reminder'
+  content: text("content").notNull(),
+  isAnonymous: boolean("is_anonymous").default(false),
+  isPinned: boolean("is_pinned").default(false),
+  parentId: integer("parent_id"), // For replies
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertPrayerPodMessageSchema = createInsertSchema(prayerPodMessages).omit({ id: true, createdAt: true });
+export type InsertPrayerPodMessage = z.infer<typeof insertPrayerPodMessageSchema>;
+export type PrayerPodMessage = typeof prayerPodMessages.$inferSelect;
+
+// Prayer Pod Sessions - Scheduled prayer meetings
+export const prayerPodSessions = pgTable("prayer_pod_sessions", {
+  id: serial("id").primaryKey(),
+  podId: integer("pod_id").notNull().references(() => prayerPods.id, { onDelete: 'cascade' }),
+  title: varchar("title"),
+  scheduledFor: timestamp("scheduled_for").notNull(),
+  duration: integer("duration").default(30), // minutes
+  status: varchar("status").default("scheduled"), // 'scheduled', 'active', 'completed', 'cancelled'
+  attendeeCount: integer("attendee_count").default(0),
+  notes: text("notes"),
+  createdBy: varchar("created_by").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertPrayerPodSessionSchema = createInsertSchema(prayerPodSessions).omit({ id: true, createdAt: true });
+export type InsertPrayerPodSession = z.infer<typeof insertPrayerPodSessionSchema>;
+export type PrayerPodSession = typeof prayerPodSessions.$inferSelect;

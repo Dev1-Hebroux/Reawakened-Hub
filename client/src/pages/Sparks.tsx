@@ -155,23 +155,12 @@ export function SparksPage() {
     queryFn: () => fetch(`/api/sparks/featured${audienceParam}`).then(r => r.json()),
   });
 
-  // Auto-open spark modal when accessing /sparks/:id directly
+  // Redirect /sparks/:id to /spark/:id for the detail page
   useEffect(() => {
-    if (sparkIdFromUrl && sparks.length > 0 && !selectedSpark) {
-      const spark = sparks.find(s => s.id === sparkIdFromUrl);
-      if (spark) {
-        setSelectedSpark(spark);
-      } else {
-        // Check featured sparks too
-        const featured = featuredSparks.find(s => s.id === sparkIdFromUrl);
-        if (featured) {
-          setSelectedSpark(featured);
-        } else if (todaySpark?.id === sparkIdFromUrl) {
-          setSelectedSpark(todaySpark);
-        }
-      }
+    if (sparkIdFromUrl) {
+      navigate(`/spark/${sparkIdFromUrl}`, { replace: true });
     }
-  }, [sparkIdFromUrl, sparks, featuredSparks, todaySpark, selectedSpark]);
+  }, [sparkIdFromUrl, navigate]);
 
   // Update URL when modal is closed
   const handleCloseSparkModal = () => {
@@ -402,7 +391,7 @@ export function SparksPage() {
              
              <div className="flex items-center gap-4 pt-4 flex-wrap">
                <button 
-                 onClick={() => featuredSpark && setSelectedSpark(featuredSpark)}
+                 onClick={() => featuredSpark && navigate(`/spark/${featuredSpark.id}`)}
                  className="bg-primary hover:bg-primary/90 text-white font-bold px-8 py-4 rounded-full flex items-center gap-2 transition-all hover:scale-105"
                  data-testid="button-watch-featured"
                >
@@ -470,7 +459,7 @@ export function SparksPage() {
             <div className="grid md:grid-cols-2 gap-8">
               {/* Today's Spark */}
               <div 
-                onClick={() => setSelectedSpark(todaySpark)}
+                onClick={() => navigate(`/spark/${todaySpark.id}`)}
                 className="relative aspect-video rounded-2xl overflow-hidden group cursor-pointer border border-white/10"
                 data-testid="card-today-spark"
               >
@@ -840,7 +829,7 @@ export function SparksPage() {
               <motion.div
                 key={spark.id}
                 layoutId={`spark-${spark.id}`}
-                onClick={() => setSelectedSpark(spark)}
+                onClick={() => navigate(`/spark/${spark.id}`)}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
