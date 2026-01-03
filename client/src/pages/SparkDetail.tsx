@@ -187,31 +187,47 @@ export function SparkDetail() {
     }
   };
 
+  const pauseAll = () => {
+    if (ttsAudioRef.current) {
+      ttsAudioRef.current.pause();
+    }
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
+    setIsSpeaking(false);
+    setIsPlaying(false);
+  };
+
+  const resumeAll = async () => {
+    if (ttsAudioRef.current) {
+      await safePlay(ttsAudioRef.current);
+      setIsSpeaking(true);
+    }
+    if (audioRef.current) {
+      audioRef.current.volume = 0.3;
+      await safePlay(audioRef.current);
+      setIsPlaying(true);
+    }
+  };
+
   const togglePlayback = async () => {
     if (!audioRef.current) return;
-    if (isPlaying) {
-      audioRef.current.pause();
-      if (ttsAudioRef.current) {
-        ttsAudioRef.current.pause();
-      }
-      setIsSpeaking(false);
+    if (isPlaying || isSpeaking) {
+      pauseAll();
+    } else if (ttsAudioRef.current && ttsUrlRef.current) {
+      await resumeAll();
     } else {
       await safePlay(audioRef.current);
+      setIsPlaying(true);
     }
-    setIsPlaying(!isPlaying);
   };
 
   const startTextToSpeech = async () => {
     if (!spark?.fullTeaching) return;
     if (isLoadingTTS) return;
     
-    if (isSpeaking && ttsAudioRef.current) {
-      ttsAudioRef.current.pause();
-      setIsSpeaking(false);
-      if (audioRef.current) {
-        audioRef.current.pause();
-        setIsPlaying(false);
-      }
+    if (isSpeaking) {
+      pauseAll();
       return;
     }
     
@@ -228,15 +244,7 @@ export function SparkDetail() {
     }
     
     if (ttsAudioRef.current && ttsUrlRef.current) {
-      const played = await safePlay(ttsAudioRef.current);
-      if (played) {
-        setIsSpeaking(true);
-        if (audioRef.current && !isPlaying) {
-          audioRef.current.volume = 0.3;
-          await safePlay(audioRef.current);
-          setIsPlaying(true);
-        }
-      }
+      await resumeAll();
       return;
     }
 
@@ -270,6 +278,10 @@ export function SparkDetail() {
       
       ttsAudio.onended = () => {
         setIsSpeaking(false);
+        if (audioRef.current) {
+          audioRef.current.pause();
+          setIsPlaying(false);
+        }
       };
       
       ttsAudio.onerror = () => {
@@ -278,16 +290,7 @@ export function SparkDetail() {
         toast.error("Audio playback failed");
       };
       
-      const played = await safePlay(ttsAudio);
-      if (played) {
-        setIsSpeaking(true);
-        
-        if (audioRef.current && !isPlaying) {
-          audioRef.current.volume = 0.3;
-          await safePlay(audioRef.current);
-          setIsPlaying(true);
-        }
-      }
+      await resumeAll();
     } catch (error) {
       console.error("TTS error:", error);
       toast.error("Could not generate audio");
