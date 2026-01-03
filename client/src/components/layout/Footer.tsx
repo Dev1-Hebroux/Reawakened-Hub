@@ -78,6 +78,7 @@ export function Footer() {
             <h4 className="font-bold text-gray-900 mb-6">Platform</h4>
             <ul className="space-y-4 text-sm text-gray-500 font-medium">
               <li><a href="/sparks" className="hover:text-primary transition-colors" data-testid="link-footer-sparks">Daily Sparks</a></li>
+              <li><a href="/reading-plans" className="hover:text-primary transition-colors" data-testid="link-footer-reading-plans">Reading Plans</a></li>
               <li><a href="/community" className="hover:text-primary transition-colors" data-testid="link-footer-community">Community Hub</a></li>
               <li><a href="/vision" className="hover:text-primary transition-colors" data-testid="link-footer-vision">Vision & Goals</a></li>
               <li><a href="/journeys" className="hover:text-primary transition-colors" data-testid="link-footer-journeys">Spiritual Journeys</a></li>

@@ -910,6 +910,32 @@ export function SparksPage() {
           </div>
         )}
 
+        {/* Reading Plans CTA */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="mt-16 bg-gradient-to-br from-[#7C9A8E]/20 to-[#4A7C7C]/10 rounded-3xl p-8 border border-white/10"
+        >
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="text-center md:text-left">
+              <h3 className="text-2xl font-bold text-white mb-2">Ready for a Deeper Journey?</h3>
+              <p className="text-gray-400 max-w-lg">
+                Explore personalized Bible reading plans tailored to your spiritual growth. From 7-day quick studies to 30-day deep dives.
+              </p>
+            </div>
+            <a
+              href="/reading-plans"
+              className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white font-bold py-4 px-8 rounded-xl transition-colors whitespace-nowrap"
+              data-testid="link-reading-plans-cta"
+            >
+              <BookOpen className="h-5 w-5" />
+              Explore Reading Plans
+              <ArrowRight className="h-5 w-5" />
+            </a>
+          </div>
+        </motion.div>
+
         {/* Real-time Ticker */}
         <div className="fixed bottom-8 right-8 z-40 hidden lg:block">
           <div className="bg-black/80 backdrop-blur-md border border-white/10 rounded-2xl p-4 w-72 shadow-2xl">

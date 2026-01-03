@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   ChevronLeft, Bookmark, BookmarkCheck, Share2, Volume2, VolumeX, 
   Pause, Play, Check, Flame, Heart, Mic, MicOff, Send, ChevronDown,
-  ChevronUp, Sparkles, Target, MessageCircle, Clock, Calendar
+  ChevronUp, Target, MessageCircle, Clock, Calendar
 } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/button";
@@ -605,10 +605,7 @@ export function SparkDetail() {
             
             {activeSection === 'context' && spark.contextBackground && (
               <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
-                <div className="flex items-center gap-2 mb-4 text-amber-400">
-                  <Sparkles className="h-5 w-5" />
-                  <h3 className="font-bold">Historical Context</h3>
-                </div>
+                <h3 className="font-bold text-amber-400 mb-4">Historical Context</h3>
                 <p className="text-white leading-relaxed text-lg">{spark.contextBackground}</p>
               </div>
             )}
@@ -621,9 +618,12 @@ export function SparkDetail() {
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.15 }}
-                    className="bg-white/5 rounded-xl p-5 border border-white/10"
+                    className="flex items-start gap-4 bg-white/5 rounded-xl p-5 border border-white/10"
                   >
-                    <p className="text-white leading-relaxed">{point}</p>
+                    <div className="h-8 w-8 bg-amber-500 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                      {i + 1}
+                    </div>
+                    <p className="text-white leading-relaxed pt-1">{point}</p>
                   </motion.div>
                 ))}
               </div>
