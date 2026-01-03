@@ -402,7 +402,7 @@ export function SparkDetail() {
             </h1>
             
             {spark.scriptureRef && (
-              <p className="text-lg text-primary/90 font-medium">
+              <p className="text-lg text-amber-400 font-semibold drop-shadow-sm">
                 {spark.scriptureRef}
               </p>
             )}
@@ -539,10 +539,10 @@ export function SparkDetail() {
               <button
                 key={section}
                 onClick={() => setActiveSection(section as any)}
-                className={`px-4 py-3 text-sm font-medium transition-all capitalize ${
+                className={`px-4 py-3 text-sm font-semibold transition-all capitalize ${
                   activeSection === section 
-                    ? 'text-primary border-b-2 border-primary' 
-                    : 'text-gray-300 hover:text-white'
+                    ? 'text-white border-b-2 border-primary bg-primary/10' 
+                    : 'text-white/70 hover:text-white hover:bg-white/5'
                 }`}
                 data-testid={`tab-${section}`}
               >
@@ -612,9 +612,9 @@ export function SparkDetail() {
               className="bg-gradient-to-br from-primary/20 to-primary/5 rounded-2xl p-6 border border-primary/30 mb-8"
             >
               <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2 text-primary">
-                  <Target className="h-5 w-5" />
-                  <h3 className="font-bold">Today's Action</h3>
+                <div className="flex items-center gap-2">
+                  <Target className="h-5 w-5 text-amber-400" />
+                  <h3 className="font-bold text-white">Today's Action</h3>
                 </div>
                 {streak > 0 && (
                   <div className="flex items-center gap-1.5 bg-primary/20 px-3 py-1 rounded-full">
