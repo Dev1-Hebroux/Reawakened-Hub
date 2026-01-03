@@ -53,7 +53,6 @@ import { MovementHub } from "@/pages/MovementHub";
 import { MissionOnboarding } from "@/pages/MissionOnboarding";
 import { DigitalActions } from "@/pages/DigitalActions";
 import { MobileNav } from "@/components/layout/MobileNav";
-import { PWAInstallPrompt } from "@/components/PWAInstallPrompt";
 import Profile from "@/pages/Profile";
 import Notifications from "@/pages/Notifications";
 import Settings from "@/pages/Settings";
@@ -184,7 +183,6 @@ function AppContent() {
         <AiCoachDrawer />
       </div>
       <MobileNav />
-      <PWAInstallPrompt />
       {isAuthenticated && (
         <OnboardingTour 
           isOpen={showTour} 
