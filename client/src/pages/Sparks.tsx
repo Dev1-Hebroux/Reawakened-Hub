@@ -22,6 +22,7 @@ import { JournalingPrompt } from "@/components/JournalingPrompt";
 import { DailyQuiz } from "@/components/DailyQuiz";
 import { LiveIntercession } from "@/components/LiveIntercession";
 import { COMMUNITY_LINKS } from "@/lib/config";
+import { SEO } from "@/components/SEO";
 
 import spark1 from "@assets/generated_images/raw_street_worship_in_brazil.png";
 import spark2 from "@assets/generated_images/testimony_of_healing_in_a_village.png";

@@ -18,6 +18,7 @@ import { Link, useLocation } from "wouter";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { SEO } from "@/components/SEO";
 
 import outreachImg from "@assets/generated_images/group_wearing_reawakened.one_branded_t-shirts.png";
 import capImg from "@assets/generated_images/cap_with_reawakened_embroidery.png";
@@ -63,6 +64,10 @@ export default function Home() {
   
   return (
     <div className="min-h-screen bg-white text-foreground overflow-x-hidden relative">
+      <SEO 
+        title="Reawakened"
+        description="A digital revival movement - Encounter Jesus, grow in discipleship, and engage in global outreach. Join thousands in daily devotionals, prayer, and missions."
+      />
       <div className="fixed inset-0 pointer-events-none z-0 opacity-40">
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/10 rounded-full blur-[120px]" />
         <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px]" />
