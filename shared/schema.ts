@@ -2707,19 +2707,3 @@ export const prayerReminders = pgTable("prayer_reminders", {
 export const insertPrayerReminderSchema = createInsertSchema(prayerReminders).omit({ id: true, createdAt: true });
 export type InsertPrayerReminder = z.infer<typeof insertPrayerReminderSchema>;
 export type PrayerReminder = typeof prayerReminders.$inferSelect;
-
-// Security Logs - Track security events for monitoring
-export const securityLogs = pgTable("security_logs", {
-  id: serial("id").primaryKey(),
-  eventType: varchar("event_type").notNull(), // 'rate_limit_exceeded', 'auth_failed', 'moderation_flagged', etc.
-  userId: varchar("user_id"),
-  ipAddress: varchar("ip_address").notNull(),
-  userAgent: text("user_agent"),
-  path: varchar("path").notNull(),
-  details: text("details"), // JSON string with additional context
-  createdAt: timestamp("created_at").defaultNow(),
-});
-
-export const insertSecurityLogSchema = createInsertSchema(securityLogs).omit({ id: true, createdAt: true });
-export type InsertSecurityLog = z.infer<typeof insertSecurityLogSchema>;
-export type SecurityLog = typeof securityLogs.$inferSelect;

@@ -5,112 +5,12 @@ import { storage } from "./storage";
 import { setupAuth, isAuthenticated, isAdmin, isSuperAdmin } from "./replitAuth";
 import { getAICoachInsights, type AICoachRequest } from "./ai-service";
 import { sendWelcomeEmail, sendPrayerRequestNotification } from "./email";
-import { moderateContent, isSafeContent } from "./moderation";
-import { logSecurityEvent, strictRateLimiter, authRateLimiter } from "./security";
-import { pool } from "./db";
 import { insertPostSchema, insertReactionSchema, insertSparkSchema, insertSparkReactionSchema, insertSparkSubscriptionSchema, insertEventSchema, insertEventRegistrationSchema, insertBlogPostSchema, insertEmailSubscriptionSchema, insertPrayerRequestSchema, insertTestimonySchema, insertVolunteerSignupSchema, insertMissionRegistrationSchema, insertJourneySchema, insertJourneyDaySchema, insertJourneyStepSchema, insertAlphaCohortSchema, insertAlphaCohortWeekSchema, insertAlphaCohortParticipantSchema, insertMissionProfileSchema, insertMissionPlanSchema, insertMissionAdoptionSchema, insertMissionPrayerSessionSchema, insertOpportunityInterestSchema, insertDigitalActionSchema, insertProjectFollowSchema, insertChallengeEnrollmentSchema, insertMissionTestimonySchema, insertChallengeSchema, insertUserSettingsSchema, insertCommentSchema, insertNotificationPreferencesSchema } from "@shared/schema";
 
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
-  // Health check endpoint for uptime monitoring
-  app.get('/api/health', async (req, res) => {
-    try {
-      await pool.query('SELECT 1');
-      res.status(200).json({
-        status: 'healthy',
-        timestamp: new Date().toISOString(),
-        uptime: process.uptime(),
-        database: 'connected',
-      });
-    } catch (error) {
-      res.status(503).json({
-        status: 'unhealthy',
-        timestamp: new Date().toISOString(),
-        uptime: process.uptime(),
-        database: 'disconnected',
-        error: 'Database connection failed',
-      });
-    }
-  });
-
-  // Sitemap.xml for SEO
-  app.get('/sitemap.xml', async (req, res) => {
-    try {
-      const baseUrl = `https://${req.headers.host}`;
-      const staticPages = [
-        { loc: '/', priority: '1.0', changefreq: 'daily' },
-        { loc: '/sparks', priority: '0.9', changefreq: 'daily' },
-        { loc: '/blog', priority: '0.8', changefreq: 'daily' },
-        { loc: '/community', priority: '0.8', changefreq: 'daily' },
-        { loc: '/pray', priority: '0.8', changefreq: 'daily' },
-        { loc: '/missions', priority: '0.7', changefreq: 'weekly' },
-        { loc: '/journeys', priority: '0.7', changefreq: 'weekly' },
-        { loc: '/about', priority: '0.6', changefreq: 'monthly' },
-        { loc: '/give', priority: '0.6', changefreq: 'monthly' },
-        { loc: '/dominion/schools', priority: '0.8', changefreq: 'weekly' },
-        { loc: '/dominion/universities', priority: '0.8', changefreq: 'weekly' },
-        { loc: '/dominion/9-5-reset', priority: '0.8', changefreq: 'weekly' },
-        { loc: '/dominion/builders', priority: '0.8', changefreq: 'weekly' },
-        { loc: '/dominion/couples', priority: '0.8', changefreq: 'weekly' },
-      ];
-
-      const blogPosts = await storage.getBlogPosts();
-      const sparks = await storage.getPublishedSparks();
-
-      let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
-      xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
-
-      staticPages.forEach(page => {
-        xml += `  <url>\n`;
-        xml += `    <loc>${baseUrl}${page.loc}</loc>\n`;
-        xml += `    <changefreq>${page.changefreq}</changefreq>\n`;
-        xml += `    <priority>${page.priority}</priority>\n`;
-        xml += `  </url>\n`;
-      });
-
-      blogPosts.forEach((post: any) => {
-        xml += `  <url>\n`;
-        xml += `    <loc>${baseUrl}/blog/${post.slug}</loc>\n`;
-        xml += `    <changefreq>monthly</changefreq>\n`;
-        xml += `    <priority>0.7</priority>\n`;
-        xml += `  </url>\n`;
-      });
-
-      sparks.slice(0, 30).forEach((spark: any) => {
-        xml += `  <url>\n`;
-        xml += `    <loc>${baseUrl}/sparks/${spark.id}</loc>\n`;
-        xml += `    <changefreq>weekly</changefreq>\n`;
-        xml += `    <priority>0.6</priority>\n`;
-        xml += `  </url>\n`;
-      });
-
-      xml += '</urlset>';
-      res.set('Content-Type', 'application/xml');
-      res.send(xml);
-    } catch (error) {
-      console.error('Error generating sitemap:', error);
-      res.status(500).send('Error generating sitemap');
-    }
-  });
-
-  // Robots.txt for SEO
-  app.get('/robots.txt', (req, res) => {
-    const robotsTxt = `User-agent: *
-Allow: /
-Disallow: /admin
-Disallow: /api/
-Disallow: /profile
-Disallow: /settings
-Disallow: /notifications
-
-Sitemap: https://${req.headers.host}/sitemap.xml
-`;
-    res.set('Content-Type', 'text/plain');
-    res.send(robotsTxt);
-  });
-
   // Auth middleware - must be called before routes
   await setupAuth(app);
 
@@ -172,28 +72,11 @@ Sitemap: https://${req.headers.host}/sitemap.xml
     }
   });
 
-  // Create a new post (protected with AI moderation)
-  app.post('/api/posts', isAuthenticated, strictRateLimiter, async (req: any, res) => {
+  // Create a new post (protected)
+  app.post('/api/posts', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const postData = insertPostSchema.parse({ ...req.body, userId });
-      
-      // AI content moderation check
-      const moderationResult = await moderateContent(postData.content);
-      if (!isSafeContent(moderationResult)) {
-        await logSecurityEvent({
-          eventType: 'moderation_flagged',
-          userId,
-          ipAddress: req.ip || req.socket.remoteAddress || 'unknown',
-          userAgent: req.get('user-agent') || 'unknown',
-          path: req.path,
-          details: { reason: moderationResult.reason, categories: moderationResult.categories },
-        });
-        return res.status(400).json({ 
-          message: "Your post was flagged for review. Please ensure your content follows community guidelines." 
-        });
-      }
-      
       const post = await storage.createPost(postData);
       res.status(201).json(post);
     } catch (error: any) {
