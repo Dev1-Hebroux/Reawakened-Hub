@@ -60,6 +60,13 @@ Preferred communication style: Simple, everyday language.
   - `weeklyReviews` - Weekly reflection and planning
   - `visionExports` - PDF/export records
 
+**Bible Reading Plans Tables** (Personalized Reading Journey):
+  - `readingPlans` - Reading plan catalog with topics, duration, maturity levels
+  - `readingPlanDays` - Daily content with scripture, devotionals, reflection questions
+  - `userSpiritualProfiles` - User spiritual maturity level and topic interests
+  - `userPlanEnrollments` - User enrollment in plans with progress tracking
+  - `userReadingProgress` - Daily reading completion logs with journaling
+
 **Growth Tools Tables** (Personal Development Tools):
   - `growthTracks` - Growth track definitions (Personal Mastery, Communication, Leadership)
   - `growthModules` - Modules within tracks
@@ -97,6 +104,8 @@ Preferred communication style: Simple, everyday language.
 │   │   │   ├── StylesTool.tsx  # 4 Styles communication quiz
 │   │   │   ├── EqTool.tsx      # EQ Micro-Skills assessment
 │   │   │   ├── ScaTool.tsx     # Self-Concordant Action builder
+│   │   │   ├── ReadingPlans.tsx   # Bible reading plans discovery
+│   │   │   ├── ReadingPlanDetail.tsx  # Plan detail with daily readings
 │   │   ├── hooks/        # Custom React hooks
 │   │   └── lib/          # Utilities and query client
 ├── server/           # Express backend
