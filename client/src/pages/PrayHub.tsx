@@ -81,6 +81,8 @@ export function PrayHub() {
   const [selectedCampus, setSelectedCampus] = useState<UkCampus | null>(null);
   const [campusSearch, setCampusSearch] = useState("");
   const [showPrayerDetail, setShowPrayerDetail] = useState(false);
+  const [prayerRequestInput, setPrayerRequestInput] = useState("");
+  const [prayerRequestPrivate, setPrayerRequestPrivate] = useState(false);
   const queryClient = useQueryClient();
   const { user, isAuthenticated } = useAuth();
 
@@ -146,6 +148,47 @@ export function PrayHub() {
     },
     enabled: isAuthenticated,
   });
+
+  // Fetch prayer requests for the wall
+  const { data: prayerRequests = [], isLoading: prayerRequestsLoading } = useQuery<any[]>({
+    queryKey: ["/api/prayer-requests"],
+    queryFn: async () => {
+      const res = await fetch("/api/prayer-requests");
+      if (!res.ok) return [];
+      return res.json();
+    },
+  });
+
+  // Submit prayer request mutation
+  const submitPrayerRequestMutation = useMutation({
+    mutationFn: async (data: { name: string; request: string; isPrivate: string }) => {
+      const res = await apiRequest("POST", "/api/prayer-requests", data);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/prayer-requests"] });
+      setPrayerRequestInput("");
+      setPrayerRequestPrivate(false);
+      toast.success("Prayer request shared with the community!");
+    },
+    onError: () => {
+      toast.error("Failed to submit prayer request");
+    },
+  });
+
+  const handleSubmitPrayerRequest = () => {
+    if (!prayerRequestInput.trim()) return;
+    const name = prayerRequestPrivate ? "Anonymous" : (user as any)?.firstName || "A Friend";
+    submitPrayerRequestMutation.mutate({
+      name,
+      request: prayerRequestInput,
+      isPrivate: prayerRequestPrivate ? "true" : "false",
+    });
+  };
+
+  const handlePrayForRequest = (requestId: number) => {
+    toast.success("You're lifting this request in prayer!");
+  };
 
   // Subscribe to a focus group / adopt a nation
   const adoptMutation = useMutation({
@@ -555,6 +598,107 @@ export function PrayHub() {
                 <Send className="h-4 w-4 mr-2" />
                 Send Now
               </Button>
+            </div>
+          </motion.div>
+
+          {/* Community Prayer Wall */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="bg-white/10 backdrop-blur-md rounded-3xl p-6 mt-6 border border-white/10"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="h-12 w-12 rounded-full bg-pink-500/20 flex items-center justify-center">
+                  <Heart className="h-6 w-6 text-pink-400" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-white">Community Prayer Wall</h3>
+                  <p className="text-sm text-white/60">Share and support prayer requests</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Prayer Request Form */}
+            <div className="bg-white/5 rounded-2xl p-4 mb-4">
+              <textarea
+                placeholder="Share your prayer request with the community..."
+                className="w-full bg-transparent border-none text-white placeholder-white/40 resize-none focus:outline-none text-sm"
+                rows={2}
+                value={prayerRequestInput}
+                onChange={(e) => setPrayerRequestInput(e.target.value)}
+                data-testid="input-prayer-request"
+              />
+              <div className="flex items-center justify-between mt-2">
+                <label className="flex items-center gap-2 text-xs text-white/50">
+                  <input 
+                    type="checkbox" 
+                    checked={prayerRequestPrivate}
+                    onChange={(e) => setPrayerRequestPrivate(e.target.checked)}
+                    className="rounded bg-white/10 border-white/20"
+                    data-testid="checkbox-private-request"
+                  />
+                  Keep anonymous
+                </label>
+                <Button
+                  size="sm"
+                  className="bg-pink-500 hover:bg-pink-600 text-white"
+                  onClick={handleSubmitPrayerRequest}
+                  disabled={!prayerRequestInput.trim() || submitPrayerRequestMutation.isPending}
+                  data-testid="button-submit-prayer-request"
+                >
+                  {submitPrayerRequestMutation.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <>
+                      <Send className="h-4 w-4 mr-1" />
+                      Post
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            {/* Prayer Requests List */}
+            <div className="space-y-3 max-h-80 overflow-y-auto">
+              {prayerRequestsLoading ? (
+                <div className="flex justify-center py-6">
+                  <Loader2 className="h-6 w-6 text-white/50 animate-spin" />
+                </div>
+              ) : prayerRequests.length === 0 ? (
+                <div className="text-center py-6 text-white/50">
+                  <Heart className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">No prayer requests yet. Be the first to share!</p>
+                </div>
+              ) : (
+                prayerRequests.slice(0, 5).map((request: any) => (
+                  <motion.div
+                    key={request.id}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="bg-white/5 rounded-2xl p-4 border border-white/5"
+                    data-testid={`prayer-request-${request.id}`}
+                  >
+                    <p className="text-sm text-white/90 mb-3">{request.request}</p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-white/40">
+                        {request.isPrivate === "true" ? "Anonymous" : request.name}
+                      </span>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="text-pink-400 hover:text-pink-300 hover:bg-pink-500/10"
+                        onClick={() => handlePrayForRequest(request.id)}
+                        data-testid={`button-pray-${request.id}`}
+                      >
+                        <HandHeart className="h-4 w-4 mr-1" />
+                        Praying
+                      </Button>
+                    </div>
+                  </motion.div>
+                ))
+              )}
             </div>
           </motion.div>
           

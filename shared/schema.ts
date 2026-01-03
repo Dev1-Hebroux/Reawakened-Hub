@@ -412,6 +412,21 @@ export const insertPrayerRequestSchema = createInsertSchema(prayerRequests).omit
 export type InsertPrayerRequest = z.infer<typeof insertPrayerRequestSchema>;
 export type PrayerRequest = typeof prayerRequests.$inferSelect;
 
+// Prayer Request Supports (I'm praying for this)
+export const prayerRequestSupports = pgTable("prayer_request_supports", {
+  id: serial("id").primaryKey(),
+  prayerRequestId: integer("prayer_request_id").notNull().references(() => prayerRequests.id, { onDelete: 'cascade' }),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertPrayerRequestSupportSchema = createInsertSchema(prayerRequestSupports).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertPrayerRequestSupport = z.infer<typeof insertPrayerRequestSupportSchema>;
+export type PrayerRequestSupport = typeof prayerRequestSupports.$inferSelect;
+
 // Testimonies
 export const testimonies = pgTable("testimonies", {
   id: serial("id").primaryKey(),

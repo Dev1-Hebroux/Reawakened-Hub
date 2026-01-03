@@ -136,6 +136,19 @@ export function MovementHub() {
     enabled: isAuthenticated,
   });
 
+  // Fetch events for calendar
+  const { data: events = [], isLoading: eventsLoading } = useQuery<any[]>({
+    queryKey: ["/api/events"],
+    queryFn: async () => {
+      const res = await fetch("/api/events");
+      if (!res.ok) return [];
+      return res.json();
+    },
+  });
+
+  // Filter to upcoming events
+  const displayEvents = events.filter((e: any) => new Date(e.startDate) >= new Date());
+
   const themeColors: Record<string, string> = {
     prayer: "from-primary/30 to-[#D4A574]/20",
     evangelism: "from-[#4A7C7C]/30 to-[#7C9A8E]/20",
@@ -511,6 +524,91 @@ export function MovementHub() {
               </motion.div>
             )}
           </AnimatePresence>
+
+          {/* Live Event Calendar */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="bg-[#243656] rounded-3xl p-5 mt-6 border-2 border-primary/40 shadow-xl"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-full bg-primary/20 flex items-center justify-center">
+                  <Calendar className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-white">Live Events Calendar</h3>
+                  <p className="text-sm text-white/60">Worship, seminars & gatherings</p>
+                </div>
+              </div>
+              <Button 
+                size="sm" 
+                variant="ghost" 
+                className="text-primary text-xs"
+                onClick={() => navigate("/mission#events")}
+              >
+                View All
+              </Button>
+            </div>
+
+            <div className="space-y-3">
+              {eventsLoading ? (
+                <div className="flex flex-col items-center justify-center py-8">
+                  <Loader2 className="h-6 w-6 text-primary animate-spin mb-2" />
+                  <p className="text-white/50 text-sm">Loading events...</p>
+                </div>
+              ) : displayEvents.length === 0 ? (
+                <div className="text-center py-8 text-white/50">
+                  <Calendar className="h-10 w-10 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">No upcoming events yet</p>
+                </div>
+              ) : (
+                displayEvents.slice(0, 3).map((event: any, i: number) => (
+                  <motion.div
+                    key={event.id}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: i * 0.1 }}
+                    className="flex items-center gap-4 bg-[#1a2744] rounded-2xl p-4 border border-white/10"
+                    data-testid={`event-${event.id}`}
+                  >
+                    <div className="flex flex-col items-center bg-primary/20 rounded-xl p-3 min-w-[60px]">
+                      <span className="text-xs text-primary font-bold uppercase">
+                        {new Date(event.startDate).toLocaleDateString('en-US', { month: 'short' })}
+                      </span>
+                      <span className="text-2xl font-bold text-white">
+                        {new Date(event.startDate).getDate()}
+                      </span>
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-bold text-white text-sm mb-1">{event.title}</h4>
+                      <div className="flex items-center gap-2 text-xs text-white/50">
+                        <Clock className="h-3 w-3" />
+                        <span>
+                          {new Date(event.startDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+                        </span>
+                        {event.location && (
+                          <>
+                            <span>•</span>
+                            <span>{event.location}</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    <Button
+                      size="sm"
+                      className="bg-primary hover:bg-primary/90 text-white"
+                      onClick={() => navigate(`/mission#events`)}
+                      data-testid={`button-event-${event.id}`}
+                    >
+                      View
+                    </Button>
+                  </motion.div>
+                ))
+              )}
+            </div>
+          </motion.div>
           
         </div>
       </main>
