@@ -3,24 +3,25 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
+import { Navbar } from "@/components/layout/Navbar";
 import { 
   BookOpen, Clock, Users, ChevronRight, Flame, Filter, 
   Heart, Sparkles, Target, Award, TrendingUp, Check,
-  Play, Bookmark, Star, ArrowRight
+  Play, Bookmark, Star, ArrowRight, Search, X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 
 const TOPICS = [
-  { id: "prayer", label: "Prayer", icon: "🙏" },
-  { id: "faith", label: "Faith", icon: "✨" },
-  { id: "identity", label: "Identity", icon: "🪞" },
-  { id: "anxiety", label: "Anxiety & Peace", icon: "🕊️" },
-  { id: "relationships", label: "Relationships", icon: "💕" },
-  { id: "leadership", label: "Leadership", icon: "👑" },
-  { id: "purpose", label: "Purpose", icon: "🎯" },
-  { id: "worship", label: "Worship", icon: "🎵" },
+  { id: "prayer", label: "Prayer", icon: "🙏", gradient: "from-indigo-600 to-purple-600", bgIcon: "🙏" },
+  { id: "faith", label: "Faith", icon: "✨", gradient: "from-amber-500 to-orange-600", bgIcon: "✨" },
+  { id: "identity", label: "Identity", icon: "🪞", gradient: "from-rose-500 to-pink-600", bgIcon: "🪞" },
+  { id: "anxiety", label: "Anxiety & Peace", icon: "🕊️", gradient: "from-sky-500 to-cyan-600", bgIcon: "🕊️" },
+  { id: "relationships", label: "Relationships", icon: "💕", gradient: "from-pink-500 to-rose-600", bgIcon: "💕" },
+  { id: "leadership", label: "Leadership", icon: "👑", gradient: "from-amber-600 to-yellow-500", bgIcon: "👑" },
+  { id: "purpose", label: "Purpose", icon: "🎯", gradient: "from-emerald-500 to-teal-600", bgIcon: "🎯" },
+  { id: "worship", label: "Worship", icon: "🎵", gradient: "from-violet-500 to-purple-600", bgIcon: "🎵" },
 ];
 
 const MATURITY_LEVELS = [
@@ -81,6 +82,7 @@ export function ReadingPlansPage() {
   const [onboardingStep, setOnboardingStep] = useState(0);
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [selectedMaturityLevel, setSelectedMaturityLevel] = useState<string>("growing");
+  const [showFilters, setShowFilters] = useState(false);
 
   const { data: plans = [], isLoading: plansLoading } = useQuery<ReadingPlan[]>({
     queryKey: ["/api/reading-plans", selectedTopic, selectedMaturity, selectedDuration],
@@ -150,6 +152,7 @@ export function ReadingPlansPage() {
 
   const activeEnrollment = enrollments.find(e => e.status === "active");
   const enrolledPlanIds = new Set(enrollments.map(e => e.planId));
+  const featuredPlans = plans.filter(p => p.featured);
 
   const handleStartOnboarding = () => {
     if (!user) {
@@ -173,45 +176,92 @@ export function ReadingPlansPage() {
     );
   };
 
+  const clearFilters = () => {
+    setSelectedTopic(null);
+    setSelectedMaturity(null);
+    setSelectedDuration(null);
+  };
+
+  const hasActiveFilters = selectedTopic || selectedMaturity || selectedDuration;
+
   if (authLoading || plansLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-cream to-white">
-        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen flex items-center justify-center bg-[#1a2744]">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-white/60">Loading your spiritual journey...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-cream to-white">
-      <div className="bg-gradient-to-br from-primary/20 via-primary/10 to-transparent">
-        <div className="container mx-auto px-4 py-12">
+    <div className="min-h-screen bg-[#1a2744]">
+      <Navbar />
+      
+      {/* Hero Section with Floating Scripture */}
+      <div className="relative overflow-hidden pt-24 pb-12">
+        {/* Ambient Background Effects */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-20 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute bottom-10 right-1/4 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "1s" }} />
+          <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "2s" }} />
+        </div>
+        
+        <div className="container mx-auto px-4 relative z-10">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            className="max-w-3xl"
+            className="max-w-2xl mx-auto text-center"
           >
-            <div className="flex items-center gap-2 text-primary mb-4">
-              <BookOpen className="h-6 w-6" />
-              <span className="text-sm font-semibold uppercase tracking-wider">Bible Reading Plans</span>
+            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-5 py-2.5 mb-6 border border-white/10">
+              <BookOpen className="h-4 w-4 text-primary" />
+              <span className="text-sm font-bold text-white/90 uppercase tracking-wider">Bible Reading Plans</span>
             </div>
-            <h1 className="text-4xl md:text-5xl font-display font-bold text-gray-900 mb-4">
-              Grow Deeper in God's Word
+            
+            <h1 className="text-4xl md:text-5xl font-display font-bold text-white mb-4 leading-tight">
+              Grow Deeper in{" "}
+              <span className="bg-gradient-to-r from-primary to-amber-400 bg-clip-text text-transparent">
+                God's Word
+              </span>
             </h1>
-            <p className="text-xl text-gray-600 mb-8">
+            
+            <p className="text-lg text-white/70 mb-8 max-w-xl mx-auto">
               Discover personalized reading plans designed for your spiritual journey. 
               Build consistent habits and transform your faith.
             </p>
+
+            {/* Floating Scripture */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+              className="bg-white/5 backdrop-blur-md rounded-2xl p-5 mb-8 border border-white/10 max-w-md mx-auto"
+            >
+              <p className="text-white/80 italic text-sm leading-relaxed">
+                "Your word is a lamp for my feet, a light on my path."
+              </p>
+              <p className="text-primary text-xs mt-2 font-medium">— Psalm 119:105</p>
+            </motion.div>
             
+            {/* Streak Badge */}
             {user && streak && streak.streak > 0 && (
               <motion.div 
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="inline-flex items-center gap-3 bg-white/80 backdrop-blur rounded-full px-6 py-3 shadow-lg border border-primary/20"
+                className="inline-flex items-center gap-3 bg-gradient-to-r from-orange-500/20 to-amber-500/20 backdrop-blur rounded-full px-6 py-3 border border-orange-500/30"
               >
-                <Flame className="h-6 w-6 text-orange-500" />
-                <div>
-                  <p className="text-2xl font-bold text-gray-900">{streak.streak}</p>
-                  <p className="text-sm text-gray-600">Day Streak</p>
+                <div className="relative">
+                  <Flame className="h-7 w-7 text-orange-400" />
+                  <motion.div 
+                    className="absolute inset-0 bg-orange-400/50 rounded-full blur-md"
+                    animate={{ scale: [1, 1.3, 1], opacity: [0.5, 0.2, 0.5] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  />
+                </div>
+                <div className="text-left">
+                  <p className="text-2xl font-bold text-white">{streak.streak}</p>
+                  <p className="text-xs text-orange-300/80">Day Streak</p>
                 </div>
               </motion.div>
             )}
@@ -219,35 +269,42 @@ export function ReadingPlansPage() {
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 pb-32">
+        {/* Continue Reading Card */}
         {activeEnrollment && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-gradient-to-r from-primary to-primary/80 rounded-2xl p-6 mb-8 text-white"
+            className="bg-gradient-to-r from-primary via-primary to-amber-600 rounded-3xl p-6 mb-8 text-white relative overflow-hidden"
           >
-            <div className="flex items-center justify-between flex-wrap gap-4">
-              <div>
-                <p className="text-white/80 text-sm font-medium mb-1">Continue Reading</p>
-                <h3 className="text-xl font-bold">{activeEnrollment.plan.title}</h3>
-                <p className="text-white/80 mt-1">Day {activeEnrollment.currentDay} of {activeEnrollment.plan.durationDays}</p>
+            <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent opacity-30" />
+            <div className="relative flex items-center justify-between flex-wrap gap-4">
+              <div className="flex items-center gap-4">
+                <div className="h-16 w-16 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center">
+                  <Play className="h-8 w-8 text-white" />
+                </div>
+                <div>
+                  <p className="text-white/80 text-sm font-medium mb-1">Continue Your Journey</p>
+                  <h3 className="text-xl font-bold">{activeEnrollment.plan.title}</h3>
+                  <p className="text-white/70 text-sm mt-1">Day {activeEnrollment.currentDay} of {activeEnrollment.plan.durationDays}</p>
+                </div>
               </div>
               <div className="flex items-center gap-4">
-                <div className="text-center">
-                  <Flame className="h-6 w-6 mx-auto text-orange-300" />
-                  <p className="text-sm mt-1">{activeEnrollment.currentStreak} day streak</p>
+                <div className="text-center bg-white/10 rounded-xl px-4 py-2">
+                  <Flame className="h-5 w-5 mx-auto text-orange-300 mb-1" />
+                  <p className="text-sm font-bold">{activeEnrollment.currentStreak} days</p>
                 </div>
                 <Link href={`/reading-plans/${activeEnrollment.planId}`}>
-                  <Button variant="secondary" className="gap-2" data-testid="button-continue-reading">
+                  <Button variant="secondary" size="lg" className="gap-2 font-bold shadow-lg" data-testid="button-continue-reading">
                     <Play className="h-4 w-4" />
                     Continue
                   </Button>
                 </Link>
               </div>
             </div>
-            <div className="mt-4 bg-white/20 rounded-full h-2">
+            <div className="mt-5 bg-white/20 rounded-full h-2.5 overflow-hidden">
               <motion.div 
-                className="bg-white rounded-full h-2"
+                className="bg-white rounded-full h-2.5"
                 initial={{ width: 0 }}
                 animate={{ width: `${(activeEnrollment.progress.filter(p => p.completed).length / activeEnrollment.plan.durationDays) * 100}%` }}
               />
@@ -255,22 +312,23 @@ export function ReadingPlansPage() {
           </motion.div>
         )}
 
+        {/* Personalize CTA */}
         {!profile && user && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl p-6 mb-8 border border-amber-200"
+            className="bg-gradient-to-br from-amber-500/20 to-orange-500/10 backdrop-blur rounded-3xl p-6 mb-8 border border-amber-500/20"
           >
             <div className="flex items-start gap-4">
-              <div className="h-12 w-12 rounded-full bg-amber-100 flex items-center justify-center">
-                <Sparkles className="h-6 w-6 text-amber-600" />
+              <div className="h-14 w-14 rounded-2xl bg-amber-500/20 flex items-center justify-center flex-shrink-0">
+                <Sparkles className="h-7 w-7 text-amber-400" />
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-bold text-gray-900 mb-1">Personalize Your Journey</h3>
-                <p className="text-gray-600 mb-4">
+                <h3 className="text-lg font-bold text-white mb-1">Personalize Your Journey</h3>
+                <p className="text-white/60 mb-4">
                   Tell us about your interests and spiritual journey to get personalized reading plan recommendations.
                 </p>
-                <Button onClick={handleStartOnboarding} className="gap-2" data-testid="button-personalize">
+                <Button onClick={handleStartOnboarding} className="gap-2 bg-amber-500 hover:bg-amber-600" data-testid="button-personalize">
                   <Heart className="h-4 w-4" />
                   Get Started
                 </Button>
@@ -279,36 +337,100 @@ export function ReadingPlansPage() {
           </motion.div>
         )}
 
-        {recommendedPlans.length > 0 && (
-          <div className="mb-12">
-            <div className="flex items-center gap-2 mb-6">
-              <Star className="h-5 w-5 text-amber-500" />
-              <h2 className="text-2xl font-display font-bold text-gray-900">Recommended for You</h2>
+        {/* Featured Plans Carousel */}
+        {featuredPlans.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-10"
+          >
+            <div className="flex items-center gap-3 mb-6">
+              <div className="h-10 w-10 rounded-xl bg-amber-500/20 flex items-center justify-center">
+                <Star className="h-5 w-5 text-amber-400" />
+              </div>
+              <h2 className="text-2xl font-display font-bold text-white">Featured</h2>
             </div>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {recommendedPlans.slice(0, 3).map((plan) => (
-                <PlanCard 
-                  key={plan.id} 
-                  plan={plan} 
-                  enrolled={enrolledPlanIds.has(plan.id)}
-                  onEnroll={() => enrollMutation.mutate(plan.id)}
-                  enrolling={enrollMutation.isPending}
-                />
+            <div className="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 scrollbar-hide">
+              {featuredPlans.map((plan, i) => (
+                <motion.div
+                  key={plan.id}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.1 }}
+                  className="flex-shrink-0 w-72"
+                >
+                  <PlanCard 
+                    plan={plan} 
+                    enrolled={enrolledPlanIds.has(plan.id)}
+                    onEnroll={() => enrollMutation.mutate(plan.id)}
+                    enrolling={enrollMutation.isPending}
+                    variant="featured"
+                  />
+                </motion.div>
               ))}
             </div>
-          </div>
+          </motion.div>
         )}
 
-        <div className="mb-8">
-          <div className="flex items-center gap-2 mb-4">
-            <Filter className="h-5 w-5 text-gray-500" />
-            <h3 className="font-semibold text-gray-700">Filter Plans</h3>
+        {/* Recommended Section */}
+        {recommendedPlans.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-10"
+          >
+            <div className="flex items-center gap-3 mb-6">
+              <div className="h-10 w-10 rounded-xl bg-purple-500/20 flex items-center justify-center">
+                <Target className="h-5 w-5 text-purple-400" />
+              </div>
+              <h2 className="text-2xl font-display font-bold text-white">Recommended for You</h2>
+            </div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {recommendedPlans.slice(0, 3).map((plan, i) => (
+                <motion.div
+                  key={plan.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.1 }}
+                >
+                  <PlanCard 
+                    plan={plan} 
+                    enrolled={enrolledPlanIds.has(plan.id)}
+                    onEnroll={() => enrollMutation.mutate(plan.id)}
+                    enrolling={enrollMutation.isPending}
+                  />
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Filter Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center">
+                <Filter className="h-5 w-5 text-white/70" />
+              </div>
+              <h3 className="font-bold text-white">Filter Plans</h3>
+            </div>
+            {hasActiveFilters && (
+              <Button variant="ghost" size="sm" onClick={clearFilters} className="text-white/60 hover:text-white">
+                <X className="h-4 w-4 mr-1" />
+                Clear
+              </Button>
+            )}
           </div>
           
+          {/* Topics */}
           <div className="flex flex-wrap gap-2 mb-4">
             <Badge 
               variant={selectedTopic === null ? "default" : "outline"}
-              className="cursor-pointer"
+              className={`cursor-pointer transition-all ${selectedTopic === null ? "bg-primary" : "bg-white/5 border-white/20 text-white/70 hover:bg-white/10"}`}
               onClick={() => setSelectedTopic(null)}
               data-testid="filter-topic-all"
             >
@@ -318,7 +440,7 @@ export function ReadingPlansPage() {
               <Badge
                 key={topic.id}
                 variant={selectedTopic === topic.id ? "default" : "outline"}
-                className="cursor-pointer"
+                className={`cursor-pointer transition-all ${selectedTopic === topic.id ? "bg-primary" : "bg-white/5 border-white/20 text-white/70 hover:bg-white/10"}`}
                 onClick={() => setSelectedTopic(topic.id)}
                 data-testid={`filter-topic-${topic.id}`}
               >
@@ -327,10 +449,11 @@ export function ReadingPlansPage() {
             ))}
           </div>
 
+          {/* Maturity Levels */}
           <div className="flex flex-wrap gap-2 mb-4">
             <Badge 
               variant={selectedMaturity === null ? "default" : "outline"}
-              className="cursor-pointer"
+              className={`cursor-pointer transition-all ${selectedMaturity === null ? "bg-[#7C9A8E]" : "bg-white/5 border-white/20 text-white/70 hover:bg-white/10"}`}
               onClick={() => setSelectedMaturity(null)}
             >
               All Levels
@@ -339,7 +462,7 @@ export function ReadingPlansPage() {
               <Badge
                 key={level.id}
                 variant={selectedMaturity === level.id ? "default" : "outline"}
-                className="cursor-pointer"
+                className={`cursor-pointer transition-all ${selectedMaturity === level.id ? "bg-[#7C9A8E]" : "bg-white/5 border-white/20 text-white/70 hover:bg-white/10"}`}
                 onClick={() => setSelectedMaturity(level.id)}
                 data-testid={`filter-maturity-${level.id}`}
               >
@@ -348,10 +471,11 @@ export function ReadingPlansPage() {
             ))}
           </div>
 
+          {/* Durations */}
           <div className="flex flex-wrap gap-2">
             <Badge 
               variant={selectedDuration === null ? "default" : "outline"}
-              className="cursor-pointer"
+              className={`cursor-pointer transition-all ${selectedDuration === null ? "bg-[#D4A574]" : "bg-white/5 border-white/20 text-white/70 hover:bg-white/10"}`}
               onClick={() => setSelectedDuration(null)}
             >
               Any Duration
@@ -360,7 +484,7 @@ export function ReadingPlansPage() {
               <Badge
                 key={duration.days}
                 variant={selectedDuration === duration.days ? "default" : "outline"}
-                className="cursor-pointer"
+                className={`cursor-pointer transition-all ${selectedDuration === duration.days ? "bg-[#D4A574]" : "bg-white/5 border-white/20 text-white/70 hover:bg-white/10"}`}
                 onClick={() => setSelectedDuration(duration.days)}
                 data-testid={`filter-duration-${duration.days}`}
               >
@@ -368,61 +492,66 @@ export function ReadingPlansPage() {
               </Badge>
             ))}
           </div>
-        </div>
+        </motion.div>
 
+        {/* All Plans Grid */}
         <div className="mb-6">
-          <h2 className="text-2xl font-display font-bold text-gray-900">
-            {selectedTopic || selectedMaturity || selectedDuration ? "Filtered Plans" : "All Reading Plans"}
+          <h2 className="text-2xl font-display font-bold text-white">
+            {hasActiveFilters ? "Filtered Plans" : "All Reading Plans"}
           </h2>
+          <p className="text-white/50 text-sm mt-1">{plans.length} plans available</p>
         </div>
 
         {plans.length === 0 ? (
-          <div className="text-center py-12 bg-gray-50 rounded-2xl">
-            <BookOpen className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500 mb-2">No plans match your filters</p>
-            <Button variant="outline" onClick={() => {
-              setSelectedTopic(null);
-              setSelectedMaturity(null);
-              setSelectedDuration(null);
-            }}>
+          <div className="text-center py-16 bg-white/5 rounded-3xl border border-white/10">
+            <BookOpen className="h-16 w-16 text-white/20 mx-auto mb-4" />
+            <p className="text-white/50 mb-4">No plans match your filters</p>
+            <Button variant="outline" onClick={clearFilters} className="border-white/20 text-white hover:bg-white/10">
               Clear Filters
             </Button>
           </div>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {plans.map((plan) => (
-              <PlanCard 
-                key={plan.id} 
-                plan={plan}
-                enrolled={enrolledPlanIds.has(plan.id)}
-                onEnroll={() => enrollMutation.mutate(plan.id)}
-                enrolling={enrollMutation.isPending}
-              />
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {plans.map((plan, i) => (
+              <motion.div
+                key={plan.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05 }}
+              >
+                <PlanCard 
+                  plan={plan}
+                  enrolled={enrolledPlanIds.has(plan.id)}
+                  onEnroll={() => enrollMutation.mutate(plan.id)}
+                  enrolling={enrollMutation.isPending}
+                />
+              </motion.div>
             ))}
           </div>
         )}
       </div>
 
+      {/* Onboarding Modal */}
       <AnimatePresence>
         {showOnboarding && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4"
             onClick={() => setShowOnboarding(false)}
           >
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-white rounded-2xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto"
+              className="bg-[#1a2744] rounded-3xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto border border-white/10"
               onClick={(e) => e.stopPropagation()}
             >
               {onboardingStep === 0 && (
                 <div>
-                  <h3 className="text-xl font-bold mb-2">Where are you on your faith journey?</h3>
-                  <p className="text-gray-600 mb-6">This helps us recommend the right plans for you.</p>
+                  <h3 className="text-xl font-bold text-white mb-2">Where are you on your faith journey?</h3>
+                  <p className="text-white/60 mb-6">This helps us recommend the right plans for you.</p>
                   <div className="space-y-3">
                     {MATURITY_LEVELS.map((level) => (
                       <button
@@ -430,13 +559,13 @@ export function ReadingPlansPage() {
                         onClick={() => setSelectedMaturityLevel(level.id)}
                         className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
                           selectedMaturityLevel === level.id 
-                            ? "border-primary bg-primary/5" 
-                            : "border-gray-200 hover:border-gray-300"
+                            ? "border-primary bg-primary/10" 
+                            : "border-white/10 hover:border-white/30 bg-white/5"
                         }`}
                         data-testid={`onboarding-maturity-${level.id}`}
                       >
-                        <p className="font-semibold">{level.label}</p>
-                        <p className="text-sm text-gray-500">{level.description}</p>
+                        <p className="font-semibold text-white">{level.label}</p>
+                        <p className="text-sm text-white/50">{level.description}</p>
                       </button>
                     ))}
                   </div>
@@ -448,8 +577,8 @@ export function ReadingPlansPage() {
 
               {onboardingStep === 1 && (
                 <div>
-                  <h3 className="text-xl font-bold mb-2">What topics interest you?</h3>
-                  <p className="text-gray-600 mb-6">Select all that apply (you can change this later).</p>
+                  <h3 className="text-xl font-bold text-white mb-2">What topics interest you?</h3>
+                  <p className="text-white/60 mb-6">Select all that apply.</p>
                   <div className="grid grid-cols-2 gap-3">
                     {TOPICS.map((topic) => (
                       <button
@@ -457,18 +586,18 @@ export function ReadingPlansPage() {
                         onClick={() => toggleInterest(topic.id)}
                         className={`p-4 rounded-xl border-2 text-left transition-all ${
                           selectedInterests.includes(topic.id)
-                            ? "border-primary bg-primary/5"
-                            : "border-gray-200 hover:border-gray-300"
+                            ? "border-primary bg-primary/10"
+                            : "border-white/10 hover:border-white/30 bg-white/5"
                         }`}
                         data-testid={`onboarding-topic-${topic.id}`}
                       >
                         <span className="text-2xl mb-1 block">{topic.icon}</span>
-                        <p className="font-medium text-sm">{topic.label}</p>
+                        <p className="font-medium text-sm text-white">{topic.label}</p>
                       </button>
                     ))}
                   </div>
                   <div className="flex gap-3 mt-6">
-                    <Button variant="outline" onClick={() => setOnboardingStep(0)}>
+                    <Button variant="outline" onClick={() => setOnboardingStep(0)} className="border-white/20 text-white hover:bg-white/10">
                       Back
                     </Button>
                     <Button 
@@ -493,82 +622,113 @@ function PlanCard({
   plan, 
   enrolled, 
   onEnroll,
-  enrolling
+  enrolling,
+  variant = "default"
 }: { 
   plan: ReadingPlan; 
   enrolled: boolean;
   onEnroll: () => void;
   enrolling: boolean;
+  variant?: "default" | "featured";
 }) {
   const maturityLabel = MATURITY_LEVELS.find(m => m.id === plan.maturityLevel)?.label || plan.maturityLevel;
+  const primaryTopic = plan.topics?.[0] || "faith";
+  const topicData = TOPICS.find(t => t.id === primaryTopic) || TOPICS[1];
   
   return (
     <motion.div
-      whileHover={{ y: -4 }}
-      className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden"
+      whileHover={{ y: -4, scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+      className="bg-[#243656] rounded-2xl shadow-xl border border-white/10 overflow-hidden group cursor-pointer h-full"
     >
+      {/* Cover Image/Gradient */}
       <div 
-        className="h-40 bg-gradient-to-br from-primary/30 to-primary/10 relative"
+        className={`h-44 relative overflow-hidden bg-gradient-to-br ${topicData.gradient}`}
         style={plan.coverImageUrl ? { 
-          backgroundImage: `url(${plan.coverImageUrl})`,
+          backgroundImage: `linear-gradient(to bottom, transparent 0%, rgba(26,39,68,0.8) 100%), url(${plan.coverImageUrl})`,
           backgroundSize: "cover",
           backgroundPosition: "center"
         } : {}}
       >
-        {plan.featured && (
-          <Badge className="absolute top-3 left-3 bg-amber-500">
-            <Star className="h-3 w-3 mr-1" /> Featured
-          </Badge>
+        {/* Decorative Elements */}
+        {!plan.coverImageUrl && (
+          <>
+            <div className="absolute inset-0 flex items-center justify-center opacity-20">
+              <span className="text-8xl">{topicData.bgIcon}</span>
+            </div>
+            <div className="absolute top-4 right-4 w-20 h-20 rounded-full bg-white/10 blur-xl" />
+            <div className="absolute bottom-4 left-4 w-16 h-16 rounded-full bg-black/10 blur-lg" />
+          </>
         )}
+        
+        {/* Badges */}
+        <div className="absolute top-3 left-3 flex gap-2">
+          {plan.featured && (
+            <Badge className="bg-amber-500 text-white border-0 shadow-lg">
+              <Star className="h-3 w-3 mr-1" /> Featured
+            </Badge>
+          )}
+        </div>
         {enrolled && (
-          <Badge className="absolute top-3 right-3 bg-green-500">
+          <Badge className="absolute top-3 right-3 bg-green-500 text-white border-0 shadow-lg">
             <Check className="h-3 w-3 mr-1" /> Enrolled
           </Badge>
         )}
+
+        {/* Glowing Border Effect */}
+        <div className="absolute inset-0 border-2 border-white/0 group-hover:border-white/20 transition-all rounded-t-2xl" />
       </div>
       
       <div className="p-5">
-        <div className="flex items-center gap-2 mb-2">
-          <Badge variant="outline" className="text-xs">{maturityLabel}</Badge>
-          <Badge variant="outline" className="text-xs">
+        {/* Tags */}
+        <div className="flex items-center gap-2 mb-3">
+          <Badge variant="outline" className="text-xs bg-white/5 border-white/10 text-white/70">
+            {maturityLabel}
+          </Badge>
+          <Badge variant="outline" className="text-xs bg-white/5 border-white/10 text-white/70">
             <Clock className="h-3 w-3 mr-1" />
             {plan.durationDays} Days
           </Badge>
         </div>
         
-        <h3 className="text-lg font-bold text-gray-900 mb-2">{plan.title}</h3>
-        <p className="text-gray-600 text-sm line-clamp-2 mb-4">{plan.description}</p>
+        <h3 className="text-lg font-bold text-white mb-2 line-clamp-1">{plan.title}</h3>
+        <p className="text-white/50 text-sm line-clamp-2 mb-4">{plan.description}</p>
         
+        {/* Topics */}
         {plan.topics && plan.topics.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-4">
-            {plan.topics.slice(0, 3).map((topic) => {
-              const topicData = TOPICS.find(t => t.id === topic);
+          <div className="flex flex-wrap gap-1.5 mb-4">
+            {plan.topics.slice(0, 2).map((topic) => {
+              const tData = TOPICS.find(t => t.id === topic);
               return (
-                <span key={topic} className="text-xs text-gray-500">
-                  {topicData?.icon} {topicData?.label || topic}
+                <span key={topic} className="text-xs text-white/40">
+                  {tData?.icon} {tData?.label || topic}
                 </span>
               );
             })}
           </div>
         )}
         
-        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-          <div className="flex items-center gap-1 text-sm text-gray-500">
+        {/* Footer */}
+        <div className="flex items-center justify-between pt-4 border-t border-white/10">
+          <div className="flex items-center gap-1.5 text-sm text-white/40">
             <Users className="h-4 w-4" />
             <span>{plan.enrollmentCount?.toLocaleString() || 0} enrolled</span>
           </div>
           
           {enrolled ? (
             <Link href={`/reading-plans/${plan.id}`}>
-              <Button size="sm" className="gap-1" data-testid={`button-continue-plan-${plan.id}`}>
+              <Button size="sm" className="gap-1 bg-white text-[#1a2744] hover:bg-white/90 font-bold" data-testid={`button-continue-plan-${plan.id}`}>
                 Continue <ChevronRight className="h-4 w-4" />
               </Button>
             </Link>
           ) : (
             <Button 
               size="sm" 
-              className="gap-1"
-              onClick={onEnroll}
+              className="gap-1 bg-primary hover:bg-primary/90 font-bold"
+              onClick={(e) => {
+                e.stopPropagation();
+                onEnroll();
+              }}
               disabled={enrolling}
               data-testid={`button-enroll-plan-${plan.id}`}
             >

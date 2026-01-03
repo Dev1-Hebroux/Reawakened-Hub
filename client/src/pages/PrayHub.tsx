@@ -299,65 +299,160 @@ export function PrayHub() {
       <main className="pt-28 pb-32 px-4">
         <div className="max-w-lg mx-auto">
           
+          {/* Hero Section with Animated Elements */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-8"
+            className="text-center mb-8 relative"
           >
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 mb-4">
-              <Heart className="h-4 w-4 text-primary" />
-              <span className="text-sm font-bold text-white/90">Pray</span>
+            {/* Ambient Light Rays */}
+            <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-80 h-80 pointer-events-none">
+              <motion.div 
+                className="absolute inset-0 bg-primary/20 rounded-full blur-3xl"
+                animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.1, 0.3] }}
+                transition={{ duration: 4, repeat: Infinity }}
+              />
+              <motion.div 
+                className="absolute inset-10 bg-amber-500/10 rounded-full blur-2xl"
+                animate={{ scale: [1.2, 1, 1.2], opacity: [0.2, 0.4, 0.2] }}
+                transition={{ duration: 3, repeat: Infinity, delay: 1 }}
+              />
             </div>
-            <h1 className="text-3xl font-display font-bold text-white mb-2">
-              Intercede for the Nations
-            </h1>
-            <p className="text-white/70">
-              Your prayers fuel revival across the earth
-            </p>
-            {streak > 0 && (
-              <div className="mt-3 inline-flex items-center gap-2 bg-primary/20 rounded-full px-4 py-2">
-                <Flame className="h-4 w-4 text-primary" />
-                <span className="text-sm font-bold text-primary">{streak} Day Streak!</span>
-              </div>
-            )}
+            
+            <div className="relative z-10">
+              <motion.div 
+                className="inline-flex items-center gap-2 bg-gradient-to-r from-primary/30 to-amber-500/20 backdrop-blur-sm rounded-full px-5 py-2.5 mb-4 border border-primary/30"
+                animate={{ boxShadow: ["0 0 20px rgba(234,88,12,0.2)", "0 0 40px rgba(234,88,12,0.4)", "0 0 20px rgba(234,88,12,0.2)"] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              >
+                <Heart className="h-4 w-4 text-primary" />
+                <span className="text-sm font-bold text-white uppercase tracking-wider">Pray</span>
+              </motion.div>
+              <h1 className="text-3xl font-display font-bold text-white mb-2">
+                Intercede for the{" "}
+                <span className="bg-gradient-to-r from-primary to-amber-400 bg-clip-text text-transparent">Nations</span>
+              </h1>
+              <p className="text-white/70 max-w-xs mx-auto">
+                Your prayers fuel revival across the earth
+              </p>
+              {streak > 0 && (
+                <motion.div 
+                  className="mt-4 inline-flex items-center gap-2 bg-gradient-to-r from-orange-500/20 to-amber-500/20 rounded-full px-5 py-2.5 border border-orange-500/30"
+                  animate={{ scale: [1, 1.02, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
+                  <div className="relative">
+                    <Flame className="h-5 w-5 text-orange-400" />
+                    <motion.div 
+                      className="absolute inset-0 bg-orange-400/50 rounded-full blur-sm"
+                      animate={{ scale: [1, 1.5, 1], opacity: [0.5, 0, 0.5] }}
+                      transition={{ duration: 1.5, repeat: Infinity }}
+                    />
+                  </div>
+                  <span className="text-sm font-bold text-orange-300">{streak} Day Streak!</span>
+                </motion.div>
+              )}
+            </div>
           </motion.div>
 
-          {/* Prayer Stats Banner */}
-          {prayerStats && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.05 }}
-              className="grid grid-cols-3 gap-3 mb-6"
-            >
-              <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-4 text-center border border-white/10">
-                <div className="text-2xl font-bold text-primary">{prayerStats.totalHours || 0}</div>
-                <div className="text-xs text-white/50">Prayer Hours</div>
-              </div>
-              <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-4 text-center border border-white/10">
-                <div className="text-2xl font-bold text-[#7C9A8E]">{prayerStats.totalIntercessors || 0}</div>
-                <div className="text-xs text-white/50">Intercessors</div>
-              </div>
-              <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-4 text-center border border-white/10">
-                <div className="text-2xl font-bold text-[#D4A574]">{prayerStats.campusesCovered || 0}</div>
-                <div className="text-xs text-white/50">Campuses</div>
-              </div>
-            </motion.div>
-          )}
+          {/* Revival Pulse Stats */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 }}
+            className="relative mb-6 overflow-hidden rounded-3xl"
+          >
+            {/* Glowing Background */}
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/20 via-[#4A7C7C]/20 to-[#D4A574]/20" />
+            <motion.div 
+              className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-primary/10"
+              animate={{ x: ["-100%", "100%"] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+            />
+            
+            <div className="relative grid grid-cols-3 gap-3 p-4">
+              <motion.div 
+                className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 text-center border border-primary/30 relative overflow-hidden"
+                whileHover={{ scale: 1.05 }}
+              >
+                <motion.div 
+                  className="absolute inset-0 bg-primary/10"
+                  animate={{ opacity: [0, 0.3, 0] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                />
+                <motion.div 
+                  className="text-3xl font-bold text-primary relative"
+                  animate={{ scale: [1, 1.05, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
+                  {prayerStats?.totalHours || 0}
+                </motion.div>
+                <div className="text-xs text-white/60 font-medium">Prayer Hours</div>
+              </motion.div>
+              
+              <motion.div 
+                className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 text-center border border-[#7C9A8E]/30 relative overflow-hidden"
+                whileHover={{ scale: 1.05 }}
+              >
+                <motion.div 
+                  className="absolute inset-0 bg-[#7C9A8E]/10"
+                  animate={{ opacity: [0, 0.3, 0] }}
+                  transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+                />
+                <motion.div 
+                  className="text-3xl font-bold text-[#7C9A8E] relative"
+                  animate={{ scale: [1, 1.05, 1] }}
+                  transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+                >
+                  {prayerStats?.totalIntercessors || 0}
+                </motion.div>
+                <div className="text-xs text-white/60 font-medium">Intercessors</div>
+              </motion.div>
+              
+              <motion.div 
+                className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 text-center border border-[#D4A574]/30 relative overflow-hidden"
+                whileHover={{ scale: 1.05 }}
+              >
+                <motion.div 
+                  className="absolute inset-0 bg-[#D4A574]/10"
+                  animate={{ opacity: [0, 0.3, 0] }}
+                  transition={{ duration: 2, repeat: Infinity, delay: 1 }}
+                />
+                <motion.div 
+                  className="text-3xl font-bold text-[#D4A574] relative"
+                  animate={{ scale: [1, 1.05, 1] }}
+                  transition={{ duration: 2, repeat: Infinity, delay: 1 }}
+                >
+                  {prayerStats?.campusesCovered || 0}
+                </motion.div>
+                <div className="text-xs text-white/60 font-medium">Campuses</div>
+              </motion.div>
+            </div>
+          </motion.div>
 
-          {/* Adopt a Focus Section */}
+          {/* Adopt a Focus Section - Enhanced */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-white/10 backdrop-blur-md rounded-3xl p-6 mb-6 border border-white/10"
+            className="bg-gradient-to-br from-[#243656] to-[#1a2744] rounded-3xl p-6 mb-6 border-2 border-primary/30 shadow-xl relative overflow-hidden"
           >
-            <div className="flex items-center gap-3 mb-4">
-              <div className="h-12 w-12 rounded-full bg-primary/20 flex items-center justify-center">
-                <Globe2 className="h-6 w-6 text-primary" />
-              </div>
+            {/* World Map Background */}
+            <div className="absolute inset-0 opacity-5">
+              <div className="absolute top-4 right-4 w-32 h-32 rounded-full bg-primary/30 blur-2xl" />
+              <div className="absolute bottom-4 left-4 w-24 h-24 rounded-full bg-[#D4A574]/30 blur-xl" />
+            </div>
+            
+            <div className="relative flex items-center gap-3 mb-5">
+              <motion.div 
+                className="h-14 w-14 rounded-2xl bg-gradient-to-br from-primary to-amber-500 flex items-center justify-center shadow-lg"
+                animate={{ rotate: [0, 5, 0, -5, 0] }}
+                transition={{ duration: 6, repeat: Infinity }}
+              >
+                <Globe2 className="h-7 w-7 text-white" />
+              </motion.div>
               <div>
-                <h3 className="font-bold text-white">Adopt a Focus</h3>
+                <h3 className="font-bold text-white text-lg">Adopt a Focus</h3>
                 <p className="text-sm text-white/60">Choose a nation or campus to pray for</p>
               </div>
             </div>
@@ -367,23 +462,34 @@ export function PrayHub() {
                 <Loader2 className="h-6 w-6 text-white/50 animate-spin" />
               </div>
             ) : (
-              <div className="space-y-3">
-                {displayFocuses.map((group) => (
+              <div className="relative space-y-3">
+                {displayFocuses.map((group, i) => (
                   <motion.div
                     key={group.id}
-                    whileHover={{ scale: 1.02 }}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.1 }}
+                    whileHover={{ scale: 1.02, x: 4 }}
                     whileTap={{ scale: 0.98 }}
-                    className="bg-white/5 hover:bg-white/10 rounded-2xl p-4 cursor-pointer transition-all border border-white/5"
+                    className="bg-white/5 hover:bg-white/10 rounded-2xl p-4 cursor-pointer transition-all border border-white/10 hover:border-primary/30"
                     onClick={() => handleSelectGroup(group)}
                     data-testid={`focus-${group.id}`}
                   >
                     <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-bold text-white text-sm">{group.name}</h4>
-                        <p className="text-xs text-white/50">{group.region} • {group.population}</p>
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                          <span className="text-lg">🌍</span>
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-white">{group.name}</h4>
+                          <p className="text-xs text-white/50">{group.region} • {group.population}</p>
+                        </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-primary font-medium">{group.intercessorCount} praying</span>
+                        <div className="flex items-center gap-1 bg-primary/20 rounded-full px-2.5 py-1">
+                          <span className="text-xs text-primary font-bold">{group.intercessorCount}</span>
+                          <span className="text-xs text-primary/70">praying</span>
+                        </div>
                         <ChevronRight className="h-5 w-5 text-white/30" />
                       </div>
                     </div>
@@ -392,88 +498,126 @@ export function PrayHub() {
               </div>
             )}
             
-            <div className="grid grid-cols-2 gap-3 mt-4">
-              <Button 
-                className="bg-primary hover:bg-primary/90 text-white font-bold py-5 rounded-2xl"
-                onClick={() => { setAdoptType("nation"); setShowAdoptModal(true); }}
-                data-testid="button-adopt-nation"
-              >
-                <Globe2 className="h-4 w-4 mr-2" />
-                Nations
-              </Button>
-              <Button 
-                className="bg-[#4A7C7C] hover:bg-[#4A7C7C]/90 text-white font-bold py-5 rounded-2xl"
-                onClick={() => { setAdoptType("campus"); setShowAdoptModal(true); }}
-                data-testid="button-adopt-campus"
-              >
-                <GraduationCap className="h-4 w-4 mr-2" />
-                UK Campuses
-              </Button>
+            <div className="relative grid grid-cols-2 gap-3 mt-5">
+              <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+                <Button 
+                  className="w-full bg-gradient-to-r from-primary to-amber-600 hover:opacity-90 text-white font-bold py-5 rounded-2xl shadow-lg"
+                  onClick={() => { setAdoptType("nation"); setShowAdoptModal(true); }}
+                  data-testid="button-adopt-nation"
+                >
+                  <Globe2 className="h-5 w-5 mr-2" />
+                  Nations
+                </Button>
+              </motion.div>
+              <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+                <Button 
+                  className="w-full bg-gradient-to-r from-[#4A7C7C] to-[#7C9A8E] hover:opacity-90 text-white font-bold py-5 rounded-2xl shadow-lg"
+                  onClick={() => { setAdoptType("campus"); setShowAdoptModal(true); }}
+                  data-testid="button-adopt-campus"
+                >
+                  <GraduationCap className="h-5 w-5 mr-2" />
+                  UK Campuses
+                </Button>
+              </motion.div>
             </div>
           </motion.div>
 
-          {/* Quick Prayer Timer */}
+          {/* Quick Prayer Timer - Enhanced with Pulsating Effects */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="bg-white/10 backdrop-blur-md rounded-3xl p-6 mb-6 border border-white/10"
+            className="relative rounded-3xl p-6 mb-6 overflow-hidden"
           >
-            <div className="flex items-center gap-3 mb-4">
-              <div className="h-12 w-12 rounded-full bg-[#4A7C7C]/30 flex items-center justify-center">
-                <Timer className="h-6 w-6 text-[#7C9A8E]" />
-              </div>
+            {/* Animated Background */}
+            <div className="absolute inset-0 bg-gradient-to-br from-[#4A7C7C]/30 via-[#1a2744] to-[#7C9A8E]/20" />
+            {timerActive && (
+              <>
+                <motion.div 
+                  className="absolute inset-0 bg-gradient-to-r from-[#4A7C7C]/20 via-transparent to-[#4A7C7C]/20"
+                  animate={{ opacity: [0.3, 0.6, 0.3] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                />
+                <motion.div 
+                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full bg-[#7C9A8E]/20 blur-3xl"
+                  animate={{ scale: [1, 1.3, 1], opacity: [0.3, 0.1, 0.3] }}
+                  transition={{ duration: 3, repeat: Infinity }}
+                />
+              </>
+            )}
+            <div className="absolute inset-0 border-2 border-[#4A7C7C]/30 rounded-3xl" />
+            
+            <div className="relative flex items-center gap-3 mb-5">
+              <motion.div 
+                className="h-14 w-14 rounded-2xl bg-gradient-to-br from-[#4A7C7C] to-[#7C9A8E] flex items-center justify-center shadow-lg"
+                animate={timerActive ? { 
+                  boxShadow: ["0 0 20px rgba(122,154,142,0.3)", "0 0 40px rgba(122,154,142,0.6)", "0 0 20px rgba(122,154,142,0.3)"]
+                } : {}}
+                transition={{ duration: 2, repeat: Infinity }}
+              >
+                <Timer className="h-7 w-7 text-white" />
+              </motion.div>
               <div>
-                <h3 className="font-bold text-white">Quick Prayer Timer</h3>
+                <h3 className="font-bold text-white text-lg">Quick Prayer Timer</h3>
                 <p className="text-sm text-white/60">Set your focus time</p>
               </div>
             </div>
             
             {timerActive ? (
-              <div className="text-center py-6">
-                <div className="text-5xl font-display font-bold text-white mb-4">
-                  {formatTime(timerSeconds)}
-                </div>
-                <p className="text-white/60 mb-4">Stay focused in prayer...</p>
-                <Button
-                  variant="outline"
-                  className="border-white/20 text-white hover:bg-white/10"
-                  onClick={() => {
-                    setTimerActive(false);
-                    setTimerSeconds(0);
-                  }}
+              <div className="relative text-center py-8">
+                <motion.div 
+                  className="text-6xl font-display font-bold text-white mb-4"
+                  animate={{ scale: [1, 1.02, 1] }}
+                  transition={{ duration: 1, repeat: Infinity }}
                 >
-                  End Early
-                </Button>
+                  {formatTime(timerSeconds)}
+                </motion.div>
+                <p className="text-[#7C9A8E] mb-6 font-medium">Stay focused in prayer...</p>
+                <div className="flex justify-center gap-4">
+                  <Button
+                    variant="outline"
+                    className="border-white/20 text-white hover:bg-white/10"
+                    onClick={() => {
+                      setTimerActive(false);
+                      setTimerSeconds(0);
+                    }}
+                  >
+                    End Early
+                  </Button>
+                </div>
               </div>
             ) : (
-              <>
-                <div className="flex gap-2 mb-4">
+              <div className="relative">
+                <div className="flex gap-2 mb-5">
                   {[1, 3, 5, 10].map((mins) => (
-                    <button
+                    <motion.button
                       key={mins}
                       onClick={() => setSelectedTimer(mins)}
-                      className={`flex-1 py-3 rounded-xl font-bold text-sm transition-all ${
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className={`flex-1 py-4 rounded-xl font-bold text-sm transition-all ${
                         selectedTimer === mins 
-                          ? 'bg-primary text-white' 
-                          : 'bg-white/5 text-white/60 hover:bg-white/10'
+                          ? 'bg-gradient-to-r from-[#4A7C7C] to-[#7C9A8E] text-white shadow-lg' 
+                          : 'bg-white/5 text-white/60 hover:bg-white/10 border border-white/10'
                       }`}
                       data-testid={`timer-${mins}`}
                     >
                       {mins} min
-                    </button>
+                    </motion.button>
                   ))}
                 </div>
                 
-                <Button 
-                  className="w-full bg-[#4A7C7C] hover:bg-[#4A7C7C]/90 text-white font-bold py-5 rounded-2xl"
-                  onClick={startTimer}
-                  data-testid="button-start-timer"
-                >
-                  <Timer className="h-5 w-5 mr-2" />
-                  Start {selectedTimer} Minute Prayer
-                </Button>
-              </>
+                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                  <Button 
+                    className="w-full bg-gradient-to-r from-[#4A7C7C] to-[#7C9A8E] hover:opacity-90 text-white font-bold py-6 rounded-2xl shadow-xl text-lg"
+                    onClick={startTimer}
+                    data-testid="button-start-timer"
+                  >
+                    <Timer className="h-6 w-6 mr-2" />
+                    Start {selectedTimer} Minute Prayer
+                  </Button>
+                </motion.div>
+              </div>
             )}
           </motion.div>
 
