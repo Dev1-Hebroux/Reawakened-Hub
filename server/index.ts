@@ -5,6 +5,7 @@ import { createServer } from "http";
 import path from "path";
 import { fileURLToPath } from "url";
 import { securityHeaders } from "./securityHeaders";
+import { apiLimiter } from "./rateLimiter";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -19,6 +20,7 @@ declare module "http" {
 }
 
 app.use(securityHeaders);
+app.use("/api", apiLimiter);
 
 app.use(
   express.json({
