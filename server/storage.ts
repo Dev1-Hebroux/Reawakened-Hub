@@ -4,6 +4,9 @@ import {
   reactions,
   sparks,
   sparkReactions,
+  sparkBookmarks,
+  sparkJournals,
+  sparkActionCompletions,
   prayerMessages,
   prayerSessions,
   sparkSubscriptions,
@@ -59,6 +62,12 @@ import {
   type InsertSpark,
   type SparkReaction,
   type InsertSparkReaction,
+  type SparkBookmark,
+  type InsertSparkBookmark,
+  type SparkJournal,
+  type InsertSparkJournal,
+  type SparkActionCompletion,
+  type InsertSparkActionCompletion,
   type PrayerMessage,
   type InsertPrayerMessage,
   type PrayerSession,
@@ -459,6 +468,19 @@ export interface IStorage {
   getUserSparkReaction(sparkId: number, userId: string): Promise<SparkReaction | undefined>;
   createSparkReaction(reaction: InsertSparkReaction): Promise<SparkReaction>;
   deleteSparkReaction(sparkId: number, userId: string, reactionType: string): Promise<void>;
+
+  // Spark Bookmarks
+  getSparkBookmark(sparkId: number, userId: string): Promise<SparkBookmark | undefined>;
+  createSparkBookmark(bookmark: InsertSparkBookmark): Promise<SparkBookmark>;
+  deleteSparkBookmark(sparkId: number, userId: string): Promise<void>;
+
+  // Spark Journals
+  createSparkJournal(journal: InsertSparkJournal): Promise<SparkJournal>;
+
+  // Spark Action Completions
+  getSparkActionCompletion(sparkId: number, userId: string): Promise<SparkActionCompletion | undefined>;
+  createSparkActionCompletion(completion: InsertSparkActionCompletion): Promise<SparkActionCompletion>;
+  getUserActionStreak(userId: string): Promise<number>;
 
   // Prayer Messages (Live Intercession)
   getPrayerMessages(sparkId?: number, sessionId?: number, limit?: number): Promise<PrayerMessage[]>;
@@ -1166,6 +1188,72 @@ export class DatabaseStorage implements IStorage {
     await db.delete(sparkReactions).where(
       and(eq(sparkReactions.sparkId, sparkId), eq(sparkReactions.userId, userId), eq(sparkReactions.reactionType, reactionType))
     );
+  }
+
+  // Spark Bookmarks
+  async getSparkBookmark(sparkId: number, userId: string): Promise<SparkBookmark | undefined> {
+    const [bookmark] = await db.select().from(sparkBookmarks)
+      .where(and(eq(sparkBookmarks.sparkId, sparkId), eq(sparkBookmarks.userId, userId)));
+    return bookmark;
+  }
+
+  async createSparkBookmark(bookmark: InsertSparkBookmark): Promise<SparkBookmark> {
+    const [created] = await db.insert(sparkBookmarks).values(bookmark).returning();
+    return created;
+  }
+
+  async deleteSparkBookmark(sparkId: number, userId: string): Promise<void> {
+    await db.delete(sparkBookmarks).where(
+      and(eq(sparkBookmarks.sparkId, sparkId), eq(sparkBookmarks.userId, userId))
+    );
+  }
+
+  // Spark Journals
+  async createSparkJournal(journal: InsertSparkJournal): Promise<SparkJournal> {
+    const [created] = await db.insert(sparkJournals).values(journal).returning();
+    return created;
+  }
+
+  // Spark Action Completions
+  async getSparkActionCompletion(sparkId: number, userId: string): Promise<SparkActionCompletion | undefined> {
+    const [completion] = await db.select().from(sparkActionCompletions)
+      .where(and(eq(sparkActionCompletions.sparkId, sparkId), eq(sparkActionCompletions.userId, userId)));
+    return completion;
+  }
+
+  async createSparkActionCompletion(completion: InsertSparkActionCompletion): Promise<SparkActionCompletion> {
+    const [created] = await db.insert(sparkActionCompletions).values(completion).returning();
+    return created;
+  }
+
+  async getUserActionStreak(userId: string): Promise<number> {
+    const completions = await db.select().from(sparkActionCompletions)
+      .where(eq(sparkActionCompletions.userId, userId))
+      .orderBy(desc(sparkActionCompletions.completedAt));
+    
+    if (completions.length === 0) return 0;
+    
+    let streak = 0;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    for (let i = 0; i < completions.length; i++) {
+      const completionDate = new Date(completions[i].completedAt!);
+      completionDate.setHours(0, 0, 0, 0);
+      
+      const expectedDate = new Date(today);
+      expectedDate.setDate(today.getDate() - i);
+      
+      if (completionDate.getTime() === expectedDate.getTime()) {
+        streak++;
+      } else if (i === 0 && completionDate.getTime() === new Date(today.getTime() - 86400000).getTime()) {
+        streak++;
+      } else {
+        break;
+      }
+    }
+    
+    return streak;
   }
 
   // Prayer Messages (Live Intercession)

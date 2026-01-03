@@ -47,6 +47,7 @@ const StylesTool = lazy(() => import("@/pages/StylesTool").then(m => ({ default:
 const EqTool = lazy(() => import("@/pages/EqTool").then(m => ({ default: m.EqTool })));
 const ScaTool = lazy(() => import("@/pages/ScaTool").then(m => ({ default: m.ScaTool })));
 const DailyReflection = lazy(() => import("@/pages/DailyReflection").then(m => ({ default: m.DailyReflection })));
+const SparkDetail = lazy(() => import("@/pages/SparkDetail").then(m => ({ default: m.SparkDetail })));
 const SessionBooking = lazy(() => import("@/pages/SessionBooking").then(m => ({ default: m.SessionBooking })));
 const Mini360 = lazy(() => import("@/pages/Mini360").then(m => ({ default: m.Mini360 })));
 const FeedbackResponse = lazy(() => import("@/pages/FeedbackResponse").then(m => ({ default: m.FeedbackResponse })));
@@ -109,6 +110,7 @@ function Router() {
         <Route path="/community" component={CommunityHub} />
         <Route path="/sparks" component={SparksPage} />
         <Route path="/sparks/:id" component={SparksPage} />
+        <Route path="/spark/:id" component={SparkDetail} />
         <Route path="/dominion/schools" component={SchoolsLanding} />
         <Route path="/dominion/universities" component={UniversitiesLanding} />
         <Route path="/dominion/9-5-reset" component={EarlyCareerLanding} />

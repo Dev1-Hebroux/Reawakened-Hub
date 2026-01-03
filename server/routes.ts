@@ -237,6 +237,103 @@ export async function registerRoutes(
     }
   });
 
+  // ===== SPARK BOOKMARKS =====
+  
+  // Check if user has bookmarked a spark
+  app.get('/api/sparks/:id/bookmark', isAuthenticated, async (req: any, res) => {
+    try {
+      const sparkId = parseInt(req.params.id);
+      const userId = req.user.claims.sub;
+      const bookmark = await storage.getSparkBookmark(sparkId, userId);
+      res.json({ bookmarked: !!bookmark });
+    } catch (error) {
+      console.error("Error checking bookmark:", error);
+      res.status(500).json({ message: "Failed to check bookmark" });
+    }
+  });
+
+  // Add bookmark to spark
+  app.post('/api/sparks/:id/bookmark', isAuthenticated, async (req: any, res) => {
+    try {
+      const sparkId = parseInt(req.params.id);
+      const userId = req.user.claims.sub;
+      const bookmark = await storage.createSparkBookmark({ sparkId, userId });
+      res.status(201).json(bookmark);
+    } catch (error) {
+      console.error("Error creating bookmark:", error);
+      res.status(400).json({ message: "Failed to bookmark" });
+    }
+  });
+
+  // Remove bookmark from spark
+  app.delete('/api/sparks/:id/bookmark', isAuthenticated, async (req: any, res) => {
+    try {
+      const sparkId = parseInt(req.params.id);
+      const userId = req.user.claims.sub;
+      await storage.deleteSparkBookmark(sparkId, userId);
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting bookmark:", error);
+      res.status(500).json({ message: "Failed to remove bookmark" });
+    }
+  });
+
+  // ===== SPARK JOURNALS =====
+
+  // Save journal entry for spark
+  app.post('/api/sparks/:id/journal', isAuthenticated, async (req: any, res) => {
+    try {
+      const sparkId = parseInt(req.params.id);
+      const userId = req.user.claims.sub;
+      const { textContent, audioUrl, audioDuration } = req.body;
+      const journal = await storage.createSparkJournal({ sparkId, userId, textContent, audioUrl, audioDuration });
+      res.status(201).json(journal);
+    } catch (error) {
+      console.error("Error creating journal:", error);
+      res.status(400).json({ message: "Failed to save journal" });
+    }
+  });
+
+  // ===== SPARK ACTION COMPLETIONS =====
+
+  // Check action completion status
+  app.get('/api/sparks/:id/action-status', isAuthenticated, async (req: any, res) => {
+    try {
+      const sparkId = parseInt(req.params.id);
+      const userId = req.user.claims.sub;
+      const completion = await storage.getSparkActionCompletion(sparkId, userId);
+      res.json({ completed: !!completion });
+    } catch (error) {
+      console.error("Error checking action status:", error);
+      res.status(500).json({ message: "Failed to check action status" });
+    }
+  });
+
+  // Complete today's action
+  app.post('/api/sparks/:id/complete-action', isAuthenticated, async (req: any, res) => {
+    try {
+      const sparkId = parseInt(req.params.id);
+      const userId = req.user.claims.sub;
+      const completion = await storage.createSparkActionCompletion({ sparkId, userId });
+      res.status(201).json(completion);
+    } catch (error) {
+      console.error("Error completing action:", error);
+      res.status(400).json({ message: "Failed to complete action" });
+    }
+  });
+
+  // Get user action streak
+  app.get('/api/user/action-streak', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const streak = await storage.getUserActionStreak(userId);
+      res.json({ streak });
+    } catch (error) {
+      console.error("Error fetching streak:", error);
+      res.status(500).json({ message: "Failed to fetch streak" });
+    }
+  });
+
   // ===== PRAYER MESSAGES (LIVE INTERCESSION) =====
   
   // Get prayer messages (requires valid active sessionId for scoped chat)
