@@ -370,7 +370,7 @@ export function SparksPage() {
       />
       
       {/* Hero / Live Now Section */}
-      <section className="relative mt-16 md:mt-[72px] min-h-[60vh] md:min-h-[70vh] w-full overflow-hidden">
+      <section className="relative mt-16 md:mt-[72px] w-full">
         <div className="absolute inset-0">
           <img 
             src={featuredSpark?.thumbnailUrl || spark1} 
@@ -380,7 +380,7 @@ export function SparksPage() {
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
         </div>
         
-        <div className="absolute inset-0 flex items-end p-6 md:p-12 max-w-7xl mx-auto w-full">
+        <div className="relative z-10 flex flex-col justify-end min-h-[60vh] md:min-h-[70vh] p-6 md:p-12 max-w-7xl mx-auto w-full">
           <div className="w-full md:w-1/2 space-y-4">
              <div className="flex items-center gap-2">
                <span className="bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider animate-pulse flex items-center gap-1">
