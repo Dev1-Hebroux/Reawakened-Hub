@@ -4,6 +4,7 @@ import { serveStatic } from "./static";
 import { createServer } from "http";
 import path from "path";
 import { fileURLToPath } from "url";
+import { generalRateLimiter, securityHeaders } from "./security";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -17,6 +18,8 @@ declare module "http" {
   }
 }
 
+app.use(securityHeaders);
+
 app.use(
   express.json({
     verify: (req, _res, buf) => {
@@ -26,6 +29,8 @@ app.use(
 );
 
 app.use(express.urlencoded({ extended: false }));
+
+app.use("/api", generalRateLimiter);
 
 app.use("/attached_assets", express.static(path.resolve(__dirname, "..", "attached_assets")));
 app.use("/assets", express.static(path.resolve(__dirname, "..", "attached_assets")));
