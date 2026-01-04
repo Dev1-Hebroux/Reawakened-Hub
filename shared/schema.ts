@@ -35,7 +35,8 @@ export const users = pgTable("users", {
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
   contentMode: varchar("content_mode").default("reflection"),
-  audienceSegment: varchar("audience_segment"),
+  contentTone: varchar("content_tone").default("faith"), // 'seeker' or 'faith' for email tone preference
+  audienceSegment: varchar("audience_segment"), // 'sixth_form', 'university', 'early_career'
   role: varchar("role").default("member"), // 'member', 'leader', 'admin'
   region: varchar("region"), // for regional leaders
   community: varchar("community"), // community/group affiliation
@@ -399,6 +400,9 @@ export const prayerRequests = pgTable("prayer_requests", {
   request: text("request").notNull(),
   isPrivate: varchar("is_private").default("false"),
   status: varchar("status").default("pending"), // pending, praying, answered, archived
+  urgencyLevel: varchar("urgency_level").default("normal"), // 'normal', 'urgent', 'critical'
+  category: varchar("category"), // 'healing', 'provision', 'guidance', 'relationships', 'salvation', 'other'
+  campusOrCity: varchar("campus_or_city"), // location for prayer team context
   prayerNote: text("prayer_note"),
   answeredAt: timestamp("answered_at"),
   userId: varchar("user_id").references(() => users.id),
@@ -435,6 +439,8 @@ export const testimonies = pgTable("testimonies", {
   title: varchar("title").notNull(),
   story: text("story").notNull(),
   category: varchar("category"), // 'healing', 'salvation', 'provision', 'deliverance'
+  sharingPermission: varchar("sharing_permission").default("private"), // 'private', 'anonymous', 'public'
+  displayNamePreference: varchar("display_name_preference").default("first_name"), // 'first_name', 'full_name', 'anonymous'
   isApproved: varchar("is_approved").default("false"),
   userId: varchar("user_id").references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
@@ -454,6 +460,7 @@ export const volunteerSignups = pgTable("volunteer_signups", {
   name: varchar("name").notNull(),
   email: varchar("email").notNull(),
   phone: varchar("phone"),
+  segment: varchar("segment"), // 'sixth_form', 'university', 'early_career'
   areas: text("areas").array(), // 'worship', 'tech', 'outreach', 'prayer', 'hospitality'
   message: text("message"),
   userId: varchar("user_id").references(() => users.id),

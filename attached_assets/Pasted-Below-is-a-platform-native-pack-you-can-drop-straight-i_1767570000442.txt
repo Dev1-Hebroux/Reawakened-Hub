@@ -1,0 +1,361 @@
+Below is a “platform-native” pack you can drop straight into your email templates, with:
+
+* **Two-tone toggle** for each email: **Seeker-friendly** and **Faith-forward** (same structure, different wording)
+* **Personalisation blocks** by segment: **Sixth Form / Uni / Early-career**
+* A clear **Next-step CTA** in every email
+* **Short SMS/WhatsApp** confirmations for each form flow
+
+Use merge fields like `{{first_name}}`, `{{segment}}`, and your links.
+
+---
+
+# A) Personalisation blocks (plug-in paragraphs)
+
+Add **one** of these under the first paragraph of any email (or dynamically based on segment).
+
+### 1) Sixth Form / College
+
+**Seeker-friendly:**
+If you’re juggling exams, deadlines, and life pressure, you’re not the only one. This space is here to help you reset your head, stay grounded, and move forward with confidence—one step at a time.
+
+**Faith-forward:**
+If you’re juggling exams and pressure, you’re not the only one. We’re believing God will strengthen you, give you clarity, and help you walk with peace and confidence—one day at a time.
+
+### 2) University
+
+**Seeker-friendly:**
+Uni can feel intense—new people, big decisions, and a lot happening at once. This community exists to support you with real encouragement, practical steps, and a place to belong.
+
+**Faith-forward:**
+Uni can feel intense—new people, big decisions, and a lot happening at once. This community is here to help you stay close to Jesus, grow in faith, and find your people while you build your future.
+
+### 3) Early-career / Young Professional
+
+**Seeker-friendly:**
+Early career life can be a lot—work pressure, identity, relationships, money decisions. We’re here for the “real life” side of growth, not just motivation.
+
+**Faith-forward:**
+Early career life can be a lot—work pressure, identity, relationships, and big decisions. We’re here to help you grow with God, build strong habits, and live with purpose, not pressure.
+
+---
+
+# B) Email templates (Two-tone versions)
+
+## 1) Volunteer signup — Confirmation email
+
+### Seeker-friendly
+
+**Subject:** You’re in — welcome to the team
+Hi {{first_name}},
+
+Thanks for signing up to volunteer. We’re genuinely glad you’re here.
+
+{{SEGMENT_BLOCK}}
+
+**Next steps:**
+
+1. We’ll review your sign-up and match you to a role that fits what you chose.
+2. You’ll get a message within **48 hours** with onboarding steps.
+3. You’ll be added to a volunteer channel so you can meet the team and see what’s coming up.
+
+**Your next step (pick one):**
+
+* **Join the volunteer hub:** {{volunteer_hub_link}}
+* **Browse upcoming opportunities:** {{opportunities_link}}
+
+If you already know what you’d love to help with (events, design/media, mentoring, logistics, outreach, community), reply and tell us—we’ll try to place you where you’ll thrive.
+
+Warmly,
+{{team_name}}
+{{platform_name}}
+
+### Faith-forward
+
+**Subject:** Thank you for stepping up — welcome
+Hi {{first_name}},
+
+Thank you for signing up to volunteer. Your “yes” matters more than you know.
+
+{{SEGMENT_BLOCK}}
+
+**Next steps:**
+
+1. We’ll review your sign-up and connect you with a role that fits your grace and availability.
+2. You’ll get a message within **48 hours** with onboarding steps.
+3. You’ll be added to a volunteer channel so you can meet the team and step into rhythm with us.
+
+**Your next step (pick one):**
+
+* **Join the volunteer hub:** {{volunteer_hub_link}}
+* **See what God is doing + where you can serve:** {{opportunities_link}}
+
+If you already feel drawn to prayer, outreach, content, media, mentoring, or logistics, reply and tell us. We’d love to place you intentionally.
+
+With gratitude,
+{{team_name}}
+{{platform_name}}
+
+---
+
+## 2) Prayer request — Confirmation to submitter
+
+### Seeker-friendly
+
+**Subject:** We received your request — we’ve got you
+Hi {{first_name}},
+
+Thanks for sharing your prayer request. We’ve received it, and our team will be holding this with care.
+
+{{SEGMENT_BLOCK}}
+
+If you selected “private,” only our prayer team will see it. If anything changes, you can update your request here: {{prayer_request_update_link}}
+
+**Your next step (choose one):**
+
+* **Add a short update later:** {{prayer_tracker_link}}
+* **Join a live prayer moment:** {{prayer_schedule_link}}
+
+You’re not alone.
+{{team_name}}
+{{platform_name}}
+
+### Faith-forward
+
+**Subject:** We’ve received your prayer request — we’re standing with you
+Hi {{first_name}},
+
+Thank you for trusting us with this. We’ve received your request, and our prayer team will be praying with faith.
+
+{{SEGMENT_BLOCK}}
+
+If you selected “private,” only our prayer team will see it. If anything changes, you can update your request here: {{prayer_request_update_link}}
+
+A quick encouragement for today:
+“The Lord is near to the brokenhearted.” (Psalm 34:18)
+
+**Your next step (choose one):**
+
+* **Share an update later:** {{prayer_tracker_link}}
+* **Join a live prayer moment:** {{prayer_schedule_link}}
+
+We’re with you in prayer,
+{{team_name}}
+{{platform_name}}
+
+---
+
+## 3) Prayer request — Notification to prayer team
+
+### Seeker-friendly
+
+**Subject:** New prayer request submitted (Please cover today)
+Hello Prayer Team,
+
+A new request has been submitted.
+
+**Name:** {{first_name_or_anonymous}}
+**Location/Campus:** {{campus_or_city}}
+**Category:** {{category}}
+**Urgency:** {{urgency_level}}
+**Request:**
+“{{prayer_request_text}}”
+
+**Next-step action:**
+
+* Please pray, then send a short encouragement in the dashboard: {{prayer_team_dashboard_link}}
+* If marked urgent, aim to respond within **24 hours**.
+
+Suggested response: acknowledge + encourage + one simple next step (update / join prayer).
+Thank you for covering people faithfully.
+{{team_name}}
+
+### Faith-forward
+
+**Subject:** New prayer request (Let’s cover this with faith)
+Hello Prayer Team,
+
+A new prayer request has been submitted.
+
+**Name:** {{first_name_or_anonymous}}
+**Location/Campus:** {{campus_or_city}}
+**Category:** {{category}}
+**Urgency:** {{urgency_level}}
+**Request:**
+“{{prayer_request_text}}”
+
+**Next-step action:**
+
+* Pray specifically and expectantly.
+* Send a short encouragement + scripture in the dashboard: {{prayer_team_dashboard_link}}
+* If urgent, please respond within **24 hours**.
+
+Suggested response: comfort + scripture + faith declaration + next step.
+Thank you for standing in the gap.
+{{team_name}}
+
+---
+
+## 4) Newsletter subscription — Welcome email
+
+### Seeker-friendly
+
+**Subject:** Welcome — you’re officially in
+Hi {{first_name}},
+
+Welcome to {{platform_name}}. We’re glad you subscribed.
+
+{{SEGMENT_BLOCK}}
+
+Here’s what you’ll get from us:
+
+* Real encouragement (not fluffy)
+* Practical steps for purpose, confidence, relationships, and direction
+* Updates on events + ways to get involved
+
+**Your next step (choose one):**
+
+* **Set your preferences:** {{preferences_link}}
+* **Start Vision & Goals (quick, practical):** {{vision_link}}
+* **Check the Prayer Wall:** {{prayer_wall_link}}
+
+Speak soon,
+{{team_name}}
+{{platform_name}}
+
+### Faith-forward
+
+**Subject:** Welcome — let’s grow in purpose together
+Hi {{first_name}},
+
+Welcome to {{platform_name}}. We’re really glad you joined.
+
+{{SEGMENT_BLOCK}}
+
+Here’s what you’ll get from us:
+
+* Faith + real-life encouragement
+* Practical tools for purpose, relationships, and growth
+* Revival and outreach updates from campuses and communities
+
+**Your next step (choose one):**
+
+* **Set your preferences:** {{preferences_link}}
+* **Start Vision & Goals with faith:** {{vision_link}}
+* **Join the Prayer Wall:** {{prayer_wall_link}}
+
+With love,
+{{team_name}}
+{{platform_name}}
+
+---
+
+## 5) Testimony submission — Acknowledgement email
+
+### Seeker-friendly
+
+**Subject:** We received your story — thank you
+Hi {{first_name}},
+
+Thank you for sharing your testimony with us. We’ve received it, and we’re genuinely grateful you trusted us with your story.
+
+{{SEGMENT_BLOCK}}
+
+**What happens next:**
+
+* Our team will review it for clarity and safety (especially if it’s public).
+* If we need anything, we’ll reply here.
+* If you selected “public,” we’ll tell you when it’s live.
+
+**Your next step (optional):**
+Reply with one sentence you’d want someone else to take away from your story. That line helps us share it well.
+
+Warmly,
+{{team_name}}
+{{platform_name}}
+
+### Faith-forward
+
+**Subject:** Thank you for sharing your testimony — it builds faith
+Hi {{first_name}},
+
+Thank you for sharing what God has done. We’ve received your testimony, and it’s already encouraging us.
+
+{{SEGMENT_BLOCK}}
+
+**What happens next:**
+
+* We’ll review it with care and honour (especially if it’s public).
+* If we need clarification, we’ll reply here.
+* If you selected “public,” we’ll let you know when it’s live.
+
+**Your next step (optional):**
+Reply with one sentence you’d want someone to remember. We may use it as a headline to help your testimony reach the right people.
+
+Grateful with you,
+{{team_name}}
+{{platform_name}}
+
+---
+
+# C) SMS / WhatsApp short confirmations (lightweight)
+
+Keep these tight and friendly; include one link max.
+
+## 1) Volunteer signup
+
+**Seeker-friendly:**
+Hey {{first_name}}! Thanks for signing up to volunteer with {{platform_name}}. Next steps are coming within 48 hours. Meanwhile, here’s the hub: {{volunteer_hub_link}}
+
+**Faith-forward:**
+Hey {{first_name}}! Thank you for volunteering with {{platform_name}}. We’ll send next steps within 48 hours. Here’s the hub: {{volunteer_hub_link}}
+
+## 2) Prayer request (to submitter)
+
+**Seeker-friendly:**
+Hi {{first_name}}—we received your request. Our team will be praying and supporting you. Update anytime here: {{prayer_request_update_link}}
+
+**Faith-forward:**
+Hi {{first_name}}—we received your prayer request and we’re praying with faith. Update anytime here: {{prayer_request_update_link}}
+
+## 3) Newsletter welcome
+
+**Seeker-friendly:**
+Welcome to {{platform_name}}, {{first_name}}! You’re in. Set preferences here so we tailor content for you: {{preferences_link}}
+
+**Faith-forward:**
+Welcome to {{platform_name}}, {{first_name}}! Glad you joined. Set preferences here: {{preferences_link}}
+
+## 4) Testimony acknowledgement
+
+**Seeker-friendly:**
+Thank you for sharing your story, {{first_name}}. We received it and we’ll review it with care. If public, we’ll notify you when it’s live.
+
+**Faith-forward:**
+Thank you for sharing your testimony, {{first_name}}. We received it and we’ll review it with care. If public, we’ll let you know when it’s live.
+
+## 5) Prayer team notification (internal)
+
+**Short alert:**
+New prayer request in {{campus_or_city}} ({{urgency_level}}). Please cover + respond in dashboard: {{prayer_team_dashboard_link}}
+
+---
+
+# D) How to implement the “Two-tone” toggle cleanly (simple approach)
+
+In your template system, store:
+
+* `tone = seeker | faith`
+* `segment = sixth_form | uni | early_career`
+
+Then:
+
+1. Render the **tone-specific** email body (Seeker vs Faith).
+2. Inject the matching `{{SEGMENT_BLOCK}}`.
+3. Always include exactly **one CTA** (Pray / Join / Start / Share).
+
+---
+
+If you want, I can also produce:
+
+* a compact JSON structure for these templates (tone + segment variants), or
+* a “micro-copy set” for buttons/CTAs (e.g., Pray Now, Share Update, Start Vision, Join Community) aligned to your app/web UI.
