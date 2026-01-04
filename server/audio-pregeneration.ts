@@ -2,6 +2,11 @@ import { storage } from "./storage";
 import { generateSparkAudio, getSparkAudioUrl } from "./tts-service";
 
 export async function pregenerateTomorrowsAudio(): Promise<void> {
+  if (!process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID) {
+    console.log("[Audio Pre-generation] Skipping - object storage not configured");
+    return;
+  }
+  
   console.log("[Audio Pre-generation] Starting pre-generation job...");
   
   try {

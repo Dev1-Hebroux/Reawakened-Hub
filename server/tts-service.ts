@@ -10,16 +10,19 @@ interface TTSGenerationResult {
 }
 
 export class TTSService {
-  private objectStorageService: ObjectStorageService;
-  private bucketName: string;
+  private objectStorageService: ObjectStorageService | null = null;
+  private bucketName: string = "";
+  private isConfigured: boolean = false;
 
   constructor() {
-    this.objectStorageService = new ObjectStorageService();
     const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
     if (!bucketId) {
-      throw new Error("DEFAULT_OBJECT_STORAGE_BUCKET_ID not configured");
+      console.warn("DEFAULT_OBJECT_STORAGE_BUCKET_ID not configured - TTS features will be disabled");
+      return;
     }
+    this.objectStorageService = new ObjectStorageService();
     this.bucketName = bucketId;
+    this.isConfigured = true;
   }
 
   async generateAndUploadAudio(
@@ -27,6 +30,10 @@ export class TTSService {
     filename: string,
     voice: "alloy" | "echo" | "fable" | "onyx" | "nova" | "shimmer" = "nova"
   ): Promise<TTSGenerationResult> {
+    if (!this.isConfigured) {
+      return { success: false, error: "TTS service not configured" };
+    }
+    
     try {
       const mp3Response = await openai.audio.speech.create({
         model: "tts-1",
@@ -67,6 +74,10 @@ export class TTSService {
   }
 
   async getAudioUrl(filename: string): Promise<string | null> {
+    if (!this.isConfigured) {
+      return null;
+    }
+    
     try {
       const objectPath = `public/audio/${filename}`;
       const bucket = objectStorageClient.bucket(this.bucketName);
@@ -84,6 +95,10 @@ export class TTSService {
   }
 
   async deleteAudio(filename: string): Promise<boolean> {
+    if (!this.isConfigured) {
+      return false;
+    }
+    
     try {
       const objectPath = `public/audio/${filename}`;
       const bucket = objectStorageClient.bucket(this.bucketName);
