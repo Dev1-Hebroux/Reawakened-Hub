@@ -253,3 +253,47 @@ The platform uses an automated content synchronization system to ensure producti
 - Replit maintains separate development and production PostgreSQL databases
 - Schema changes sync on publish, but DATA does not automatically sync
 - The nightly sync ensures content is always up-to-date in production
+
+## Email Notification System
+
+### Overview
+The platform uses Resend for transactional email notifications. All user form submissions trigger confirmation emails, and scheduled jobs send daily devotionals and event reminders.
+
+### Configuration
+- **Provider**: Resend (requires `RESEND_API_KEY` secret)
+- **From Addresses**: `noreply@reawakened.one`, `prayer@reawakened.one`
+
+### Transactional Emails (server/email.ts)
+Emails sent immediately when users take action:
+
+| Trigger | Email Function | Description |
+|---------|---------------|-------------|
+| `/api/subscribe` | `sendSubscriptionWelcomeEmail` | Welcome email with subscribed categories |
+| `/api/prayer-requests` | `sendPrayerRequestConfirmationEmail` | Confirmation to submitter |
+| `/api/prayer-requests` | `sendPrayerRequestNotification` | Alert to prayer team |
+| `/api/testimonies` | `sendTestimonyAcknowledgementEmail` | Acknowledgement to submitter |
+| `/api/volunteer` | `sendVolunteerConfirmationEmail` | Volunteer signup confirmation |
+| `/api/mission-registration` | `sendMissionTripInterestEmail` | Mission interest confirmation |
+| `/api/event-registrations` | `sendEventRegistrationEmail` | Event registration confirmation |
+| `/api/challenges/:id/join` | `sendChallengeEnrollmentEmail` | Challenge enrollment confirmation |
+| `/api/prayer-pods` (create) | `sendPrayerPodNotificationEmail` | Pod creation confirmation |
+| `/api/prayer-pods/:id/join` | `sendPrayerPodNotificationEmail` | Pod join confirmation |
+
+### Scheduled Emails (server/notification-scheduler.ts)
+Automated emails sent on schedule:
+
+| Job | Time | Description |
+|-----|------|-------------|
+| Daily Devotional | 05:00 London | Today's Spark to subscribers |
+| Event Reminders | 18:00 London | 24-hour reminder before events |
+
+### User Preferences
+Respects `notificationPreferences` table settings:
+- `emailEnabled` - Master toggle for all emails
+- `newSparkAlerts` - Daily devotional opt-in
+- `eventReminders` - Event reminder opt-in
+
+### Key Files
+- `server/email.ts` - Email template functions
+- `server/notification-scheduler.ts` - Scheduled job management
+- `server/routes.ts` - API routes with email triggers

@@ -11,7 +11,20 @@ import { registerObjectStorageRoutes, objectStorageClient } from "./replit_integ
 import { generateSparkAudio, getSparkAudioUrl, generateReadingPlanDayAudio, getReadingPlanDayAudioUrl } from "./tts-service";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-import { sendWelcomeEmail, sendPrayerRequestNotification } from "./email";
+import { 
+  sendWelcomeEmail, 
+  sendPrayerRequestNotification, 
+  sendPrayerRequestConfirmationEmail,
+  sendEventRegistrationEmail,
+  sendChallengeEnrollmentEmail,
+  sendTestimonyAcknowledgementEmail,
+  sendVolunteerConfirmationEmail,
+  sendMissionTripInterestEmail,
+  sendSubscriptionWelcomeEmail,
+  sendPrayerPodNotificationEmail,
+  sendDailyDevotionalEmail,
+  sendEventReminderEmail,
+} from "./email";
 import { insertPostSchema, insertReactionSchema, insertSparkSchema, insertSparkReactionSchema, insertSparkSubscriptionSchema, insertEventSchema, insertEventRegistrationSchema, insertBlogPostSchema, insertEmailSubscriptionSchema, insertPrayerRequestSchema, insertTestimonySchema, insertVolunteerSignupSchema, insertMissionRegistrationSchema, insertJourneySchema, insertJourneyDaySchema, insertJourneyStepSchema, insertAlphaCohortSchema, insertAlphaCohortWeekSchema, insertAlphaCohortParticipantSchema, insertMissionProfileSchema, insertMissionPlanSchema, insertMissionAdoptionSchema, insertMissionPrayerSessionSchema, insertOpportunityInterestSchema, insertDigitalActionSchema, insertProjectFollowSchema, insertChallengeEnrollmentSchema, insertMissionTestimonySchema, insertChallengeSchema, insertUserSettingsSchema, insertCommentSchema, insertNotificationPreferencesSchema } from "@shared/schema";
 
 export async function registerRoutes(
@@ -895,6 +908,20 @@ export async function registerRoutes(
       const userId = req.user.claims.sub;
       const registrationData = insertEventRegistrationSchema.parse({ ...req.body, userId });
       const registration = await storage.createEventRegistration(registrationData);
+      
+      // Get user and event details for email
+      const user = await storage.getUser(userId);
+      const event = await storage.getEvent(registrationData.eventId);
+      
+      if (user?.email && event) {
+        sendEventRegistrationEmail(user.email, user.firstName || 'Friend', {
+          eventTitle: event.title,
+          eventDate: new Date(event.startDate),
+          eventLocation: event.location || undefined,
+          eventDescription: event.description || undefined,
+        }).catch(err => console.error("Failed to send event registration email:", err));
+      }
+      
       res.status(201).json(registration);
     } catch (error: any) {
       console.error("Error creating event registration:", error);
@@ -951,6 +978,15 @@ export async function registerRoutes(
     try {
       const subscriptionData = insertEmailSubscriptionSchema.parse(req.body);
       const subscription = await storage.createEmailSubscription(subscriptionData);
+      
+      // Send welcome email to subscriber
+      if (subscriptionData.email) {
+        sendSubscriptionWelcomeEmail(subscriptionData.email, {
+          categories: subscriptionData.categories || ['Daily Sparks'],
+          whatsappOptIn: Boolean(subscriptionData.whatsappOptIn),
+        }).catch(err => console.error("Failed to send subscription welcome email:", err));
+      }
+      
       res.status(201).json(subscription);
     } catch (error: any) {
       console.error("Error creating subscription:", error);
@@ -971,6 +1007,14 @@ export async function registerRoutes(
         request: requestData.request,
         isPrivate: Boolean(requestData.isPrivate),
       }).catch(err => console.error("Failed to send prayer notification email:", err));
+      
+      // Send confirmation email to the person who submitted
+      if (requestData.email) {
+        sendPrayerRequestConfirmationEmail(requestData.email, requestData.name, {
+          request: requestData.request,
+          isPrivate: Boolean(requestData.isPrivate),
+        }).catch(err => console.error("Failed to send prayer confirmation email:", err));
+      }
       
       res.status(201).json(request);
     } catch (error: any) {
@@ -995,6 +1039,15 @@ export async function registerRoutes(
     try {
       const testimonyData = insertTestimonySchema.parse(req.body);
       const testimony = await storage.createTestimony(testimonyData);
+      
+      // Send acknowledgement email if email provided
+      if (testimonyData.email) {
+        sendTestimonyAcknowledgementEmail(testimonyData.email, testimonyData.name, {
+          testimonyTitle: testimonyData.title,
+          category: testimonyData.category,
+        }).catch(err => console.error("Failed to send testimony acknowledgement email:", err));
+      }
+      
       res.status(201).json(testimony);
     } catch (error: any) {
       console.error("Error creating testimony:", error);
@@ -1018,6 +1071,15 @@ export async function registerRoutes(
     try {
       const signupData = insertVolunteerSignupSchema.parse(req.body);
       const signup = await storage.createVolunteerSignup(signupData);
+      
+      // Send confirmation email
+      if (signupData.email) {
+        sendVolunteerConfirmationEmail(signupData.email, signupData.name, {
+          areas: signupData.areas || [],
+          phone: signupData.phone || undefined,
+        }).catch(err => console.error("Failed to send volunteer confirmation email:", err));
+      }
+      
       res.status(201).json(signup);
     } catch (error: any) {
       console.error("Error creating volunteer signup:", error);
@@ -1030,6 +1092,15 @@ export async function registerRoutes(
     try {
       const registrationData = insertMissionRegistrationSchema.parse(req.body);
       const registration = await storage.createMissionRegistration(registrationData);
+      
+      // Send confirmation email
+      if (registrationData.email) {
+        sendMissionTripInterestEmail(registrationData.email, registrationData.name, {
+          tripInterest: registrationData.tripInterest || 'General mission interest',
+          experience: registrationData.experience || undefined,
+        }).catch(err => console.error("Failed to send mission registration email:", err));
+      }
+      
       res.status(201).json(registration);
     } catch (error: any) {
       console.error("Error creating mission registration:", error);
@@ -4662,6 +4733,18 @@ export async function registerRoutes(
         currentParticipants: (challenge.currentParticipants || 0) + 1,
       });
       
+      // Send challenge enrollment email
+      const user = await storage.getUser(userId);
+      if (user?.email) {
+        sendChallengeEnrollmentEmail(user.email, user.firstName || 'Friend', {
+          challengeTitle: challenge.title,
+          challengeDescription: challenge.description || undefined,
+          startDate: new Date(challenge.startDate),
+          endDate: new Date(challenge.endDate),
+          goalDays: challenge.goal || 30,
+        }).catch(err => console.error("Failed to send challenge enrollment email:", err));
+      }
+      
       res.status(201).json(participant);
     } catch (error) {
       console.error("Error joining challenge:", error);
@@ -5190,6 +5273,17 @@ export async function registerRoutes(
       const podData = { ...req.body, createdBy: userId };
       const pod = await storage.createPrayerPod(podData);
       await storage.createPrayerPodMember({ podId: pod.id, userId, role: 'leader' });
+      
+      // Send pod creation email
+      const user = await storage.getUser(userId);
+      if (user?.email) {
+        sendPrayerPodNotificationEmail(user.email, user.firstName || 'Friend', {
+          podName: pod.name,
+          action: 'created',
+          memberCount: 1,
+        }).catch(err => console.error("Failed to send pod creation email:", err));
+      }
+      
       res.status(201).json(pod);
     } catch (error: any) {
       console.error("Error creating prayer pod:", error);
@@ -5231,6 +5325,17 @@ export async function registerRoutes(
       }
       
       const member = await storage.createPrayerPodMember({ podId, userId, role: 'member' });
+      
+      // Send pod join email
+      const user = await storage.getUser(userId);
+      if (user?.email) {
+        sendPrayerPodNotificationEmail(user.email, user.firstName || 'Friend', {
+          podName: pod.name,
+          action: 'joined',
+          memberCount: members.length + 1,
+        }).catch(err => console.error("Failed to send pod join email:", err));
+      }
+      
       res.status(201).json(member);
     } catch (error: any) {
       console.error("Error joining pod:", error);

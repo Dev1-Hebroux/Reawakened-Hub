@@ -9,6 +9,7 @@ import { apiLimiter } from "./rateLimiter";
 import { scheduleAudioPregeneration } from "./audio-pregeneration";
 import { autoSeedDominionContent } from "./auto-seed";
 import { startNightlyContentSync } from "./content-sync";
+import { initializeNotificationScheduler } from "./notification-scheduler";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -121,6 +122,9 @@ app.use((req, res, next) => {
       if (process.env.OPENAI_API_KEY) {
         scheduleAudioPregeneration();
       }
+      
+      // Start notification scheduler for daily devotionals and event reminders
+      initializeNotificationScheduler();
     },
   );
 })();
