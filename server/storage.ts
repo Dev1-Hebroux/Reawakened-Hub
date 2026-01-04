@@ -483,6 +483,7 @@ export interface IStorage {
   createSpark(spark: InsertSpark): Promise<Spark>;
   updateSpark(id: number, updates: Partial<InsertSpark>): Promise<Spark>;
   deleteSpark(id: number): Promise<void>;
+  upsertSpark(spark: InsertSpark): Promise<Spark>;
   getPublishedSparks(audienceSegment?: string): Promise<Spark[]>;
   getFeaturedSparks(audienceSegment?: string): Promise<Spark[]>;
   getTodaySpark(audienceSegment?: string): Promise<Spark | undefined>;
@@ -492,6 +493,7 @@ export interface IStorage {
   getReflectionCards(audienceSegment?: string): Promise<ReflectionCard[]>;
   getTodayReflectionCard(audienceSegment?: string): Promise<ReflectionCard | undefined>;
   createReflectionCard(card: InsertReflectionCard): Promise<ReflectionCard>;
+  upsertReflectionCard(card: InsertReflectionCard): Promise<ReflectionCard>;
 
   // Spark Reactions
   getSparkReactions(sparkId: number): Promise<SparkReaction[]>;
@@ -1233,6 +1235,57 @@ export class DatabaseStorage implements IStorage {
   async createReflectionCard(cardData: InsertReflectionCard): Promise<ReflectionCard> {
     const [card] = await db.insert(reflectionCards).values(cardData).returning();
     return card;
+  }
+
+  async upsertSpark(sparkData: InsertSpark): Promise<Spark> {
+    // Find existing spark by dailyDate + audienceSegment + title (unique identifier)
+    const existing = await db.select().from(sparks).where(
+      and(
+        eq(sparks.dailyDate, sparkData.dailyDate || ''),
+        sparkData.audienceSegment 
+          ? eq(sparks.audienceSegment, sparkData.audienceSegment)
+          : sql`(${sparks.audienceSegment} IS NULL OR ${sparks.audienceSegment} = '')`,
+        eq(sparks.title, sparkData.title)
+      )
+    );
+    
+    if (existing.length > 0) {
+      // Update existing spark
+      const [updated] = await db.update(sparks)
+        .set(sparkData)
+        .where(eq(sparks.id, existing[0].id))
+        .returning();
+      return updated;
+    } else {
+      // Create new spark
+      const [created] = await db.insert(sparks).values(sparkData).returning();
+      return created;
+    }
+  }
+
+  async upsertReflectionCard(cardData: InsertReflectionCard): Promise<ReflectionCard> {
+    // Find existing card by dailyDate + audienceSegment (unique identifier)
+    const existing = await db.select().from(reflectionCards).where(
+      and(
+        eq(reflectionCards.dailyDate, cardData.dailyDate || ''),
+        cardData.audienceSegment 
+          ? eq(reflectionCards.audienceSegment, cardData.audienceSegment)
+          : sql`(${reflectionCards.audienceSegment} IS NULL OR ${reflectionCards.audienceSegment} = '')`,
+      )
+    );
+    
+    if (existing.length > 0) {
+      // Update existing card
+      const [updated] = await db.update(reflectionCards)
+        .set(cardData)
+        .where(eq(reflectionCards.id, existing[0].id))
+        .returning();
+      return updated;
+    } else {
+      // Create new card
+      const [created] = await db.insert(reflectionCards).values(cardData).returning();
+      return created;
+    }
   }
 
   // Spark Reactions

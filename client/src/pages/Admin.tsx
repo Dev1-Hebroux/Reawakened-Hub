@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { 
   LayoutDashboard, Calendar, Flame, FileText, Users, 
   MessageSquare, Target, Trophy, TrendingUp, Menu, X,
-  ChevronRight, Plus, Settings, LogOut, RefreshCw
+  ChevronRight, Plus, Settings, LogOut
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
@@ -196,30 +196,8 @@ export function AdminLayout({ children, title, subtitle, actions }: AdminLayoutP
 
 // Dashboard Page
 export function AdminDashboard() {
-  const queryClient = useQueryClient();
   const { data: stats, isLoading } = useQuery<AdminStats>({
     queryKey: ["/api/admin/stats"],
-  });
-
-  const syncMutation = useMutation({
-    mutationFn: async () => {
-      const res = await fetch('/api/admin/seed-dominion', {
-        method: 'POST',
-        credentials: 'include',
-      });
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.message || 'Failed to sync content');
-      }
-      return res.json();
-    },
-    onSuccess: (data) => {
-      toast.success(`Synced ${data.sparksCreated} sparks and ${data.reflectionsCreated} reflection cards`);
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/stats"] });
-    },
-    onError: (error: any) => {
-      toast.error(error.message || 'Failed to sync content');
-    },
   });
 
   const statCards = [
@@ -294,19 +272,6 @@ export function AdminDashboard() {
               </div>
             </Button>
           </Link>
-          <Button 
-            variant="outline" 
-            className="w-full justify-start gap-2 h-auto py-4"
-            onClick={() => syncMutation.mutate()}
-            disabled={syncMutation.isPending}
-            data-testid="button-sync-dominion"
-          >
-            <RefreshCw className={`h-5 w-5 text-teal-500 ${syncMutation.isPending ? 'animate-spin' : ''}`} />
-            <div className="text-left">
-              <div className="font-medium">{syncMutation.isPending ? 'Syncing...' : 'Sync DOMINION'}</div>
-              <div className="text-xs text-gray-500">Seed campaign content</div>
-            </div>
-          </Button>
         </div>
       </div>
 

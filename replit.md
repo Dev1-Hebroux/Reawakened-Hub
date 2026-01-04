@@ -224,3 +224,32 @@ All logos stored in `attached_assets/`:
 - `GET /api/sparks/today?audience=X` - Today's devotional for audience
 - `GET /api/reflection-cards?audience=X` - Reflection cards for audience
 - `GET /api/reflection-cards/today?audience=X` - Today's reflection card
+
+## Automated Content Sync System
+
+### Overview
+The platform uses an automated content synchronization system to ensure production always has the latest content. This is fully automated with no manual intervention required.
+
+### How It Works
+
+**Auto-Seed on Startup** (`server/auto-seed.ts`):
+- On server startup, checks if DOMINION campaign content exists (looks for Day 1 sparks with date 2026-01-03)
+- If production database is empty, automatically seeds 180 sparks + 180 reflection cards
+- Uses `createSpark()` and `createReflectionCard()` for initial population
+
+**Nightly Content Sync** (`server/content-sync.ts`):
+- Scheduled job runs automatically at 23:00 London time every day
+- Uses `upsertSpark()` and `upsertReflectionCard()` to update existing content or add new content
+- Matches content by `dailyDate + audienceSegment + title` for sparks
+- Matches content by `dailyDate + audienceSegment` for reflection cards
+- Ensures any content updates made in development are synced to production before midnight
+
+### Key Files
+- `server/auto-seed.ts` - Startup seeding for empty databases
+- `server/content-sync.ts` - Nightly sync scheduler and upsert logic
+- `server/storage.ts` - Contains `upsertSpark()` and `upsertReflectionCard()` methods
+
+### Database Considerations
+- Replit maintains separate development and production PostgreSQL databases
+- Schema changes sync on publish, but DATA does not automatically sync
+- The nightly sync ensures content is always up-to-date in production
