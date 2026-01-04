@@ -34,13 +34,13 @@ const projectsData: Record<number, {
 }> = {
   1: {
     id: 1,
-    title: "Digital Bible Distribution - East Africa",
-    description: "Providing digital Bibles to 10,000 youth",
-    longDescription: "We're partnering with local churches and schools across East Africa to distribute digital Bibles through mobile apps and audio formats. Many young people in rural areas have smartphones but limited access to Scripture in their heart language. This project bridges that gap by providing free Bible apps, audio Bibles, and discipleship resources.",
+    title: "Digital Bible Courses And Physical Bible Distribution",
+    description: "Target 5,000 by 2030",
+    longDescription: "We're partnering with local churches and schools across East Africa to distribute digital Bible courses and physical Bibles. Many young people in rural areas have smartphones but limited access to Scripture in their heart language. This project bridges that gap by providing free Bible apps, audio Bibles, physical Bibles, and discipleship resources.",
     location: "East Africa",
-    impactGoal: 10000,
-    impactCurrent: 5800,
-    impactLabel: "youth reached",
+    impactGoal: 5000,
+    impactCurrent: 0,
+    impactLabel: "reached by 2030",
     howToHelp: [
       "Pray for the young people receiving Scripture",
       "Share this project with your church or small group",
@@ -65,7 +65,7 @@ const projectsData: Record<number, {
     longDescription: "The Youth Discipleship Network is building a movement of young Christian leaders across Southeast Asia. Through weekly online training sessions, mentorship partnerships, and in-person gatherings, we're equipping the next generation to lead their churches, campuses, and communities with boldness and wisdom.",
     location: "Southeast Asia",
     impactGoal: 500,
-    impactCurrent: 240,
+    impactCurrent: 10,
     impactLabel: "leaders trained",
     howToHelp: [
       "Become a virtual mentor for a young leader",
@@ -91,7 +91,7 @@ const projectsData: Record<number, {
     longDescription: "University campuses are strategic mission fields where the next generation's worldview is shaped. Our Campus Revival Movement is establishing prayer groups and evangelism teams on 50 campuses across Europe. Students are leading weekly prayer meetings, hosting faith discussions, and sharing the gospel with their peers.",
     location: "Europe",
     impactGoal: 50,
-    impactCurrent: 18,
+    impactCurrent: 1,
     impactLabel: "campuses active",
     howToHelp: [
       "Pray for student leaders on these campuses",
