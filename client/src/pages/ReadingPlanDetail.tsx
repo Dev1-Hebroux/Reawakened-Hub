@@ -331,7 +331,9 @@ export function ReadingPlanDetail() {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
           {plan.days?.map((day) => {
             const isCompleted = completedDays.has(day.dayNumber);
-            const isUnlocked = enrollment && (day.dayNumber <= (enrollment.currentDay || 1) || isCompleted);
+            // Unlock if: day is at or below currentDay, OR day is completed, OR day is the next after any completed day
+            const maxCompletedDay = completedDays.size > 0 ? Math.max(...Array.from(completedDays)) : 0;
+            const isUnlocked = enrollment && (day.dayNumber <= (enrollment.currentDay || 1) || isCompleted || day.dayNumber <= maxCompletedDay + 1);
             const isCurrent = enrollment && day.dayNumber === enrollment.currentDay && !isCompleted;
             
             return (
@@ -498,11 +500,10 @@ export function ReadingPlanDetail() {
                         <motion.div
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
-                          className="flex justify-center mt-4"
+                          className="flex justify-center mt-6"
                         >
                           <Button
-                            variant="outline"
-                            className="gap-2 border-primary/50 text-primary hover:border-primary hover:bg-primary/10"
+                            className="gap-2 bg-primary hover:bg-primary/90 text-white shadow-lg"
                             onClick={() => setRevealedParagraphs(prev => prev + 1)}
                             data-testid="button-continue-reading"
                           >
