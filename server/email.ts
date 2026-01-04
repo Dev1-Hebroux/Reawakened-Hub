@@ -67,15 +67,15 @@ export async function sendWelcomeEmail(to: string, name: string, data: {
         🚀 Get Started
       </h2>
       
-      <a href="https://reawakened.one/sparks" style="display: block; background: linear-gradient(135deg, #D4A574 0%, #C49464 100%); color: #ffffff; text-decoration: none; padding: 16px 24px; border-radius: 12px; margin-bottom: 12px; font-weight: 600;">
+      <a href="https://reawakened.app/sparks" style="display: block; background: linear-gradient(135deg, #D4A574 0%, #C49464 100%); color: #ffffff; text-decoration: none; padding: 16px 24px; border-radius: 12px; margin-bottom: 12px; font-weight: 600;">
         ✨ Daily Sparks — Start your day with devotionals
       </a>
       
-      <a href="https://reawakened.one/community" style="display: block; background: linear-gradient(135deg, #7C9A8E 0%, #6B8B7E 100%); color: #ffffff; text-decoration: none; padding: 16px 24px; border-radius: 12px; margin-bottom: 12px; font-weight: 600;">
+      <a href="https://reawakened.app/community" style="display: block; background: linear-gradient(135deg, #7C9A8E 0%, #6B8B7E 100%); color: #ffffff; text-decoration: none; padding: 16px 24px; border-radius: 12px; margin-bottom: 12px; font-weight: 600;">
         👥 Community Hub — Connect with fellow believers
       </a>
       
-      <a href="https://reawakened.one/vision" style="display: block; background: linear-gradient(135deg, #4A7C7C 0%, #3A6C6C 100%); color: #ffffff; text-decoration: none; padding: 16px 24px; border-radius: 12px; font-weight: 600;">
+      <a href="https://reawakened.app/vision" style="display: block; background: linear-gradient(135deg, #4A7C7C 0%, #3A6C6C 100%); color: #ffffff; text-decoration: none; padding: 16px 24px; border-radius: 12px; font-weight: 600;">
         🎯 Vision Journey — Discover your purpose
       </a>
     </div>
@@ -100,7 +100,7 @@ export async function sendWelcomeEmail(to: string, name: string, data: {
 
   try {
     const result = await resend.emails.send({
-      from: 'Reawakened <noreply@reawakened.one>',
+      from: 'Reawakened <noreply@reawakened.app>',
       to: [to],
       subject: `🔥 Welcome to the Mission, ${name}!`,
       html: htmlContent,
@@ -181,7 +181,7 @@ export async function sendPrayerReminderEmail(to: string, name: string, data: {
     </div>
 
     <div style="text-align: center; margin-bottom: 24px;">
-      <a href="https://reawakened.one/pray" style="display: inline-block; background: linear-gradient(135deg, #D4A574 0%, #C49464 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 12px; font-weight: 600; font-size: 16px;">
+      <a href="https://reawakened.app/pray" style="display: inline-block; background: linear-gradient(135deg, #D4A574 0%, #C49464 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 12px; font-weight: 600; font-size: 16px;">
         🙏 Start Praying Now
       </a>
     </div>
@@ -191,7 +191,7 @@ export async function sendPrayerReminderEmail(to: string, name: string, data: {
         You're receiving this because you've committed to pray for ${data.focusName}.
       </p>
       <p style="color: #6B7B6E; font-size: 12px; margin: 0;">
-        <a href="https://reawakened.one/settings" style="color: #4A7C7C;">Manage your prayer subscriptions</a>
+        <a href="https://reawakened.app/settings" style="color: #4A7C7C;">Manage your prayer subscriptions</a>
       </p>
     </div>
   </div>
@@ -206,7 +206,7 @@ export async function sendPrayerReminderEmail(to: string, name: string, data: {
 
   try {
     const result = await resend.emails.send({
-      from: 'Reawakened Prayer <prayer@reawakened.one>',
+      from: 'Reawakened Prayer <prayer@reawakened.app>',
       to: [to],
       subject: `🙏 ${greeting}'s Prayer for ${data.focusName}`,
       html: htmlContent,
@@ -309,7 +309,7 @@ export async function sendAltarJoinConfirmation(to: string, name: string, data: 
     ` : ''}
 
     <div style="text-align: center; margin-bottom: 24px;">
-      <a href="https://reawakened.one/pray" style="display: inline-block; background: linear-gradient(135deg, #D4A574 0%, #C49464 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 12px; font-weight: 600; font-size: 16px;">
+      <a href="https://reawakened.app/pray" style="display: inline-block; background: linear-gradient(135deg, #D4A574 0%, #C49464 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 12px; font-weight: 600; font-size: 16px;">
         Start Interceding
       </a>
     </div>
@@ -334,7 +334,7 @@ export async function sendAltarJoinConfirmation(to: string, name: string, data: 
 
   try {
     const result = await resend.emails.send({
-      from: 'Reawakened <noreply@reawakened.one>',
+      from: 'Reawakened <noreply@reawakened.app>',
       to: [to],
       subject: `⛪ Welcome to ${data.altarName}!`,
       html: htmlContent,
@@ -354,7 +354,7 @@ export async function sendPrayerRequestNotification(data: {
   request: string;
   isPrivate: boolean;
 }) {
-  const prayerTeamEmail = process.env.PRAYER_TEAM_EMAIL || 'prayer@reawakened.one';
+  const prayerTeamEmail = process.env.PRAYER_TEAM_EMAIL || 'prayer@reawakened.app';
   
   const htmlContent = `
 <!DOCTYPE html>
@@ -397,7 +397,7 @@ export async function sendPrayerRequestNotification(data: {
     </div>
 
     <div style="text-align: center; margin-bottom: 24px;">
-      <a href="https://reawakened.one/admin/prayer" style="display: inline-block; background: linear-gradient(135deg, #4A7C7C 0%, #3A6C6C 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 12px; font-weight: 600; font-size: 16px;">
+      <a href="https://reawakened.app/admin/prayer" style="display: inline-block; background: linear-gradient(135deg, #4A7C7C 0%, #3A6C6C 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 12px; font-weight: 600; font-size: 16px;">
         View in Prayer Dashboard
       </a>
     </div>
@@ -419,7 +419,7 @@ export async function sendPrayerRequestNotification(data: {
 
   try {
     const result = await resend.emails.send({
-      from: 'Reawakened Prayer <prayer@reawakened.one>',
+      from: 'Reawakened Prayer <prayer@reawakened.app>',
       to: [prayerTeamEmail],
       subject: `🙏 New Prayer Request from ${data.name}`,
       html: htmlContent,
@@ -490,7 +490,7 @@ export async function sendEventRegistrationEmail(to: string, name: string, data:
 
   try {
     const result = await resend.emails.send({
-      from: 'Reawakened <noreply@reawakened.one>',
+      from: 'Reawakened <noreply@reawakened.app>',
       to: [to],
       subject: `🎉 You're registered for ${data.eventTitle}!`,
       html: htmlContent,
@@ -543,7 +543,7 @@ export async function sendChallengeEnrollmentEmail(to: string, name: string, dat
       </div>
     </div>
     <div style="text-align: center; margin-bottom: 24px;">
-      <a href="https://reawakened.one/challenges" style="display: inline-block; background: linear-gradient(135deg, #D4A574 0%, #C49464 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 12px; font-weight: 600;">
+      <a href="https://reawakened.app/challenges" style="display: inline-block; background: linear-gradient(135deg, #D4A574 0%, #C49464 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 12px; font-weight: 600;">
         Start Your Challenge
       </a>
     </div>
@@ -561,7 +561,7 @@ export async function sendChallengeEnrollmentEmail(to: string, name: string, dat
 
   try {
     const result = await resend.emails.send({
-      from: 'Reawakened <noreply@reawakened.one>',
+      from: 'Reawakened <noreply@reawakened.app>',
       to: [to],
       subject: `🏆 Challenge Accepted: ${data.challengeTitle}`,
       html: htmlContent,
@@ -614,7 +614,7 @@ export async function sendTestimonyAcknowledgementEmail(to: string, name: string
 
   try {
     const result = await resend.emails.send({
-      from: 'Reawakened <noreply@reawakened.one>',
+      from: 'Reawakened <noreply@reawakened.app>',
       to: [to],
       subject: `✨ Your testimony has been received!`,
       html: htmlContent,
@@ -671,7 +671,7 @@ export async function sendVolunteerConfirmationEmail(to: string, name: string, d
 
   try {
     const result = await resend.emails.send({
-      from: 'Reawakened <noreply@reawakened.one>',
+      from: 'Reawakened <noreply@reawakened.app>',
       to: [to],
       subject: `🙌 Welcome to the Reawakened volunteer team!`,
       html: htmlContent,
@@ -727,7 +727,7 @@ export async function sendMissionTripInterestEmail(to: string, name: string, dat
 
   try {
     const result = await resend.emails.send({
-      from: 'Reawakened <noreply@reawakened.one>',
+      from: 'Reawakened <noreply@reawakened.app>',
       to: [to],
       subject: `🌍 Your mission trip interest has been received!`,
       html: htmlContent,
@@ -773,13 +773,13 @@ export async function sendSubscriptionWelcomeEmail(to: string, data: {
       </div>` : ''}
     </div>
     <div style="text-align: center; margin-bottom: 24px;">
-      <a href="https://reawakened.one/sparks" style="display: inline-block; background: linear-gradient(135deg, #1a2744 0%, #2d3a52 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 12px; font-weight: 600;">
+      <a href="https://reawakened.app/sparks" style="display: inline-block; background: linear-gradient(135deg, #1a2744 0%, #2d3a52 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 12px; font-weight: 600;">
         Explore Today's Spark
       </a>
     </div>
     <div style="text-align: center; padding: 20px; border-top: 1px solid #E8E4DE;">
       <p style="color: #6B7B6E; font-size: 12px; margin: 0;">
-        <a href="https://reawakened.one/unsubscribe" style="color: #4A7C7C;">Unsubscribe</a> | <a href="https://reawakened.one/settings" style="color: #4A7C7C;">Manage Preferences</a>
+        <a href="https://reawakened.app/unsubscribe" style="color: #4A7C7C;">Unsubscribe</a> | <a href="https://reawakened.app/settings" style="color: #4A7C7C;">Manage Preferences</a>
       </p>
     </div>
   </div>
@@ -793,7 +793,7 @@ export async function sendSubscriptionWelcomeEmail(to: string, data: {
 
   try {
     const result = await resend.emails.send({
-      from: 'Reawakened <noreply@reawakened.one>',
+      from: 'Reawakened <noreply@reawakened.app>',
       to: [to],
       subject: `📬 Welcome to Reawakened!`,
       html: htmlContent,
@@ -839,7 +839,7 @@ export async function sendPrayerPodNotificationEmail(to: string, name: string, d
       </p>
     </div>
     <div style="text-align: center; margin-bottom: 24px;">
-      <a href="https://reawakened.one/prayer-pods" style="display: inline-block; background: linear-gradient(135deg, #4A7C7C 0%, #3A6C6C 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 12px; font-weight: 600;">
+      <a href="https://reawakened.app/prayer-pods" style="display: inline-block; background: linear-gradient(135deg, #4A7C7C 0%, #3A6C6C 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 12px; font-weight: 600;">
         View Your Pods
       </a>
     </div>
@@ -857,7 +857,7 @@ export async function sendPrayerPodNotificationEmail(to: string, name: string, d
 
   try {
     const result = await resend.emails.send({
-      from: 'Reawakened <noreply@reawakened.one>',
+      from: 'Reawakened <noreply@reawakened.app>',
       to: [to],
       subject: `${icon} You've ${actionText} ${data.podName}!`,
       html: htmlContent,
@@ -914,7 +914,7 @@ export async function sendPrayerRequestConfirmationEmail(to: string, name: strin
 
   try {
     const result = await resend.emails.send({
-      from: 'Reawakened Prayer <prayer@reawakened.one>',
+      from: 'Reawakened Prayer <prayer@reawakened.app>',
       to: [to],
       subject: `🙏 We're praying with you, ${name}`,
       html: htmlContent,
@@ -957,13 +957,13 @@ export async function sendDailyDevotionalEmail(to: string, name: string, data: {
       </div>` : ''}
     </div>
     <div style="text-align: center; margin-bottom: 24px;">
-      <a href="https://reawakened.one/sparks" style="display: inline-block; background: linear-gradient(135deg, #D4A574 0%, #C49464 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 12px; font-weight: 600;">
+      <a href="https://reawakened.app/sparks" style="display: inline-block; background: linear-gradient(135deg, #D4A574 0%, #C49464 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 12px; font-weight: 600;">
         Read Full Devotional
       </a>
     </div>
     <div style="text-align: center; padding: 20px; border-top: 1px solid #E8E4DE;">
       <p style="color: #6B7B6E; font-size: 12px; margin: 0;">
-        <a href="https://reawakened.one/settings" style="color: #4A7C7C;">Manage email preferences</a>
+        <a href="https://reawakened.app/settings" style="color: #4A7C7C;">Manage email preferences</a>
       </p>
     </div>
   </div>
@@ -977,7 +977,7 @@ export async function sendDailyDevotionalEmail(to: string, name: string, data: {
 
   try {
     const result = await resend.emails.send({
-      from: 'Reawakened <noreply@reawakened.one>',
+      from: 'Reawakened <noreply@reawakened.app>',
       to: [to],
       subject: `🔥 ${data.sparkTitle}`,
       html: htmlContent,
@@ -1044,7 +1044,7 @@ export async function sendEventReminderEmail(to: string, name: string, data: {
 
   try {
     const result = await resend.emails.send({
-      from: 'Reawakened <noreply@reawakened.one>',
+      from: 'Reawakened <noreply@reawakened.app>',
       to: [to],
       subject: `⏰ Reminder: ${data.eventTitle} is tomorrow!`,
       html: htmlContent,
