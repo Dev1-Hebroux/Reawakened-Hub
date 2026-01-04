@@ -80,7 +80,7 @@ export interface BulkAudioGenerationResult {
   errors: string[];
 }
 
-export async function pregenerateAllDominionAudio(): Promise<BulkAudioGenerationResult> {
+export async function pregenerateAllDominionAudio(batchSize: number = 10): Promise<BulkAudioGenerationResult> {
   const result: BulkAudioGenerationResult = {
     total: 0,
     generated: 0,
@@ -94,7 +94,7 @@ export async function pregenerateAllDominionAudio(): Promise<BulkAudioGeneration
     return result;
   }
 
-  console.log("[Bulk Audio] Starting bulk generation for all DOMINION sparks...");
+  console.log(`[Bulk Audio] Starting bulk generation for all DOMINION sparks (batch size: ${batchSize})...`);
 
   try {
     const sparks = await storage.getAllDominionSparks();
@@ -102,12 +102,16 @@ export async function pregenerateAllDominionAudio(): Promise<BulkAudioGeneration
     
     console.log(`[Bulk Audio] Found ${sparks.length} DOMINION sparks to process`);
 
-    for (const spark of sparks) {
+    let batchCount = 0;
+    let processedInBatch = 0;
+
+    for (let i = 0; i < sparks.length; i++) {
+      const spark = sparks[i];
+      
       try {
         const existingUrl = await getSparkAudioUrl(spark.id);
         
         if (existingUrl) {
-          console.log(`[Bulk Audio] Spark ${spark.id} already has audio, skipping`);
           result.skipped++;
           continue;
         }
@@ -125,13 +129,21 @@ export async function pregenerateAllDominionAudio(): Promise<BulkAudioGeneration
         if (genResult.success) {
           console.log(`[Bulk Audio] Successfully generated audio for spark ${spark.id}`);
           result.generated++;
+          processedInBatch++;
         } else {
           console.error(`[Bulk Audio] Failed to generate audio for spark ${spark.id}: ${genResult.error}`);
           result.failed++;
           result.errors.push(`Spark ${spark.id}: ${genResult.error}`);
         }
         
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        if (processedInBatch >= batchSize) {
+          batchCount++;
+          console.log(`[Bulk Audio] Batch ${batchCount} complete (${result.generated} generated so far). Pausing 5 seconds...`);
+          await new Promise(resolve => setTimeout(resolve, 5000));
+          processedInBatch = 0;
+        }
         
       } catch (error: any) {
         console.error(`[Bulk Audio] Error processing spark ${spark.id}:`, error);
