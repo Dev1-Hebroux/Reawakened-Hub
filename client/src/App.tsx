@@ -60,6 +60,7 @@ const GiveHub = lazy(() => import("@/pages/GiveHub").then(m => ({ default: m.Giv
 const MovementHub = lazy(() => import("@/pages/MovementHub").then(m => ({ default: m.MovementHub })));
 const MissionOnboarding = lazy(() => import("@/pages/MissionOnboarding").then(m => ({ default: m.MissionOnboarding })));
 const DigitalActions = lazy(() => import("@/pages/DigitalActions").then(m => ({ default: m.DigitalActions })));
+const MissionProjectDetail = lazy(() => import("@/pages/MissionProjectDetail").then(m => ({ default: m.MissionProjectDetail })));
 const Profile = lazy(() => import("@/pages/Profile"));
 const Notifications = lazy(() => import("@/pages/Notifications"));
 const Settings = lazy(() => import("@/pages/Settings"));
@@ -161,6 +162,7 @@ function Router() {
         <Route path="/reading-plans/:id" component={ReadingPlanDetail} />
         <Route path="/missions" component={MissionsHub} />
         <Route path="/missions/action/:type" component={DigitalActions} />
+        <Route path="/missions/project/:id" component={MissionProjectDetail} />
         <Route path="/mission/onboarding" component={MissionOnboarding} />
         <Route path="/give" component={GiveHub} />
         <Route path="/movement" component={MovementHub} />

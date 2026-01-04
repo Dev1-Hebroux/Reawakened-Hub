@@ -314,18 +314,66 @@ export function DigitalActions() {
                   {inviteTemplates.map((template) => (
                     <div 
                       key={template.id}
-                      className="bg-[#1a2744] rounded-2xl p-4 cursor-pointer hover:bg-[#2a3a5a] transition-colors border border-[#4A7C7C]/20"
-                      onClick={() => {
-                        navigator.clipboard.writeText(template.message);
-                        toast.success("Message copied!");
-                      }}
+                      className={`bg-[#1a2744] rounded-2xl p-4 transition-colors border-2 ${
+                        selectedCard === template.id 
+                          ? "border-[#4A7C7C] bg-[#2a3a5a]" 
+                          : "border-[#4A7C7C]/20 hover:bg-[#2a3a5a]"
+                      }`}
+                      onClick={() => setSelectedCard(selectedCard === template.id ? null : template.id)}
                       data-testid={`invite-template-${template.id}`}
                     >
                       <p className="text-[10px] text-white/40 uppercase tracking-wider mb-1">{template.context}</p>
                       <p className="text-white/80 text-sm">{template.message}</p>
-                      <p className="text-xs text-primary mt-2 flex items-center gap-1">
-                        <Copy className="h-3 w-3" /> Tap to copy
-                      </p>
+                      
+                      {selectedCard === template.id ? (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          className="mt-3 pt-3 border-t border-white/10"
+                        >
+                          <p className="text-xs text-white/50 mb-2">Share this message:</p>
+                          <div className="flex flex-wrap gap-2">
+                            <Button 
+                              size="sm"
+                              className="bg-green-600 hover:bg-green-700 text-white"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const shareUrl = inviteLink || "https://reawakened.org/join";
+                                window.open(`https://wa.me/?text=${encodeURIComponent(template.message + "\n\n" + shareUrl)}`, "_blank");
+                              }}
+                            >
+                              WhatsApp
+                            </Button>
+                            <Button 
+                              size="sm"
+                              className="bg-black hover:bg-gray-800 text-white"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const shareUrl = inviteLink || "https://reawakened.org/join";
+                                window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(template.message)}&url=${encodeURIComponent(shareUrl)}`, "_blank");
+                              }}
+                            >
+                              X
+                            </Button>
+                            <Button 
+                              size="sm"
+                              className="bg-white/20 hover:bg-white/30 text-white"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const shareUrl = inviteLink || "https://reawakened.org/join";
+                                navigator.clipboard.writeText(template.message + "\n\n" + shareUrl);
+                                toast.success("Message copied!");
+                              }}
+                            >
+                              <Copy className="h-4 w-4 mr-1" /> Copy
+                            </Button>
+                          </div>
+                        </motion.div>
+                      ) : (
+                        <p className="text-xs text-primary mt-2 flex items-center gap-1">
+                          Tap to select & share
+                        </p>
+                      )}
                     </div>
                   ))}
                 </div>

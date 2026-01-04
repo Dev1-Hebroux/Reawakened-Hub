@@ -92,15 +92,26 @@ export function MissionsHub() {
   });
 
   const displayProjects = projects.length > 0 ? projects : [
-    { id: 1, title: "Digital Bible Distribution - East Africa", description: "Providing digital Bibles to 10,000 youth", location: "East Africa", hasDigitalActions: true, fundingGoal: 15000, fundingRaised: 8750 },
-    { id: 2, title: "Youth Discipleship Network", description: "Training 500 young leaders", location: "Southeast Asia", hasDigitalActions: true, fundingGoal: 25000, fundingRaised: 12000 },
-    { id: 3, title: "Campus Revival Movement", description: "Prayer and evangelism on 50 campuses", location: "Europe", hasDigitalActions: true, fundingGoal: 20000, fundingRaised: 5000 },
+    { id: 1, title: "Digital Bible Distribution - East Africa", description: "Providing digital Bibles to 10,000 youth", location: "East Africa", hasDigitalActions: true, impactGoal: 10000, impactCurrent: 5800, impactLabel: "youth reached" },
+    { id: 2, title: "Youth Discipleship Network", description: "Training 500 young leaders", location: "Southeast Asia", hasDigitalActions: true, impactGoal: 500, impactCurrent: 240, impactLabel: "leaders trained" },
+    { id: 3, title: "Campus Revival Movement", description: "Prayer and evangelism on 50 campuses", location: "Europe", hasDigitalActions: true, impactGoal: 50, impactCurrent: 18, impactLabel: "campuses active" },
   ];
 
   const displayTraining = training.length > 0 ? training : [
     { id: 1, title: "Share Your Faith 101", durationMinutes: 15, category: "evangelism" },
     { id: 2, title: "Effective Digital Outreach", durationMinutes: 20, category: "skills" },
     { id: 3, title: "Prayer for Nations", durationMinutes: 10, category: "prayer" },
+  ];
+
+  const upcomingEvents = [
+    { 
+      id: 1, 
+      title: "Mission Training Weekend", 
+      date1: "Thursday, Jan 29, 2026 at 7pm UK", 
+      date2: "Friday, Jan 30, 2026 at 7pm UK",
+      description: "Join our online training sessions to equip yourself for global mission. Two powerful evenings of teaching, Q&A, and commissioning.",
+      type: "online"
+    },
   ];
 
   const displayChallenges = challenges.length > 0 ? challenges : [
@@ -307,17 +318,17 @@ export function MissionsHub() {
                               <MapPin className="h-3 w-3" />
                               {project.location || "Global"}
                             </span>
-                            {project.fundingGoal && (
+                            {project.impactGoal && (
                               <span>
-                                ${(project.fundingRaised || 0).toLocaleString()} / ${project.fundingGoal.toLocaleString()}
+                                {(project.impactCurrent || 0).toLocaleString()} / {project.impactGoal.toLocaleString()} {project.impactLabel || "reached"}
                               </span>
                             )}
                           </div>
-                          {project.fundingGoal && (
+                          {project.impactGoal && (
                             <div className="bg-white/10 rounded-full h-1.5 mt-2">
                               <div 
                                 className="bg-primary h-1.5 rounded-full transition-all"
-                                style={{ width: `${((project.fundingRaised || 0) / project.fundingGoal) * 100}%` }}
+                                style={{ width: `${((project.impactCurrent || 0) / project.impactGoal) * 100}%` }}
                               />
                             </div>
                           )}
@@ -336,9 +347,33 @@ export function MissionsHub() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="space-y-3"
+                className="space-y-4"
               >
-                <p className="text-sm text-white/60 mb-2">Build your mission skills</p>
+                <div className="bg-gradient-to-r from-primary/30 to-[#D4A574]/20 backdrop-blur-md rounded-3xl p-5 border border-white/10">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center">
+                      <Wifi className="h-4 w-4 text-white" />
+                    </div>
+                    <span className="text-xs font-bold text-primary uppercase tracking-wider">Live Online Event</span>
+                  </div>
+                  <h3 className="font-bold text-white text-lg mb-2">Mission Training Weekend</h3>
+                  <div className="space-y-1 mb-3">
+                    <p className="text-sm text-white/70">Thursday, Jan 29, 2026 at 7pm UK</p>
+                    <p className="text-sm text-white/70">Friday, Jan 30, 2026 at 7pm UK</p>
+                  </div>
+                  <p className="text-sm text-white/60 mb-4">
+                    Join our online training sessions to equip yourself for global mission. Two powerful evenings of teaching, Q&A, and commissioning.
+                  </p>
+                  <Button 
+                    className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-xl"
+                    onClick={() => navigate("/events")}
+                    data-testid="button-register-training"
+                  >
+                    Register for Training
+                  </Button>
+                </div>
+
+                <p className="text-sm text-white/60">Build your mission skills</p>
 
                 {trainingLoading ? (
                   <div className="flex justify-center py-8">
@@ -351,6 +386,7 @@ export function MissionsHub() {
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       className="bg-white/10 backdrop-blur-md rounded-2xl p-4 cursor-pointer border border-white/5 hover:border-white/20 transition-all"
+                      onClick={() => navigate(`/missions/action/training`)}
                       data-testid={`training-${module.id}`}
                     >
                       <div className="flex items-center justify-between">
