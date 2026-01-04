@@ -284,7 +284,7 @@ Automated emails sent on schedule:
 
 | Job | Time | Description |
 |-----|------|-------------|
-| Daily Devotional | 05:00 London | Today's Spark to subscribers |
+| Daily Devotional | 00:01 London | Today's Spark to subscribers |
 | Event Reminders | 18:00 London | 24-hour reminder before events |
 
 ### User Preferences

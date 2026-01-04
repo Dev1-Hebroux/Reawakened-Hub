@@ -40,15 +40,15 @@ async function sendDailyDevotionalNotifications(): Promise<void> {
   }
   
   try {
-    const todaySpark = await storage.getTodaySpark(null);
+    const todaySpark = await storage.getTodaySpark(undefined);
     
     if (!todaySpark) {
       console.log('[Notification Scheduler] No spark found for today, skipping devotional emails');
       return;
     }
     
-    const subscriptions = await storage.getSparkSubscriptions();
-    const userIds = [...new Set(subscriptions.map(s => s.userId))];
+    const subscriptions = await storage.getSubscriptions();
+    const userIds: string[] = [...new Set(subscriptions.map((s: any) => s.userId).filter(Boolean))];
     
     let sent = 0;
     let skipped = 0;
@@ -163,12 +163,12 @@ async function sendEventReminders(): Promise<void> {
 }
 
 function scheduleDailyDevotionalJob(): void {
-  const nextRun = getNextRunTime(5, 0);
+  const nextRun = getNextRunTime(0, 1);
   const msUntil = getMillisUntil(nextRun);
   const hoursUntil = Math.floor(msUntil / (1000 * 60 * 60));
   const minutesUntil = Math.floor((msUntil % (1000 * 60 * 60)) / (1000 * 60));
   
-  console.log(`[Notification Scheduler] Daily devotional job scheduled for 05:00 London time (in ${hoursUntil}h ${minutesUntil}m)`);
+  console.log(`[Notification Scheduler] Daily devotional job scheduled for 00:01 London time (in ${hoursUntil}h ${minutesUntil}m)`);
   
   setTimeout(async () => {
     await sendDailyDevotionalNotifications();
