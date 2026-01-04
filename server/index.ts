@@ -7,6 +7,7 @@ import { fileURLToPath } from "url";
 import { securityHeaders } from "./securityHeaders";
 import { apiLimiter } from "./rateLimiter";
 import { scheduleAudioPregeneration } from "./audio-pregeneration";
+import { autoSeedDominionContent } from "./auto-seed";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -106,8 +107,11 @@ app.use((req, res, next) => {
       host: "0.0.0.0",
       reusePort: true,
     },
-    () => {
+    async () => {
       log(`serving on port ${port}`);
+      
+      // Auto-seed DOMINION content if database is empty (works in both dev and prod)
+      await autoSeedDominionContent();
       
       // Start audio pre-generation scheduler (only if OpenAI key is configured)
       if (process.env.OPENAI_API_KEY) {
