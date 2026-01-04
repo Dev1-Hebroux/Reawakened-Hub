@@ -6,6 +6,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { securityHeaders } from "./securityHeaders";
 import { apiLimiter } from "./rateLimiter";
+import { scheduleAudioPregeneration } from "./audio-pregeneration";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -107,6 +108,11 @@ app.use((req, res, next) => {
     },
     () => {
       log(`serving on port ${port}`);
+      
+      // Start audio pre-generation scheduler (only if OpenAI key is configured)
+      if (process.env.OPENAI_API_KEY) {
+        scheduleAudioPregeneration();
+      }
     },
   );
 })();

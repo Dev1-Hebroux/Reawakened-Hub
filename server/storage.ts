@@ -486,6 +486,7 @@ export interface IStorage {
   getPublishedSparks(audienceSegment?: string): Promise<Spark[]>;
   getFeaturedSparks(audienceSegment?: string): Promise<Spark[]>;
   getTodaySpark(audienceSegment?: string): Promise<Spark | undefined>;
+  getSparksByDailyDate(dailyDate: string): Promise<Spark[]>;
 
   // Reflection Cards
   getReflectionCards(audienceSegment?: string): Promise<ReflectionCard[]>;
@@ -1193,6 +1194,10 @@ export class DatabaseStorage implements IStorage {
     }
     const [spark] = await db.select().from(sparks).where(and(...conditions)).limit(1);
     return spark;
+  }
+
+  async getSparksByDailyDate(dailyDate: string): Promise<Spark[]> {
+    return db.select().from(sparks).where(eq(sparks.dailyDate, dailyDate));
   }
 
   // Reflection Cards

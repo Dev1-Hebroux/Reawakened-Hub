@@ -7,6 +7,8 @@ import * as path from "path";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated, isAdmin, isSuperAdmin } from "./replitAuth";
 import { getAICoachInsights, type AICoachRequest } from "./ai-service";
+import { registerObjectStorageRoutes, objectStorageClient } from "./replit_integrations/object_storage";
+import { generateSparkAudio, getSparkAudioUrl, generateReadingPlanDayAudio, getReadingPlanDayAudioUrl } from "./tts-service";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 import { sendWelcomeEmail, sendPrayerRequestNotification } from "./email";
@@ -5839,6 +5841,181 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Error fetching reading streak:", error);
       res.status(500).json({ message: "Failed to fetch streak" });
+    }
+  });
+
+  // Register object storage routes for audio files
+  registerObjectStorageRoutes(app);
+
+  // ===== AUDIO/TTS ROUTES =====
+  
+  // Serve audio files from object storage (public, no auth required)
+  app.get('/api/audio/:filename', async (req, res) => {
+    try {
+      const { filename } = req.params;
+      const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
+      if (!bucketId) {
+        return res.status(500).json({ error: "Object storage not configured" });
+      }
+      
+      const bucket = objectStorageClient.bucket(bucketId);
+      const file = bucket.file(`public/audio/${filename}`);
+      const [exists] = await file.exists();
+      
+      if (!exists) {
+        return res.status(404).json({ error: "Audio file not found" });
+      }
+      
+      const [metadata] = await file.getMetadata();
+      res.set({
+        'Content-Type': 'audio/mpeg',
+        'Content-Length': metadata.size?.toString() || '0',
+        'Cache-Control': 'public, max-age=86400',
+        'Accept-Ranges': 'bytes',
+      });
+      
+      const stream = file.createReadStream();
+      stream.on('error', (err) => {
+        console.error("Stream error:", err);
+        if (!res.headersSent) {
+          res.status(500).json({ error: "Error streaming audio" });
+        }
+      });
+      stream.pipe(res);
+    } catch (error) {
+      console.error("Error serving audio:", error);
+      if (!res.headersSent) {
+        res.status(500).json({ error: "Failed to serve audio" });
+      }
+    }
+  });
+
+  // Stream spark audio directly (generates if needed)
+  app.get('/api/sparks/:id/audio/stream', async (req, res) => {
+    try {
+      const sparkId = parseInt(req.params.id);
+      const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
+      if (!bucketId) {
+        return res.status(500).json({ error: "Object storage not configured" });
+      }
+      
+      const filename = `spark-${sparkId}.mp3`;
+      const bucket = objectStorageClient.bucket(bucketId);
+      const file = bucket.file(`public/audio/${filename}`);
+      const [exists] = await file.exists();
+      
+      if (!exists) {
+        // Generate audio if it doesn't exist
+        const spark = await storage.getSpark(sparkId);
+        if (!spark || !spark.fullTeaching) {
+          return res.status(404).json({ error: "Spark not found or has no teaching content" });
+        }
+        
+        const result = await generateSparkAudio(sparkId, spark.fullTeaching);
+        if (!result.success) {
+          return res.status(500).json({ error: result.error || "Failed to generate audio" });
+        }
+      }
+      
+      // Now stream the file
+      const [metadata] = await file.getMetadata();
+      res.set({
+        'Content-Type': 'audio/mpeg',
+        'Content-Length': metadata.size?.toString() || '0',
+        'Cache-Control': 'public, max-age=86400',
+        'Accept-Ranges': 'bytes',
+      });
+      
+      const stream = file.createReadStream();
+      stream.on('error', (err) => {
+        console.error("Stream error:", err);
+        if (!res.headersSent) {
+          res.status(500).json({ error: "Error streaming audio" });
+        }
+      });
+      stream.pipe(res);
+    } catch (error: any) {
+      console.error("Error with spark audio stream:", error);
+      if (!res.headersSent) {
+        res.status(500).json({ error: error.message || "Failed to stream audio" });
+      }
+    }
+  });
+
+  // Get or generate spark audio URL
+  app.get('/api/sparks/:id/audio', async (req, res) => {
+    try {
+      const sparkId = parseInt(req.params.id);
+      const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
+      if (!bucketId) {
+        return res.status(500).json({ error: "Object storage not configured" });
+      }
+      
+      const filename = `spark-${sparkId}.mp3`;
+      const bucket = objectStorageClient.bucket(bucketId);
+      const file = bucket.file(`public/audio/${filename}`);
+      const [exists] = await file.exists();
+      
+      if (exists) {
+        return res.json({ audioUrl: `/api/audio/${filename}`, cached: true });
+      }
+      
+      // Get spark content to generate audio
+      const spark = await storage.getSpark(sparkId);
+      if (!spark || !spark.fullTeaching) {
+        return res.status(404).json({ error: "Spark not found or has no teaching content" });
+      }
+      
+      // Generate audio
+      const result = await generateSparkAudio(sparkId, spark.fullTeaching);
+      
+      if (!result.success) {
+        return res.status(500).json({ error: result.error || "Failed to generate audio" });
+      }
+      
+      res.json({ audioUrl: `/api/audio/${filename}`, cached: false });
+    } catch (error: any) {
+      console.error("Error with spark audio:", error);
+      res.status(500).json({ error: error.message || "Failed to get audio" });
+    }
+  });
+
+  // Get or generate reading plan day audio
+  app.get('/api/reading-plans/:planId/days/:dayNumber/audio', async (req, res) => {
+    try {
+      const planId = parseInt(req.params.planId);
+      const dayNumber = parseInt(req.params.dayNumber);
+      const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
+      if (!bucketId) {
+        return res.status(500).json({ error: "Object storage not configured" });
+      }
+      
+      const filename = `plan-${planId}-day-${dayNumber}.mp3`;
+      const bucket = objectStorageClient.bucket(bucketId);
+      const file = bucket.file(`public/audio/${filename}`);
+      const [exists] = await file.exists();
+      
+      if (exists) {
+        return res.json({ audioUrl: `/api/audio/${filename}`, cached: true });
+      }
+      
+      // Get reading plan day content
+      const planDay = await storage.getReadingPlanDay(planId, dayNumber);
+      if (!planDay || !planDay.devotionalContent) {
+        return res.status(404).json({ error: "Reading plan day not found or has no content" });
+      }
+      
+      // Generate audio
+      const result = await generateReadingPlanDayAudio(planId, dayNumber, planDay.devotionalContent);
+      
+      if (!result.success) {
+        return res.status(500).json({ error: result.error || "Failed to generate audio" });
+      }
+      
+      res.json({ audioUrl: `/api/audio/${filename}`, cached: false });
+    } catch (error: any) {
+      console.error("Error with reading plan audio:", error);
+      res.status(500).json({ error: error.message || "Failed to get audio" });
     }
   });
 

@@ -281,40 +281,17 @@ export function SparkDetail() {
     try {
       let audioUrl: string;
       
-      // Use pre-generated narration if available, otherwise generate on-the-fly
+      // Fetch audio from API (generates if needed, uses cache if available)
       let isBlobUrl = false;
-      if (spark.narrationAudioUrl) {
-        audioUrl = spark.narrationAudioUrl;
-      } else {
-        // Build narration text: scripture passage first, then teaching
-        let narrationText = '';
-        if (spark.scriptureRef) {
-          narrationText += spark.scriptureRef + '. ';
-        }
-        if (spark.fullPassage) {
-          narrationText += spark.fullPassage + ' ';
-        }
-        if (spark.fullTeaching) {
-          narrationText += spark.fullTeaching;
-        }
-        
-        const response = await fetch('/api/tts/generate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            text: narrationText,
-            voice: 'nova'
-          }),
-        });
-        
-        if (!response.ok) {
-          throw new Error('Failed to generate audio');
-        }
-        
-        const audioBlob = await response.blob();
-        audioUrl = URL.createObjectURL(audioBlob);
-        isBlobUrl = true;
+      
+      const audioResponse = await fetch(`/api/sparks/${sparkId}/audio`);
+      
+      if (!audioResponse.ok) {
+        throw new Error('Failed to get audio');
       }
+      
+      const audioData = await audioResponse.json();
+      audioUrl = audioData.audioUrl;
       
       if (ttsUrlRef.current && ttsBlobUrlRef.current) {
         URL.revokeObjectURL(ttsUrlRef.current);
