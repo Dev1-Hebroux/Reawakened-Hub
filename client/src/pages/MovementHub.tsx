@@ -420,6 +420,7 @@ export function MovementHub() {
                           ? "bg-white text-[#1a2744] hover:bg-[#E8E4DE] font-bold shadow-lg" 
                           : "bg-[#D4A574] hover:bg-[#C49464] text-white font-bold shadow-lg"
                         }
+                        onClick={() => navigate("/challenges")}
                         data-testid={`challenge-${challenge.id}`}
                       >
                         {challenge.isJoined ? "Continue" : "Join Challenge"}
@@ -546,7 +547,7 @@ export function MovementHub() {
                 size="sm" 
                 variant="ghost" 
                 className="text-primary text-xs"
-                onClick={() => navigate("/mission#events")}
+                onClick={() => navigate("/movement")}
               >
                 View All
               </Button>
@@ -599,7 +600,10 @@ export function MovementHub() {
                     <Button
                       size="sm"
                       className="bg-primary hover:bg-primary/90 text-white"
-                      onClick={() => navigate(`/mission#events`)}
+                      onClick={() => {
+                        const desc = event.description || `${event.title} - ${event.location || 'Online'}`;
+                        alert(`${event.title}\n\n${desc}\n\nDate: ${new Date(event.startDate).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}\nTime: ${new Date(event.startDate).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}\nLocation: ${event.location || 'Online'}`);
+                      }}
                       data-testid={`button-event-${event.id}`}
                     >
                       View
