@@ -2,40 +2,39 @@ import { storage } from "./storage";
 
 export async function autoSeedDominionContent(): Promise<void> {
   try {
-    console.log('[Auto-Seed] Checking if DOMINION content needs seeding...');
+    console.log('[Auto-Seed] Running full DOMINION content sync...');
     
-    // Check specifically for DOMINION campaign content by looking for sparks 
-    // with the campaign start date (Jan 3, 2026)
-    const existingSparks = await storage.getSparks();
-    const dominionSparks = existingSparks.filter((s: any) => 
-      s.dailyDate === '2026-01-03' && s.weekTheme?.includes('Week 1: Identity')
-    );
-    
-    if (dominionSparks.length > 0) {
-      console.log(`[Auto-Seed] DOMINION content already exists (${dominionSparks.length} Day 1 sparks found). Skipping.`);
-      return;
-    }
-    
-    console.log('[Auto-Seed] No DOMINION content found. Seeding campaign data...');
+    // Always run a full upsert to ensure all 180 sparks and 180 reflection cards exist
+    // This handles both initial seeding and updates to existing content
     
     const content = getDominionSeedContent();
     
-    let sparksCreated = 0;
-    let reflectionsCreated = 0;
+    let sparksUpserted = 0;
+    let reflectionsUpserted = 0;
     
+    // Use upsert to create or update each spark
     for (const spark of content.sparks) {
-      await storage.createSpark(spark);
-      sparksCreated++;
+      await storage.upsertSpark(spark);
+      sparksUpserted++;
     }
     
+    // Use upsert to create or update each reflection card
     for (const card of content.reflectionCards) {
-      await storage.createReflectionCard(card);
-      reflectionsCreated++;
+      await storage.upsertReflectionCard(card);
+      reflectionsUpserted++;
     }
     
-    console.log(`[Auto-Seed] Complete: ${sparksCreated} sparks, ${reflectionsCreated} reflection cards seeded.`);
+    console.log(`[Auto-Seed] Complete: ${sparksUpserted} sparks, ${reflectionsUpserted} reflection cards synced.`);
+    
+    // Validate counts - use exact date range for DOMINION campaign (Jan 3 - Feb 1, 2026)
+    const allSparks = await storage.getSparks();
+    const dominionSparks = allSparks.filter((s: any) => {
+      if (!s.dailyDate) return false;
+      return s.dailyDate >= '2026-01-03' && s.dailyDate <= '2026-02-01';
+    });
+    console.log(`[Auto-Seed] Validation: ${dominionSparks.length} DOMINION sparks in database (expected: 180).`);
   } catch (error) {
-    console.error('[Auto-Seed] Error seeding DOMINION content:', error);
+    console.error('[Auto-Seed] Error syncing DOMINION content:', error);
   }
 }
 

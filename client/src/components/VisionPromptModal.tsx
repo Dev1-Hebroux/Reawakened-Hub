@@ -17,8 +17,10 @@ export function VisionPromptModal() {
     
     const dismissedKey = `vision_prompt_dismissed_${user.id}`;
     const alreadyDismissed = localStorage.getItem(dismissedKey);
+    const onboardingComplete = localStorage.getItem('dominion_onboarding_complete');
     
-    if (!alreadyDismissed) {
+    // Only show Vision prompt if onboarding is complete and prompt not dismissed
+    if (!alreadyDismissed && onboardingComplete === 'true') {
       const timer = setTimeout(() => {
         setShowPrompt(true);
       }, 2000);
@@ -40,11 +42,11 @@ export function VisionPromptModal() {
 
   return (
     <Dialog open={showPrompt} onOpenChange={setShowPrompt}>
-      <DialogContent className="max-w-md bg-[#FAF8F5] border-[#E8E4DE] p-0 overflow-hidden">
-        <div className="bg-gradient-to-br from-[#7C9A8E] to-[#4A7C7C] p-6 text-white">
+      <DialogContent className="max-w-md w-[calc(100%-2rem)] mx-auto bg-[#FAF8F5] border-[#E8E4DE] p-0 overflow-hidden rounded-2xl">
+        <div className="bg-gradient-to-br from-[#7C9A8E] to-[#4A7C7C] p-4 sm:p-6 text-white">
           <div className="flex items-center justify-between">
-            <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center">
-              <Compass className="w-7 h-7 text-white" />
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center">
+              <Compass className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
             </div>
             <button 
               onClick={handleDismiss}
@@ -54,16 +56,16 @@ export function VisionPromptModal() {
               <X className="w-5 h-5" />
             </button>
           </div>
-          <h2 className="text-2xl font-bold mt-4 mb-2">
+          <h2 className="text-xl sm:text-2xl font-bold mt-3 sm:mt-4 mb-2">
             Want a simple plan for this season?
           </h2>
-          <p className="text-white/80">
+          <p className="text-white/80 text-sm sm:text-base">
             Our Vision Journey helps you get crystal clear on where you're headed.
           </p>
         </div>
         
-        <div className="p-6">
-          <div className="space-y-3 mb-6">
+        <div className="p-4 sm:p-6">
+          <div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
             {[
               { icon: Target, text: "Set meaningful goals that stick" },
               { icon: Heart, text: "Align with your core values" },
@@ -76,10 +78,10 @@ export function VisionPromptModal() {
                 transition={{ delay: 0.1 * i }}
                 className="flex items-center gap-3"
               >
-                <div className="w-10 h-10 rounded-xl bg-[#7C9A8E]/10 flex items-center justify-center">
-                  <item.icon className="w-5 h-5 text-[#7C9A8E]" />
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#7C9A8E]/10 flex items-center justify-center flex-shrink-0">
+                  <item.icon className="w-4 h-4 sm:w-5 sm:h-5 text-[#7C9A8E]" />
                 </div>
-                <span className="text-[#2C3E2D] font-medium">{item.text}</span>
+                <span className="text-[#2C3E2D] font-medium text-sm sm:text-base">{item.text}</span>
               </motion.div>
             ))}
           </div>
@@ -87,17 +89,17 @@ export function VisionPromptModal() {
           <div className="flex flex-col gap-2">
             <Button
               onClick={handleStartVision}
-              className="w-full bg-[#7C9A8E] hover:bg-[#6B8B7E] text-white py-6 rounded-xl font-semibold"
+              className="w-full bg-[#7C9A8E] hover:bg-[#6B8B7E] text-white py-5 sm:py-6 rounded-xl font-semibold text-sm sm:text-base"
               data-testid="button-start-vision-prompt"
             >
-              <Compass className="w-5 h-5 mr-2" />
+              <Compass className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
               Start My Vision Journey
-              <ArrowRight className="w-5 h-5 ml-2" />
+              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
             </Button>
             <Button
               variant="ghost"
               onClick={handleDismiss}
-              className="text-[#6B7B6E] hover:text-[#2C3E2D]"
+              className="text-[#6B7B6E] hover:text-[#2C3E2D] text-sm sm:text-base"
               data-testid="button-maybe-later"
             >
               Maybe later

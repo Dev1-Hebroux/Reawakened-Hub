@@ -95,9 +95,20 @@ export function Navbar() {
               </button>
             )}
             <NotificationBell isDark={useDarkTheme} />
+            {!isAuthenticated && (
+              <Button 
+                variant="ghost"
+                onClick={() => window.location.href = '/api/login'}
+                className={`${useDarkTheme ? 'text-white hover:bg-white/10' : 'text-gray-700 hover:bg-gray-100'} font-bold px-4 py-2 rounded-full transition-all`}
+                data-testid="nav-signin"
+              >
+                Sign In
+              </Button>
+            )}
             <Button 
               onClick={() => navigate(isAuthenticated ? '/missions' : '/mission/onboarding')}
               className={`${useDarkTheme ? 'bg-white text-primary hover:bg-gray-100' : 'bg-primary text-white hover:bg-primary/90'} font-bold px-5 py-2 rounded-full shadow-lg transition-all hover:scale-105`}
+              data-testid="nav-join"
             >
               {isAuthenticated ? 'My Missions' : 'Join Now'}
             </Button>
@@ -137,7 +148,17 @@ export function Navbar() {
               <Link href="/mission"><span className="text-gray-800 hover:text-primary hover:bg-gray-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer" data-testid="mobile-nav-missions">Missions</span></Link>
               <Link href="/blog"><span className="text-gray-800 hover:text-primary hover:bg-gray-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer" data-testid="mobile-nav-blog">Blog</span></Link>
               <Link href="/about"><span className="text-gray-800 hover:text-primary hover:bg-gray-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer" data-testid="mobile-nav-about">About</span></Link>
-              <div className="pt-4">
+              <div className="pt-4 space-y-2">
+                {!isAuthenticated && (
+                  <Button 
+                    variant="outline"
+                    onClick={() => { setIsOpen(false); window.location.href = '/api/login'; }}
+                    className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 font-bold py-5 rounded-xl" 
+                    data-testid="mobile-nav-signin"
+                  >
+                    Sign In
+                  </Button>
+                )}
                 <Button 
                   onClick={() => { setIsOpen(false); navigate(isAuthenticated ? '/missions' : '/mission/onboarding'); }}
                   className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-6 rounded-xl" 
