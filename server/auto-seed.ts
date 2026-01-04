@@ -11,6 +11,7 @@ export async function autoSeedDominionContent(): Promise<void> {
     
     let sparksUpserted = 0;
     let reflectionsUpserted = 0;
+    let blogsUpserted = 0;
     
     // Use upsert to create or update each spark
     for (const spark of content.sparks) {
@@ -24,7 +25,14 @@ export async function autoSeedDominionContent(): Promise<void> {
       reflectionsUpserted++;
     }
     
-    console.log(`[Auto-Seed] Complete: ${sparksUpserted} sparks, ${reflectionsUpserted} reflection cards synced.`);
+    // Upsert blog posts
+    const blogPosts = getBlogSeedContent();
+    for (const blog of blogPosts) {
+      await storage.upsertBlogPost(blog);
+      blogsUpserted++;
+    }
+    
+    console.log(`[Auto-Seed] Complete: ${sparksUpserted} sparks, ${reflectionsUpserted} reflection cards, ${blogsUpserted} blog posts synced.`);
     
     // Validate counts - use exact date range for DOMINION campaign (Jan 3 - Feb 1, 2026)
     const allSparks = await storage.getSparks();
@@ -231,4 +239,117 @@ function getDominionSeedContent() {
   }
   
   return { sparks, reflectionCards };
+}
+
+function getBlogSeedContent() {
+  return [
+    {
+      title: "The Lord is My Shepherd - A Psalm 23 Journey (Part 1)",
+      slug: "psalm-23-the-lord-is-my-shepherd",
+      excerpt: "Begin a transformative journey through Psalm 23. Discover the profound comfort of knowing the Lord as your personal Shepherd.",
+      content: `## The Lord is My Shepherd
+
+**Scripture:** "The Lord is my shepherd; I shall not want." - Psalm 23:1
+
+### Reflection
+
+In ancient Israel, a shepherd was everything to their flock. They provided protection, guidance, provision, and constant companionship. When David wrote these words, he wasn't speaking theoretically—he had been a shepherd himself.
+
+The beauty of this declaration lies in its personal nature: "The Lord is **my** shepherd." Not just a distant God, but a personal guide walking with you through every season of life.
+
+When you embrace God as your Shepherd, something shifts. The anxiety of provision fades. The fear of the unknown diminishes. You begin to trust that the One who leads you knows the path ahead.
+
+### Prayer
+
+Lord, help me trust You as my Shepherd today. When I feel lost, remind me that You are guiding my steps. When I feel lacking, remind me that You are my provider. Amen.
+
+### Take Action
+
+Join our WhatsApp community to connect with others on this journey of faith.`,
+      coverImageUrl: "/attached_assets/the_lord_is_my_shepherd_1765592424280.png",
+      authorId: "system",
+      category: "Faith & Culture",
+    },
+    {
+      title: "Finding Rest in God - A Psalm 23 Journey (Part 2)",
+      slug: "psalm-23-rest-in-meadow-grass",
+      excerpt: "Experience the peace that comes when you allow God to lead you to places of rest and restoration.",
+      content: `## He Lets Me Rest in the Meadow Grass
+
+**Scripture:** "He makes me lie down in green pastures. He leads me beside still waters." - Psalm 23:2
+
+### Reflection
+
+In our always-on culture, rest feels like a luxury we can't afford. But God doesn't just suggest rest—He makes us lie down. Sometimes He orchestrates circumstances that force us to pause, to breathe, to be still.
+
+The green pastures and still waters aren't just about physical rest. They represent spiritual nourishment and emotional peace. God knows you need both activity and rest, both movement and stillness.
+
+When was the last time you truly rested? Not just slept, but rested in God's presence? He's inviting you to those meadow pastures today.
+
+### Prayer
+
+Father, teach me to rest in Your presence. Quiet my anxious thoughts and lead me beside Your still waters. Restore my soul today. Amen.
+
+### Take Action
+
+Share your testimony of how God has brought you peace in chaotic times.`,
+      coverImageUrl: "/attached_assets/the_lord_is_my_shepherd_(4)_1765592424277.png",
+      authorId: "system",
+      category: "Faith & Culture",
+    },
+    {
+      title: "Fearless Through the Valley - A Psalm 23 Journey (Part 3)",
+      slug: "psalm-23-valley-of-death",
+      excerpt: "Learn to walk through life's darkest valleys without fear, knowing your Shepherd is with you.",
+      content: `## Walking Through the Dark Valley of Death, I Will Not Be Afraid
+
+**Scripture:** "Even though I walk through the valley of the shadow of death, I will fear no evil, for you are with me." - Psalm 23:4
+
+### Reflection
+
+Notice that David says "through" the valley, not "around" it. Sometimes God's path takes us through dark places—grief, loss, uncertainty, fear. But the Shepherd doesn't abandon us at the valley's entrance.
+
+The key to walking through darkness without fear isn't pretending the darkness doesn't exist. It's knowing that Someone walks with you who has already conquered the darkness. His rod protects you from predators; His staff guides your steps when you can't see the path.
+
+Whatever valley you're facing today, you're not walking alone. The Shepherd is with you.
+
+### Prayer
+
+Lord, in my darkest moments, help me feel Your presence. When I cannot see the way forward, help me trust that You are guiding my steps. I choose not to fear, because You are with me. Amen.
+
+### Take Action
+
+Submit a prayer request if you're walking through a difficult season. Let us stand with you.`,
+      coverImageUrl: "/attached_assets/the_lord_is_my_shepherd_(6)_1765592424278.png",
+      authorId: "system",
+      category: "Faith & Culture",
+    },
+    {
+      title: "Goodness and Kindness Forever - A Psalm 23 Journey (Part 4)",
+      slug: "psalm-23-goodness-kindness",
+      excerpt: "Discover the promise that God's goodness and unfailing love will follow you all the days of your life.",
+      content: `## Your Goodness and Unfailing Kindness Shall Be With Me All of My Life
+
+**Scripture:** "Surely goodness and mercy shall follow me all the days of my life, and I shall dwell in the house of the Lord forever." - Psalm 23:6
+
+### Reflection
+
+What a declaration to end this psalm! David doesn't say goodness and mercy *might* follow—he says they *surely* will. This isn't wishful thinking; it's confident faith in a faithful God.
+
+The Hebrew word for "follow" here can also mean "pursue." God's goodness isn't passive; it actively chases after you. Even when you wander, even when you doubt, His unfailing kindness pursues you.
+
+And the promise extends beyond this life. We will dwell in the house of the Lord forever. Every valley, every green pasture, every shadow—they all lead to an eternal home with our Shepherd.
+
+### Prayer
+
+Thank You, Lord, for Your relentless goodness that pursues me. Thank You that my journey with You doesn't end in this life but continues forever. Help me share this hope with others. Amen.
+
+### Take Action
+
+Share this devotional series with someone who needs encouragement today.`,
+      coverImageUrl: "/attached_assets/the_lord_is_my_shepherd_(8)_1765592424280.png",
+      authorId: "system",
+      category: "Faith & Culture",
+    },
+  ];
 }

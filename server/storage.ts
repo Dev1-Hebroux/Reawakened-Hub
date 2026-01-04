@@ -1557,6 +1557,21 @@ export class DatabaseStorage implements IStorage {
     await db.delete(blogPosts).where(eq(blogPosts.id, id));
   }
 
+  async upsertBlogPost(postData: InsertBlogPost & { publishedAt?: Date }): Promise<BlogPost> {
+    const existing = await db.select().from(blogPosts).where(eq(blogPosts.slug, postData.slug));
+    
+    if (existing.length > 0) {
+      const [updated] = await db.update(blogPosts)
+        .set(postData)
+        .where(eq(blogPosts.id, existing[0].id))
+        .returning();
+      return updated;
+    } else {
+      const [created] = await db.insert(blogPosts).values(postData).returning();
+      return created;
+    }
+  }
+
   // Email Subscriptions
   async createEmailSubscription(subscriptionData: InsertEmailSubscription): Promise<EmailSubscription> {
     const [subscription] = await db.insert(emailSubscriptions).values(subscriptionData).returning();
