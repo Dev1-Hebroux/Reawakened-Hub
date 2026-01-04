@@ -331,6 +331,7 @@ export function ReadingPlanDetail() {
         <AnimatePresence mode="wait">
           {selectedDay && currentDayContent && (
             <motion.div
+              ref={contentRef}
               key={selectedDay}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -402,7 +403,7 @@ export function ReadingPlanDetail() {
                 )}
               </div>
 
-              <div className="prose prose-lg max-w-none mb-8" ref={contentRef}>
+              <div className="prose prose-lg max-w-none mb-8">
                 <h3 className="text-xl font-bold text-gray-900 mb-4">Today's Reflection</h3>
                 {(() => {
                   const paragraphs = currentDayContent.devotionalContent.split('\n\n').filter(p => p.trim());

@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   ChevronLeft, Bookmark, BookmarkCheck, Share2, Volume2, VolumeX, 
   Pause, Play, Check, Flame, Heart, Mic, MicOff, Send, ChevronDown,
-  ChevronUp, Target, MessageCircle, Clock, Calendar
+  ChevronUp, Target, MessageCircle, Clock, Calendar, Lock
 } from "lucide-react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/button";
@@ -67,6 +67,12 @@ export function SparkDetail() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [showTrackPicker, setShowTrackPicker] = useState(false);
   const [streak, setStreak] = useState(0);
+  const [revealedParagraphs, setRevealedParagraphs] = useState(1);
+  
+  // Reset revealed paragraphs when spark changes
+  useEffect(() => {
+    setRevealedParagraphs(1);
+  }, [sparkId]);
   
   const audioRef = useRef<HTMLAudioElement>(null);
   const ttsAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -116,6 +122,26 @@ export function SparkDetail() {
     if (actionStatus?.completed) setActionCompleted(true);
     if (streakData?.streak) setStreak(streakData.streak);
   }, [bookmarkStatus, actionStatus, streakData]);
+  
+  // Auto-reveal paragraphs when audio is playing
+  useEffect(() => {
+    if (!isSpeaking || !spark?.fullTeaching) return;
+    
+    const paragraphs = spark.fullTeaching.split('\n\n').filter(p => p.trim());
+    const totalParagraphs = paragraphs.length;
+    
+    // Reveal one paragraph every 12 seconds while audio plays
+    const interval = setInterval(() => {
+      setRevealedParagraphs(prev => {
+        if (prev >= totalParagraphs) {
+          return totalParagraphs;
+        }
+        return prev + 1;
+      });
+    }, 12000);
+    
+    return () => clearInterval(interval);
+  }, [isSpeaking, spark?.fullTeaching]);
 
   useEffect(() => {
     return () => {
@@ -587,21 +613,70 @@ export function SparkDetail() {
             transition={{ duration: 0.3 }}
             className="py-8"
           >
-            {activeSection === 'teaching' && spark.fullTeaching && (
-              <div className="prose prose-invert prose-lg max-w-none">
-                {spark.fullTeaching.split('\n\n').map((paragraph, i) => (
-                  <motion.p 
-                    key={i}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.1 }}
-                    className="text-white leading-relaxed mb-6 text-lg"
-                  >
-                    {paragraph}
-                  </motion.p>
-                ))}
-              </div>
-            )}
+            {activeSection === 'teaching' && spark.fullTeaching && (() => {
+              const paragraphs = spark.fullTeaching.split('\n\n').filter(p => p.trim());
+              const totalParagraphs = paragraphs.length;
+              const allRevealed = revealedParagraphs >= totalParagraphs;
+              
+              return (
+                <div className="prose prose-invert prose-lg max-w-none">
+                  {paragraphs.map((paragraph, i) => {
+                    const isRevealed = i < revealedParagraphs;
+                    const isNext = i === revealedParagraphs;
+                    
+                    if (!isRevealed && !isNext) return null;
+                    
+                    return (
+                      <motion.div
+                        key={i}
+                        initial={i > 0 ? { opacity: 0, y: 10 } : {}}
+                        animate={{ opacity: isRevealed ? 1 : 0.3, y: 0 }}
+                        transition={{ duration: 0.4 }}
+                      >
+                        {isRevealed ? (
+                          <p className="text-white leading-relaxed mb-6 text-lg">{paragraph}</p>
+                        ) : (
+                          <div className="relative">
+                            <p className="text-white/30 leading-relaxed mb-6 text-lg blur-sm select-none">
+                              {paragraph.slice(0, 120)}...
+                            </p>
+                            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/90" />
+                          </div>
+                        )}
+                      </motion.div>
+                    );
+                  })}
+                  
+                  {!allRevealed && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="flex justify-center mt-4"
+                    >
+                      <button
+                        onClick={() => setRevealedParagraphs(prev => prev + 1)}
+                        className="flex items-center gap-2 px-6 py-3 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white font-medium transition-all"
+                        data-testid="button-continue-reading"
+                      >
+                        <ChevronDown className="h-4 w-4" />
+                        Continue Reading ({revealedParagraphs}/{totalParagraphs})
+                      </button>
+                    </motion.div>
+                  )}
+                  
+                  {allRevealed && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="flex items-center justify-center gap-2 text-green-400 py-2"
+                    >
+                      <Check className="h-4 w-4" />
+                      <span className="text-sm font-medium">Reading complete</span>
+                    </motion.div>
+                  )}
+                </div>
+              );
+            })()}
             
             {activeSection === 'context' && spark.contextBackground && (
               <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
@@ -630,53 +705,75 @@ export function SparkDetail() {
             )}
           </motion.div>
           
-          {spark.todayAction && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-              className="bg-gradient-to-br from-primary/20 to-primary/5 rounded-2xl p-6 border border-primary/30 mb-8"
-            >
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <Target className="h-5 w-5 text-amber-400" />
-                  <h3 className="font-bold text-white">Today's Action</h3>
+          {spark.todayAction && (() => {
+            const paragraphs = spark.fullTeaching?.split('\n\n').filter(p => p.trim()) || [];
+            const totalParagraphs = paragraphs.length;
+            const allRevealed = revealedParagraphs >= totalParagraphs || totalParagraphs === 0;
+            
+            return (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="bg-gradient-to-br from-primary/20 to-primary/5 rounded-2xl p-6 border border-primary/30 mb-8"
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <Target className="h-5 w-5 text-amber-400" />
+                    <h3 className="font-bold text-white">Today's Action</h3>
+                  </div>
+                  {streak > 0 && (
+                    <div className="flex items-center gap-1.5 bg-primary/20 px-3 py-1 rounded-full">
+                      <Flame className="h-4 w-4 text-orange-400" />
+                      <span className="text-sm font-bold text-orange-400">{streak} day streak</span>
+                    </div>
+                  )}
                 </div>
-                {streak > 0 && (
-                  <div className="flex items-center gap-1.5 bg-primary/20 px-3 py-1 rounded-full">
-                    <Flame className="h-4 w-4 text-orange-400" />
-                    <span className="text-sm font-bold text-orange-400">{streak} day streak</span>
+                
+                <p className="text-white leading-relaxed mb-6 text-lg">{spark.todayAction}</p>
+                
+                {!allRevealed && (
+                  <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 mb-4 flex items-center gap-3">
+                    <Lock className="h-5 w-5 text-amber-400" />
+                    <p className="text-sm text-amber-200">
+                      Read all sections to unlock this action
+                    </p>
                   </div>
                 )}
-              </div>
-              
-              <p className="text-white leading-relaxed mb-6 text-lg">{spark.todayAction}</p>
-              
-              <motion.button
-                whileTap={{ scale: 0.95 }}
-                onClick={() => !actionCompleted && actionMutation.mutate()}
-                disabled={actionCompleted}
-                className={`w-full py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all ${
-                  actionCompleted 
-                    ? 'bg-green-600/20 text-green-400 border border-green-600/40 cursor-default' 
-                    : 'bg-primary hover:bg-primary/90 text-white'
-                }`}
-                data-testid="button-complete-action"
-              >
-                {actionCompleted ? (
-                  <>
-                    <Check className="h-5 w-5" />
-                    Completed!
-                  </>
-                ) : (
-                  <>
-                    <Target className="h-5 w-5" />
-                    Mark as Complete
-                  </>
-                )}
-              </motion.button>
-            </motion.div>
-          )}
+                
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => !actionCompleted && allRevealed && actionMutation.mutate()}
+                  disabled={actionCompleted || !allRevealed}
+                  className={`w-full py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all ${
+                    actionCompleted 
+                      ? 'bg-green-600/20 text-green-400 border border-green-600/40 cursor-default' 
+                      : !allRevealed
+                        ? 'bg-white/10 text-white/50 cursor-not-allowed'
+                        : 'bg-primary hover:bg-primary/90 text-white'
+                  }`}
+                  data-testid="button-complete-action"
+                >
+                  {actionCompleted ? (
+                    <>
+                      <Check className="h-5 w-5" />
+                      Completed!
+                    </>
+                  ) : !allRevealed ? (
+                    <>
+                      <Lock className="h-5 w-5" />
+                      Read to Unlock
+                    </>
+                  ) : (
+                    <>
+                      <Target className="h-5 w-5" />
+                      Mark as Complete
+                    </>
+                  )}
+                </motion.button>
+              </motion.div>
+            );
+          })()}
           
           {spark.reflectionQuestion && (
             <motion.div
