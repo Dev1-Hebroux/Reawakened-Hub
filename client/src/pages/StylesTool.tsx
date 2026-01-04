@@ -142,6 +142,7 @@ export function StylesTool() {
   const [answers, setAnswers] = useState<Map<number, string>>(new Map());
   const [primaryStyle, setPrimaryStyle] = useState<string | null>(null);
   const [secondaryStyle, setSecondaryStyle] = useState<string | null>(null);
+  const [styleScores, setStyleScores] = useState<Record<string, number>>({ driver: 0, expressive: 0, amiable: 0, analytical: 0 });
 
   const { data: session } = useQuery({
     queryKey: ["/api/vision/sessions/current"],
@@ -166,6 +167,7 @@ export function StylesTool() {
       
       setPrimaryStyle(primary);
       setSecondaryStyle(secondary);
+      setStyleScores(scores);
 
       const res = await fetch(`/api/vision/sessions/${sessionId}/style`, {
         method: "PUT",

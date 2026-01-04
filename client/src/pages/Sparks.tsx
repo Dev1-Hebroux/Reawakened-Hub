@@ -50,9 +50,12 @@ function getDefaultThumbnail(index: number) {
   return defaultThumbnails[index % defaultThumbnails.length];
 }
 
-function getSparkImage(spark: Spark, fallbackIndex: number = 0) {
-  if (spark.imageUrl || spark.thumbnailUrl) {
-    return spark.imageUrl || spark.thumbnailUrl;
+function getSparkImage(spark: Spark, fallbackIndex: number = 0): string {
+  if (spark.imageUrl) {
+    return spark.imageUrl;
+  }
+  if (spark.thumbnailUrl) {
+    return spark.thumbnailUrl;
   }
   if (spark.weekTheme && weekThemeImages[spark.weekTheme]) {
     return weekThemeImages[spark.weekTheme];

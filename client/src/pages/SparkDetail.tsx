@@ -16,12 +16,6 @@ import { toast } from "sonner";
 import confetti from "canvas-confetti";
 import type { Spark } from "@shared/schema";
 
-import music1 from "@assets/DappyTKeys_-_Background_Music_-_01_Background_Music_-_1_1767469486425.mp3";
-import music2 from "@assets/DappyTKeys_-_Background_Music_-_02_Background_Music_-_2_1767469511632.mp3";
-import music3 from "@assets/DappyTKeys_-_Background_Music_-_03_Background_Music_-_3_1767469511633.mp3";
-import music4 from "@assets/DappyTKeys_-_Background_Music_-_04_Background_Music_-_4_1767469511634.mp3";
-import music5 from "@assets/DappyTKeys_-_Background_Music_-_05_Background_Music_-_5_1767469511635.mp3";
-
 import identityImage from "@assets/generated_images/worship_gathering_devotional_image.png";
 import prayerImage from "@assets/generated_images/prayer_and_presence_devotional.png";
 import peaceImage from "@assets/generated_images/peace_and_calm_devotional.png";
@@ -42,11 +36,11 @@ const weekThemeImages: Record<string, string> = {
 };
 
 const backgroundTracks = [
-  { id: "track1", name: "Peaceful Dawn", url: music1 },
-  { id: "track2", name: "Gentle Waters", url: music2 },
-  { id: "track3", name: "Morning Light", url: music3 },
-  { id: "track4", name: "Still Moments", url: music4 },
-  { id: "track5", name: "Grace Notes", url: music5 },
+  { id: "track1", name: "Peaceful Dawn", url: "/attached_assets/DappyTKeys_-_Background_Music_-_01_Background_Music_-_1_1767469486425.mp3" },
+  { id: "track2", name: "Gentle Waters", url: "/attached_assets/DappyTKeys_-_Background_Music_-_02_Background_Music_-_2_1767469511632.mp3" },
+  { id: "track3", name: "Morning Light", url: "/attached_assets/DappyTKeys_-_Background_Music_-_03_Background_Music_-_3_1767469511633.mp3" },
+  { id: "track4", name: "Still Moments", url: "/attached_assets/DappyTKeys_-_Background_Music_-_04_Background_Music_-_4_1767469511634.mp3" },
+  { id: "track5", name: "Grace Notes", url: "/attached_assets/DappyTKeys_-_Background_Music_-_05_Background_Music_-_5_1767469511635.mp3" },
 ];
 
 export function SparkDetail() {
