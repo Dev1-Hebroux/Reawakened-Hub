@@ -72,6 +72,84 @@ export async function pregenerateTomorrowsAudio(): Promise<void> {
   }
 }
 
+export interface BulkAudioGenerationResult {
+  total: number;
+  generated: number;
+  skipped: number;
+  failed: number;
+  errors: string[];
+}
+
+export async function pregenerateAllDominionAudio(): Promise<BulkAudioGenerationResult> {
+  const result: BulkAudioGenerationResult = {
+    total: 0,
+    generated: 0,
+    skipped: 0,
+    failed: 0,
+    errors: []
+  };
+
+  if (!process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID) {
+    result.errors.push("Object storage not configured");
+    return result;
+  }
+
+  console.log("[Bulk Audio] Starting bulk generation for all DOMINION sparks...");
+
+  try {
+    const sparks = await storage.getAllDominionSparks();
+    result.total = sparks.length;
+    
+    console.log(`[Bulk Audio] Found ${sparks.length} DOMINION sparks to process`);
+
+    for (const spark of sparks) {
+      try {
+        const existingUrl = await getSparkAudioUrl(spark.id);
+        
+        if (existingUrl) {
+          console.log(`[Bulk Audio] Spark ${spark.id} already has audio, skipping`);
+          result.skipped++;
+          continue;
+        }
+        
+        if (!spark.fullTeaching) {
+          console.log(`[Bulk Audio] Spark ${spark.id} has no teaching content, skipping`);
+          result.skipped++;
+          continue;
+        }
+        
+        console.log(`[Bulk Audio] Generating audio for spark ${spark.id}: ${spark.title}`);
+        
+        const genResult = await generateSparkAudio(spark.id, spark.fullTeaching);
+        
+        if (genResult.success) {
+          console.log(`[Bulk Audio] Successfully generated audio for spark ${spark.id}`);
+          result.generated++;
+        } else {
+          console.error(`[Bulk Audio] Failed to generate audio for spark ${spark.id}: ${genResult.error}`);
+          result.failed++;
+          result.errors.push(`Spark ${spark.id}: ${genResult.error}`);
+        }
+        
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+      } catch (error: any) {
+        console.error(`[Bulk Audio] Error processing spark ${spark.id}:`, error);
+        result.failed++;
+        result.errors.push(`Spark ${spark.id}: ${error.message}`);
+      }
+    }
+    
+    console.log(`[Bulk Audio] Complete: ${result.generated} generated, ${result.skipped} skipped, ${result.failed} failed`);
+    
+  } catch (error: any) {
+    console.error("[Bulk Audio] Job failed:", error);
+    result.errors.push(`Job failed: ${error.message}`);
+  }
+
+  return result;
+}
+
 export function scheduleAudioPregeneration(): void {
   pregenerateTomorrowsAudio().catch(console.error);
   

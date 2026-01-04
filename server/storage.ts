@@ -488,6 +488,7 @@ export interface IStorage {
   getFeaturedSparks(audienceSegment?: string): Promise<Spark[]>;
   getTodaySpark(audienceSegment?: string): Promise<Spark | undefined>;
   getSparksByDailyDate(dailyDate: string): Promise<Spark[]>;
+  getAllDominionSparks(): Promise<Spark[]>;
 
   // Reflection Cards
   getReflectionCards(audienceSegment?: string): Promise<ReflectionCard[]>;
@@ -1200,6 +1201,15 @@ export class DatabaseStorage implements IStorage {
 
   async getSparksByDailyDate(dailyDate: string): Promise<Spark[]> {
     return db.select().from(sparks).where(eq(sparks.dailyDate, dailyDate));
+  }
+
+  async getAllDominionSparks(): Promise<Spark[]> {
+    return db.select().from(sparks).where(
+      and(
+        sql`${sparks.dailyDate} >= '2026-01-03'`,
+        sql`${sparks.dailyDate} <= '2026-02-01'`
+      )
+    ).orderBy(sparks.dailyDate);
   }
 
   // Reflection Cards

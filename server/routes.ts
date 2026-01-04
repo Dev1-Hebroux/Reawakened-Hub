@@ -3852,6 +3852,30 @@ export async function registerRoutes(
     }
   });
 
+  // Admin - Generate audio for all DOMINION sparks
+  app.post('/api/admin/sparks/generate-all-audio', isAdmin, async (req: any, res) => {
+    try {
+      const { pregenerateAllDominionAudio } = await import('./audio-pregeneration');
+      
+      res.json({ 
+        message: "Bulk audio generation started. This will run in the background.",
+        status: "started"
+      });
+      
+      pregenerateAllDominionAudio()
+        .then(result => {
+          console.log("[Admin] Bulk audio generation complete:", result);
+        })
+        .catch(error => {
+          console.error("[Admin] Bulk audio generation failed:", error);
+        });
+        
+    } catch (error: any) {
+      console.error("Error starting bulk audio generation:", error);
+      res.status(500).json({ message: error.message || "Failed to start audio generation" });
+    }
+  });
+
   // Admin - Bulk update sparks
   app.post('/api/admin/sparks/bulk', isAdmin, async (req: any, res) => {
     try {
