@@ -137,13 +137,24 @@ export function ReadingPlanDetail() {
     return () => clearInterval(interval);
   }, [isAudioPlaying, currentDayContent]);
   
-  // Scroll to content when day is selected
+  // Scroll to content when day is selected - wait for AnimatePresence to mount new content
   useEffect(() => {
-    if (selectedDay && contentRef.current) {
-      setTimeout(() => {
-        contentRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 100);
-    }
+    if (!selectedDay) return;
+    
+    // Poll for content ref since AnimatePresence mode="wait" delays mounting
+    let attempts = 0;
+    const maxAttempts = 10;
+    const pollInterval = setInterval(() => {
+      attempts++;
+      if (contentRef.current) {
+        contentRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        clearInterval(pollInterval);
+      } else if (attempts >= maxAttempts) {
+        clearInterval(pollInterval);
+      }
+    }, 50);
+    
+    return () => clearInterval(pollInterval);
   }, [selectedDay]);
 
   const { data: enrollments = [] } = useQuery<UserEnrollment[]>({
