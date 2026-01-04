@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useParams, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import {
   BookOpen, Clock, Users, ChevronLeft, ChevronRight, Flame, Check,
-  Play, Target, MessageSquare, ArrowRight, Lock, Calendar
+  Play, Target, MessageSquare, ArrowRight, Lock, Calendar, ChevronDown,
+  Volume2, Pause
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -71,11 +72,56 @@ export function ReadingPlanDetail() {
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [journalEntry, setJournalEntry] = useState("");
   const [showJournal, setShowJournal] = useState(false);
-
+  const [revealedParagraphs, setRevealedParagraphs] = useState(1);
+  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
+  const [audioProgress, setAudioProgress] = useState(0);
+  const contentRef = useRef<HTMLDivElement>(null);
+  
+  // Reset revealed paragraphs when changing days
+  useEffect(() => {
+    setRevealedParagraphs(1);
+    setIsAudioPlaying(false);
+    setAudioProgress(0);
+  }, [selectedDay]);
+  
+  // Derived state for current day content - defined early for use in effects
   const { data: plan, isLoading } = useQuery<ReadingPlan>({
     queryKey: [`/api/reading-plans/${planId}`],
     enabled: planId > 0,
   });
+  
+  const currentDayContent = selectedDay ? plan?.days?.find(d => d.dayNumber === selectedDay) : null;
+  
+  // Auto-reveal paragraphs when audio is playing (simulated audio progress)
+  useEffect(() => {
+    if (!isAudioPlaying || !currentDayContent) return;
+    
+    const paragraphs = currentDayContent.devotionalContent.split('\n\n').filter(p => p.trim());
+    const totalParagraphs = paragraphs.length;
+    
+    // Simulate audio reading - reveal one paragraph every 8 seconds
+    const interval = setInterval(() => {
+      setRevealedParagraphs(prev => {
+        const next = prev + 1;
+        if (next >= totalParagraphs) {
+          setIsAudioPlaying(false);
+          return totalParagraphs;
+        }
+        return next;
+      });
+    }, 8000);
+    
+    return () => clearInterval(interval);
+  }, [isAudioPlaying, currentDayContent]);
+  
+  // Scroll to content when day is selected
+  useEffect(() => {
+    if (selectedDay && contentRef.current) {
+      setTimeout(() => {
+        contentRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }
+  }, [selectedDay]);
 
   const { data: enrollments = [] } = useQuery<UserEnrollment[]>({
     queryKey: ["/api/user/reading-plans"],
@@ -125,8 +171,6 @@ export function ReadingPlanDetail() {
       }
     },
   });
-
-  const currentDayContent = selectedDay ? plan?.days?.find(d => d.dayNumber === selectedDay) : null;
 
   if (isLoading) {
     return (
@@ -308,22 +352,123 @@ export function ReadingPlanDetail() {
               </div>
 
               <div className="mb-8">
-                <div className="flex items-center gap-2 text-primary font-semibold mb-3">
-                  <BookOpen className="h-5 w-5" />
-                  <span>{currentDayContent.scriptureRef}</span>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2 text-primary font-semibold">
+                    <BookOpen className="h-5 w-5" />
+                    <span>{currentDayContent.scriptureRef}</span>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className={`gap-2 ${isAudioPlaying ? 'bg-primary text-white hover:bg-primary/90' : ''}`}
+                    onClick={() => setIsAudioPlaying(!isAudioPlaying)}
+                    data-testid="button-audio-toggle"
+                  >
+                    {isAudioPlaying ? (
+                      <>
+                        <Pause className="h-4 w-4" />
+                        Pause Audio
+                      </>
+                    ) : (
+                      <>
+                        <Volume2 className="h-4 w-4" />
+                        Listen
+                      </>
+                    )}
+                  </Button>
                 </div>
                 <blockquote className="bg-primary/5 rounded-xl p-6 border-l-4 border-primary">
                   <p className="text-lg leading-relaxed text-gray-800 italic">
                     "{currentDayContent.scriptureText}"
                   </p>
                 </blockquote>
+                
+                {isAudioPlaying && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    className="mt-4 bg-gray-100 rounded-lg p-3"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-1">
+                        <div className="w-1 h-4 bg-primary rounded animate-pulse" />
+                        <div className="w-1 h-6 bg-primary rounded animate-pulse delay-100" />
+                        <div className="w-1 h-3 bg-primary rounded animate-pulse delay-200" />
+                        <div className="w-1 h-5 bg-primary rounded animate-pulse" />
+                      </div>
+                      <span className="text-sm text-gray-600">Playing devotional... Auto-advancing sections</span>
+                    </div>
+                  </motion.div>
+                )}
               </div>
 
-              <div className="prose prose-lg max-w-none mb-8">
+              <div className="prose prose-lg max-w-none mb-8" ref={contentRef}>
                 <h3 className="text-xl font-bold text-gray-900 mb-4">Today's Reflection</h3>
-                {currentDayContent.devotionalContent.split('\n\n').map((paragraph, i) => (
-                  <p key={i} className="text-gray-700 leading-relaxed mb-4">{paragraph}</p>
-                ))}
+                {(() => {
+                  const paragraphs = currentDayContent.devotionalContent.split('\n\n').filter(p => p.trim());
+                  const totalParagraphs = paragraphs.length;
+                  const allRevealed = revealedParagraphs >= totalParagraphs;
+                  
+                  return (
+                    <>
+                      {paragraphs.map((paragraph, i) => {
+                        const isRevealed = i < revealedParagraphs;
+                        const isNext = i === revealedParagraphs;
+                        
+                        if (!isRevealed && !isNext) return null;
+                        
+                        return (
+                          <motion.div
+                            key={i}
+                            initial={i > 0 ? { opacity: 0, y: 10 } : {}}
+                            animate={{ opacity: isRevealed ? 1 : 0.3, y: 0 }}
+                            transition={{ duration: 0.4 }}
+                          >
+                            {isRevealed ? (
+                              <p className="text-gray-700 leading-relaxed mb-4">{paragraph}</p>
+                            ) : (
+                              <div className="relative">
+                                <p className="text-gray-400 leading-relaxed mb-4 blur-sm select-none">
+                                  {paragraph.slice(0, 100)}...
+                                </p>
+                                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-white/90" />
+                              </div>
+                            )}
+                          </motion.div>
+                        );
+                      })}
+                      
+                      {!allRevealed && (
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          className="flex justify-center mt-4"
+                        >
+                          <Button
+                            variant="outline"
+                            className="gap-2 border-primary/30 hover:border-primary hover:bg-primary/5"
+                            onClick={() => setRevealedParagraphs(prev => prev + 1)}
+                            data-testid="button-continue-reading"
+                          >
+                            <ChevronDown className="h-4 w-4" />
+                            Continue Reading ({revealedParagraphs}/{totalParagraphs})
+                          </Button>
+                        </motion.div>
+                      )}
+                      
+                      {allRevealed && (
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          className="flex items-center justify-center gap-2 text-green-600 py-2"
+                        >
+                          <Check className="h-4 w-4" />
+                          <span className="text-sm font-medium">Reading complete</span>
+                        </motion.div>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
 
               {currentDayContent.reflectionQuestion && (
@@ -356,56 +501,81 @@ export function ReadingPlanDetail() {
                 </div>
               )}
 
-              {enrollment && !completedDays.has(selectedDay) && (
-                <div className="border-t border-gray-100 pt-6">
-                  {showJournal ? (
-                    <div className="space-y-4">
-                      <Textarea
-                        placeholder="Write your reflection here..."
-                        value={journalEntry}
-                        onChange={(e) => setJournalEntry(e.target.value)}
-                        className="min-h-[120px]"
-                        data-testid="input-journal"
-                      />
+              {enrollment && !completedDays.has(selectedDay) && (() => {
+                const paragraphs = currentDayContent.devotionalContent.split('\n\n').filter(p => p.trim());
+                const totalParagraphs = paragraphs.length;
+                const allRevealed = revealedParagraphs >= totalParagraphs;
+                
+                return (
+                  <div className="border-t border-gray-100 pt-6">
+                    {!allRevealed && (
+                      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4 flex items-center gap-3">
+                        <Lock className="h-5 w-5 text-amber-600" />
+                        <p className="text-sm text-amber-700">
+                          Read all sections to unlock day completion
+                        </p>
+                      </div>
+                    )}
+                    
+                    {showJournal ? (
+                      <div className="space-y-4">
+                        <Textarea
+                          placeholder="Write your reflection here..."
+                          value={journalEntry}
+                          onChange={(e) => setJournalEntry(e.target.value)}
+                          className="min-h-[120px]"
+                          data-testid="input-journal"
+                        />
+                        <div className="flex gap-3">
+                          <Button variant="outline" onClick={() => setShowJournal(false)}>
+                            Cancel
+                          </Button>
+                          <Button 
+                            className="flex-1 gap-2"
+                            onClick={() => completeDayMutation.mutate({ dayNumber: selectedDay, journal: journalEntry })}
+                            disabled={completeDayMutation.isPending || !allRevealed}
+                            data-testid="button-save-journal"
+                          >
+                            {completeDayMutation.isPending ? "Saving..." : "Complete Day"}
+                            <Check className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
                       <div className="flex gap-3">
-                        <Button variant="outline" onClick={() => setShowJournal(false)}>
-                          Cancel
+                        <Button 
+                          variant="outline" 
+                          className="flex-1 gap-2"
+                          onClick={() => setShowJournal(true)}
+                          disabled={!allRevealed}
+                          data-testid="button-add-journal"
+                        >
+                          <MessageSquare className="h-4 w-4" />
+                          Add Journal Entry
                         </Button>
                         <Button 
                           className="flex-1 gap-2"
-                          onClick={() => completeDayMutation.mutate({ dayNumber: selectedDay, journal: journalEntry })}
-                          disabled={completeDayMutation.isPending}
-                          data-testid="button-save-journal"
+                          onClick={() => completeDayMutation.mutate({ dayNumber: selectedDay })}
+                          disabled={completeDayMutation.isPending || !allRevealed}
+                          data-testid="button-complete-day"
                         >
-                          {completeDayMutation.isPending ? "Saving..." : "Complete Day"}
-                          <Check className="h-4 w-4" />
+                          {!allRevealed ? (
+                            <>
+                              <Lock className="h-4 w-4" />
+                              Read to Complete
+                            </>
+                          ) : completeDayMutation.isPending ? "..." : (
+                            <>
+                              Mark Complete
+                              <ArrowRight className="h-4 w-4" />
+                            </>
+                          )}
                         </Button>
                       </div>
-                    </div>
-                  ) : (
-                    <div className="flex gap-3">
-                      <Button 
-                        variant="outline" 
-                        className="flex-1 gap-2"
-                        onClick={() => setShowJournal(true)}
-                        data-testid="button-add-journal"
-                      >
-                        <MessageSquare className="h-4 w-4" />
-                        Add Journal Entry
-                      </Button>
-                      <Button 
-                        className="flex-1 gap-2"
-                        onClick={() => completeDayMutation.mutate({ dayNumber: selectedDay })}
-                        disabled={completeDayMutation.isPending}
-                        data-testid="button-complete-day"
-                      >
-                        {completeDayMutation.isPending ? "..." : "Mark Complete"}
-                        <ArrowRight className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              )}
+                    )}
+                  </div>
+                );
+              })()}
 
               {completedDays.has(selectedDay) && (
                 <div className="bg-green-50 rounded-xl p-4 flex items-center gap-3">
