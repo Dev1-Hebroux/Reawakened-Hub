@@ -23,6 +23,64 @@ export function getEmailHeader(title: string, subtitle: string, bgGradient: stri
     </div>`;
 }
 
+// Social media links
+const SOCIAL_LINKS = {
+  instagram: 'https://instagram.com/reawakened.one',
+  youtube: 'https://youtube.com/@reawakenedone',
+  twitter: 'https://x.com/reawakenedone',
+  tiktok: 'https://tiktok.com/@reawakened.one'
+};
+
+// Email footer with social links and unsubscribe
+export function getEmailFooter(email: string, scriptureQuote?: string): string {
+  const unsubscribeUrl = `https://reawakened.app/preferences?email=${encodeURIComponent(email)}`;
+  
+  return `
+    <!-- Social Media Links -->
+    <div style="text-align: center; padding: 24px 0; border-top: 1px solid #E8E4DE; margin-top: 24px;">
+      <p style="color: #6B7B6E; font-size: 13px; margin: 0 0 16px 0; text-transform: uppercase; letter-spacing: 1px;">Connect with us</p>
+      <div style="margin-bottom: 20px;">
+        <a href="${SOCIAL_LINKS.instagram}" style="display: inline-block; margin: 0 8px; text-decoration: none;" title="Instagram">
+          <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #E1306C 0%, #F77737 50%, #FCAF45 100%); border-radius: 10px; display: inline-flex; align-items: center; justify-content: center;">
+            <span style="color: #ffffff; font-size: 18px; line-height: 40px;">📷</span>
+          </div>
+        </a>
+        <a href="${SOCIAL_LINKS.youtube}" style="display: inline-block; margin: 0 8px; text-decoration: none;" title="YouTube">
+          <div style="width: 40px; height: 40px; background: #FF0000; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center;">
+            <span style="color: #ffffff; font-size: 18px; line-height: 40px;">▶️</span>
+          </div>
+        </a>
+        <a href="${SOCIAL_LINKS.twitter}" style="display: inline-block; margin: 0 8px; text-decoration: none;" title="X (Twitter)">
+          <div style="width: 40px; height: 40px; background: #000000; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center;">
+            <span style="color: #ffffff; font-size: 16px; font-weight: bold; line-height: 40px;">𝕏</span>
+          </div>
+        </a>
+        <a href="${SOCIAL_LINKS.tiktok}" style="display: inline-block; margin: 0 8px; text-decoration: none;" title="TikTok">
+          <div style="width: 40px; height: 40px; background: #000000; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center;">
+            <span style="color: #ffffff; font-size: 18px; line-height: 40px;">♪</span>
+          </div>
+        </a>
+      </div>
+      
+      ${scriptureQuote ? `
+      <p style="color: #6B7B6E; font-size: 13px; margin: 0 0 16px 0; font-style: italic; line-height: 1.5; max-width: 400px; margin-left: auto; margin-right: auto;">
+        "${scriptureQuote}"
+      </p>
+      ` : ''}
+      
+      <!-- Preferences & Unsubscribe -->
+      <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #E8E4DE;">
+        <a href="${unsubscribeUrl}" style="color: #6B7B6E; font-size: 12px; text-decoration: underline;">
+          Update email preferences or unsubscribe
+        </a>
+      </div>
+      
+      <p style="color: #9CA3AF; font-size: 11px; margin: 12px 0 0 0;">
+        © ${new Date().getFullYear()} Reawakened. All rights reserved.
+      </p>
+    </div>`;
+}
+
 // ===== TWO-TONE EMAIL HELPERS =====
 
 export type ContentTone = 'seeker' | 'faith';
