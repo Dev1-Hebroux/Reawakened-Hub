@@ -34,6 +34,11 @@ export async function registerRoutes(
   // Auth middleware - must be called before routes
   await setupAuth(app);
 
+  // Twilio domain verification
+  app.get('/6fb6008290b49155dde41016be0276b0.html', (req, res) => {
+    res.type('text/html').send('twilio-domain-verification=6fb6008290b49155dde41016be0276b0');
+  });
+
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
