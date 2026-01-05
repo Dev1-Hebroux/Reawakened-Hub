@@ -297,11 +297,20 @@ export function DigitalActions() {
                       </Button>
                     </div>
                     <div className="flex gap-2">
+                      {typeof navigator !== 'undefined' && typeof navigator.share === 'function' && (
+                        <Button 
+                          className="flex-1 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+                          onClick={() => navigator.share({ title: "Join Reawakened", text: "Join me on Reawakened!", url: inviteLink })}
+                        >
+                          Share
+                        </Button>
+                      )}
                       <Button 
-                        className="flex-1 bg-green-600 hover:bg-green-700 text-white"
-                        onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent("Join me on Reawakened! " + inviteLink)}`, "_blank")}
+                        className="flex-1 bg-white/20 hover:bg-white/30 text-white"
+                        onClick={copyInviteLink}
                       >
-                        Share via WhatsApp
+                        {copied ? <Check className="h-4 w-4 mr-1" /> : <Copy className="h-4 w-4 mr-1" />}
+                        {copied ? "Copied" : "Copy Link"}
                       </Button>
                     </div>
                   </div>
@@ -331,30 +340,20 @@ export function DigitalActions() {
                           animate={{ opacity: 1, height: "auto" }}
                           className="mt-3 pt-3 border-t border-white/10"
                         >
-                          <p className="text-xs text-white/50 mb-2">Share this message:</p>
-                          <div className="flex flex-wrap gap-2">
-                            <Button 
-                              size="sm"
-                              className="bg-green-600 hover:bg-green-700 text-white"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                const shareUrl = inviteLink || "https://reawakened.app/join";
-                                window.open(`https://wa.me/?text=${encodeURIComponent(template.message + "\n\n" + shareUrl)}`, "_blank");
-                              }}
-                            >
-                              WhatsApp
-                            </Button>
-                            <Button 
-                              size="sm"
-                              className="bg-black hover:bg-gray-800 text-white"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                const shareUrl = inviteLink || "https://reawakened.app/join";
-                                window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(template.message)}&url=${encodeURIComponent(shareUrl)}`, "_blank");
-                              }}
-                            >
-                              X
-                            </Button>
+                          <div className="flex gap-2">
+                            {typeof navigator !== 'undefined' && typeof navigator.share === 'function' && (
+                              <Button 
+                                size="sm"
+                                className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  const shareUrl = inviteLink || "https://reawakened.app/join";
+                                  navigator.share({ title: "Join Reawakened", text: template.message, url: shareUrl });
+                                }}
+                              >
+                                Share
+                              </Button>
+                            )}
                             <Button 
                               size="sm"
                               className="bg-white/20 hover:bg-white/30 text-white"
