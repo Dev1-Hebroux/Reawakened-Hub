@@ -15,6 +15,52 @@ export interface AICoachRequest {
   };
 }
 
+export interface SuggestedGoal {
+  title: string;
+  why: string;
+  specific: string;
+  measurable: string;
+  achievable: string;
+  relevant: string;
+  deadline: string;
+  firstStep: string;
+  focusArea: string;
+}
+
+export interface SuggestedHabit {
+  title: string;
+  frequency: "daily" | "weekdays" | "weekly";
+  reason: string;
+  supportedGoal: string;
+  cue: string;
+  routine: string;
+  reward: string;
+}
+
+export interface NinetyDayPlan {
+  month1Theme: string;
+  month1Actions: string[];
+  month2Theme: string;
+  month2Actions: string[];
+  month3Theme: string;
+  month3Actions: string[];
+  quickWins: string[];
+}
+
+export interface DailyFocus {
+  topPriority: string;
+  secondaryTasks: string[];
+  energyTip: string;
+  reminder: string;
+}
+
+export interface WeeklyReview {
+  winsToСelebrate: string[];
+  lessonsLearned: string[];
+  adjustmentsNeeded: string[];
+  nextWeekFocus: string;
+}
+
 export interface AICoachResponse {
   insights: string[];
   recommendations: string[];
@@ -22,6 +68,11 @@ export interface AICoachResponse {
   scriptures?: { reference: string; text: string; application: string }[];
   patterns?: string[];
   nextSteps?: string[];
+  suggestedGoals?: SuggestedGoal[];
+  suggestedHabits?: SuggestedHabit[];
+  ninetyDayPlan?: NinetyDayPlan;
+  dailyFocus?: DailyFocus;
+  weeklyReview?: WeeklyReview;
 }
 
 const SYSTEM_PROMPTS = {
@@ -82,10 +133,10 @@ Please provide:
 `,
 
   goals: (data, context) => `
-Review this person's SMART goals and provide coaching feedback.
+Review this person's SMART goals AND suggest new goals based on their Wheel of Life and values.
 
-GOALS:
-${(data.goals || []).map((g: any, i: number) => `
+CURRENT GOALS:
+${(data.goals || []).length > 0 ? (data.goals || []).map((g: any, i: number) => `
 Goal ${i + 1}: ${g.title}
 - Why it matters: ${g.why || "Not stated"}
 - Specific: ${g.specific || "Not defined"}
@@ -95,16 +146,25 @@ Goal ${i + 1}: ${g.title}
 - Deadline: ${g.deadline || "No deadline"}
 - First Step: ${g.firstStep || "Not defined"}
 - Obstacle Plan: ${g.obstaclesPlan || "Not defined"}
-`).join("\n")}
+`).join("\n") : "No goals created yet - they need suggestions!"}
 
-${context.values ? `Their core values: ${context.values.join(", ")}` : ""}
-${context.purposeStatement ? `Their purpose: ${context.purposeStatement}` : ""}
+WHEEL OF LIFE SCORES (areas needing attention):
+${data.wheelScores ? Object.entries(data.wheelScores).sort((a: any, b: any) => a[1] - b[1]).map(([k, v]) => `- ${k}: ${v}/10`).join("\n") : "Not assessed yet"}
+
+FOCUS AREAS: ${(context.focusAreas || []).join(", ") || "Not selected yet"}
+${context.values ? `CORE VALUES: ${context.values.join(", ")}` : ""}
+${context.purposeStatement ? `PURPOSE: ${context.purposeStatement}` : ""}
+${context.themeWord ? `THEME WORD: ${context.themeWord}` : ""}
 
 Please provide:
-1. Assessment of goal quality (are they truly SMART?)
-2. Suggestions to strengthen weaker goals
+1. Insights on their current goals (if any) and life balance
+2. Assessment of goal quality (are they truly SMART?)
 3. How their goals align with their values/purpose
-4. Motivation and encouragement to take action
+4. 2-3 SUGGESTED NEW SMART GOALS based on their lowest wheel scores and values
+5. A 90-DAY PLAN with monthly themes and quick wins
+6. Encouragement to take action
+
+For each suggested goal, provide complete SMART details they can use directly.
 `,
 
   plan: (data, context) => `
@@ -135,29 +195,36 @@ Please provide:
 `,
 
   habits: (data, context) => `
-Analyze this person's habit tracking and provide insights.
+Analyze this person's habit tracking AND suggest new habits that support their SMART goals.
 
-HABITS:
-${(data.habits || []).map((h: any) => `
+CURRENT HABITS:
+${(data.habits || []).length > 0 ? (data.habits || []).map((h: any) => `
 - ${h.title} (${h.frequency})
   - Streak: ${h.streak || 0} days
   - This week: ${h.completedThisWeek || 0}/7
   - Overall completion: ${h.completionRate || 0}%
-`).join("\n")}
+`).join("\n") : "No habits created yet - they need suggestions!"}
 
-${context.focusAreas ? `Their focus areas: ${context.focusAreas.join(", ")}` : ""}
-${context.themeWord ? `Theme word: ${context.themeWord}` : ""}
+THEIR SMART GOALS:
+${(data.goals || []).map((g: any) => `- ${g.title}`).join("\n") || "No goals set yet"}
+
+WHEEL OF LIFE FOCUS AREAS: ${(context.focusAreas || []).join(", ") || "Not selected"}
+${context.values ? `CORE VALUES: ${context.values.join(", ")}` : ""}
+${context.themeWord ? `THEME WORD: ${context.themeWord}` : ""}
 
 Please provide:
-1. Patterns in their habit consistency
+1. Insights on their current habits and patterns
 2. Which habits are working well and why
-3. Suggestions for struggling habits
-4. Tips for building momentum and maintaining streaks
-5. Encouragement based on their progress
+3. Adjustments for struggling habits
+4. 2-3 SUGGESTED NEW HABITS that directly support their goals
+   - For each habit: title, frequency (daily/weekdays/weekly), the goal it supports, and why
+   - Include the habit loop: cue (trigger), routine (the habit), reward (payoff)
+5. Tips for building momentum and maintaining streaks
+6. Encouragement based on their progress
 `,
 
   checkin: (data, context) => `
-Provide a weekly coaching summary based on their check-ins.
+Provide coaching for daily focus AND weekly review based on their check-ins and goals.
 
 DAILY CHECK-IN (Today):
 - Energy Level: ${data.daily?.energy || "Not logged"}/5
@@ -173,15 +240,30 @@ WEEKLY REVIEW:
 - Next Week Priorities: ${(data.weekly?.nextWeekTop3 || []).join(", ") || "Not set"}
 ${data.weekly?.gratitude ? `- Gratitude: ${data.weekly.gratitude}` : ""}
 
+THEIR CURRENT GOALS:
+${(data.goals || []).map((g: any) => `- ${g.title} (${g.progress || 0}% complete)`).join("\n") || "No goals set"}
+
+THEIR HABITS (This Week):
+${(data.habits || []).map((h: any) => `- ${h.title}: ${h.completedThisWeek || 0}/7 days`).join("\n") || "No habits tracked"}
+
 ${context.seasonLabel ? `Season: ${context.seasonLabel}` : ""}
 ${context.themeWord ? `Theme: ${context.themeWord}` : ""}
 
 Please provide:
-1. Key observations from their week
-2. Patterns in energy and focus
-3. Celebration of wins and progress
-4. Strategic advice for next week
-5. Personalized encouragement
+1. Insights on their energy patterns and focus
+2. Celebration of wins and progress (be specific!)
+3. Patterns or blockers to address
+4. DAILY FOCUS SUGGESTION for today:
+   - Top priority task based on their goals
+   - 2-3 secondary tasks
+   - Energy management tip
+   - A motivating reminder
+5. WEEKLY REVIEW SUMMARY:
+   - Wins to celebrate
+   - Key lessons learned
+   - Adjustments needed for next week
+   - Recommended focus for next week
+6. Personalized encouragement
 `,
 
   wdep: (data, context) => `
@@ -334,6 +416,57 @@ Also include 2-3 relevant Scripture references with brief applications to their 
 Format scriptures as: {"reference": "Book Chapter:Verse", "text": "The verse text", "application": "How it applies"}
 ` : "";
 
+  const goalsAddition = request.tool === "goals" ? `,
+  "suggestedGoals": [
+    {
+      "title": "Goal title",
+      "why": "Why this goal matters",
+      "specific": "What exactly will be accomplished",
+      "measurable": "How to measure progress",
+      "achievable": "Why this is realistic",
+      "relevant": "How it connects to values/purpose",
+      "deadline": "Target date (e.g., '90 days from now')",
+      "firstStep": "The very first action to take",
+      "focusArea": "Which wheel of life area this addresses"
+    }
+  ],
+  "ninetyDayPlan": {
+    "month1Theme": "Theme for month 1",
+    "month1Actions": ["action 1", "action 2"],
+    "month2Theme": "Theme for month 2",
+    "month2Actions": ["action 1", "action 2"],
+    "month3Theme": "Theme for month 3",
+    "month3Actions": ["action 1", "action 2"],
+    "quickWins": ["quick win 1", "quick win 2"]
+  }` : "";
+
+  const habitsAddition = request.tool === "habits" ? `,
+  "suggestedHabits": [
+    {
+      "title": "Habit name",
+      "frequency": "daily or weekdays or weekly",
+      "reason": "Why this habit will help",
+      "supportedGoal": "Which goal this supports",
+      "cue": "Trigger/reminder for the habit",
+      "routine": "The actual habit action",
+      "reward": "The payoff/celebration"
+    }
+  ]` : "";
+
+  const checkinAddition = request.tool === "checkin" ? `,
+  "dailyFocus": {
+    "topPriority": "The one thing to focus on today",
+    "secondaryTasks": ["task 1", "task 2"],
+    "energyTip": "How to manage energy today",
+    "reminder": "A motivating reminder"
+  },
+  "weeklyReview": {
+    "winsToCelebrate": ["win 1", "win 2"],
+    "lessonsLearned": ["lesson 1"],
+    "adjustmentsNeeded": ["adjustment 1"],
+    "nextWeekFocus": "Main focus for next week"
+  }` : "";
+
   const completion = await openai.chat.completions.create({
     model: "gpt-4o-mini",
     messages: [
@@ -347,7 +480,7 @@ Respond in JSON format:
   "encouragement": "A warm, personalized encouragement message",
   "patterns": ["pattern 1", "pattern 2", ...],
   "nextSteps": ["step 1", "step 2", ...]
-  ${request.mode === "faith" ? ', "scriptures": [{"reference": "...", "text": "...", "application": "..."}]' : ""}
+  ${request.mode === "faith" ? ', "scriptures": [{"reference": "...", "text": "...", "application": "..."}]' : ""}${goalsAddition}${habitsAddition}${checkinAddition}
 }` },
     ],
     temperature: 0.7,
