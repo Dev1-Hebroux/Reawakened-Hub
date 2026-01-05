@@ -47,7 +47,13 @@ export async function pregenerateTomorrowsAudio(): Promise<void> {
         
         console.log(`[Audio Pre-generation] Generating audio for spark ${spark.id}: ${spark.title}`);
         
-        const result = await generateSparkAudio(spark.id, spark.fullTeaching);
+        const result = await generateSparkAudio(spark.id, {
+          title: spark.title,
+          scriptureRef: spark.scriptureRef || undefined,
+          fullPassage: spark.fullPassage || undefined,
+          fullTeaching: spark.fullTeaching,
+          prayerLine: spark.prayerLine || undefined
+        });
         
         if (result.success) {
           console.log(`[Audio Pre-generation] Successfully generated audio for spark ${spark.id}`);
@@ -124,7 +130,13 @@ export async function pregenerateAllDominionAudio(batchSize: number = 10): Promi
         
         console.log(`[Bulk Audio] Generating audio for spark ${spark.id}: ${spark.title}`);
         
-        const genResult = await generateSparkAudio(spark.id, spark.fullTeaching);
+        const genResult = await generateSparkAudio(spark.id, {
+          title: spark.title,
+          scriptureRef: spark.scriptureRef || undefined,
+          fullPassage: spark.fullPassage || undefined,
+          fullTeaching: spark.fullTeaching,
+          prayerLine: spark.prayerLine || undefined
+        });
         
         if (genResult.success) {
           console.log(`[Bulk Audio] Successfully generated audio for spark ${spark.id}`);

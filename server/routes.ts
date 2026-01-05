@@ -6114,8 +6114,14 @@ export async function registerRoutes(
         return res.status(404).json({ error: "Spark not found or has no teaching content" });
       }
       
-      // Generate audio
-      const result = await generateSparkAudio(sparkId, spark.fullTeaching);
+      // Generate audio with full content including scripture
+      const result = await generateSparkAudio(sparkId, {
+        title: spark.title,
+        scriptureRef: spark.scriptureRef || undefined,
+        fullPassage: spark.fullPassage || undefined,
+        fullTeaching: spark.fullTeaching,
+        prayerLine: spark.prayerLine || undefined
+      });
       
       if (!result.success) {
         return res.status(500).json({ error: result.error || "Failed to generate audio" });
@@ -6153,8 +6159,14 @@ export async function registerRoutes(
         return res.status(404).json({ error: "Reading plan day not found or has no content" });
       }
       
-      // Generate audio
-      const result = await generateReadingPlanDayAudio(planId, dayNumber, planDay.devotionalContent);
+      // Generate audio with full content including scripture
+      const result = await generateReadingPlanDayAudio(planId, dayNumber, {
+        title: planDay.title,
+        scriptureRef: planDay.scriptureRef,
+        scriptureText: planDay.scriptureText,
+        devotionalContent: planDay.devotionalContent,
+        prayerPrompt: planDay.prayerPrompt || undefined
+      });
       
       if (!result.success) {
         return res.status(500).json({ error: result.error || "Failed to generate audio" });

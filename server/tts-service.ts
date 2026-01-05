@@ -114,12 +114,51 @@ export class TTSService {
 
 export const ttsService = new TTSService();
 
+interface SparkAudioContent {
+  title: string;
+  scriptureRef?: string;
+  fullPassage?: string;
+  fullTeaching: string;
+  prayerLine?: string;
+}
+
 export async function generateSparkAudio(
   sparkId: number,
-  fullTeaching: string
+  content: SparkAudioContent | string
 ): Promise<TTSGenerationResult> {
   const filename = `spark-${sparkId}.mp3`;
-  return ttsService.generateAndUploadAudio(fullTeaching, filename, "nova");
+  
+  // Support both old string format and new object format
+  let narrationText: string;
+  if (typeof content === 'string') {
+    narrationText = content;
+  } else {
+    // Compose full narration with title, scripture, teaching, and prayer
+    const parts: string[] = [];
+    
+    // Opening with title
+    parts.push(`Today's devotional: ${content.title}.`);
+    
+    // Scripture reading
+    if (content.scriptureRef && content.fullPassage) {
+      parts.push(`\n\nToday's scripture reading is from ${content.scriptureRef}:`);
+      parts.push(`\n"${content.fullPassage}"`);
+    }
+    
+    // Main teaching
+    if (content.fullTeaching) {
+      parts.push(`\n\n${content.fullTeaching}`);
+    }
+    
+    // Closing prayer
+    if (content.prayerLine) {
+      parts.push(`\n\nLet's pray together: ${content.prayerLine}`);
+    }
+    
+    narrationText = parts.join('');
+  }
+  
+  return ttsService.generateAndUploadAudio(narrationText, filename, "nova");
 }
 
 export async function getSparkAudioUrl(sparkId: number): Promise<string | null> {
@@ -127,13 +166,50 @@ export async function getSparkAudioUrl(sparkId: number): Promise<string | null> 
   return ttsService.getAudioUrl(filename);
 }
 
+interface ReadingPlanDayAudioContent {
+  title: string;
+  scriptureRef: string;
+  scriptureText: string;
+  devotionalContent: string;
+  prayerPrompt?: string;
+}
+
 export async function generateReadingPlanDayAudio(
   planId: number,
   dayNumber: number,
-  devotionalText: string
+  content: ReadingPlanDayAudioContent | string
 ): Promise<TTSGenerationResult> {
   const filename = `plan-${planId}-day-${dayNumber}.mp3`;
-  return ttsService.generateAndUploadAudio(devotionalText, filename, "nova");
+  
+  // Support both old string format and new object format
+  let narrationText: string;
+  if (typeof content === 'string') {
+    narrationText = content;
+  } else {
+    // Compose full narration with title, scripture, devotional, and prayer
+    const parts: string[] = [];
+    
+    // Opening with day title
+    parts.push(`Day ${dayNumber}: ${content.title}.`);
+    
+    // Scripture reading
+    parts.push(`\n\nToday's scripture reading is from ${content.scriptureRef}:`);
+    parts.push(`\n"${content.scriptureText}"`);
+    
+    // Devotional content
+    if (content.devotionalContent) {
+      parts.push(`\n\n${content.devotionalContent}`);
+    }
+    
+    // Closing prayer
+    if (content.prayerPrompt) {
+      parts.push(`\n\nLet's pray together: ${content.prayerPrompt}`);
+    }
+    
+    narrationText = parts.join('');
+  }
+  
+  return ttsService.generateAndUploadAudio(narrationText, filename, "nova");
 }
 
 export async function getReadingPlanDayAudioUrl(
