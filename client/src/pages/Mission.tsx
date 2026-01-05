@@ -778,93 +778,93 @@ export function MissionPage() {
         </div>
 
         <div className="max-w-7xl mx-auto px-4 relative z-10">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
             <div>
-              <div className="inline-flex items-center gap-2 text-cyan-400 font-mono text-sm mb-6 border border-cyan-500/30 bg-cyan-500/10 px-4 py-2 rounded-full">
+              <div className="inline-flex items-center gap-2 text-cyan-400 font-mono text-sm mb-4 md:mb-6 border border-cyan-500/30 bg-cyan-500/10 px-3 py-1.5 md:px-4 md:py-2 rounded-full">
                 <Terminal className="h-4 w-4" />
                 <span>API_READY: TRUE</span>
               </div>
               
-              <h2 className="text-4xl md:text-6xl font-display font-bold mb-6">
+              <h2 className="text-3xl md:text-4xl lg:text-6xl font-display font-bold mb-4 md:mb-6">
                 Digital Enhanced.<br />
                 <span className="text-gray-500">Platform Ready.</span>
               </h2>
               
-              <p className="text-xl text-gray-400 mb-8 leading-relaxed">
+              <p className="text-base md:text-xl text-gray-400 mb-6 md:mb-8 leading-relaxed">
                 Our mission isn't limited by physical walls. We are building a digital-first ecosystem capable of integrating with global platforms.
               </p>
 
-              <div className="space-y-6">
-                <div className="flex items-start gap-4">
-                  <div className="p-3 rounded-lg bg-gray-800 border border-gray-700 text-cyan-400">
-                    <Database className="h-6 w-6" />
+              <div className="space-y-4 md:space-y-6">
+                <div className="flex items-start gap-3 md:gap-4">
+                  <div className="p-2 md:p-3 rounded-lg bg-gray-800 border border-gray-700 text-cyan-400 flex-shrink-0">
+                    <Database className="h-5 w-5 md:h-6 md:w-6" />
                   </div>
-                  <div>
-                    <h4 className="text-lg font-bold text-white mb-1">Centralized Data Hub</h4>
-                    <p className="text-gray-400 text-sm">Unified database for member tracking and impact analytics.</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4">
-                  <div className="p-3 rounded-lg bg-gray-800 border border-gray-700 text-purple-400">
-                    <Network className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <h4 className="text-lg font-bold text-white mb-1">Open API Architecture</h4>
-                    <p className="text-gray-400 text-sm">Seamlessly connect with CRM and communication platforms.</p>
+                  <div className="min-w-0">
+                    <h4 className="text-base md:text-lg font-bold text-white mb-1">Centralized Data Hub</h4>
+                    <p className="text-gray-400 text-sm leading-relaxed">Unified database for member tracking and impact analytics.</p>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-4">
-                  <div className="p-3 rounded-lg bg-gray-800 border border-gray-700 text-green-400">
-                    <Zap className="h-6 w-6" />
+                <div className="flex items-start gap-3 md:gap-4">
+                  <div className="p-2 md:p-3 rounded-lg bg-gray-800 border border-gray-700 text-purple-400 flex-shrink-0">
+                    <Network className="h-5 w-5 md:h-6 md:w-6" />
                   </div>
-                  <div>
-                    <h4 className="text-lg font-bold text-white mb-1">AI-Powered Growth</h4>
-                    <p className="text-gray-400 text-sm">Leveraging AI for personalized discipleship.</p>
+                  <div className="min-w-0">
+                    <h4 className="text-base md:text-lg font-bold text-white mb-1">Open API Architecture</h4>
+                    <p className="text-gray-400 text-sm leading-relaxed">Seamlessly connect with CRM and communication platforms.</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3 md:gap-4">
+                  <div className="p-2 md:p-3 rounded-lg bg-gray-800 border border-gray-700 text-green-400 flex-shrink-0">
+                    <Zap className="h-5 w-5 md:h-6 md:w-6" />
+                  </div>
+                  <div className="min-w-0">
+                    <h4 className="text-base md:text-lg font-bold text-white mb-1">AI-Powered Growth</h4>
+                    <p className="text-gray-400 text-sm leading-relaxed">Leveraging AI for personalized discipleship.</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="relative">
+            <div className="relative mt-8 lg:mt-0">
               <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500 to-purple-600 rounded-2xl blur opacity-30"></div>
-              <div className="relative bg-gray-900 border border-gray-800 rounded-2xl p-6 shadow-2xl font-mono text-sm overflow-hidden">
-                <div className="flex items-center gap-2 mb-4 border-b border-gray-800 pb-4">
-                  <div className="h-3 w-3 rounded-full bg-red-500" />
-                  <div className="h-3 w-3 rounded-full bg-yellow-500" />
-                  <div className="h-3 w-3 rounded-full bg-green-500" />
-                  <span className="ml-2 text-gray-500">mission_control.config.json</span>
+              <div className="relative bg-gray-900 border border-gray-800 rounded-2xl p-4 md:p-6 shadow-2xl font-mono text-xs md:text-sm overflow-hidden">
+                <div className="flex items-center gap-2 mb-3 md:mb-4 border-b border-gray-800 pb-3 md:pb-4">
+                  <div className="h-2.5 w-2.5 md:h-3 md:w-3 rounded-full bg-red-500" />
+                  <div className="h-2.5 w-2.5 md:h-3 md:w-3 rounded-full bg-yellow-500" />
+                  <div className="h-2.5 w-2.5 md:h-3 md:w-3 rounded-full bg-green-500" />
+                  <span className="ml-2 text-gray-500 text-xs md:text-sm truncate">mission_control.config.json</span>
                 </div>
                 
-                <div className="space-y-2 text-gray-300">
-                  <div className="flex">
-                    <span className="text-purple-400 w-8">1</span>
-                    <span className="text-cyan-400">"mission_vision"</span>: <span className="text-yellow-300">"Raising a Standard"</span>,
+                <div className="space-y-1.5 md:space-y-2 text-gray-300">
+                  <div className="flex flex-wrap break-words">
+                    <span className="text-purple-400 w-6 md:w-8 flex-shrink-0">1</span>
+                    <span className="break-all"><span className="text-cyan-400">"mission_vision"</span>: <span className="text-yellow-300">"Raising a Standard"</span>,</span>
                   </div>
-                  <div className="flex">
-                    <span className="text-purple-400 w-8">2</span>
+                  <div className="flex flex-wrap break-words">
+                    <span className="text-purple-400 w-6 md:w-8 flex-shrink-0">2</span>
                     <span className="text-cyan-400">"target_regions"</span>: [
                   </div>
-                  <div className="flex pl-8">
-                    <span className="text-purple-400 w-8">3</span>
-                    <span className="text-green-300">"Europe"</span>, <span className="text-green-300">"Americas"</span>, <span className="text-green-300">"Asia"</span>
+                  <div className="flex flex-wrap break-words pl-4 md:pl-8">
+                    <span className="text-purple-400 w-6 md:w-8 flex-shrink-0">3</span>
+                    <span className="break-all"><span className="text-green-300">"Europe"</span>, <span className="text-green-300">"Americas"</span>, <span className="text-green-300">"Asia"</span></span>
                   </div>
-                  <div className="flex">
-                    <span className="text-purple-400 w-8">4</span>
+                  <div className="flex flex-wrap break-words">
+                    <span className="text-purple-400 w-6 md:w-8 flex-shrink-0">4</span>
                     ],
                   </div>
-                  <div className="flex">
-                    <span className="text-purple-400 w-8">5</span>
-                    <span className="text-cyan-400">"channels"</span>: [<span className="text-green-300">"outpouring"</span>, <span className="text-green-300">"harvest"</span>, <span className="text-green-300">"without_walls"</span>]
+                  <div className="flex flex-wrap break-words">
+                    <span className="text-purple-400 w-6 md:w-8 flex-shrink-0">5</span>
+                    <span className="break-all"><span className="text-cyan-400">"channels"</span>: [<span className="text-green-300">"outpouring"</span>, <span className="text-green-300">"harvest"</span>, <span className="text-green-300">"without_walls"</span>]</span>
                   </div>
                 </div>
 
-                <div className="mt-6 pt-4 border-t border-gray-800 flex justify-between items-center">
-                  <span className="text-green-400 flex items-center gap-2">
+                <div className="mt-4 md:mt-6 pt-3 md:pt-4 border-t border-gray-800 flex justify-between items-center">
+                  <span className="text-green-400 flex items-center gap-2 text-xs md:text-sm">
                     <div className="h-2 w-2 bg-green-400 rounded-full animate-pulse" /> System Online
                   </span>
-                  <span className="text-gray-600">v2.4.0-alpha</span>
+                  <span className="text-gray-600 text-xs md:text-sm">v2.4.0-alpha</span>
                 </div>
               </div>
             </div>
