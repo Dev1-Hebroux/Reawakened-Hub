@@ -6,6 +6,23 @@ if (!resend) {
   console.warn('RESEND_API_KEY not configured - email functionality will be disabled');
 }
 
+// ===== EMAIL BRANDING =====
+
+// Reawakened logo URL (hosted publicly)
+const LOGO_URL = 'https://reawakened.app/logo-email.png';
+
+// Email header with Reawakened branding (replaces emoji icons)
+export function getEmailHeader(title: string, subtitle: string, bgGradient: string = 'linear-gradient(135deg, #1a2744 0%, #2d3a52 100%)'): string {
+  return `
+    <div style="background: ${bgGradient}; border-radius: 24px; padding: 40px; text-align: center; margin-bottom: 24px;">
+      <div style="margin-bottom: 20px;">
+        <span style="font-family: 'Space Grotesk', 'Segoe UI', sans-serif; font-size: 28px; font-weight: 700; color: #ffffff; letter-spacing: -0.5px;">Reawakened</span>
+      </div>
+      <h1 style="color: #ffffff; font-size: 24px; margin: 0 0 12px 0; font-weight: 700;">${title}</h1>
+      <p style="color: rgba(255,255,255,0.9); font-size: 16px; margin: 0;">${subtitle}</p>
+    </div>`;
+}
+
 // ===== TWO-TONE EMAIL HELPERS =====
 
 export type ContentTone = 'seeker' | 'faith';
@@ -336,15 +353,7 @@ export async function sendAltarJoinConfirmation(to: string, name: string, data: 
 </head>
 <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #FAF8F5;">
   <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
-    <div style="background: linear-gradient(135deg, #4A7C7C 0%, #3A6C6C 100%); border-radius: 24px; padding: 40px; text-align: center; margin-bottom: 24px;">
-      <div style="font-size: 48px; margin-bottom: 16px;">⛪</div>
-      <h1 style="color: #ffffff; font-size: 28px; margin: 0 0 12px 0; font-weight: 700;">
-        Welcome to ${data.altarName}!
-      </h1>
-      <p style="color: rgba(255,255,255,0.8); font-size: 16px; margin: 0; line-height: 1.6;">
-        You've joined the prayer altar for ${data.campusName}
-      </p>
-    </div>
+    ${getEmailHeader(`Welcome to ${data.altarName}!`, `You've joined the prayer altar for ${data.campusName}`, 'linear-gradient(135deg, #4A7C7C 0%, #3A6C6C 100%)')}
 
     <div style="background: #ffffff; border-radius: 16px; padding: 32px; margin-bottom: 24px; border: 1px solid #E8E4DE;">
       <h2 style="color: #1a2744; font-size: 18px; margin: 0 0 20px 0; font-weight: 600;">
@@ -437,15 +446,7 @@ export async function sendPrayerRequestNotification(data: {
 </head>
 <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #FAF8F5;">
   <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
-    <div style="background: linear-gradient(135deg, #D4A574 0%, #C49464 100%); border-radius: 24px; padding: 40px; text-align: center; margin-bottom: 24px;">
-      <div style="font-size: 48px; margin-bottom: 16px;">🙏</div>
-      <h1 style="color: #ffffff; font-size: 28px; margin: 0 0 12px 0; font-weight: 700;">
-        New Prayer Request
-      </h1>
-      <p style="color: rgba(255,255,255,0.9); font-size: 16px; margin: 0;">
-        Someone needs your intercession
-      </p>
-    </div>
+    ${getEmailHeader('New Prayer Request', 'Someone needs your intercession', 'linear-gradient(135deg, #D4A574 0%, #C49464 100%)')}
 
     <div style="background: #ffffff; border-radius: 16px; padding: 32px; margin-bottom: 24px; border: 1px solid #E8E4DE;">
       <div style="margin-bottom: 20px;">
@@ -523,11 +524,7 @@ export async function sendEventRegistrationEmail(to: string, name: string, data:
 </head>
 <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #FAF8F5;">
   <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
-    <div style="background: linear-gradient(135deg, #1a2744 0%, #2d3a52 100%); border-radius: 24px; padding: 40px; text-align: center; margin-bottom: 24px;">
-      <div style="font-size: 48px; margin-bottom: 16px;">🎉</div>
-      <h1 style="color: #ffffff; font-size: 28px; margin: 0 0 12px 0; font-weight: 700;">You're Registered!</h1>
-      <p style="color: rgba(255,255,255,0.8); font-size: 16px; margin: 0;">Hi ${name}, you're confirmed for this event</p>
-    </div>
+    ${getEmailHeader("You're Registered!", `Hi ${name}, you're confirmed for this event`)}
     <div style="background: #ffffff; border-radius: 16px; padding: 32px; margin-bottom: 24px; border: 1px solid #E8E4DE;">
       <h2 style="color: #1a2744; font-size: 22px; margin: 0 0 20px 0; font-weight: 600;">${data.eventTitle}</h2>
       <div style="background: #FAF8F5; border-radius: 12px; padding: 20px;">
@@ -594,11 +591,7 @@ export async function sendChallengeEnrollmentEmail(to: string, name: string, dat
 </head>
 <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #FAF8F5;">
   <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
-    <div style="background: linear-gradient(135deg, #D4A574 0%, #C49464 100%); border-radius: 24px; padding: 40px; text-align: center; margin-bottom: 24px;">
-      <div style="font-size: 48px; margin-bottom: 16px;">🏆</div>
-      <h1 style="color: #ffffff; font-size: 28px; margin: 0 0 12px 0; font-weight: 700;">Challenge Accepted!</h1>
-      <p style="color: rgba(255,255,255,0.9); font-size: 16px; margin: 0;">Hi ${name}, you've joined the challenge</p>
-    </div>
+    ${getEmailHeader('Challenge Accepted!', `Hi ${name}, you've joined the challenge`, 'linear-gradient(135deg, #D4A574 0%, #C49464 100%)')}
     <div style="background: #ffffff; border-radius: 16px; padding: 32px; margin-bottom: 24px; border: 1px solid #E8E4DE;">
       <h2 style="color: #1a2744; font-size: 22px; margin: 0 0 16px 0; font-weight: 600;">${data.challengeTitle}</h2>
       ${data.challengeDescription ? `<p style="color: #6B7B6E; font-size: 14px; margin: 0 0 20px 0; line-height: 1.6;">${data.challengeDescription}</p>` : ''}
@@ -710,11 +703,7 @@ export async function sendTestimonyAcknowledgementEmail(to: string, name: string
 </head>
 <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #FAF8F5;">
   <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
-    <div style="background: linear-gradient(135deg, #7C9A8E 0%, #6B8B7E 100%); border-radius: 24px; padding: 40px; text-align: center; margin-bottom: 24px;">
-      <div style="font-size: 48px; margin-bottom: 16px;">✨</div>
-      <h1 style="color: #ffffff; font-size: 28px; margin: 0 0 12px 0; font-weight: 700;">${headline}</h1>
-      <p style="color: rgba(255,255,255,0.9); font-size: 16px; margin: 0;">Hi ${name}</p>
-    </div>
+    ${getEmailHeader(headline, `Hi ${name}`, 'linear-gradient(135deg, #7C9A8E 0%, #6B8B7E 100%)')}
     
     <div style="background: #ffffff; border-radius: 16px; padding: 32px; margin-bottom: 24px; border: 1px solid #E8E4DE;">
       <p style="color: #1a2744; font-size: 16px; margin: 0 0 16px 0; line-height: 1.6;">${intro}</p>
@@ -827,11 +816,7 @@ export async function sendVolunteerConfirmationEmail(to: string, name: string, d
 </head>
 <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #FAF8F5;">
   <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
-    <div style="background: linear-gradient(135deg, #4A7C7C 0%, #3A6C6C 100%); border-radius: 24px; padding: 40px; text-align: center; margin-bottom: 24px;">
-      <div style="font-size: 48px; margin-bottom: 16px;">🙌</div>
-      <h1 style="color: #ffffff; font-size: 28px; margin: 0 0 12px 0; font-weight: 700;">${headline}</h1>
-      <p style="color: rgba(255,255,255,0.9); font-size: 16px; margin: 0;">Hi ${name}</p>
-    </div>
+    ${getEmailHeader(headline, `Hi ${name}`, 'linear-gradient(135deg, #4A7C7C 0%, #3A6C6C 100%)')}
     
     <div style="background: #ffffff; border-radius: 16px; padding: 32px; margin-bottom: 24px; border: 1px solid #E8E4DE;">
       <p style="color: #1a2744; font-size: 16px; margin: 0 0 16px 0; line-height: 1.6;">${intro}</p>
@@ -912,11 +897,7 @@ export async function sendMissionTripInterestEmail(to: string, name: string, dat
 </head>
 <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #FAF8F5;">
   <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
-    <div style="background: linear-gradient(135deg, #1a2744 0%, #2d3a52 100%); border-radius: 24px; padding: 40px; text-align: center; margin-bottom: 24px;">
-      <div style="font-size: 48px; margin-bottom: 16px;">🌍</div>
-      <h1 style="color: #ffffff; font-size: 28px; margin: 0 0 12px 0; font-weight: 700;">Mission Interest Received!</h1>
-      <p style="color: rgba(255,255,255,0.8); font-size: 16px; margin: 0;">Thank you for your heart for the nations, ${name}</p>
-    </div>
+    ${getEmailHeader('Mission Interest Received!', `Thank you for your heart for the nations, ${name}`)}
     <div style="background: #ffffff; border-radius: 16px; padding: 32px; margin-bottom: 24px; border: 1px solid #E8E4DE;">
       <h2 style="color: #1a2744; font-size: 18px; margin: 0 0 16px 0; font-weight: 600;">Your Interest</h2>
       <div style="background: #FAF8F5; border-radius: 12px; padding: 20px; margin-bottom: 16px;">
@@ -1008,11 +989,7 @@ export async function sendSubscriptionWelcomeEmail(to: string, data: {
 </head>
 <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #FAF8F5;">
   <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
-    <div style="background: linear-gradient(135deg, #D4A574 0%, #C49464 100%); border-radius: 24px; padding: 40px; text-align: center; margin-bottom: 24px;">
-      <div style="font-size: 48px; margin-bottom: 16px;">📬</div>
-      <h1 style="color: #ffffff; font-size: 28px; margin: 0 0 12px 0; font-weight: 700;">${headline}</h1>
-      <p style="color: rgba(255,255,255,0.9); font-size: 16px; margin: 0;">Hi ${firstName}</p>
-    </div>
+    ${getEmailHeader(headline, `Hi ${firstName}`, 'linear-gradient(135deg, #D4A574 0%, #C49464 100%)')}
     
     <div style="background: #ffffff; border-radius: 16px; padding: 32px; margin-bottom: 24px; border: 1px solid #E8E4DE;">
       <p style="color: #1a2744; font-size: 16px; margin: 0 0 16px 0; line-height: 1.6;">${intro}</p>
@@ -1098,11 +1075,7 @@ export async function sendPrayerPodNotificationEmail(to: string, name: string, d
 </head>
 <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #FAF8F5;">
   <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
-    <div style="background: linear-gradient(135deg, #4A7C7C 0%, #3A6C6C 100%); border-radius: 24px; padding: 40px; text-align: center; margin-bottom: 24px;">
-      <div style="font-size: 48px; margin-bottom: 16px;">${icon}</div>
-      <h1 style="color: #ffffff; font-size: 28px; margin: 0 0 12px 0; font-weight: 700;">Prayer Pod ${data.action === 'created' ? 'Created' : 'Joined'}!</h1>
-      <p style="color: rgba(255,255,255,0.9); font-size: 16px; margin: 0;">Hi ${name}, you've ${actionText} a prayer community</p>
-    </div>
+    ${getEmailHeader(`Prayer Pod ${data.action === 'created' ? 'Created' : 'Joined'}!`, `Hi ${name}, you've ${actionText} a prayer community`, 'linear-gradient(135deg, #4A7C7C 0%, #3A6C6C 100%)')}
     <div style="background: #ffffff; border-radius: 16px; padding: 32px; margin-bottom: 24px; border: 1px solid #E8E4DE;">
       <h2 style="color: #1a2744; font-size: 22px; margin: 0 0 16px 0; font-weight: 600;">${data.podName}</h2>
       ${data.memberCount ? `<p style="color: #6B7B6E; font-size: 14px; margin: 0 0 16px 0;">${data.memberCount} members</p>` : ''}
@@ -1201,11 +1174,7 @@ export async function sendPrayerRequestConfirmationEmail(to: string, name: strin
 </head>
 <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #FAF8F5;">
   <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
-    <div style="background: linear-gradient(135deg, #D4A574 0%, #C49464 100%); border-radius: 24px; padding: 40px; text-align: center; margin-bottom: 24px;">
-      <div style="font-size: 48px; margin-bottom: 16px;">🙏</div>
-      <h1 style="color: #ffffff; font-size: 28px; margin: 0 0 12px 0; font-weight: 700;">${headline}</h1>
-      <p style="color: rgba(255,255,255,0.9); font-size: 16px; margin: 0;">Hi ${name}</p>
-    </div>
+    ${getEmailHeader(headline, `Hi ${name}`, 'linear-gradient(135deg, #D4A574 0%, #C49464 100%)')}
     
     <div style="background: #ffffff; border-radius: 16px; padding: 32px; margin-bottom: 24px; border: 1px solid #E8E4DE;">
       <p style="color: #1a2744; font-size: 16px; margin: 0 0 16px 0; line-height: 1.6;">${intro}</p>
@@ -1352,11 +1321,7 @@ export async function sendEventReminderEmail(to: string, name: string, data: {
 </head>
 <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #FAF8F5;">
   <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
-    <div style="background: linear-gradient(135deg, #D4A574 0%, #C49464 100%); border-radius: 24px; padding: 40px; text-align: center; margin-bottom: 24px;">
-      <div style="font-size: 48px; margin-bottom: 16px;">⏰</div>
-      <h1 style="color: #ffffff; font-size: 28px; margin: 0 0 12px 0; font-weight: 700;">Tomorrow's the Day!</h1>
-      <p style="color: rgba(255,255,255,0.9); font-size: 16px; margin: 0;">Hi ${name}, don't forget about your event</p>
-    </div>
+    ${getEmailHeader("Tomorrow's the Day!", `Hi ${name}, don't forget about your event`, 'linear-gradient(135deg, #D4A574 0%, #C49464 100%)')}
     <div style="background: #ffffff; border-radius: 16px; padding: 32px; margin-bottom: 24px; border: 1px solid #E8E4DE;">
       <h2 style="color: #1a2744; font-size: 22px; margin: 0 0 20px 0; font-weight: 600;">${data.eventTitle}</h2>
       <div style="background: #FAF8F5; border-radius: 12px; padding: 20px;">
