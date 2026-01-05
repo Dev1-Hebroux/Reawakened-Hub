@@ -6,6 +6,77 @@ if (!resend) {
   console.warn('RESEND_API_KEY not configured - email functionality will be disabled');
 }
 
+// ===== TWO-TONE EMAIL HELPERS =====
+
+export type ContentTone = 'seeker' | 'faith';
+export type AudienceSegment = 'sixth_form' | 'university' | 'early_career' | null;
+
+// Get segment-specific paragraph block
+export function getSegmentBlock(segment: AudienceSegment, tone: ContentTone): string {
+  const blocks: Record<string, Record<ContentTone, string>> = {
+    sixth_form: {
+      seeker: `If you're juggling exams, deadlines, and life pressure, you're not the only one. This space is here to help you reset your head, stay grounded, and move forward with confidence—one step at a time.`,
+      faith: `If you're juggling exams and pressure, you're not the only one. We're believing God will strengthen you, give you clarity, and help you walk with peace and confidence—one day at a time.`
+    },
+    university: {
+      seeker: `Uni can feel intense—new people, big decisions, and a lot happening at once. This community exists to support you with real encouragement, practical steps, and a place to belong.`,
+      faith: `Uni can feel intense—new people, big decisions, and a lot happening at once. This community is here to help you stay close to Jesus, grow in faith, and find your people while you build your future.`
+    },
+    early_career: {
+      seeker: `Early career life can be a lot—work pressure, identity, relationships, money decisions. We're here for the "real life" side of growth, not just motivation.`,
+      faith: `Early career life can be a lot—work pressure, identity, relationships, and big decisions. We're here to help you grow with God, build strong habits, and live with purpose, not pressure.`
+    }
+  };
+
+  if (!segment || !blocks[segment]) {
+    // Default fallback for unspecified segment
+    return tone === 'faith' 
+      ? `We're here to help you grow in faith, find community, and live with purpose.`
+      : `We're here to support you with real encouragement and practical steps forward.`;
+  }
+
+  return blocks[segment][tone];
+}
+
+// Get tone-specific content
+export function getToneContent<T>(tone: ContentTone, seekerVersion: T, faithVersion: T): T {
+  return tone === 'seeker' ? seekerVersion : faithVersion;
+}
+
+// Format segment label for display
+export function getSegmentLabel(segment: AudienceSegment): string {
+  const labels: Record<string, string> = {
+    sixth_form: 'Sixth Form / College',
+    university: 'University',
+    early_career: 'Early Career'
+  };
+  return segment ? labels[segment] || 'Community Member' : 'Community Member';
+}
+
+// Get urgency display with color
+export function getUrgencyDisplay(urgency: string | null | undefined): { label: string; color: string; bgColor: string } {
+  const urgencyMap: Record<string, { label: string; color: string; bgColor: string }> = {
+    critical: { label: '🔴 Critical', color: '#DC2626', bgColor: '#FEE2E2' },
+    urgent: { label: '🟠 Urgent', color: '#EA580C', bgColor: '#FFEDD5' },
+    normal: { label: '🟢 Normal', color: '#16A34A', bgColor: '#DCFCE7' }
+  };
+  return urgencyMap[urgency || 'normal'] || urgencyMap.normal;
+}
+
+// Get category display label
+export function getCategoryLabel(category: string | null | undefined): string {
+  const labels: Record<string, string> = {
+    healing: 'Healing',
+    provision: 'Provision',
+    guidance: 'Guidance',
+    relationships: 'Relationships',
+    salvation: 'Salvation',
+    anxiety: 'Anxiety / Peace',
+    other: 'Other'
+  };
+  return category ? labels[category] || category : 'General';
+}
+
 export async function sendWelcomeEmail(to: string, name: string, data: {
   prayerFocus?: string;
   dailyCommitment?: number;
@@ -574,11 +645,62 @@ export async function sendChallengeEnrollmentEmail(to: string, name: string, dat
   }
 }
 
-// Testimony Acknowledgement
+// Testimony Acknowledgement (Two-tone version)
 export async function sendTestimonyAcknowledgementEmail(to: string, name: string, data: {
   testimonyTitle: string;
   category: string;
+  sharingPermission?: string;
+  displayNamePreference?: string;
+  segment?: AudienceSegment;
+  tone?: ContentTone;
 }) {
+  const tone = data.tone || 'faith';
+  const segment = data.segment || null;
+  const segmentBlock = getSegmentBlock(segment, tone);
+
+  const sharingLabels: Record<string, string> = {
+    private: 'Keep private (just for review)',
+    anonymous: 'Share anonymously',
+    public: 'Share publicly'
+  };
+
+  const displayLabels: Record<string, string> = {
+    first_name: 'First name only',
+    full_name: 'Full name',
+    anonymous: 'Anonymous'
+  };
+
+  const subject = getToneContent(tone,
+    `We received your story — thank you`,
+    `Thank you for sharing your testimony — it builds faith`
+  );
+
+  const headline = getToneContent(tone,
+    `Thank You for Sharing!`,
+    `Thank You for Your Testimony!`
+  );
+
+  const intro = getToneContent(tone,
+    `Thank you for sharing your testimony with us. We've received it, and we're genuinely grateful you trusted us with your story.`,
+    `Thank you for sharing what God has done. We've received your testimony, and it's already encouraging us.`
+  );
+
+  const nextStepsText = getToneContent(tone,
+    `Our team will review it for clarity and safety (especially if it's public). If we need anything, we'll reply here. If you selected "public," we'll tell you when it's live.`,
+    `We'll review it with care and honour (especially if it's public). If we need clarification, we'll reply here. If you selected "public," we'll let you know when it's live.`
+  );
+
+  const ctaText = getToneContent(tone,
+    `Reply with one sentence you'd want someone else to take away from your story. That line helps us share it well.`,
+    `Reply with one sentence you'd want someone to remember. We may use it as a headline to help your testimony reach the right people.`
+  );
+
+  const signOff = getToneContent(tone, `Warmly,`, `Grateful with you,`);
+
+  const scripture = tone === 'faith'
+    ? `<p style="color: #6B7B6E; font-size: 13px; margin: 0; font-style: italic;">"They triumphed over him by the blood of the Lamb and by the word of their testimony." — Revelation 12:11</p>`
+    : '';
+
   const htmlContent = `
 <!DOCTYPE html>
 <html>
@@ -590,18 +712,36 @@ export async function sendTestimonyAcknowledgementEmail(to: string, name: string
   <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
     <div style="background: linear-gradient(135deg, #7C9A8E 0%, #6B8B7E 100%); border-radius: 24px; padding: 40px; text-align: center; margin-bottom: 24px;">
       <div style="font-size: 48px; margin-bottom: 16px;">✨</div>
-      <h1 style="color: #ffffff; font-size: 28px; margin: 0 0 12px 0; font-weight: 700;">Thank You for Sharing!</h1>
-      <p style="color: rgba(255,255,255,0.9); font-size: 16px; margin: 0;">Your testimony has been received, ${name}</p>
+      <h1 style="color: #ffffff; font-size: 28px; margin: 0 0 12px 0; font-weight: 700;">${headline}</h1>
+      <p style="color: rgba(255,255,255,0.9); font-size: 16px; margin: 0;">Hi ${name}</p>
     </div>
+    
     <div style="background: #ffffff; border-radius: 16px; padding: 32px; margin-bottom: 24px; border: 1px solid #E8E4DE;">
+      <p style="color: #1a2744; font-size: 16px; margin: 0 0 16px 0; line-height: 1.6;">${intro}</p>
+      <p style="color: #6B7B6E; font-size: 14px; margin: 0 0 20px 0; line-height: 1.6; background: #FAF8F5; padding: 16px; border-radius: 12px;">${segmentBlock}</p>
+      
       <h2 style="color: #1a2744; font-size: 20px; margin: 0 0 16px 0; font-weight: 600;">"${data.testimonyTitle}"</h2>
-      <span style="display: inline-block; background: #E8F4F0; color: #4A7C7C; padding: 6px 12px; border-radius: 16px; font-size: 13px; font-weight: 500;">${data.category}</span>
-      <p style="color: #6B7B6E; font-size: 14px; margin-top: 20px; line-height: 1.6;">
-        Your story has the power to encourage others in their faith journey. Our team will review your testimony and, once approved, it will be shared to inspire the community.
-      </p>
+      
+      <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px;">
+        <span style="display: inline-block; background: #E8F4F0; color: #4A7C7C; padding: 6px 12px; border-radius: 12px; font-size: 13px; font-weight: 500;">${data.category}</span>
+        ${data.sharingPermission ? `<span style="display: inline-block; background: #FAF0E6; color: #D4A574; padding: 6px 12px; border-radius: 12px; font-size: 13px; font-weight: 500;">${sharingLabels[data.sharingPermission] || data.sharingPermission}</span>` : ''}
+        ${data.displayNamePreference && data.sharingPermission !== 'private' ? `<span style="display: inline-block; background: #F3F4F6; color: #6B7B6E; padding: 6px 12px; border-radius: 12px; font-size: 13px;">Display: ${displayLabels[data.displayNamePreference] || data.displayNamePreference}</span>` : ''}
+      </div>
+      
+      <h3 style="color: #1a2744; font-size: 16px; margin: 0 0 12px 0; font-weight: 600;">What Happens Next</h3>
+      <p style="color: #6B7B6E; font-size: 14px; margin: 0 0 20px 0; line-height: 1.6;">${nextStepsText}</p>
+      
+      <div style="background: #FAF0E6; border-radius: 12px; padding: 20px; border-left: 4px solid #D4A574;">
+        <p style="color: #92400E; font-size: 14px; margin: 0;"><strong>Your Next Step (optional):</strong><br/>${ctaText}</p>
+      </div>
     </div>
+
     <div style="text-align: center; padding: 20px;">
-      <p style="color: #6B7B6E; font-size: 13px; margin: 0;">"They triumphed over him by the blood of the Lamb and by the word of their testimony." — Revelation 12:11</p>
+      ${scripture}
+      <p style="color: #1a2744; font-size: 14px; margin: 16px 0 0 0;">
+        ${signOff}<br/>
+        <strong>The Reawakened Team</strong>
+      </p>
     </div>
   </div>
 </body>
@@ -616,7 +756,7 @@ export async function sendTestimonyAcknowledgementEmail(to: string, name: string
     const result = await resend.emails.send({
       from: 'Reawakened <noreply@reawakened.app>',
       to: [to],
-      subject: `✨ Your testimony has been received!`,
+      subject: `✨ ${subject}`,
       html: htmlContent,
     });
     console.log('Testimony acknowledgement email sent:', result);
@@ -627,14 +767,56 @@ export async function sendTestimonyAcknowledgementEmail(to: string, name: string
   }
 }
 
-// Volunteer Sign-up Confirmation
+// Volunteer Sign-up Confirmation (Two-tone version)
 export async function sendVolunteerConfirmationEmail(to: string, name: string, data: {
   areas: string[];
   phone?: string;
+  segment?: AudienceSegment;
+  tone?: ContentTone;
 }) {
+  const tone = data.tone || 'faith';
+  const segment = data.segment || null;
+  const segmentBlock = getSegmentBlock(segment, tone);
+  
   const areasHtml = data.areas.map(area => `
     <span style="display: inline-block; background: #E8F4F0; color: #4A7C7C; padding: 6px 12px; border-radius: 16px; font-size: 13px; margin: 4px; font-weight: 500;">${area}</span>
   `).join('');
+
+  const subject = getToneContent(tone,
+    `You're in — welcome to the team`,
+    `Thank you for stepping up — welcome`
+  );
+
+  const headline = getToneContent(tone,
+    `Welcome to the Team!`,
+    `Thank you for Stepping Up!`
+  );
+
+  const intro = getToneContent(tone,
+    `Thanks for signing up to volunteer. We're genuinely glad you're here.`,
+    `Thank you for signing up to volunteer. Your "yes" matters more than you know.`
+  );
+
+  const nextStepsIntro = getToneContent(tone,
+    `We'll review your sign-up and match you to a role that fits what you chose.`,
+    `We'll review your sign-up and connect you with a role that fits your grace and availability.`
+  );
+
+  const ctaText = getToneContent(tone,
+    `See upcoming opportunities`,
+    `See what God is doing + where you can serve`
+  );
+
+  const closingText = getToneContent(tone,
+    `If you already know what you'd love to help with, reply and tell us—we'll try to place you where you'll thrive.`,
+    `If you already feel drawn to prayer, outreach, content, media, mentoring, or logistics, reply and tell us. We'd love to place you intentionally.`
+  );
+
+  const signOff = getToneContent(tone, `Warmly,`, `With gratitude,`);
+
+  const scripture = tone === 'faith' 
+    ? `<p style="color: #6B7B6E; font-size: 13px; margin: 0; font-style: italic;">"Each of you should use whatever gift you have received to serve others." — 1 Peter 4:10</p>`
+    : '';
 
   const htmlContent = `
 <!DOCTYPE html>
@@ -647,18 +829,50 @@ export async function sendVolunteerConfirmationEmail(to: string, name: string, d
   <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
     <div style="background: linear-gradient(135deg, #4A7C7C 0%, #3A6C6C 100%); border-radius: 24px; padding: 40px; text-align: center; margin-bottom: 24px;">
       <div style="font-size: 48px; margin-bottom: 16px;">🙌</div>
-      <h1 style="color: #ffffff; font-size: 28px; margin: 0 0 12px 0; font-weight: 700;">Welcome to the Team!</h1>
-      <p style="color: rgba(255,255,255,0.9); font-size: 16px; margin: 0;">Thank you for volunteering, ${name}</p>
+      <h1 style="color: #ffffff; font-size: 28px; margin: 0 0 12px 0; font-weight: 700;">${headline}</h1>
+      <p style="color: rgba(255,255,255,0.9); font-size: 16px; margin: 0;">Hi ${name}</p>
     </div>
+    
     <div style="background: #ffffff; border-radius: 16px; padding: 32px; margin-bottom: 24px; border: 1px solid #E8E4DE;">
-      <h2 style="color: #1a2744; font-size: 18px; margin: 0 0 16px 0; font-weight: 600;">Your Areas of Interest</h2>
+      <p style="color: #1a2744; font-size: 16px; margin: 0 0 16px 0; line-height: 1.6;">${intro}</p>
+      <p style="color: #6B7B6E; font-size: 14px; margin: 0 0 20px 0; line-height: 1.6; background: #FAF8F5; padding: 16px; border-radius: 12px;">${segmentBlock}</p>
+      
+      <h2 style="color: #1a2744; font-size: 18px; margin: 0 0 16px 0; font-weight: 600;">Next Steps</h2>
+      <div style="margin-bottom: 20px;">
+        <div style="display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px;">
+          <span style="background: #4A7C7C; color: white; width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; flex-shrink: 0;">1</span>
+          <p style="color: #1a2744; font-size: 14px; margin: 0;">${nextStepsIntro}</p>
+        </div>
+        <div style="display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px;">
+          <span style="background: #4A7C7C; color: white; width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; flex-shrink: 0;">2</span>
+          <p style="color: #1a2744; font-size: 14px; margin: 0;">You'll get a message within <strong>48 hours</strong> with onboarding steps.</p>
+        </div>
+        <div style="display: flex; align-items: flex-start; gap: 12px;">
+          <span style="background: #4A7C7C; color: white; width: 24px; height: 24px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; flex-shrink: 0;">3</span>
+          <p style="color: #1a2744; font-size: 14px; margin: 0;">You'll be added to a volunteer channel to meet the team.</p>
+        </div>
+      </div>
+      
+      <h3 style="color: #1a2744; font-size: 16px; margin: 20px 0 12px 0; font-weight: 600;">Your Areas of Interest</h3>
       <div style="margin-bottom: 20px;">${areasHtml}</div>
-      <p style="color: #6B7B6E; font-size: 14px; margin: 0; line-height: 1.6;">
-        Our team will reach out soon with volunteer opportunities that match your interests. In the meantime, keep an eye on upcoming events!
-      </p>
     </div>
+
+    <div style="text-align: center; margin-bottom: 24px;">
+      <a href="https://reawakened.app/events" style="display: inline-block; background: linear-gradient(135deg, #4A7C7C 0%, #3A6C6C 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 12px; font-weight: 600;">
+        ${ctaText}
+      </a>
+    </div>
+
+    <div style="background: #ffffff; border-radius: 16px; padding: 24px; margin-bottom: 24px; border: 1px solid #E8E4DE;">
+      <p style="color: #6B7B6E; font-size: 14px; margin: 0; line-height: 1.6;">${closingText}</p>
+    </div>
+
     <div style="text-align: center; padding: 20px;">
-      <p style="color: #6B7B6E; font-size: 13px; margin: 0;">"Each of you should use whatever gift you have received to serve others." — 1 Peter 4:10</p>
+      ${scripture}
+      <p style="color: #1a2744; font-size: 14px; margin: 16px 0 0 0;">
+        ${signOff}<br/>
+        <strong>The Reawakened Team</strong>
+      </p>
     </div>
   </div>
 </body>
@@ -673,7 +887,7 @@ export async function sendVolunteerConfirmationEmail(to: string, name: string, d
     const result = await resend.emails.send({
       from: 'Reawakened <noreply@reawakened.app>',
       to: [to],
-      subject: `🙌 Welcome to the Reawakened volunteer team!`,
+      subject: `🙌 ${subject}`,
       html: htmlContent,
     });
     console.log('Volunteer confirmation email sent:', result);
@@ -740,14 +954,50 @@ export async function sendMissionTripInterestEmail(to: string, name: string, dat
   }
 }
 
-// Subscription Welcome Email
+// Subscription Welcome Email (Two-tone version)
 export async function sendSubscriptionWelcomeEmail(to: string, data: {
   categories: string[];
   whatsappOptIn: boolean;
+  name?: string;
+  segment?: AudienceSegment;
+  tone?: ContentTone;
 }) {
+  const tone = data.tone || 'faith';
+  const segment = data.segment || null;
+  const segmentBlock = getSegmentBlock(segment, tone);
+  const firstName = data.name || 'there';
+
   const categoriesHtml = data.categories.map(cat => `
     <span style="display: inline-block; background: #FAF0E6; color: #D4A574; padding: 6px 12px; border-radius: 16px; font-size: 13px; margin: 4px; font-weight: 500;">${cat}</span>
   `).join('');
+
+  const subject = getToneContent(tone,
+    `Welcome — you're officially in`,
+    `Welcome — let's grow in purpose together`
+  );
+
+  const headline = getToneContent(tone,
+    `You're In!`,
+    `Welcome to the Community!`
+  );
+
+  const intro = getToneContent(tone,
+    `Welcome to Reawakened. We're glad you subscribed.`,
+    `Welcome to Reawakened. We're really glad you joined.`
+  );
+
+  const expectText = getToneContent(tone,
+    `Here's what you'll get from us:
+• Real encouragement (not fluffy)
+• Practical steps for purpose, confidence, relationships, and direction
+• Updates on events + ways to get involved`,
+    `Here's what you'll get from us:
+• Faith + real-life encouragement
+• Practical tools for purpose, relationships, and growth
+• Revival and outreach updates from campuses and communities`
+  );
+
+  const signOff = getToneContent(tone, `Speak soon,`, `With love,`);
 
   const htmlContent = `
 <!DOCTYPE html>
@@ -760,24 +1010,48 @@ export async function sendSubscriptionWelcomeEmail(to: string, data: {
   <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
     <div style="background: linear-gradient(135deg, #D4A574 0%, #C49464 100%); border-radius: 24px; padding: 40px; text-align: center; margin-bottom: 24px;">
       <div style="font-size: 48px; margin-bottom: 16px;">📬</div>
-      <h1 style="color: #ffffff; font-size: 28px; margin: 0 0 12px 0; font-weight: 700;">You're Subscribed!</h1>
-      <p style="color: rgba(255,255,255,0.9); font-size: 16px; margin: 0;">Welcome to the Reawakened community</p>
+      <h1 style="color: #ffffff; font-size: 28px; margin: 0 0 12px 0; font-weight: 700;">${headline}</h1>
+      <p style="color: rgba(255,255,255,0.9); font-size: 16px; margin: 0;">Hi ${firstName}</p>
     </div>
+    
     <div style="background: #ffffff; border-radius: 16px; padding: 32px; margin-bottom: 24px; border: 1px solid #E8E4DE;">
+      <p style="color: #1a2744; font-size: 16px; margin: 0 0 16px 0; line-height: 1.6;">${intro}</p>
+      <p style="color: #6B7B6E; font-size: 14px; margin: 0 0 20px 0; line-height: 1.6; background: #FAF8F5; padding: 16px; border-radius: 12px;">${segmentBlock}</p>
+      
       <h2 style="color: #1a2744; font-size: 18px; margin: 0 0 16px 0; font-weight: 600;">Your Subscriptions</h2>
       <div style="margin-bottom: 20px;">${categoriesHtml}</div>
+      
+      <div style="background: #FAF8F5; border-radius: 12px; padding: 20px; margin-bottom: 16px;">
+        <p style="color: #1a2744; font-size: 14px; margin: 0; line-height: 1.8; white-space: pre-line;">${expectText}</p>
+      </div>
+      
       ${data.whatsappOptIn ? `
       <div style="background: #D1FAE5; border-radius: 12px; padding: 16px; display: flex; align-items: center; gap: 12px;">
         <span style="font-size: 24px;">💬</span>
         <p style="color: #065F46; font-size: 14px; margin: 0;">You've also opted in to WhatsApp updates!</p>
       </div>` : ''}
     </div>
-    <div style="text-align: center; margin-bottom: 24px;">
-      <a href="https://reawakened.app/sparks" style="display: inline-block; background: linear-gradient(135deg, #1a2744 0%, #2d3a52 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 12px; font-weight: 600;">
-        Explore Today's Spark
-      </a>
+
+    <div style="background: #ffffff; border-radius: 16px; padding: 24px; margin-bottom: 24px; border: 1px solid #E8E4DE;">
+      <h3 style="color: #1a2744; font-size: 16px; margin: 0 0 16px 0; font-weight: 600;">Your Next Step (choose one)</h3>
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <a href="https://reawakened.app/settings" style="display: block; background: linear-gradient(135deg, #D4A574 0%, #C49464 100%); color: #ffffff; text-decoration: none; padding: 14px 24px; border-radius: 12px; font-weight: 600; font-size: 14px; text-align: center;">
+          Set Your Preferences
+        </a>
+        <a href="https://reawakened.app/vision" style="display: block; background: #FAF8F5; color: #1a2744; text-decoration: none; padding: 14px 24px; border-radius: 12px; font-weight: 600; font-size: 14px; text-align: center; border: 1px solid #E8E4DE;">
+          Start Vision & Goals
+        </a>
+        <a href="https://reawakened.app/prayer-wall" style="display: block; background: #FAF8F5; color: #1a2744; text-decoration: none; padding: 14px 24px; border-radius: 12px; font-weight: 600; font-size: 14px; text-align: center; border: 1px solid #E8E4DE;">
+          Check the Prayer Wall
+        </a>
+      </div>
     </div>
-    <div style="text-align: center; padding: 20px; border-top: 1px solid #E8E4DE;">
+
+    <div style="text-align: center; padding: 20px;">
+      <p style="color: #1a2744; font-size: 14px; margin: 0 0 16px 0;">
+        ${signOff}<br/>
+        <strong>The Reawakened Team</strong>
+      </p>
       <p style="color: #6B7B6E; font-size: 12px; margin: 0;">
         <a href="https://reawakened.app/unsubscribe" style="color: #4A7C7C;">Unsubscribe</a> | <a href="https://reawakened.app/settings" style="color: #4A7C7C;">Manage Preferences</a>
       </p>
@@ -795,7 +1069,7 @@ export async function sendSubscriptionWelcomeEmail(to: string, data: {
     const result = await resend.emails.send({
       from: 'Reawakened <noreply@reawakened.app>',
       to: [to],
-      subject: `📬 Welcome to Reawakened!`,
+      subject: `📬 ${subject}`,
       html: htmlContent,
     });
     console.log('Subscription welcome email sent:', result);
@@ -870,11 +1144,54 @@ export async function sendPrayerPodNotificationEmail(to: string, name: string, d
   }
 }
 
-// Prayer Request User Confirmation (sent to the person who submitted)
+// Prayer Request User Confirmation (Two-tone version)
 export async function sendPrayerRequestConfirmationEmail(to: string, name: string, data: {
   request: string;
   isPrivate: boolean;
+  urgencyLevel?: string;
+  category?: string;
+  campusOrCity?: string;
+  segment?: AudienceSegment;
+  tone?: ContentTone;
 }) {
+  const tone = data.tone || 'faith';
+  const segment = data.segment || null;
+  const segmentBlock = getSegmentBlock(segment, tone);
+  const categoryLabel = getCategoryLabel(data.category);
+  const urgencyDisplay = getUrgencyDisplay(data.urgencyLevel);
+
+  const subject = getToneContent(tone,
+    `We received your request — we've got you`,
+    `We've received your prayer request — we're standing with you`
+  );
+
+  const headline = getToneContent(tone,
+    `We've Got You`,
+    `We're Praying With You`
+  );
+
+  const intro = getToneContent(tone,
+    `Thanks for sharing your prayer request. We've received it, and our team will be holding this with care.`,
+    `Thank you for trusting us with this. We've received your request, and our prayer team will be praying with faith.`
+  );
+
+  const encouragement = tone === 'faith' 
+    ? `<div style="background: #FAF0E6; border-radius: 12px; padding: 20px; margin-bottom: 20px;">
+        <p style="color: #92400E; font-size: 14px; margin: 0; font-style: italic;">"The Lord is near to the brokenhearted." — Psalm 34:18</p>
+      </div>`
+    : '';
+
+  const closingText = getToneContent(tone,
+    `You're not alone.`,
+    `We're with you in prayer.`
+  );
+
+  const signOff = getToneContent(tone, `Warmly,`, `With love,`);
+
+  const scripture = tone === 'faith'
+    ? `<p style="color: #6B7B6E; font-size: 13px; margin: 0; font-style: italic;">"Do not be anxious about anything, but in every situation, by prayer and petition, with thanksgiving, present your requests to God." — Philippians 4:6</p>`
+    : '';
+
   const htmlContent = `
 <!DOCTYPE html>
 <html>
@@ -886,22 +1203,49 @@ export async function sendPrayerRequestConfirmationEmail(to: string, name: strin
   <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
     <div style="background: linear-gradient(135deg, #D4A574 0%, #C49464 100%); border-radius: 24px; padding: 40px; text-align: center; margin-bottom: 24px;">
       <div style="font-size: 48px; margin-bottom: 16px;">🙏</div>
-      <h1 style="color: #ffffff; font-size: 28px; margin: 0 0 12px 0; font-weight: 700;">We're Praying With You</h1>
-      <p style="color: rgba(255,255,255,0.9); font-size: 16px; margin: 0;">Your prayer request has been received, ${name}</p>
+      <h1 style="color: #ffffff; font-size: 28px; margin: 0 0 12px 0; font-weight: 700;">${headline}</h1>
+      <p style="color: rgba(255,255,255,0.9); font-size: 16px; margin: 0;">Hi ${name}</p>
     </div>
+    
     <div style="background: #ffffff; border-radius: 16px; padding: 32px; margin-bottom: 24px; border: 1px solid #E8E4DE;">
+      <p style="color: #1a2744; font-size: 16px; margin: 0 0 16px 0; line-height: 1.6;">${intro}</p>
+      <p style="color: #6B7B6E; font-size: 14px; margin: 0 0 20px 0; line-height: 1.6; background: #FAF8F5; padding: 16px; border-radius: 12px;">${segmentBlock}</p>
+      
       <div style="background: #FAF8F5; border-radius: 12px; padding: 20px; border-left: 4px solid #D4A574; margin-bottom: 16px;">
         <p style="color: #1a2744; font-size: 15px; line-height: 1.6; margin: 0; white-space: pre-wrap;">${data.request}</p>
       </div>
-      <span style="display: inline-block; background: ${data.isPrivate ? '#FEF3C7' : '#D1FAE5'}; color: ${data.isPrivate ? '#92400E' : '#065F46'}; padding: 6px 12px; border-radius: 12px; font-size: 13px; font-weight: 500;">
-        ${data.isPrivate ? '🔒 Private - Only our prayer team will see this' : '🌍 Public - Shared with the community'}
-      </span>
-      <p style="color: #6B7B6E; font-size: 14px; margin-top: 20px; line-height: 1.6;">
-        Our prayer team and community are lifting your request to the Lord. We believe in the power of prayer and stand with you in faith.
-      </p>
+      
+      <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px;">
+        <span style="display: inline-block; background: ${data.isPrivate ? '#FEF3C7' : '#D1FAE5'}; color: ${data.isPrivate ? '#92400E' : '#065F46'}; padding: 6px 12px; border-radius: 12px; font-size: 13px; font-weight: 500;">
+          ${data.isPrivate ? '🔒 Private' : '🌍 Public'}
+        </span>
+        ${data.category ? `<span style="display: inline-block; background: #E8F4F0; color: #4A7C7C; padding: 6px 12px; border-radius: 12px; font-size: 13px; font-weight: 500;">${categoryLabel}</span>` : ''}
+        ${data.urgencyLevel && data.urgencyLevel !== 'normal' ? `<span style="display: inline-block; background: ${urgencyDisplay.bgColor}; color: ${urgencyDisplay.color}; padding: 6px 12px; border-radius: 12px; font-size: 13px; font-weight: 500;">${urgencyDisplay.label}</span>` : ''}
+        ${data.campusOrCity ? `<span style="display: inline-block; background: #F3F4F6; color: #6B7B6E; padding: 6px 12px; border-radius: 12px; font-size: 13px;">📍 ${data.campusOrCity}</span>` : ''}
+      </div>
+      
+      ${encouragement}
     </div>
+
+    <div style="background: #ffffff; border-radius: 16px; padding: 24px; margin-bottom: 24px; border: 1px solid #E8E4DE;">
+      <h3 style="color: #1a2744; font-size: 16px; margin: 0 0 12px 0; font-weight: 600;">Your Next Step</h3>
+      <div style="display: flex; gap: 12px;">
+        <a href="https://reawakened.app/pray" style="display: inline-block; background: linear-gradient(135deg, #D4A574 0%, #C49464 100%); color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 12px; font-weight: 600; font-size: 14px;">
+          Join a Prayer Moment
+        </a>
+        <a href="https://reawakened.app/prayer-wall" style="display: inline-block; background: #FAF8F5; color: #1a2744; text-decoration: none; padding: 12px 24px; border-radius: 12px; font-weight: 600; font-size: 14px; border: 1px solid #E8E4DE;">
+          View Prayer Wall
+        </a>
+      </div>
+    </div>
+
     <div style="text-align: center; padding: 20px;">
-      <p style="color: #6B7B6E; font-size: 13px; margin: 0;">"Do not be anxious about anything, but in every situation, by prayer and petition, with thanksgiving, present your requests to God." — Philippians 4:6</p>
+      ${scripture}
+      <p style="color: #1a2744; font-size: 14px; margin: 16px 0 0 0;">
+        ${closingText}<br/>
+        ${signOff}<br/>
+        <strong>The Reawakened Team</strong>
+      </p>
     </div>
   </div>
 </body>
@@ -916,7 +1260,7 @@ export async function sendPrayerRequestConfirmationEmail(to: string, name: strin
     const result = await resend.emails.send({
       from: 'Reawakened Prayer <prayer@reawakened.app>',
       to: [to],
-      subject: `🙏 We're praying with you, ${name}`,
+      subject: `🙏 ${subject}`,
       html: htmlContent,
     });
     console.log('Prayer request confirmation email sent:', result);

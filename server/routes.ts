@@ -984,6 +984,9 @@ export async function registerRoutes(
         sendSubscriptionWelcomeEmail(subscriptionData.email, {
           categories: subscriptionData.categories || ['Daily Sparks'],
           whatsappOptIn: Boolean(subscriptionData.whatsappOptIn),
+          name: req.body.name || undefined,
+          segment: (req.body.segment as 'sixth_form' | 'university' | 'early_career') || undefined,
+          tone: (req.body.tone as 'seeker' | 'faith') || 'faith',
         }).catch(err => console.error("Failed to send subscription welcome email:", err));
       }
       
@@ -1013,6 +1016,11 @@ export async function registerRoutes(
         sendPrayerRequestConfirmationEmail(requestData.email, requestData.name, {
           request: requestData.request,
           isPrivate: Boolean(requestData.isPrivate),
+          urgencyLevel: requestData.urgencyLevel || undefined,
+          category: requestData.category || undefined,
+          campusOrCity: requestData.campusOrCity || undefined,
+          segment: (req.body.segment as 'sixth_form' | 'university' | 'early_career') || undefined,
+          tone: (req.body.tone as 'seeker' | 'faith') || 'faith',
         }).catch(err => console.error("Failed to send prayer confirmation email:", err));
       }
       
@@ -1044,7 +1052,11 @@ export async function registerRoutes(
       if (testimonyData.email) {
         sendTestimonyAcknowledgementEmail(testimonyData.email, testimonyData.name, {
           testimonyTitle: testimonyData.title,
-          category: testimonyData.category,
+          category: testimonyData.category || 'General',
+          sharingPermission: testimonyData.sharingPermission || undefined,
+          displayNamePreference: testimonyData.displayNamePreference || undefined,
+          segment: (req.body.segment as 'sixth_form' | 'university' | 'early_career') || undefined,
+          tone: (req.body.tone as 'seeker' | 'faith') || 'faith',
         }).catch(err => console.error("Failed to send testimony acknowledgement email:", err));
       }
       
@@ -1077,6 +1089,8 @@ export async function registerRoutes(
         sendVolunteerConfirmationEmail(signupData.email, signupData.name, {
           areas: signupData.areas || [],
           phone: signupData.phone || undefined,
+          segment: (signupData.segment as 'sixth_form' | 'university' | 'early_career') || undefined,
+          tone: (req.body.tone as 'seeker' | 'faith') || 'faith',
         }).catch(err => console.error("Failed to send volunteer confirmation email:", err));
       }
       
