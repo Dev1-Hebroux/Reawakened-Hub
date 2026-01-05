@@ -3966,6 +3966,26 @@ export async function registerRoutes(
     }
   });
 
+  // Admin - Generate audio batch (limited number, waits for completion)
+  app.post('/api/admin/sparks/generate-audio-batch', isAdmin, async (req: any, res) => {
+    try {
+      const limit = parseInt(req.body.limit) || 10;
+      const { generateAudioBatch } = await import('./audio-pregeneration');
+      
+      console.log(`[Admin] Starting batch audio generation with limit: ${limit}`);
+      const result = await generateAudioBatch(limit);
+      
+      res.json({
+        message: `Batch audio generation complete`,
+        ...result
+      });
+        
+    } catch (error: any) {
+      console.error("Error in batch audio generation:", error);
+      res.status(500).json({ message: error.message || "Failed to generate audio batch" });
+    }
+  });
+
   // Admin - Bulk update sparks
   app.post('/api/admin/sparks/bulk', isAdmin, async (req: any, res) => {
     try {
@@ -6114,13 +6134,16 @@ export async function registerRoutes(
         return res.status(404).json({ error: "Spark not found or has no teaching content" });
       }
       
-      // Generate audio with full content including scripture
+      // Generate audio with full content including scripture, reflection, action, and prayer
       const result = await generateSparkAudio(sparkId, {
         title: spark.title,
         scriptureRef: spark.scriptureRef || undefined,
         fullPassage: spark.fullPassage || undefined,
         fullTeaching: spark.fullTeaching,
-        prayerLine: spark.prayerLine || undefined
+        reflectionQuestion: spark.reflectionQuestion || undefined,
+        todayAction: spark.todayAction || undefined,
+        prayerLine: spark.prayerLine || undefined,
+        ctaPrimary: spark.ctaPrimary || undefined
       });
       
       if (!result.success) {

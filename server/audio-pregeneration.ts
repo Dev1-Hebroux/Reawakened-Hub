@@ -52,7 +52,10 @@ export async function pregenerateTomorrowsAudio(): Promise<void> {
           scriptureRef: spark.scriptureRef || undefined,
           fullPassage: spark.fullPassage || undefined,
           fullTeaching: spark.fullTeaching,
-          prayerLine: spark.prayerLine || undefined
+          reflectionQuestion: spark.reflectionQuestion || undefined,
+          todayAction: spark.todayAction || undefined,
+          prayerLine: spark.prayerLine || undefined,
+          ctaPrimary: spark.ctaPrimary || undefined
         });
         
         if (result.success) {
@@ -84,6 +87,108 @@ export interface BulkAudioGenerationResult {
   skipped: number;
   failed: number;
   errors: string[];
+  generatedIds: number[];
+}
+
+// Track which sparks have been regenerated in this session (for batch regeneration)
+const regeneratedSparkIds = new Set<number>();
+
+// Generate audio for a limited batch of sparks (for incremental generation)
+// Set forceRegenerate=true to regenerate audio even if it already exists
+export async function generateAudioBatch(limit: number = 10, forceRegenerate: boolean = false): Promise<BulkAudioGenerationResult> {
+  const result: BulkAudioGenerationResult = {
+    total: 0,
+    generated: 0,
+    skipped: 0,
+    failed: 0,
+    errors: [],
+    generatedIds: []
+  };
+
+  if (!process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID) {
+    result.errors.push("Object storage not configured");
+    return result;
+  }
+
+  console.log(`[Batch Audio] Starting batch generation (limit: ${limit}, forceRegenerate: ${forceRegenerate})...`);
+
+  try {
+    const sparks = await storage.getAllDominionSparks();
+    result.total = sparks.length;
+    
+    console.log(`[Batch Audio] Found ${sparks.length} total DOMINION sparks`);
+
+    let generatedCount = 0;
+
+    for (const spark of sparks) {
+      if (generatedCount >= limit) {
+        console.log(`[Batch Audio] Reached batch limit of ${limit}`);
+        break;
+      }
+      
+      try {
+        const existingUrl = await getSparkAudioUrl(spark.id);
+        
+        if (existingUrl && !forceRegenerate) {
+          result.skipped++;
+          continue;
+        }
+        
+        // Skip if already regenerated in this session
+        if (forceRegenerate && regeneratedSparkIds.has(spark.id)) {
+          result.skipped++;
+          continue;
+        }
+        
+        if (!spark.fullTeaching) {
+          console.log(`[Batch Audio] Spark ${spark.id} has no teaching content, skipping`);
+          result.skipped++;
+          continue;
+        }
+        
+        console.log(`[Batch Audio] Generating audio for spark ${spark.id}: ${spark.title}`);
+        
+        const genResult = await generateSparkAudio(spark.id, {
+          title: spark.title,
+          scriptureRef: spark.scriptureRef || undefined,
+          fullPassage: spark.fullPassage || undefined,
+          fullTeaching: spark.fullTeaching,
+          reflectionQuestion: spark.reflectionQuestion || undefined,
+          todayAction: spark.todayAction || undefined,
+          prayerLine: spark.prayerLine || undefined,
+          ctaPrimary: spark.ctaPrimary || undefined
+        });
+        
+        if (genResult.success) {
+          console.log(`[Batch Audio] Successfully generated audio for spark ${spark.id}`);
+          result.generated++;
+          result.generatedIds.push(spark.id);
+          regeneratedSparkIds.add(spark.id); // Track for batch regeneration
+          generatedCount++;
+        } else {
+          console.error(`[Batch Audio] Failed to generate audio for spark ${spark.id}: ${genResult.error}`);
+          result.failed++;
+          result.errors.push(`Spark ${spark.id}: ${genResult.error}`);
+        }
+        
+        // Small delay between API calls
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+      } catch (error: any) {
+        console.error(`[Batch Audio] Error processing spark ${spark.id}:`, error);
+        result.failed++;
+        result.errors.push(`Spark ${spark.id}: ${error.message}`);
+      }
+    }
+    
+    console.log(`[Batch Audio] Complete: ${result.generated} generated, ${result.skipped} skipped (already have audio), ${result.failed} failed`);
+    
+  } catch (error: any) {
+    console.error("[Batch Audio] Job failed:", error);
+    result.errors.push(`Job failed: ${error.message}`);
+  }
+
+  return result;
 }
 
 export async function pregenerateAllDominionAudio(batchSize: number = 10): Promise<BulkAudioGenerationResult> {
@@ -92,7 +197,8 @@ export async function pregenerateAllDominionAudio(batchSize: number = 10): Promi
     generated: 0,
     skipped: 0,
     failed: 0,
-    errors: []
+    errors: [],
+    generatedIds: []
   };
 
   if (!process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID) {
@@ -135,7 +241,10 @@ export async function pregenerateAllDominionAudio(batchSize: number = 10): Promi
           scriptureRef: spark.scriptureRef || undefined,
           fullPassage: spark.fullPassage || undefined,
           fullTeaching: spark.fullTeaching,
-          prayerLine: spark.prayerLine || undefined
+          reflectionQuestion: spark.reflectionQuestion || undefined,
+          todayAction: spark.todayAction || undefined,
+          prayerLine: spark.prayerLine || undefined,
+          ctaPrimary: spark.ctaPrimary || undefined
         });
         
         if (genResult.success) {
@@ -177,26 +286,39 @@ export async function pregenerateAllDominionAudio(batchSize: number = 10): Promi
 export function scheduleAudioPregeneration(): void {
   pregenerateTomorrowsAudio().catch(console.error);
   
-  const runAt5AM = () => {
+  // Schedule to run at 23:30 London time (day before content goes live)
+  const runAt2330London = () => {
     const now = new Date();
-    const next5AM = new Date();
-    next5AM.setHours(5, 0, 0, 0);
     
-    if (next5AM <= now) {
-      next5AM.setDate(next5AM.getDate() + 1);
+    // Calculate 23:30 London time
+    const londonOffset = getLondonOffset(now);
+    const next2330 = new Date();
+    next2330.setUTCHours(23 - Math.floor(londonOffset / 60), 30 - (londonOffset % 60), 0, 0);
+    
+    if (next2330 <= now) {
+      next2330.setDate(next2330.getDate() + 1);
     }
     
-    const msUntil5AM = next5AM.getTime() - now.getTime();
+    const msUntil2330 = next2330.getTime() - now.getTime();
     
-    console.log(`[Audio Pre-generation] Scheduled next run in ${Math.round(msUntil5AM / 1000 / 60)} minutes`);
+    console.log(`[Audio Pre-generation] Scheduled next run at 23:30 London time in ${Math.round(msUntil2330 / 1000 / 60)} minutes`);
     
     setTimeout(() => {
       pregenerateTomorrowsAudio().catch(console.error);
       setInterval(() => {
         pregenerateTomorrowsAudio().catch(console.error);
       }, 24 * 60 * 60 * 1000);
-    }, msUntil5AM);
+    }, msUntil2330);
   };
   
-  runAt5AM();
+  runAt2330London();
+}
+
+// Helper to get London timezone offset in minutes
+function getLondonOffset(date: Date): number {
+  const jan = new Date(date.getFullYear(), 0, 1);
+  const jul = new Date(date.getFullYear(), 6, 1);
+  const stdOffset = Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
+  const isDST = date.getTimezoneOffset() < stdOffset;
+  return isDST ? -60 : 0; // BST is UTC+1, GMT is UTC+0
 }

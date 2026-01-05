@@ -119,7 +119,10 @@ interface SparkAudioContent {
   scriptureRef?: string;
   fullPassage?: string;
   fullTeaching: string;
+  reflectionQuestion?: string;
+  todayAction?: string;
   prayerLine?: string;
+  ctaPrimary?: string;
 }
 
 export async function generateSparkAudio(
@@ -133,7 +136,7 @@ export async function generateSparkAudio(
   if (typeof content === 'string') {
     narrationText = content;
   } else {
-    // Compose full narration with title, scripture, teaching, and prayer
+    // Compose full narration with title, scripture, teaching, reflection, action, and prayer
     const parts: string[] = [];
     
     // Opening with title
@@ -148,6 +151,27 @@ export async function generateSparkAudio(
     // Main teaching
     if (content.fullTeaching) {
       parts.push(`\n\n${content.fullTeaching}`);
+    }
+    
+    // Reflection question
+    if (content.reflectionQuestion) {
+      parts.push(`\n\nTake a moment to reflect: ${content.reflectionQuestion}`);
+    }
+    
+    // Today's action / nudge
+    if (content.todayAction) {
+      parts.push(`\n\nYour action for today: ${content.todayAction}`);
+    }
+    
+    // CTA prompt
+    if (content.ctaPrimary) {
+      const ctaMessages: Record<string, string> = {
+        'Pray': 'Will you commit to pray about this today?',
+        'Give': 'Consider how you might give generously in response.',
+        'Go': 'Where is God calling you to go and serve?'
+      };
+      const ctaMessage = ctaMessages[content.ctaPrimary] || `Your call to action: ${content.ctaPrimary}`;
+      parts.push(`\n\n${ctaMessage}`);
     }
     
     // Closing prayer
