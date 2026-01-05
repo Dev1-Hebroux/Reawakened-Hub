@@ -23,7 +23,9 @@ export const apiLimiter = rateLimit({
       '/api/user/reading-streak',
       '/api/journeys',
       '/api/events',
-      '/api/notifications'
+      '/api/notifications',
+      '/api/vision',
+      '/api/ai-coach'
     ];
     return skipPaths.some(path => req.path.startsWith(path));
   },

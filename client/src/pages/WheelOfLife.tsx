@@ -22,11 +22,16 @@ const WHEEL_CATEGORIES = [
   { key: "spirituality", label: "Spirituality / Purpose", emoji: "✨", color: "#9B8AA6" },
 ];
 
+const DEFAULT_SCORES: Record<string, number> = WHEEL_CATEGORIES.reduce(
+  (acc, cat) => ({ ...acc, [cat.key]: 5 }),
+  {}
+);
+
 export function WheelOfLife() {
   const { sessionId } = useParams();
   const [, navigate] = useLocation();
   const queryClient = useQueryClient();
-  const [scores, setScores] = useState<Record<string, number>>({});
+  const [scores, setScores] = useState<Record<string, number>>(DEFAULT_SCORES);
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [selectedFocus, setSelectedFocus] = useState<string[]>([]);
   const [step, setStep] = useState<"assess" | "focus">("assess");
