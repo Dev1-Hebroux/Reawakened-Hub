@@ -224,8 +224,7 @@ export function DigitalActions() {
                         animate={{ opacity: 1, y: 0 }}
                         className="pt-3 border-t border-white/20"
                       >
-                        <p className="text-xs text-white/60 mb-2">Share via:</p>
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex gap-2">
                           {typeof navigator !== 'undefined' && typeof navigator.share === 'function' && (
                             <Button 
                               size="sm" 
@@ -238,51 +237,12 @@ export function DigitalActions() {
                           )}
                           <Button 
                             size="sm" 
-                            className="bg-green-600 hover:bg-green-700 text-white"
-                            onClick={(e) => { e.stopPropagation(); handleShare("whatsapp", card); }}
-                            disabled={logActionMutation.isPending}
-                          >
-                            WhatsApp
-                          </Button>
-                          <Button 
-                            size="sm" 
-                            className="bg-black hover:bg-gray-800 text-white"
-                            onClick={(e) => { e.stopPropagation(); handleShare("twitter", card); }}
-                            disabled={logActionMutation.isPending}
-                          >
-                            X
-                          </Button>
-                          <Button 
-                            size="sm" 
-                            className="bg-blue-600 hover:bg-blue-700 text-white"
-                            onClick={(e) => { e.stopPropagation(); handleShare("facebook", card); }}
-                            disabled={logActionMutation.isPending}
-                          >
-                            Facebook
-                          </Button>
-                          <Button 
-                            size="sm" 
-                            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
-                            onClick={(e) => { e.stopPropagation(); handleShare("instagram", card); }}
-                            disabled={logActionMutation.isPending}
-                          >
-                            Instagram
-                          </Button>
-                          <Button 
-                            size="sm" 
-                            className="bg-black hover:bg-gray-900 text-white"
-                            onClick={(e) => { e.stopPropagation(); handleShare("tiktok", card); }}
-                            disabled={logActionMutation.isPending}
-                          >
-                            TikTok
-                          </Button>
-                          <Button 
-                            size="sm" 
                             className="bg-white/20 hover:bg-white/30 text-white"
                             onClick={(e) => { e.stopPropagation(); handleShare("copy", card); }}
                             disabled={logActionMutation.isPending}
                           >
-                            {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                            {copied ? <Check className="h-4 w-4 mr-1" /> : <Copy className="h-4 w-4 mr-1" />}
+                            {copied ? "Copied" : "Copy"}
                           </Button>
                         </div>
                       </motion.div>
