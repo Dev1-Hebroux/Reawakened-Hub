@@ -12,7 +12,7 @@ import { Footer } from "@/components/layout/Footer";
 import { VisionGetStartedCard } from "@/components/VisionGetStartedCard";
 import { VisionPromptModal } from "@/components/VisionPromptModal";
 import { WdepPinnedAction, ScaFocusCard } from "@/components/DashboardPinnedCards";
-import { ArrowRight, ShoppingBag, Flame, Heart, Globe, Zap, Rocket, HandHeart, Users, Clock, CheckCircle2, Compass, Target, TrendingUp } from "lucide-react";
+import { ArrowRight, ShoppingBag, Flame, Heart, Globe, Zap, Rocket, HandHeart, Users, Clock, CheckCircle2, Compass, Target, TrendingUp, Calendar, MapPin } from "lucide-react";
 import { StatsBar } from "@/components/ui/StatsBar";
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
@@ -383,6 +383,99 @@ export default function Home() {
         </section>
 
         <DailySparks />
+        
+        {/* Upcoming Events Section */}
+        <section className="py-16 bg-gradient-to-b from-white to-[#FAF8F5] relative">
+          <div className="max-w-lg mx-auto px-4">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-center mb-8"
+            >
+              <div className="inline-flex items-center gap-2 bg-[#D4A574]/20 rounded-full px-4 py-2 mb-4">
+                <Calendar className="h-4 w-4 text-[#D4A574]" />
+                <span className="text-sm font-bold text-[#D4A574]">Upcoming Events</span>
+              </div>
+              <h2 className="text-2xl md:text-3xl font-display font-bold text-gray-900 mb-2">
+                Join Us In Person
+              </h2>
+              <p className="text-gray-600">
+                Connect with the movement through gatherings, training, and outreach events
+              </p>
+            </motion.div>
+
+            <div className="space-y-4 mb-6">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                onClick={() => navigate("/missions#events")}
+                className="bg-white rounded-2xl p-5 shadow-lg border border-gray-100 cursor-pointer hover:shadow-xl transition-all group"
+                data-testid="event-highlight-1"
+              >
+                <div className="flex items-start gap-4">
+                  <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-[#D4A574] to-[#C49464] flex items-center justify-center flex-shrink-0">
+                    <Calendar className="h-7 w-7 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-gray-900 text-lg mb-1 group-hover:text-[#4A7C7C] transition-colors">Fresh Start: Creative & Fun Evening</h3>
+                    <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
+                      <Calendar className="h-3.5 w-3.5" />
+                      <span>Jan 31, 2026</span>
+                      <span className="text-gray-300">•</span>
+                      <MapPin className="h-3.5 w-3.5" />
+                      <span>Buckingham</span>
+                    </div>
+                    <p className="text-sm text-gray-600">A cosy, creative afternoon for a fresh start to the new year</p>
+                  </div>
+                  <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-[#4A7C7C] group-hover:translate-x-1 transition-all mt-1" />
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.1 }}
+                onClick={() => navigate("/missions#events")}
+                className="bg-white rounded-2xl p-5 shadow-lg border border-gray-100 cursor-pointer hover:shadow-xl transition-all group"
+                data-testid="event-highlight-2"
+              >
+                <div className="flex items-start gap-4">
+                  <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-[#4A7C7C] to-[#3A6C6C] flex items-center justify-center flex-shrink-0">
+                    <Globe className="h-7 w-7 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-gray-900 text-lg mb-1 group-hover:text-[#4A7C7C] transition-colors">Mission Training Weekend</h3>
+                    <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
+                      <Calendar className="h-3.5 w-3.5" />
+                      <span>Jan 29-30, 2026</span>
+                      <span className="text-gray-300">•</span>
+                      <MapPin className="h-3.5 w-3.5" />
+                      <span>Online</span>
+                    </div>
+                    <p className="text-sm text-gray-600">Two powerful evenings of mission training, Q&A, and commissioning</p>
+                  </div>
+                  <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-[#4A7C7C] group-hover:translate-x-1 transition-all mt-1" />
+                </div>
+              </motion.div>
+            </div>
+
+            <div className="text-center">
+              <Button
+                onClick={() => navigate("/missions#events")}
+                variant="outline"
+                className="border-[#4A7C7C] text-[#4A7C7C] hover:bg-[#4A7C7C] hover:text-white rounded-full px-6"
+                data-testid="button-view-all-events"
+              >
+                View All Events
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </Button>
+            </div>
+          </div>
+        </section>
+
         <CommunityRooms />
         <DiscipleshipPaths />
 

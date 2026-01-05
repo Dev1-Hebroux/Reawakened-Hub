@@ -538,6 +538,7 @@ export interface IStorage {
   createEvent(event: InsertEvent): Promise<Event>;
   updateEvent(id: number, updates: Partial<InsertEvent>): Promise<Event>;
   deleteEvent(id: number): Promise<void>;
+  upsertEvent(event: InsertEvent): Promise<Event>;
 
   // Event Registrations
   getEventRegistrations(eventId: number): Promise<EventRegistration[]>;
@@ -1506,6 +1507,26 @@ export class DatabaseStorage implements IStorage {
 
   async deleteEvent(id: number): Promise<void> {
     await db.delete(events).where(eq(events.id, id));
+  }
+
+  async upsertEvent(eventData: InsertEvent): Promise<Event> {
+    const existing = await db.select().from(events).where(
+      and(
+        eq(events.title, eventData.title),
+        eq(events.startDate, eventData.startDate)
+      )
+    );
+    
+    if (existing.length > 0) {
+      const [updated] = await db.update(events)
+        .set(eventData)
+        .where(eq(events.id, existing[0].id))
+        .returning();
+      return updated;
+    } else {
+      const [created] = await db.insert(events).values(eventData).returning();
+      return created;
+    }
   }
 
   // Event Registrations

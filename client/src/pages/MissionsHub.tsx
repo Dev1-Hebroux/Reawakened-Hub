@@ -94,7 +94,7 @@ export function MissionsHub() {
   const displayProjects = projects.length > 0 ? projects : [
     { id: 1, title: "Digital Bible Courses And Physical Bible Distribution", description: "Target 5,000 by 2030", location: "East Africa", hasDigitalActions: true, impactGoal: 5000, impactCurrent: 0, impactLabel: "reached by 2030" },
     { id: 2, title: "Youth Discipleship Network", description: "Training 500 young leaders", location: "Southeast Asia", hasDigitalActions: true, impactGoal: 500, impactCurrent: 10, impactLabel: "leaders trained" },
-    { id: 3, title: "Campus Revival Movement", description: "Prayer and evangelism on 50 campuses", location: "Europe", hasDigitalActions: true, impactGoal: 50, impactCurrent: 1, impactLabel: "campuses active" },
+    { id: 3, title: "Campus Revival Movement", description: "Prayer and evangelism on campuses worldwide", location: "Global", hasDigitalActions: true, impactGoal: 100, impactCurrent: 1, impactLabel: "campuses active" },
   ];
 
   const displayTraining = training.length > 0 ? training : [

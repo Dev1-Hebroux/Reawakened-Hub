@@ -88,20 +88,20 @@ const projectsData: Record<number, {
     id: 3,
     title: "Campus Revival Movement",
     description: "Prayer and evangelism on 50 campuses",
-    longDescription: "University campuses are strategic mission fields where the next generation's worldview is shaped. Our Campus Revival Movement is establishing prayer groups and evangelism teams on 50 campuses across Europe. Students are leading weekly prayer meetings, hosting faith discussions, and sharing the gospel with their peers.",
-    location: "Europe",
+    longDescription: "University campuses are strategic mission fields where the next generation's worldview is shaped. Our Campus Revival Movement is establishing prayer groups and evangelism teams on campuses across the UK, US, Brazil, Africa, Asia, Australia, and Europe. Students are leading weekly prayer meetings, hosting faith discussions, and sharing the gospel with their peers.",
+    location: "Global",
     impactGoal: 50,
     impactCurrent: 1,
     impactLabel: "campuses active",
     howToHelp: [
-      "Pray for student leaders on these campuses",
-      "Connect us with students you know in Europe",
+      "Pray for student leaders on campuses worldwide",
+      "Connect us with students you know anywhere in the world",
       "Share evangelism training resources",
       "Join our monthly prayer call for campuses"
     ],
     prayerPoints: [
       "Pray for boldness for students sharing their faith",
-      "Pray for revival to break out on European campuses",
+      "Pray for revival to break out on university campuses globally",
       "Pray for the salvation of skeptical students"
     ],
     updates: [

@@ -32,7 +32,15 @@ export async function autoSeedDominionContent(): Promise<void> {
       blogsUpserted++;
     }
     
-    console.log(`[Auto-Seed] Complete: ${sparksUpserted} sparks, ${reflectionsUpserted} reflection cards, ${blogsUpserted} blog posts synced.`);
+    // Upsert events
+    let eventsUpserted = 0;
+    const events = getEventSeedContent();
+    for (const event of events) {
+      await storage.upsertEvent(event);
+      eventsUpserted++;
+    }
+    
+    console.log(`[Auto-Seed] Complete: ${sparksUpserted} sparks, ${reflectionsUpserted} reflection cards, ${blogsUpserted} blog posts, ${eventsUpserted} events synced.`);
     
     // Validate counts - use exact date range for DOMINION campaign (Jan 3 - Feb 1, 2026)
     const allSparks = await storage.getSparks();
@@ -351,6 +359,52 @@ Share this devotional series with someone who needs encouragement today.`,
       coverImageUrl: "/attached_assets/the_lord_is_my_shepherd_(8)_1765592424280.png",
       authorId: "system",
       category: "Faith & Culture",
+    },
+  ];
+}
+
+function getEventSeedContent() {
+  return [
+    {
+      title: "Fresh Start: Creative & Fun Evening",
+      description: "Feeling the winter slump or just ready for a reset? Come through for a cosy, creative afternoon with h...",
+      type: "community",
+      location: "Buckingham",
+      startDate: new Date("2026-01-31T16:00:00.000Z"),
+      endDate: new Date("2026-01-31T20:00:00.000Z"),
+      imageUrl: "/attached_assets/community_event_1765592424280.png",
+    },
+    {
+      title: "Mission Training Weekend",
+      description: "Join our online training sessions to equip yourself for global mission. Two powerful evenings of teaching, Q&A, and commissioning.",
+      type: "training",
+      location: "Online",
+      startDate: new Date("2026-01-29T19:00:00.000Z"),
+      endDate: new Date("2026-01-30T21:00:00.000Z"),
+    },
+    {
+      title: "Campus Prayer Night",
+      description: "A night of unified prayer for campuses across the UK, US, and beyond. Join us as we lift up student leaders and pray for revival on university campuses.",
+      type: "prayer-night",
+      location: "Online",
+      startDate: new Date("2026-02-07T19:00:00.000Z"),
+      endDate: new Date("2026-02-07T21:00:00.000Z"),
+    },
+    {
+      title: "Global Outreach Conference",
+      description: "Our annual missions conference bringing together young people passionate about reaching the nations. Hear from field workers, worship together, and get equipped for your calling.",
+      type: "outreach",
+      location: "London, UK",
+      startDate: new Date("2026-03-14T09:00:00.000Z"),
+      endDate: new Date("2026-03-15T17:00:00.000Z"),
+    },
+    {
+      title: "Tech Hub Launch",
+      description: "Explore how technology can be leveraged for kingdom impact. Network with Christian tech professionals and learn about digital missions opportunities.",
+      type: "tech-hub",
+      location: "Online",
+      startDate: new Date("2026-02-21T18:00:00.000Z"),
+      endDate: new Date("2026-02-21T20:00:00.000Z"),
     },
   ];
 }

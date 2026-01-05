@@ -99,11 +99,16 @@ export function DigitalActions() {
   });
 
   const handleShare = (platform: string, card: typeof shareCards[0]) => {
-    const shareUrl = `https://reawakened.org/share/${card.id}`;
+    const shareUrl = `https://reawakened.app/share/${card.id}`;
     const text = `${card.title}: ${card.message}`;
     
     let url = "";
     switch (platform) {
+      case "native":
+        if (navigator.share) {
+          navigator.share({ title: card.title, text: text, url: shareUrl }).catch(() => {});
+        }
+        break;
       case "twitter":
         url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`;
         break;
@@ -113,10 +118,19 @@ export function DigitalActions() {
       case "whatsapp":
         url = `https://wa.me/?text=${encodeURIComponent(text + " " + shareUrl)}`;
         break;
+      case "instagram":
+        navigator.clipboard.writeText(text + "\n\n" + shareUrl);
+        toast.success("Message copied! Open Instagram to share");
+        break;
+      case "tiktok":
+        navigator.clipboard.writeText(text + "\n\n" + shareUrl);
+        toast.success("Message copied! Open TikTok to share");
+        break;
       case "copy":
         navigator.clipboard.writeText(text + "\n\n" + shareUrl);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
+        toast.success("Copied to clipboard!");
         break;
     }
     
@@ -135,7 +149,7 @@ export function DigitalActions() {
 
   const generateInviteLink = () => {
     const code = Math.random().toString(36).substring(2, 8).toUpperCase();
-    const link = `https://reawakened.org/join/${code}`;
+    const link = `https://reawakened.app/join/${code}`;
     setInviteLink(link);
     
     if (isAuthenticated) {
@@ -212,6 +226,16 @@ export function DigitalActions() {
                       >
                         <p className="text-xs text-white/60 mb-2">Share via:</p>
                         <div className="flex flex-wrap gap-2">
+                          {typeof navigator !== 'undefined' && typeof navigator.share === 'function' && (
+                            <Button 
+                              size="sm" 
+                              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white"
+                              onClick={(e) => { e.stopPropagation(); handleShare("native", card); }}
+                              disabled={logActionMutation.isPending}
+                            >
+                              Share
+                            </Button>
+                          )}
                           <Button 
                             size="sm" 
                             className="bg-green-600 hover:bg-green-700 text-white"
@@ -235,6 +259,22 @@ export function DigitalActions() {
                             disabled={logActionMutation.isPending}
                           >
                             Facebook
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
+                            onClick={(e) => { e.stopPropagation(); handleShare("instagram", card); }}
+                            disabled={logActionMutation.isPending}
+                          >
+                            Instagram
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            className="bg-black hover:bg-gray-900 text-white"
+                            onClick={(e) => { e.stopPropagation(); handleShare("tiktok", card); }}
+                            disabled={logActionMutation.isPending}
+                          >
+                            TikTok
                           </Button>
                           <Button 
                             size="sm" 
@@ -338,7 +378,7 @@ export function DigitalActions() {
                               className="bg-green-600 hover:bg-green-700 text-white"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                const shareUrl = inviteLink || "https://reawakened.org/join";
+                                const shareUrl = inviteLink || "https://reawakened.app/join";
                                 window.open(`https://wa.me/?text=${encodeURIComponent(template.message + "\n\n" + shareUrl)}`, "_blank");
                               }}
                             >
@@ -349,7 +389,7 @@ export function DigitalActions() {
                               className="bg-black hover:bg-gray-800 text-white"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                const shareUrl = inviteLink || "https://reawakened.org/join";
+                                const shareUrl = inviteLink || "https://reawakened.app/join";
                                 window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(template.message)}&url=${encodeURIComponent(shareUrl)}`, "_blank");
                               }}
                             >
@@ -360,7 +400,7 @@ export function DigitalActions() {
                               className="bg-white/20 hover:bg-white/30 text-white"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                const shareUrl = inviteLink || "https://reawakened.org/join";
+                                const shareUrl = inviteLink || "https://reawakened.app/join";
                                 navigator.clipboard.writeText(template.message + "\n\n" + shareUrl);
                                 toast.success("Message copied!");
                               }}
