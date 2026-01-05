@@ -10,7 +10,21 @@ export const apiLimiter = rateLimit({
     if (process.env.NODE_ENV !== "production") {
       return true;
     }
-    const skipPaths = ['/api/auth/callback', '/api/auth/user', '/api/sparks/featured', '/api/sparks/today', '/api/sparks/published'];
+    const skipPaths = [
+      '/api/auth/callback', 
+      '/api/auth/user', 
+      '/api/auth/session',
+      '/api/sparks/featured', 
+      '/api/sparks/today', 
+      '/api/sparks/published',
+      '/api/reading-plans',
+      '/api/user/reading-plans',
+      '/api/user/spiritual-profile',
+      '/api/user/reading-streak',
+      '/api/journeys',
+      '/api/events',
+      '/api/notifications'
+    ];
     return skipPaths.some(path => req.path.startsWith(path));
   },
 });
