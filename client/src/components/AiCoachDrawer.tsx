@@ -126,11 +126,11 @@ export function AiCoachDrawer({ entryPoint = "general" }: AiCoachDrawerProps) {
               onClick={() => setIsOpen(false)}
             />
             <motion.div
-              initial={{ x: "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "100%" }}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-white z-50 flex flex-col shadow-2xl"
+              className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg h-[80vh] max-h-[700px] bg-white z-50 flex flex-col shadow-2xl rounded-2xl overflow-hidden"
             >
               <div className="bg-gradient-to-r from-[#1a2744] to-[#243656] text-white p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
