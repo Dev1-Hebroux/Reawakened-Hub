@@ -151,7 +151,7 @@ export function VisionModal({ isOpen, onClose }: VisionModalProps) {
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="relative w-full max-w-4xl aspect-video rounded-3xl overflow-hidden shadow-2xl"
+            className="relative w-full max-w-4xl h-[85vh] md:h-auto md:aspect-video rounded-3xl overflow-hidden shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <AnimatePresence initial={false} custom={direction} mode="wait">
@@ -169,8 +169,8 @@ export function VisionModal({ isOpen, onClose }: VisionModalProps) {
                 <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-white/5 rounded-full blur-3xl" />
                 <div className="absolute bottom-0 left-0 w-[200px] h-[200px] bg-white/10 rounded-full blur-3xl" />
 
-                <div className="relative z-10 h-full flex flex-col items-center justify-center p-8 text-white text-center">
-                  <img src={logoLight} alt="Reawakened" className="h-10 mb-6 opacity-80" />
+                <div className="relative z-10 h-full flex flex-col items-center justify-center p-4 sm:p-6 md:p-8 text-white text-center overflow-y-auto">
+                  <img src={logoLight} alt="Reawakened" className="h-6 sm:h-8 md:h-10 mb-4 md:mb-6 opacity-80 flex-shrink-0" />
 
                   {slide.type === "intro" && (
                     <>
@@ -178,7 +178,7 @@ export function VisionModal({ isOpen, onClose }: VisionModalProps) {
                         initial={{ y: 20, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ delay: 0.2 }}
-                        className="text-4xl md:text-6xl font-display font-bold mb-4"
+                        className="text-2xl sm:text-3xl md:text-6xl font-display font-bold mb-2 sm:mb-4"
                       >
                         {slide.title}
                       </motion.h2>
@@ -186,7 +186,7 @@ export function VisionModal({ isOpen, onClose }: VisionModalProps) {
                         initial={{ y: 20, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ delay: 0.3 }}
-                        className="text-lg md:text-xl text-white/80 mb-6 max-w-2xl"
+                        className="text-sm sm:text-base md:text-xl text-white/80 mb-4 sm:mb-6 max-w-2xl px-2"
                       >
                         {slide.subtitle}
                       </motion.p>
@@ -194,10 +194,10 @@ export function VisionModal({ isOpen, onClose }: VisionModalProps) {
                         initial={{ y: 20, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ delay: 0.4 }}
-                        className="text-base md:text-lg text-white/90 italic max-w-xl"
+                        className="text-sm sm:text-base md:text-lg text-white/90 italic max-w-xl px-2"
                       >
                         "{slide.verse}"
-                        <span className="block text-sm text-orange-200 mt-2 not-italic font-bold">— {slide.reference}</span>
+                        <span className="block text-xs sm:text-sm text-orange-200 mt-2 not-italic font-bold">— {slide.reference}</span>
                       </motion.blockquote>
                     </>
                   )}
@@ -208,7 +208,7 @@ export function VisionModal({ isOpen, onClose }: VisionModalProps) {
                         initial={{ y: 20, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ delay: 0.2 }}
-                        className="text-3xl md:text-5xl font-display font-bold mb-8"
+                        className="text-xl sm:text-2xl md:text-5xl font-display font-bold mb-4 sm:mb-6 md:mb-8"
                       >
                         {slide.title}
                       </motion.h2>
@@ -216,7 +216,7 @@ export function VisionModal({ isOpen, onClose }: VisionModalProps) {
                         initial={{ y: 20, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ delay: 0.3 }}
-                        className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-12"
+                        className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-4 md:gap-12"
                       >
                         {slide.stats?.map((stat, i) => (
                           <motion.div 
@@ -226,9 +226,9 @@ export function VisionModal({ isOpen, onClose }: VisionModalProps) {
                             transition={{ delay: 0.4 + i * 0.1 }}
                             className="text-center"
                           >
-                            <div className="text-3xl md:text-5xl font-bold text-white mb-1">{stat.value}</div>
-                            <div className="text-sm md:text-base text-white/80">{stat.label}</div>
-                            <div className="text-xs text-white/50 uppercase tracking-wider mt-1">{stat.sublabel}</div>
+                            <div className="text-2xl sm:text-3xl md:text-5xl font-bold text-white mb-1">{stat.value}</div>
+                            <div className="text-xs sm:text-sm md:text-base text-white/80">{stat.label}</div>
+                            <div className="text-[10px] sm:text-xs text-white/50 uppercase tracking-wider mt-1">{stat.sublabel}</div>
                           </motion.div>
                         ))}
                       </motion.div>
@@ -241,7 +241,7 @@ export function VisionModal({ isOpen, onClose }: VisionModalProps) {
                         initial={{ y: 20, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ delay: 0.2 }}
-                        className="text-3xl md:text-5xl font-display font-bold mb-8"
+                        className="text-xl sm:text-2xl md:text-5xl font-display font-bold mb-4 sm:mb-6 md:mb-8"
                       >
                         {slide.title}
                       </motion.h2>
@@ -249,7 +249,7 @@ export function VisionModal({ isOpen, onClose }: VisionModalProps) {
                         initial={{ y: 20, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ delay: 0.3 }}
-                        className="grid grid-cols-1 md:grid-cols-3 gap-6"
+                        className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-3 md:gap-6 w-full max-w-3xl px-2"
                       >
                         {slide.pillars?.map((pillar, i) => (
                           <motion.div 
@@ -257,11 +257,11 @@ export function VisionModal({ isOpen, onClose }: VisionModalProps) {
                             initial={{ y: 30, opacity: 0 }}
                             animate={{ y: 0, opacity: 1 }}
                             transition={{ delay: 0.4 + i * 0.1 }}
-                            className={`bg-gradient-to-br ${pillar.color} rounded-2xl p-6 text-center shadow-lg`}
+                            className={`bg-gradient-to-br ${pillar.color} rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 text-center shadow-lg`}
                           >
-                            <pillar.icon className="h-10 w-10 mx-auto mb-3 text-white" />
-                            <h3 className="font-bold text-lg mb-2">{pillar.title}</h3>
-                            <p className="text-white/80 text-sm">{pillar.description}</p>
+                            <pillar.icon className="h-6 w-6 sm:h-8 sm:w-8 md:h-10 md:w-10 mx-auto mb-2 sm:mb-3 text-white" />
+                            <h3 className="font-bold text-sm sm:text-base md:text-lg mb-1 sm:mb-2">{pillar.title}</h3>
+                            <p className="text-white/80 text-xs sm:text-sm">{pillar.description}</p>
                           </motion.div>
                         ))}
                       </motion.div>
@@ -274,7 +274,7 @@ export function VisionModal({ isOpen, onClose }: VisionModalProps) {
                         initial={{ y: 20, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ delay: 0.2 }}
-                        className="text-3xl md:text-5xl font-display font-bold mb-8"
+                        className="text-xl sm:text-2xl md:text-5xl font-display font-bold mb-4 sm:mb-6 md:mb-8"
                       >
                         {slide.title}
                       </motion.h2>
@@ -282,7 +282,7 @@ export function VisionModal({ isOpen, onClose }: VisionModalProps) {
                         initial={{ y: 20, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ delay: 0.3 }}
-                        className="grid grid-cols-2 gap-4 md:gap-6 max-w-2xl"
+                        className="grid grid-cols-2 gap-2 sm:gap-4 md:gap-6 max-w-2xl w-full px-2"
                       >
                         {slide.features?.map((feature, i) => (
                           <motion.div 
@@ -290,11 +290,11 @@ export function VisionModal({ isOpen, onClose }: VisionModalProps) {
                             initial={{ scale: 0.8, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             transition={{ delay: 0.4 + i * 0.1 }}
-                            className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 md:p-6 text-left border border-white/20"
+                            className="bg-white/10 backdrop-blur-sm rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 text-left border border-white/20"
                           >
-                            <feature.icon className="h-8 w-8 mb-3 text-white" />
-                            <h3 className="font-bold text-base md:text-lg mb-1">{feature.title}</h3>
-                            <p className="text-white/70 text-xs md:text-sm">{feature.description}</p>
+                            <feature.icon className="h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8 mb-2 sm:mb-3 text-white" />
+                            <h3 className="font-bold text-xs sm:text-sm md:text-lg mb-1">{feature.title}</h3>
+                            <p className="text-white/70 text-[10px] sm:text-xs md:text-sm">{feature.description}</p>
                           </motion.div>
                         ))}
                       </motion.div>
@@ -307,7 +307,7 @@ export function VisionModal({ isOpen, onClose }: VisionModalProps) {
                         initial={{ y: 20, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ delay: 0.2 }}
-                        className="text-4xl md:text-6xl font-display font-bold mb-4"
+                        className="text-2xl sm:text-3xl md:text-6xl font-display font-bold mb-2 sm:mb-4"
                       >
                         {slide.title}
                       </motion.h2>
@@ -315,7 +315,7 @@ export function VisionModal({ isOpen, onClose }: VisionModalProps) {
                         initial={{ y: 20, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ delay: 0.3 }}
-                        className="text-lg md:text-xl text-white/80 mb-8 max-w-xl"
+                        className="text-sm sm:text-base md:text-xl text-white/80 mb-4 sm:mb-6 md:mb-8 max-w-xl px-2"
                       >
                         {slide.subtitle}
                       </motion.p>
@@ -323,23 +323,23 @@ export function VisionModal({ isOpen, onClose }: VisionModalProps) {
                         initial={{ y: 20, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ delay: 0.4 }}
-                        className="flex flex-col sm:flex-row gap-4"
+                        className="flex flex-col sm:flex-row gap-2 sm:gap-4 px-4"
                       >
                         <Button 
                           size="lg" 
-                          className="bg-white text-primary hover:bg-gray-100 rounded-full px-8 font-bold"
+                          className="bg-white text-primary hover:bg-gray-100 rounded-full px-4 sm:px-8 font-bold text-sm sm:text-base"
                           onClick={() => {
                             onClose();
                             window.location.href = "/mission/onboarding";
                           }}
                           data-testid="button-modal-join"
                         >
-                          Start Your Mission <ArrowRight className="ml-2 h-5 w-5" />
+                          Start Your Mission <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
                         </Button>
                         <Button 
                           size="lg" 
                           variant="outline" 
-                          className="border-2 border-white text-white hover:bg-white/10 rounded-full px-8 font-bold"
+                          className="border-2 border-white text-white hover:bg-white/10 rounded-full px-4 sm:px-8 font-bold text-sm sm:text-base"
                           onClick={() => {
                             onClose();
                             window.location.href = "/about";
@@ -357,23 +357,23 @@ export function VisionModal({ isOpen, onClose }: VisionModalProps) {
 
             <button
               onClick={onClose}
-              className="absolute top-4 right-4 z-20 p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
+              className="absolute top-2 right-2 sm:top-4 sm:right-4 z-20 p-1.5 sm:p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
               data-testid="button-close-vision-modal"
             >
-              <X className="h-6 w-6 text-white" />
+              <X className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
             </button>
 
-            <div className="absolute bottom-4 left-0 right-0 z-20 flex items-center justify-center gap-4">
+            <div className="absolute bottom-3 sm:bottom-4 left-0 right-0 z-20 flex items-center justify-center gap-2 sm:gap-4">
               <button
                 onClick={prevSlide}
                 disabled={currentSlide === 0}
-                className={`p-2 rounded-full transition-all ${currentSlide === 0 ? 'opacity-30' : 'bg-white/10 hover:bg-white/20'}`}
+                className={`p-1.5 sm:p-2 rounded-full transition-all ${currentSlide === 0 ? 'opacity-30' : 'bg-white/10 hover:bg-white/20'}`}
                 data-testid="button-prev-slide"
               >
-                <ChevronLeft className="h-6 w-6 text-white" />
+                <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
               </button>
 
-              <div className="flex gap-2">
+              <div className="flex gap-1.5 sm:gap-2">
                 {slides.map((_, i) => (
                   <button
                     key={i}
@@ -381,7 +381,7 @@ export function VisionModal({ isOpen, onClose }: VisionModalProps) {
                       setDirection(i > currentSlide ? 1 : -1);
                       setCurrentSlide(i);
                     }}
-                    className={`w-2 h-2 rounded-full transition-all ${i === currentSlide ? 'bg-white w-6' : 'bg-white/40 hover:bg-white/60'}`}
+                    className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-all ${i === currentSlide ? 'bg-white w-4 sm:w-6' : 'bg-white/40 hover:bg-white/60'}`}
                     data-testid={`button-slide-${i}`}
                   />
                 ))}
@@ -390,10 +390,10 @@ export function VisionModal({ isOpen, onClose }: VisionModalProps) {
               <button
                 onClick={nextSlide}
                 disabled={currentSlide === slides.length - 1}
-                className={`p-2 rounded-full transition-all ${currentSlide === slides.length - 1 ? 'opacity-30' : 'bg-white/10 hover:bg-white/20'}`}
+                className={`p-1.5 sm:p-2 rounded-full transition-all ${currentSlide === slides.length - 1 ? 'opacity-30' : 'bg-white/10 hover:bg-white/20'}`}
                 data-testid="button-next-slide"
               >
-                <ChevronRight className="h-6 w-6 text-white" />
+                <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
               </button>
             </div>
           </motion.div>
