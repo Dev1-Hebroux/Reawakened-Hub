@@ -226,14 +226,7 @@ export async function sendWelcomeEmail(to: string, name: string, data: {
       </a>
     </div>
 
-    <div style="text-align: center; padding: 20px;">
-      <p style="color: #6B7B6E; font-size: 14px; margin: 0 0 8px 0;">
-        Questions? Reply to this email or join our WhatsApp community.
-      </p>
-      <p style="color: #1a2744; font-size: 14px; margin: 0; font-weight: 600;">
-        — The Reawakened Team
-      </p>
-    </div>
+    ${getEmailFooter(to)}
   </div>
 </body>
 </html>
@@ -332,14 +325,7 @@ export async function sendPrayerReminderEmail(to: string, name: string, data: {
       </a>
     </div>
 
-    <div style="text-align: center; padding: 20px; border-top: 1px solid #E8E4DE;">
-      <p style="color: #6B7B6E; font-size: 13px; margin: 0 0 8px 0;">
-        You're receiving this because you've committed to pray for ${data.focusName}.
-      </p>
-      <p style="color: #6B7B6E; font-size: 12px; margin: 0;">
-        <a href="https://reawakened.app/settings" style="color: #4A7C7C;">Manage your prayer subscriptions</a>
-      </p>
-    </div>
+    ${getEmailFooter(to, 'Ask of me, and I will make the nations your inheritance. — Psalm 2:8')}
   </div>
 </body>
 </html>
@@ -452,14 +438,7 @@ export async function sendAltarJoinConfirmation(to: string, name: string, data: 
       </a>
     </div>
 
-    <div style="text-align: center; padding: 20px;">
-      <p style="color: #1a2744; font-size: 14px; margin: 0; font-weight: 600;">
-        Together, we're raising an altar of prayer over ${data.campusName}!
-      </p>
-      <p style="color: #6B7B6E; font-size: 13px; margin: 8px 0 0 0;">
-        — The Reawakened Team
-      </p>
-    </div>
+    ${getEmailFooter(to, 'If my people who are called by my name will humble themselves and pray... — 2 Chronicles 7:14')}
   </div>
 </body>
 </html>
@@ -532,11 +511,7 @@ export async function sendPrayerRequestNotification(data: {
       </a>
     </div>
 
-    <div style="text-align: center; padding: 20px; border-top: 1px solid #E8E4DE;">
-      <p style="color: #6B7B6E; font-size: 13px; margin: 0;">
-        "The prayer of a righteous person is powerful and effective." — James 5:16
-      </p>
-    </div>
+    ${getEmailFooter(prayerTeamEmail, 'The prayer of a righteous person is powerful and effective. — James 5:16')}
   </div>
 </body>
 </html>
@@ -601,10 +576,7 @@ export async function sendEventRegistrationEmail(to: string, name: string, data:
       </div>
       ${data.eventDescription ? `<p style="color: #6B7B6E; font-size: 14px; margin-top: 16px; line-height: 1.6;">${data.eventDescription}</p>` : ''}
     </div>
-    <div style="text-align: center; padding: 20px;">
-      <p style="color: #1a2744; font-size: 14px; margin: 0; font-weight: 600;">See you there!</p>
-      <p style="color: #6B7B6E; font-size: 13px; margin: 8px 0 0 0;">— The Reawakened Team</p>
-    </div>
+    ${getEmailFooter(to, 'For where two or three gather in my name, there am I with them. — Matthew 18:20')}
   </div>
 </body>
 </html>`;
@@ -669,9 +641,7 @@ export async function sendChallengeEnrollmentEmail(to: string, name: string, dat
         Start Your Challenge
       </a>
     </div>
-    <div style="text-align: center; padding: 20px;">
-      <p style="color: #6B7B6E; font-size: 13px; margin: 0;">"I can do all things through Christ who strengthens me." — Philippians 4:13</p>
-    </div>
+    ${getEmailFooter(to, 'I can do all things through Christ who strengthens me. — Philippians 4:13')}
   </div>
 </body>
 </html>`;
@@ -783,13 +753,7 @@ export async function sendTestimonyAcknowledgementEmail(to: string, name: string
       </div>
     </div>
 
-    <div style="text-align: center; padding: 20px;">
-      ${scripture}
-      <p style="color: #1a2744; font-size: 14px; margin: 16px 0 0 0;">
-        ${signOff}<br/>
-        <strong>The Reawakened Team</strong>
-      </p>
-    </div>
+    ${getEmailFooter(to, tone === 'faith' ? 'They triumphed over him by the blood of the Lamb and by the word of their testimony. — Revelation 12:11' : undefined)}
   </div>
 </body>
 </html>`;
@@ -910,13 +874,7 @@ export async function sendVolunteerConfirmationEmail(to: string, name: string, d
       <p style="color: #6B7B6E; font-size: 14px; margin: 0; line-height: 1.6;">${closingText}</p>
     </div>
 
-    <div style="text-align: center; padding: 20px;">
-      ${scripture}
-      <p style="color: #1a2744; font-size: 14px; margin: 16px 0 0 0;">
-        ${signOff}<br/>
-        <strong>The Reawakened Team</strong>
-      </p>
-    </div>
+    ${getEmailFooter(to, tone === 'faith' ? 'Each of you should use whatever gift you have received to serve others. — 1 Peter 4:10' : undefined)}
   </div>
 </body>
 </html>`;
@@ -966,9 +924,7 @@ export async function sendMissionTripInterestEmail(to: string, name: string, dat
         Our missions team will be in touch with upcoming trip opportunities and next steps. Start preparing your heart through prayer!
       </p>
     </div>
-    <div style="text-align: center; padding: 20px;">
-      <p style="color: #6B7B6E; font-size: 13px; margin: 0;">"Go therefore and make disciples of all nations." — Matthew 28:19</p>
-    </div>
+    ${getEmailFooter(to, 'Go therefore and make disciples of all nations. — Matthew 28:19')}
   </div>
 </body>
 </html>`;
@@ -1082,15 +1038,7 @@ export async function sendSubscriptionWelcomeEmail(to: string, data: {
       </div>
     </div>
 
-    <div style="text-align: center; padding: 20px;">
-      <p style="color: #1a2744; font-size: 14px; margin: 0 0 16px 0;">
-        ${signOff}<br/>
-        <strong>The Reawakened Team</strong>
-      </p>
-      <p style="color: #6B7B6E; font-size: 12px; margin: 0;">
-        <a href="https://reawakened.app/unsubscribe" style="color: #4A7C7C;">Unsubscribe</a> | <a href="https://reawakened.app/settings" style="color: #4A7C7C;">Manage Preferences</a>
-      </p>
-    </div>
+    ${getEmailFooter(to)}
   </div>
 </body>
 </html>`;
@@ -1148,9 +1096,7 @@ export async function sendPrayerPodNotificationEmail(to: string, name: string, d
         View Your Pods
       </a>
     </div>
-    <div style="text-align: center; padding: 20px;">
-      <p style="color: #6B7B6E; font-size: 13px; margin: 0;">"For where two or three gather in my name, there am I with them." — Matthew 18:20</p>
-    </div>
+    ${getEmailFooter(to, 'For where two or three gather in my name, there am I with them. — Matthew 18:20')}
   </div>
 </body>
 </html>`;
@@ -1266,14 +1212,7 @@ export async function sendPrayerRequestConfirmationEmail(to: string, name: strin
       </div>
     </div>
 
-    <div style="text-align: center; padding: 20px;">
-      ${scripture}
-      <p style="color: #1a2744; font-size: 14px; margin: 16px 0 0 0;">
-        ${closingText}<br/>
-        ${signOff}<br/>
-        <strong>The Reawakened Team</strong>
-      </p>
-    </div>
+    ${getEmailFooter(to, tone === 'faith' ? 'Do not be anxious about anything, but in every situation, by prayer and petition, with thanksgiving, present your requests to God. — Philippians 4:6' : undefined)}
   </div>
 </body>
 </html>`;
@@ -1332,11 +1271,7 @@ export async function sendDailyDevotionalEmail(to: string, name: string, data: {
         Read Full Devotional
       </a>
     </div>
-    <div style="text-align: center; padding: 20px; border-top: 1px solid #E8E4DE;">
-      <p style="color: #6B7B6E; font-size: 12px; margin: 0;">
-        <a href="https://reawakened.app/settings" style="color: #4A7C7C;">Manage email preferences</a>
-      </p>
-    </div>
+    ${getEmailFooter(to, 'Your word is a lamp for my feet, a light on my path. — Psalm 119:105')}
   </div>
 </body>
 </html>`;
@@ -1397,9 +1332,7 @@ export async function sendEventReminderEmail(to: string, name: string, data: {
         </div>` : ''}
       </div>
     </div>
-    <div style="text-align: center; padding: 20px;">
-      <p style="color: #1a2744; font-size: 14px; margin: 0; font-weight: 600;">We can't wait to see you there!</p>
-    </div>
+    ${getEmailFooter(to, 'Let us not give up meeting together, as some are in the habit of doing, but let us encourage one another. — Hebrews 10:25')}
   </div>
 </body>
 </html>`;
