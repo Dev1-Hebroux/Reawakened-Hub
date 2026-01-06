@@ -31,7 +31,7 @@ export function PartnerVision() {
             Reaching the Next Generation
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto print:text-base">
-            A digital revival movement preparing young people to encounter Jesus, find their purpose, and change the world.
+            A revival movement preparing young people to encounter Jesus, find their purpose, and change the world.
           </p>
         </header>
 
