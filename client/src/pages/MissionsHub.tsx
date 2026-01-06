@@ -107,8 +107,8 @@ export function MissionsHub() {
     { 
       id: 1, 
       title: "Mission Training Weekend", 
-      date1: "Thursday, Jan 29, 2026 at 7pm UK", 
-      date2: "Friday, Jan 30, 2026 at 7pm UK",
+      date1: "Saturday, Mar 7, 2026 at 7pm UK", 
+      date2: "Sunday, Mar 8, 2026 at 7pm UK",
       description: "Join our online training sessions to equip yourself for global mission. Two powerful evenings of teaching, Q&A, and commissioning.",
       type: "online"
     },
@@ -358,8 +358,8 @@ export function MissionsHub() {
                   </div>
                   <h3 className="font-bold text-white text-lg mb-2">Mission Training Weekend</h3>
                   <div className="space-y-1 mb-3">
-                    <p className="text-sm text-white/70">Thursday, Jan 29, 2026 at 7pm UK</p>
-                    <p className="text-sm text-white/70">Friday, Jan 30, 2026 at 7pm UK</p>
+                    <p className="text-sm text-white/70">Saturday, Mar 7, 2026 at 7pm UK</p>
+                    <p className="text-sm text-white/70">Sunday, Mar 8, 2026 at 7pm UK</p>
                   </div>
                   <p className="text-sm text-white/60 mb-4">
                     Join our online training sessions to equip yourself for global mission. Two powerful evenings of teaching, Q&A, and commissioning.

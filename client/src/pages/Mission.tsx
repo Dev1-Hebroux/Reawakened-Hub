@@ -42,7 +42,7 @@ const features = [
   {
     title: "Global Outreach",
     icon: Globe,
-    description: "From school assemblies to national crusades. We are possessing our inheritance and harvesting the nations through trips, camps, and community service.",
+    description: "From school assemblies to outreaches. We are possessing our inheritance and harvesting the nations through trips, camps, and community service.",
     image: outreachImg,
     tags: ["School Tours", "Holiday Trips", "City Impact"],
     color: "text-blue-500",
@@ -284,7 +284,7 @@ export function MissionPage() {
                 Experience the power of God through intentional prayer, worship encounters, and spiritual awakening movements. We believe in the Joel 2:28 promise of God's Spirit being poured out on all flesh.
               </p>
               <ul className="space-y-4 mb-8">
-                {["Weekly Prayer Nights", "Worship Encounters", "Revival Meetings", "Spiritual Retreats"].map((item, i) => (
+                {["Periodic Prayer Sparks", "Worship Encounters", "Revival Meetings", "Spiritual Retreats"].map((item, i) => (
                   <li key={i} className="flex items-center gap-3 text-gray-700">
                     <div className="w-2 h-2 rounded-full bg-orange-500" />
                     {item}

@@ -450,7 +450,7 @@ export default function Home() {
                     <h3 className="font-bold text-gray-900 text-lg mb-1 group-hover:text-[#4A7C7C] transition-colors">Mission Training Weekend</h3>
                     <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
                       <Calendar className="h-3.5 w-3.5" />
-                      <span>Jan 29-30, 2026</span>
+                      <span>Mar 7-8, 2026</span>
                       <span className="text-gray-300">•</span>
                       <MapPin className="h-3.5 w-3.5" />
                       <span>Online</span>
