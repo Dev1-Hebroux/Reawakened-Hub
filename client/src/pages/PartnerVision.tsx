@@ -61,7 +61,7 @@ export function PartnerVision() {
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 print:gap-3">
             {[
-              { value: "10,000", label: "Disciples by 2030", icon: Users },
+              { value: "5,000", label: "Disciples by 2030", icon: Users },
               { value: "50+", label: "Nations Reached", icon: Globe },
               { value: "365", label: "Daily Sparks/Year", icon: Sparkles },
               { value: "100+", label: "Campus Movements", icon: BookOpen },

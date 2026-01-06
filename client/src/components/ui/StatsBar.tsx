@@ -12,7 +12,7 @@ interface StatsBarProps {
 }
 
 const stats: Stat[] = [
-  { value: "10k+", subtitle: "disciples by 2030", label: "Our Vision" },
+  { value: "5k+", subtitle: "disciples by 2030", label: "Our Vision" },
   { value: "50+", subtitle: "nations reached", label: "Our Goal" },
   { value: "365", subtitle: "sparks per year", label: "Daily" },
   { value: "12+", subtitle: "mission projects", label: "Launching" },

@@ -28,7 +28,7 @@ const slides = [
     type: "stats",
     title: "Our Vision in Numbers",
     stats: [
-      { value: "10k+", label: "disciples by 2030", sublabel: "OUR VISION" },
+      { value: "5k+", label: "disciples by 2030", sublabel: "OUR VISION" },
       { value: "50+", label: "nations reached", sublabel: "OUR GOAL" },
       { value: "365", label: "sparks per year", sublabel: "DAILY" },
       { value: "12+", label: "mission projects", sublabel: "LAUNCHING" },
