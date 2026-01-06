@@ -131,12 +131,16 @@ export function MissionPage() {
 
   useEffect(() => {
     if (window.location.hash === "#events") {
-      setTimeout(() => {
+      const scrollToEvents = () => {
         const eventsSection = document.getElementById("events");
         if (eventsSection) {
-          eventsSection.scrollIntoView({ behavior: "smooth" });
+          eventsSection.scrollIntoView({ behavior: "smooth", block: "start" });
         }
-      }, 100);
+      };
+      // Try immediately and after a delay to handle slow loading
+      scrollToEvents();
+      setTimeout(scrollToEvents, 300);
+      setTimeout(scrollToEvents, 600);
     }
   }, []);
 
