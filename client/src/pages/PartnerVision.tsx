@@ -101,7 +101,7 @@ export function PartnerVision() {
                 color: "bg-[#D4A574]"
               }
             ].map((pillar, i) => (
-              <div key={i} className="bg-white rounded-xl border-2 border-gray-100 overflow-hidden print:border print:border-gray-200">
+              <div key={i} className="bg-white rounded-xl border-2 border-gray-100 overflow-hidden print:border print:border-gray-200 print:break-inside-avoid">
                 <div className={`${pillar.color} h-2`} />
                 <div className="p-6 print:p-4">
                   <h3 className="text-xl font-bold text-[#1a2744] mb-2">{pillar.title}</h3>
@@ -144,7 +144,7 @@ export function PartnerVision() {
                 color: "bg-[#D4A574]"
               }
             ].map((channel, i) => (
-              <div key={i} className="bg-white rounded-xl border-2 border-gray-100 overflow-hidden print:border print:border-gray-200">
+              <div key={i} className="bg-white rounded-xl border-2 border-gray-100 overflow-hidden print:border print:border-gray-200 print:break-inside-avoid">
                 <div className={`${channel.color} p-4 flex items-center gap-3`}>
                   <channel.icon className="h-6 w-6 text-white" />
                   <h3 className="text-lg font-bold text-white">{channel.title}</h3>
