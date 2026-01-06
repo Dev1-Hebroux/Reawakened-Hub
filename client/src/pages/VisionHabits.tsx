@@ -155,7 +155,15 @@ export function VisionHabits() {
               tool="habits"
               data={{ habits: habits || [] }}
               title="Habit Insights"
-              description="Analyze your habit patterns and get tips"
+              description="Get AI suggestions for habits that support your goals"
+              onAddHabit={(suggestedHabit) => {
+                setHabitForm({
+                  title: suggestedHabit.title,
+                  frequency: suggestedHabit.frequency,
+                  targetPerWeek: suggestedHabit.frequency === "daily" ? 7 : suggestedHabit.frequency === "weekdays" ? 5 : 1,
+                });
+                setIsDialogOpen(true);
+              }}
             />
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>

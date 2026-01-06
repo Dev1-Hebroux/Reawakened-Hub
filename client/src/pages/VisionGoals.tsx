@@ -220,7 +220,40 @@ export function VisionGoals() {
               tool="goals"
               data={{ goals: goals || [] }}
               title="Goal Coaching"
-              description="Get feedback on your SMART goals"
+              description="Get AI suggestions for SMART goals"
+              onUseGoal={(suggestedGoal) => {
+                const parseDeadline = (text: string): string => {
+                  const today = new Date();
+                  const lower = text.toLowerCase();
+                  if (lower.includes("90 day") || lower.includes("3 month")) {
+                    today.setDate(today.getDate() + 90);
+                  } else if (lower.includes("60 day") || lower.includes("2 month")) {
+                    today.setDate(today.getDate() + 60);
+                  } else if (lower.includes("30 day") || lower.includes("1 month")) {
+                    today.setDate(today.getDate() + 30);
+                  } else if (lower.includes("week")) {
+                    const weeks = parseInt(lower.match(/(\d+)/)?.[1] || "1");
+                    today.setDate(today.getDate() + weeks * 7);
+                  } else {
+                    today.setDate(today.getDate() + 90);
+                  }
+                  return today.toISOString().split("T")[0];
+                };
+                setGoalForm({
+                  title: suggestedGoal.title,
+                  why: suggestedGoal.why,
+                  specific: suggestedGoal.specific,
+                  measurable: suggestedGoal.measurable,
+                  metricName: "",
+                  metricTarget: "",
+                  achievable: suggestedGoal.achievable,
+                  relevant: suggestedGoal.relevant,
+                  deadline: parseDeadline(suggestedGoal.deadline),
+                  firstStep: suggestedGoal.firstStep,
+                  obstaclesPlan: "",
+                });
+                setIsDialogOpen(true);
+              }}
             />
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
