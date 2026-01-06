@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Printer, Download, Mail, Calendar, ArrowRight, Heart, Users, Globe, Target, Sparkles, BookOpen } from "lucide-react";
+import { Printer, Download, Mail, Calendar, ArrowRight, Heart, Users, Globe, Target, Sparkles, BookOpen, GraduationCap, Lightbulb, Plane } from "lucide-react";
 import logoImage from "@assets/Reawakened_Logo_1_new_1767191127649.png";
 
 export function PartnerVision() {
@@ -106,6 +106,61 @@ export function PartnerVision() {
                 <div className="p-6 print:p-4">
                   <h3 className="text-xl font-bold text-[#1a2744] mb-2">{pillar.title}</h3>
                   <p className="text-gray-600 text-sm leading-relaxed">{pillar.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="mb-12 print:mb-8">
+          <h2 className="text-2xl font-bold text-[#1a2744] mb-6 flex items-center gap-2 print:text-xl">
+            <Users className="h-6 w-6 text-[#4A7C7C]" />
+            Our Channels
+          </h2>
+          <p className="text-gray-600 mb-6 print:text-sm">
+            Beyond digital, we reach young people through three key operational channels:
+          </p>
+          <div className="grid md:grid-cols-3 gap-6 print:gap-4">
+            {[
+              {
+                title: "Global Outreach",
+                description: "From school assemblies to outreaches. We are possessing our inheritance and harvesting the nations through trips, camps, and community service.",
+                tags: ["School Tours", "Holiday Trips", "City Impact"],
+                icon: Plane,
+                color: "bg-[#1a2744]"
+              },
+              {
+                title: "Reawakened Academy",
+                description: "Comprehensive discipleship and professional development. Including Alpha courses, leadership training, and career mentorship pathways.",
+                tags: ["Discipleship", "Alpha Training", "Career Dev"],
+                icon: GraduationCap,
+                color: "bg-[#4A7C7C]"
+              },
+              {
+                title: "Innovation Hub",
+                description: "A cutting-edge ecosystem for IT, AI capability, and business incubation. Empowering the next generation of kingdom entrepreneurs and creators.",
+                tags: ["AI Labs", "Startup Incubator", "Tech Skills"],
+                icon: Lightbulb,
+                color: "bg-[#D4A574]"
+              }
+            ].map((channel, i) => (
+              <div key={i} className="bg-white rounded-xl border-2 border-gray-100 overflow-hidden print:border print:border-gray-200">
+                <div className={`${channel.color} p-4 flex items-center gap-3`}>
+                  <channel.icon className="h-6 w-6 text-white" />
+                  <h3 className="text-lg font-bold text-white">{channel.title}</h3>
+                </div>
+                <div className="p-5 print:p-4">
+                  <p className="text-gray-600 text-sm leading-relaxed mb-4">{channel.description}</p>
+                  <div className="flex flex-wrap gap-2">
+                    {channel.tags.map((tag, j) => (
+                      <span 
+                        key={j} 
+                        className="text-xs font-medium px-2 py-1 rounded-full bg-[#FAF8F5] text-[#1a2744] border border-gray-200"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               </div>
             ))}
