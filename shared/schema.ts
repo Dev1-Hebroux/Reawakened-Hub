@@ -328,6 +328,7 @@ export const events = pgTable("events", {
   endDate: timestamp("end_date"),
   imageUrl: varchar("image_url"),
   registrationUrl: varchar("registration_url"),
+  createdBy: varchar("created_by").references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

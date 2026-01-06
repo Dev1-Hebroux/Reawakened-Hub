@@ -32,39 +32,22 @@ export async function autoSeedDominionContent(): Promise<void> {
       blogsUpserted++;
     }
     
-    // Clean up old/renamed seeded events before re-inserting
-    // Only delete events matching known seeded titles (current or legacy)
-    const seededEventTitles = [
-      // Current seeded events
-      "Fresh Start: Creative & Fun Evening",
-      "Mission Training Weekend", 
-      "Campus Spark Night",
-      "Global Outreach Conference",
-      "Tech Hub Launch",
-      // Legacy/renamed events to clean up
-      "Campus Prayer Night",
-    ];
-    
+    // Events are now admin-managed - only seed if no events exist yet
     const existingEvents = await storage.getEvents();
-    let eventsDeleted = 0;
-    for (const event of existingEvents) {
-      if (seededEventTitles.includes(event.title)) {
-        await storage.deleteEvent(event.id);
-        eventsDeleted++;
+    let eventsSeeded = 0;
+    
+    if (existingEvents.length === 0) {
+      const events = getEventSeedContent();
+      for (const event of events) {
+        await storage.upsertEvent(event);
+        eventsSeeded++;
       }
-    }
-    if (eventsDeleted > 0) {
-      console.log(`[Auto-Seed] Cleaned up ${eventsDeleted} seeded events for refresh.`);
-    }
-    
-    let eventsUpserted = 0;
-    const events = getEventSeedContent();
-    for (const event of events) {
-      await storage.upsertEvent(event);
-      eventsUpserted++;
+      console.log(`[Auto-Seed] Seeded ${eventsSeeded} initial events.`);
+    } else {
+      console.log(`[Auto-Seed] Skipping events (${existingEvents.length} already exist - admin managed).`);
     }
     
-    console.log(`[Auto-Seed] Complete: ${sparksUpserted} sparks, ${reflectionsUpserted} reflection cards, ${blogsUpserted} blog posts, ${eventsUpserted} events synced.`);
+    console.log(`[Auto-Seed] Complete: ${sparksUpserted} sparks, ${reflectionsUpserted} reflection cards, ${blogsUpserted} blog posts synced.`);
     
     // Validate counts - use exact date range for DOMINION campaign (Jan 3 - Feb 1, 2026)
     const allSparks = await storage.getSparks();
@@ -422,6 +405,8 @@ Share this devotional series with someone who needs encouragement today.`,
 }
 
 function getEventSeedContent() {
+  const SUPER_ADMIN_ID = "49038710";
+  
   return [
     {
       title: "Fresh Start: Creative & Fun Evening",
@@ -431,6 +416,7 @@ function getEventSeedContent() {
       startDate: new Date("2026-01-31T16:00:00.000Z"),
       endDate: new Date("2026-01-31T20:00:00.000Z"),
       imageUrl: "/attached_assets/generated_images/group_discussion_in_a_living_room.png",
+      createdBy: SUPER_ADMIN_ID,
     },
     {
       title: "Mission Training Weekend",
@@ -439,6 +425,7 @@ function getEventSeedContent() {
       location: "Online",
       startDate: new Date("2026-03-07T19:00:00.000Z"),
       endDate: new Date("2026-03-08T21:00:00.000Z"),
+      createdBy: SUPER_ADMIN_ID,
     },
     {
       title: "Campus Spark Night",
@@ -447,6 +434,7 @@ function getEventSeedContent() {
       location: "Online",
       startDate: new Date("2026-02-07T19:00:00.000Z"),
       endDate: new Date("2026-02-07T21:00:00.000Z"),
+      createdBy: SUPER_ADMIN_ID,
     },
     {
       title: "Global Outreach Conference",
@@ -455,6 +443,7 @@ function getEventSeedContent() {
       location: "London, UK",
       startDate: new Date("2026-09-01T09:00:00.000Z"),
       endDate: new Date("2026-10-31T17:00:00.000Z"),
+      createdBy: SUPER_ADMIN_ID,
     },
     {
       title: "Tech Hub Launch",
@@ -463,6 +452,7 @@ function getEventSeedContent() {
       location: "Online",
       startDate: new Date("2026-02-21T18:00:00.000Z"),
       endDate: new Date("2026-02-21T20:00:00.000Z"),
+      createdBy: SUPER_ADMIN_ID,
     },
   ];
 }
