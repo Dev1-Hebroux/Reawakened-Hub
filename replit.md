@@ -1,7 +1,7 @@
 # Reawakened Platform
 
 ## Overview
-Reawakened is a digital missions platform for young people (ages 15-45) focused on spiritual encounter, discipleship, and global outreach. It operates as a "digital revival + mission movement" guided by the philosophy of **Encounter → Equip → Mobilise**. The platform is a full-stack TypeScript application with a React frontend and Express backend, offering community features, daily devotionals ("Sparks"), event management, blogging, and mission coordination. It includes specialized tools for personal growth, Bible reading plans, and a comprehensive vision pathway.
+Reawakened is a digital missions platform for young people (ages 15-35) focused on spiritual encounter, discipleship, and global outreach. It operates as a "digital revival + mission movement" guided by the philosophy of **Encounter → Equip → Mobilise**. The platform is a full-stack TypeScript application with a React frontend and Express backend, offering community features, daily devotionals ("Sparks"), event management, blogging, and mission coordination. It includes specialized tools for personal growth, Bible reading plans, and a comprehensive vision pathway.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.

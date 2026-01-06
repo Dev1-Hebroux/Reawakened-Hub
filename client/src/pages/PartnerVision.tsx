@@ -42,7 +42,7 @@ export function PartnerVision() {
               The Heart of Our Mission
             </h2>
             <p className="text-lg leading-relaxed text-white/90 print:text-base">
-              We exist to reach young people aged 15-45 across the globe—non-Christians, seekers, 
+              We exist to reach young people aged 15-35 across the globe—non-Christians, seekers, 
               those losing their faith, and believers going cold. Our mission is simple: 
               <strong className="text-[#D4A574]"> Encounter → Equip → Mobilise</strong>.
             </p>
