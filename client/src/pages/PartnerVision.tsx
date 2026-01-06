@@ -78,7 +78,7 @@ export function PartnerVision() {
           </div>
         </section>
 
-        <section className="mb-12 print:mb-8">
+        <section className="mb-12 print:mb-8 print:break-before-page">
           <h2 className="text-2xl font-bold text-[#1a2744] mb-6 flex items-center gap-2 print:text-xl">
             <Sparkles className="h-6 w-6 text-[#D4A574]" />
             How We Reach Them
