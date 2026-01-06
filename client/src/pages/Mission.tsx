@@ -191,9 +191,13 @@ export function MissionPage() {
     registerMutation.mutate(eventId);
   };
 
+  const sortedEvents = [...events].sort((a, b) => 
+    new Date(a.startDate || 0).getTime() - new Date(b.startDate || 0).getTime()
+  );
+  
   const filteredEvents = activeEventType === "All" 
-    ? events 
-    : events.filter(event => event.type === activeEventType);
+    ? sortedEvents 
+    : sortedEvents.filter(event => event.type === activeEventType);
 
   return (
     <div className="min-h-screen bg-white text-gray-900 font-sans">
