@@ -7,7 +7,7 @@ import {
   Flame, MessageCircle, Plane, Hand
 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
@@ -128,6 +128,17 @@ export function MissionPage() {
   
   const queryClient = useQueryClient();
   const { user, isAuthenticated } = useAuth();
+
+  useEffect(() => {
+    if (window.location.hash === "#events") {
+      setTimeout(() => {
+        const eventsSection = document.getElementById("events");
+        if (eventsSection) {
+          eventsSection.scrollIntoView({ behavior: "smooth" });
+        }
+      }, 100);
+    }
+  }, []);
 
   const { data: events = [], isLoading: eventsLoading } = useQuery<Event[]>({
     queryKey: ["/api/events"],
