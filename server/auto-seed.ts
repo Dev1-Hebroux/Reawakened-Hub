@@ -32,7 +32,31 @@ export async function autoSeedDominionContent(): Promise<void> {
       blogsUpserted++;
     }
     
-    // Upsert events
+    // Clean up old/renamed seeded events before re-inserting
+    // Only delete events matching known seeded titles (current or legacy)
+    const seededEventTitles = [
+      // Current seeded events
+      "Fresh Start: Creative & Fun Evening",
+      "Mission Training Weekend", 
+      "Campus Spark Night",
+      "Global Outreach Conference",
+      "Tech Hub Launch",
+      // Legacy/renamed events to clean up
+      "Campus Prayer Night",
+    ];
+    
+    const existingEvents = await storage.getEvents();
+    let eventsDeleted = 0;
+    for (const event of existingEvents) {
+      if (seededEventTitles.includes(event.title)) {
+        await storage.deleteEvent(event.id);
+        eventsDeleted++;
+      }
+    }
+    if (eventsDeleted > 0) {
+      console.log(`[Auto-Seed] Cleaned up ${eventsDeleted} seeded events for refresh.`);
+    }
+    
     let eventsUpserted = 0;
     const events = getEventSeedContent();
     for (const event of events) {
