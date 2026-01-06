@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Printer, Download, Mail, Calendar, ArrowRight, Heart, Users, Globe, Target, Sparkles, BookOpen } from "lucide-react";
-import logoImage from "@assets/Reawakened_Logo_transparent.png";
+import logoImage from "@assets/Reawakened_Logo_1_new_1767191127649.png";
 
 export function PartnerVision() {
   const handlePrint = () => {
