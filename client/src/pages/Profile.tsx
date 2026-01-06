@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/button";
-import { User, Settings, Award, Heart, Globe, Clock, ChevronRight, LogOut, Bell, Shield, LayoutDashboard, LogIn } from "lucide-react";
+import { User, Settings, Award, Heart, Globe, Clock, ChevronRight, LogOut, Bell, Shield, LayoutDashboard, LogIn, FileText } from "lucide-react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -25,12 +25,15 @@ export default function Profile() {
     { label: "Impact Points", value: "320", icon: Award },
   ];
 
+  const isSuperAdmin = user?.role === 'super_admin';
+  
   const menuItems = [
     { label: "My Journey", description: "View your progress", icon: Globe, href: "/vision" },
     { label: "Notifications", description: "Manage alerts", icon: Bell, href: "/notifications" },
     { label: "Privacy & Security", description: "Account settings", icon: Shield, href: "/privacy" },
     { label: "Settings", description: "App preferences", icon: Settings, href: "/settings" },
     ...(isAdmin ? [{ label: "Admin Portal", description: "Manage platform", icon: LayoutDashboard, href: "/admin" }] : []),
+    ...(isSuperAdmin ? [{ label: "Partner Vision", description: "Trustee presentation", icon: FileText, href: "/partner-vision" }] : []),
   ];
 
   return (
