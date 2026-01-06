@@ -426,11 +426,11 @@ function getEventSeedContent() {
     },
     {
       title: "Global Outreach Conference",
-      description: "Our annual missions conference bringing together young people passionate about reaching the nations. Hear from field workers, worship together, and get equipped for your calling.",
+      description: "Our annual missions conference bringing together young people passionate about reaching the nations. Hear from field workers, worship together, and get equipped for your calling. Dates: September/October 2026 (TBC).",
       type: "outreach",
       location: "London, UK",
-      startDate: new Date("2026-10-14T09:00:00.000Z"),
-      endDate: new Date("2026-10-15T17:00:00.000Z"),
+      startDate: new Date("2026-09-01T09:00:00.000Z"),
+      endDate: new Date("2026-10-31T17:00:00.000Z"),
     },
     {
       title: "Tech Hub Launch",
