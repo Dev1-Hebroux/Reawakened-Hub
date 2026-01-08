@@ -4,6 +4,7 @@ import { z } from "zod";
 import OpenAI from "openai";
 import * as fs from "fs";
 import * as path from "path";
+import crypto from "crypto";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated, isAdmin, isSuperAdmin } from "./replitAuth";
 import { getAICoachInsights, type AICoachRequest } from "./ai-service";
@@ -981,24 +982,96 @@ export async function registerRoutes(
   // Newsletter subscription (public)
   app.post('/api/subscribe', async (req, res) => {
     try {
-      const subscriptionData = insertEmailSubscriptionSchema.parse(req.body);
+      const { email, name, categories } = req.body;
+      
+      if (!email || typeof email !== 'string') {
+        return res.status(400).json({ message: "Email is required" });
+      }
+      
+      // Check if already subscribed
+      const existing = await storage.getEmailSubscriptionByEmail(email);
+      if (existing) {
+        // If inactive, reactivate and update categories
+        if (!existing.isActive) {
+          const updated = await storage.updateEmailSubscription(existing.id, {
+            isActive: true,
+            categories: categories || existing.categories,
+            name: name || existing.name,
+          });
+          return res.status(200).json({ message: "Subscription reactivated", subscription: updated });
+        }
+        // If already active, just update categories
+        const updated = await storage.updateEmailSubscription(existing.id, {
+          categories: categories || existing.categories,
+          name: name || existing.name,
+        });
+        return res.status(200).json({ message: "Subscription updated", subscription: updated });
+      }
+      
+      // Generate unique unsubscribe token
+      const unsubscribeToken = crypto.randomUUID();
+      
+      const subscriptionData = {
+        email,
+        name: name || null,
+        categories: categories || ['daily-devotional'],
+        unsubscribeToken,
+        isActive: true,
+      };
+      
       const subscription = await storage.createEmailSubscription(subscriptionData);
       
       // Send welcome email to subscriber
-      if (subscriptionData.email) {
-        sendSubscriptionWelcomeEmail(subscriptionData.email, {
-          categories: subscriptionData.categories || ['Daily Sparks'],
-          whatsappOptIn: Boolean(subscriptionData.whatsappOptIn),
-          name: req.body.name || undefined,
-          segment: (req.body.segment as 'sixth_form' | 'university' | 'early_career') || undefined,
-          tone: (req.body.tone as 'seeker' | 'faith') || 'faith',
-        }).catch(err => console.error("Failed to send subscription welcome email:", err));
-      }
+      sendSubscriptionWelcomeEmail(email, {
+        categories: subscriptionData.categories,
+        whatsappOptIn: Boolean(req.body.whatsappOptIn),
+        name: name || undefined,
+        segment: (req.body.segment as 'sixth_form' | 'university' | 'early_career') || undefined,
+        tone: (req.body.tone as 'seeker' | 'faith') || 'faith',
+      }).catch(err => console.error("Failed to send subscription welcome email:", err));
       
-      res.status(201).json(subscription);
+      res.status(201).json({ message: "Successfully subscribed!", subscription });
     } catch (error: any) {
       console.error("Error creating subscription:", error);
       res.status(400).json({ message: error.message || "Failed to subscribe" });
+    }
+  });
+
+  // Unsubscribe from email list (public - via token)
+  app.get('/api/unsubscribe/:token', async (req, res) => {
+    try {
+      const { token } = req.params;
+      const subscription = await storage.getEmailSubscriptionByToken(token);
+      
+      if (!subscription) {
+        return res.status(404).json({ message: "Subscription not found" });
+      }
+      
+      await storage.updateEmailSubscription(subscription.id, { isActive: false });
+      
+      res.json({ message: "Successfully unsubscribed", email: subscription.email });
+    } catch (error: any) {
+      console.error("Error unsubscribing:", error);
+      res.status(400).json({ message: error.message || "Failed to unsubscribe" });
+    }
+  });
+
+  // Resubscribe to email list (public - via token)
+  app.post('/api/resubscribe/:token', async (req, res) => {
+    try {
+      const { token } = req.params;
+      const subscription = await storage.getEmailSubscriptionByToken(token);
+      
+      if (!subscription) {
+        return res.status(404).json({ message: "Subscription not found" });
+      }
+      
+      await storage.updateEmailSubscription(subscription.id, { isActive: true });
+      
+      res.json({ message: "Successfully resubscribed", email: subscription.email });
+    } catch (error: any) {
+      console.error("Error resubscribing:", error);
+      res.status(400).json({ message: error.message || "Failed to resubscribe" });
     }
   });
 

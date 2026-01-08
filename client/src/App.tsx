@@ -72,6 +72,7 @@ const CoachingPublic = lazy(() => import("@/pages/CoachingPublic").then(m => ({ 
 const ReadingPlans = lazy(() => import("@/pages/ReadingPlans").then(m => ({ default: m.ReadingPlansPage })));
 const ReadingPlanDetail = lazy(() => import("@/pages/ReadingPlanDetail").then(m => ({ default: m.ReadingPlanDetail })));
 const PartnerVision = lazy(() => import("@/pages/PartnerVision").then(m => ({ default: m.PartnerVision })));
+const UnsubscribePage = lazy(() => import("@/pages/Unsubscribe").then(m => ({ default: m.UnsubscribePage })));
 
 const AdminDashboard = lazy(() => import("@/pages/Admin").then(m => ({ default: m.AdminDashboard })));
 const AdminEvents = lazy(() => import("@/pages/AdminEvents").then(m => ({ default: m.AdminEvents })));
@@ -162,6 +163,7 @@ function Router() {
         <Route path="/reading-plans" component={ReadingPlans} />
         <Route path="/reading-plans/:id" component={ReadingPlanDetail} />
         <Route path="/partner-vision" component={PartnerVision} />
+        <Route path="/unsubscribe/:token" component={UnsubscribePage} />
         <Route path="/missions" component={MissionsHub} />
         <Route path="/missions/action/:type" component={DigitalActions} />
         <Route path="/missions/project/:id" component={MissionProjectDetail} />

@@ -555,6 +555,10 @@ export interface IStorage {
 
   // Email Subscriptions
   createEmailSubscription(subscription: InsertEmailSubscription): Promise<EmailSubscription>;
+  getEmailSubscriptionByEmail(email: string): Promise<EmailSubscription | undefined>;
+  getEmailSubscriptionByToken(token: string): Promise<EmailSubscription | undefined>;
+  updateEmailSubscription(id: number, updates: Partial<EmailSubscription>): Promise<EmailSubscription>;
+  getActiveEmailSubscriptions(category?: string): Promise<EmailSubscription[]>;
 
   // Prayer Requests
   createPrayerRequest(request: InsertPrayerRequest): Promise<PrayerRequest>;
@@ -1597,6 +1601,32 @@ export class DatabaseStorage implements IStorage {
   async createEmailSubscription(subscriptionData: InsertEmailSubscription): Promise<EmailSubscription> {
     const [subscription] = await db.insert(emailSubscriptions).values(subscriptionData).returning();
     return subscription;
+  }
+
+  async getEmailSubscriptionByEmail(email: string): Promise<EmailSubscription | undefined> {
+    const [subscription] = await db.select().from(emailSubscriptions).where(eq(emailSubscriptions.email, email));
+    return subscription;
+  }
+
+  async getEmailSubscriptionByToken(token: string): Promise<EmailSubscription | undefined> {
+    const [subscription] = await db.select().from(emailSubscriptions).where(eq(emailSubscriptions.unsubscribeToken, token));
+    return subscription;
+  }
+
+  async updateEmailSubscription(id: number, updates: Partial<EmailSubscription>): Promise<EmailSubscription> {
+    const [subscription] = await db.update(emailSubscriptions).set(updates).where(eq(emailSubscriptions.id, id)).returning();
+    return subscription;
+  }
+
+  async getActiveEmailSubscriptions(category?: string): Promise<EmailSubscription[]> {
+    if (category) {
+      return db.select().from(emailSubscriptions)
+        .where(and(
+          eq(emailSubscriptions.isActive, true),
+          sql`${category} = ANY(${emailSubscriptions.categories})`
+        ));
+    }
+    return db.select().from(emailSubscriptions).where(eq(emailSubscriptions.isActive, true));
   }
 
   // Prayer Requests

@@ -381,14 +381,18 @@ export const emailSubscriptions = pgTable("email_subscriptions", {
   id: serial("id").primaryKey(),
   email: varchar("email").notNull(),
   name: varchar("name"),
-  categories: text("categories").array(), // 'prayer', 'missions', 'devotional', 'events'
+  categories: text("categories").array(), // 'prayer', 'missions', 'devotional', 'events', 'worship', 'testimony'
   whatsappOptIn: varchar("whatsapp_opt_in"), // phone number if opted in
+  unsubscribeToken: varchar("unsubscribe_token").notNull(), // unique token for unsubscribe link
+  isActive: boolean("is_active").default(true), // false when unsubscribed
+  lastEmailSent: timestamp("last_email_sent"), // track when last email was sent
   createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const insertEmailSubscriptionSchema = createInsertSchema(emailSubscriptions).omit({
   id: true,
   createdAt: true,
+  lastEmailSent: true,
 });
 export type InsertEmailSubscription = z.infer<typeof insertEmailSubscriptionSchema>;
 export type EmailSubscription = typeof emailSubscriptions.$inferSelect;

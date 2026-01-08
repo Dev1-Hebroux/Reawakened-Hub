@@ -92,6 +92,8 @@ export default function Home() {
           </section>
         )}
 
+        <DailySparks />
+
         <section className="py-12 bg-gradient-to-b from-white to-gray-50/50 relative">
           <div className="max-w-2xl mx-auto px-4">
             <motion.div
@@ -381,8 +383,6 @@ export default function Home() {
             </div>
           </div>
         </section>
-
-        <DailySparks />
         
         {/* Upcoming Events Section */}
         <section className="py-16 bg-gradient-to-b from-white to-[#FAF8F5] relative">

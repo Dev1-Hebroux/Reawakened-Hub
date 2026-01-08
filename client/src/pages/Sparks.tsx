@@ -126,6 +126,9 @@ export function SparksPage() {
 
   const [showIntercession, setShowIntercession] = useState(false);
   const [reflectionTab, setReflectionTab] = useState<'reflection' | 'growth'>('reflection');
+  const [emailInput, setEmailInput] = useState('');
+  const [emailSubmitting, setEmailSubmitting] = useState(false);
+  const [emailSuccess, setEmailSuccess] = useState(false);
   const [viewMode, setViewMode] = useState<'reflection' | 'faith'>(() => {
     if (userContentMode) return userContentMode;
     if (typeof window !== 'undefined') {
@@ -363,6 +366,39 @@ export function SparksPage() {
       unsubscribeMutation.mutate(category);
     } else {
       subscribeMutation.mutate(category);
+    }
+  };
+
+  const handleEmailSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!emailInput || !emailInput.includes('@')) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+    
+    setEmailSubmitting(true);
+    try {
+      const response = await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: emailInput,
+          categories: ['daily-devotional', 'worship', 'testimony'],
+        }),
+      });
+      
+      if (response.ok) {
+        setEmailSuccess(true);
+        toast.success("You're subscribed! Check your email for confirmation.");
+        setEmailInput('');
+      } else {
+        const data = await response.json();
+        toast.error(data.message || "Failed to subscribe");
+      }
+    } catch (error) {
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setEmailSubmitting(false);
     }
   };
 
@@ -1059,13 +1095,35 @@ export function SparksPage() {
                 >
                   <MessageCircle className="h-5 w-5" /> Join WhatsApp Community
                 </a>
-                <a 
-                  href="mailto:sparks@reawakened.one?subject=Subscribe%20to%20Daily%20Sparks&body=Hi%2C%20I%20would%20like%20to%20subscribe%20to%20receive%20daily%20Spark%20devotionals%20via%20email."
-                  className="w-full bg-white hover:bg-gray-100 text-black font-bold py-4 rounded-xl flex items-center justify-center gap-3 transition-colors" 
-                  data-testid="button-subscribe-email"
-                >
-                  <Mail className="h-5 w-5" /> Subscribe via Email
-                </a>
+                
+                {emailSuccess ? (
+                  <div className="w-full bg-green-500/20 border border-green-500/50 text-green-400 font-bold py-4 rounded-xl flex items-center justify-center gap-3">
+                    <Check className="h-5 w-5" /> You're subscribed!
+                  </div>
+                ) : (
+                  <form onSubmit={handleEmailSubscribe} className="space-y-2">
+                    <div className="flex gap-2">
+                      <input
+                        type="email"
+                        value={emailInput}
+                        onChange={(e) => setEmailInput(e.target.value)}
+                        placeholder="Enter your email"
+                        className="flex-1 bg-gray-800 border border-white/10 text-white px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
+                        data-testid="input-subscribe-email"
+                      />
+                      <button
+                        type="submit"
+                        disabled={emailSubmitting}
+                        className="bg-white hover:bg-gray-100 text-black font-bold px-6 py-3 rounded-xl flex items-center gap-2 transition-colors disabled:opacity-50"
+                        data-testid="button-subscribe-email"
+                      >
+                        {emailSubmitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Mail className="h-5 w-5" />}
+                        Subscribe
+                      </button>
+                    </div>
+                    <p className="text-xs text-gray-500 text-center">Get daily devotionals, worship, and testimonies delivered to your inbox</p>
+                  </form>
+                )}
               </div>
 
               <p className="text-center text-xs text-gray-500 mt-6">
