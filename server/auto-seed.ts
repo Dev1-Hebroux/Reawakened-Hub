@@ -56,6 +56,9 @@ export async function autoSeedDominionContent(): Promise<void> {
       return s.dailyDate >= '2026-01-03' && s.dailyDate <= '2026-02-01';
     });
     console.log(`[Auto-Seed] Validation: ${dominionSparks.length} DOMINION sparks in database (expected: 180).`);
+    
+    // Seed journeys if none exist
+    await seedJourneys();
   } catch (error) {
     console.error('[Auto-Seed] Error syncing DOMINION content:', error);
   }
@@ -453,6 +456,100 @@ function getEventSeedContent() {
       startDate: new Date("2026-02-21T18:00:00.000Z"),
       endDate: new Date("2026-02-21T20:00:00.000Z"),
       createdBy: SUPER_ADMIN_ID,
+    },
+  ];
+}
+
+export async function seedJourneys(): Promise<void> {
+  try {
+    const existingJourneys = await storage.getJourneys();
+    if (existingJourneys.length > 0) {
+      console.log(`[Auto-Seed] Skipping journeys (${existingJourneys.length} already exist).`);
+      return;
+    }
+
+    console.log('[Auto-Seed] Seeding journeys...');
+    const journeys = getJourneySeedContent();
+    let journeysSeeded = 0;
+
+    for (const journey of journeys) {
+      await storage.createJourney(journey);
+      journeysSeeded++;
+    }
+
+    console.log(`[Auto-Seed] Seeded ${journeysSeeded} journeys.`);
+  } catch (error) {
+    console.error('[Auto-Seed] Error seeding journeys:', error);
+  }
+}
+
+function getJourneySeedContent() {
+  return [
+    {
+      slug: "foundations-of-faith",
+      title: "Foundations of Faith",
+      subtitle: "Build your faith on solid ground",
+      description: "A 7-day journey through the core beliefs of Christianity. Perfect for new believers or anyone wanting to strengthen their foundational understanding of who God is and what He has done for us.",
+      category: "faith-basics",
+      durationDays: 7,
+      level: "beginner",
+      heroImageUrl: "/attached_assets/generated_images/young_people_at_a_coffee_shop_bible_study-DG5CkE7V.png",
+      isPublished: "true",
+    },
+    {
+      slug: "discovering-your-purpose",
+      title: "Discovering Your Purpose",
+      subtitle: "Find clarity for your calling",
+      description: "A 14-day journey to help you understand God's unique purpose for your life. Through scripture, reflection, and practical exercises, you'll gain clarity on your gifts, passions, and how God wants to use you.",
+      category: "purpose",
+      durationDays: 14,
+      level: "intermediate",
+      heroImageUrl: "/attached_assets/generated_images/backpacker_overlooking_a_landscape-Dac9B8ii.png",
+      isPublished: "true",
+    },
+    {
+      slug: "overcoming-anxiety",
+      title: "Overcoming Anxiety",
+      subtitle: "Find peace in God's presence",
+      description: "A 21-day journey for anyone struggling with worry, stress, or anxiety. Learn biblical strategies for finding peace, managing anxious thoughts, and resting in God's faithful care.",
+      category: "anxiety",
+      durationDays: 21,
+      level: "beginner",
+      heroImageUrl: "/attached_assets/generated_images/peaceful_nature_scen_fe6f1282-vPXC0jKD.jpg",
+      isPublished: "true",
+    },
+    {
+      slug: "healthy-relationships",
+      title: "Building Healthy Relationships",
+      subtitle: "Love God, love others well",
+      description: "A 10-day journey exploring what the Bible says about friendships, dating, and community. Learn practical wisdom for navigating relationships with grace and truth.",
+      category: "relationships",
+      durationDays: 10,
+      level: "intermediate",
+      heroImageUrl: "/attached_assets/generated_images/diverse_group_taking_a_selfie-BJcfhr8H.png",
+      isPublished: "true",
+    },
+    {
+      slug: "prayer-life",
+      title: "Deepening Your Prayer Life",
+      subtitle: "Grow in intimacy with God",
+      description: "A 7-day journey to transform your prayer life. Discover different ways to pray, overcome common obstacles, and experience the joy of ongoing conversation with your Heavenly Father.",
+      category: "faith-basics",
+      durationDays: 7,
+      level: "beginner",
+      heroImageUrl: "/attached_assets/generated_images/person_praying_hands_2c083135-BiB2O1YS.jpg",
+      isPublished: "true",
+    },
+    {
+      slug: "identity-in-christ",
+      title: "Your Identity in Christ",
+      subtitle: "Know who you truly are",
+      description: "A 14-day journey through what Scripture says about who you are in Christ. Break free from false identities and embrace the truth of being God's beloved child.",
+      category: "purpose",
+      durationDays: 14,
+      level: "intermediate",
+      heroImageUrl: "/attached_assets/generated_images/young_man_praying_with_golden_light_overlay-RgKbkVhv.png",
+      isPublished: "true",
     },
   ];
 }
