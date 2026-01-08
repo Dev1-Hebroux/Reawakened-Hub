@@ -93,21 +93,21 @@ export default function Home() {
         )}
 
         {/* Side-by-side: Daily Sparks + Daily Commitment */}
-        <section id="sparks" className="py-16 bg-white relative">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
+        <section id="sparks" className="py-10 md:py-14 bg-white relative">
+          <div className="max-w-5xl mx-auto px-4 sm:px-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10 items-start">
               {/* Left: Daily Sparks Featured */}
               <div>
-                <div className="mb-6">
-                  <span className="text-primary font-bold tracking-wider uppercase text-sm">Daily Inspiration</span>
-                  <h2 className="text-3xl md:text-4xl font-display font-bold text-gray-900 leading-tight mt-2">
-                    Ignite Your <br /><span className="text-primary">Spiritual Journey</span>
+                <div className="mb-4">
+                  <span className="text-primary font-bold tracking-wider uppercase text-xs">Daily Inspiration</span>
+                  <h2 className="text-2xl md:text-3xl font-display font-bold text-gray-900 leading-tight mt-1">
+                    Ignite Your <span className="text-primary">Spiritual Journey</span>
                   </h2>
                 </div>
                 <Link href="/sparks">
                   <button 
                     data-testid="button-view-all-sparks-inline"
-                    className="mb-6 bg-gray-100 hover:bg-gray-200 text-gray-900 font-bold px-5 py-2.5 rounded-full flex items-center gap-2 transition-colors text-sm"
+                    className="mb-4 bg-gray-100 hover:bg-gray-200 text-gray-900 font-bold px-4 py-2 rounded-full flex items-center gap-2 transition-colors text-sm"
                   >
                     View All Sparks <ArrowRight className="h-4 w-4" />
                   </button>
@@ -121,41 +121,41 @@ export default function Home() {
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  className="mb-8"
+                  className="mb-5"
                 >
-                  <div className="inline-flex items-center gap-2 bg-gray-100 rounded-full px-4 py-2 mb-4">
-                    <Clock className="h-4 w-4 text-gray-600" />
-                    <span className="text-sm font-semibold text-gray-700">Daily Commitment</span>
+                  <div className="inline-flex items-center gap-2 bg-gray-100 rounded-full px-3 py-1.5 mb-3">
+                    <Clock className="h-3.5 w-3.5 text-gray-600" />
+                    <span className="text-xs font-semibold text-gray-700">Daily Commitment</span>
                   </div>
-                  <h3 className="text-3xl md:text-4xl font-display font-bold text-gray-900">How much time will you give?</h3>
+                  <h3 className="text-2xl md:text-3xl font-display font-bold text-gray-900">How much time will you give?</h3>
                 </motion.div>
 
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-3 gap-2">
                   {commitmentLevels.map((level, index) => (
                     <motion.button
                       key={level.id}
                       initial={{ opacity: 0, y: 20 }}
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true }}
-                      transition={{ delay: index * 0.1 }}
-                      whileHover={{ scale: 1.03, y: -4 }}
-                      whileTap={{ scale: 0.97 }}
+                      transition={{ delay: index * 0.08 }}
+                      whileHover={{ scale: 1.02, y: -2 }}
+                      whileTap={{ scale: 0.98 }}
                       onClick={() => {
                         setSelectedCommitment(level.id);
                         navigate('/pray');
                       }}
-                      className={`relative p-5 rounded-2xl border-2 transition-all text-center bg-[#F5F7F6] hover:shadow-lg ${
+                      className={`relative p-3 md:p-4 rounded-xl border-2 transition-all text-center bg-[#F5F7F6] hover:shadow-md ${
                         selectedCommitment === level.id
-                          ? 'border-primary shadow-lg'
+                          ? 'border-primary shadow-md'
                           : 'border-transparent hover:border-gray-200'
                       }`}
                       data-testid={`commitment-${level.id}`}
                     >
-                      <div className={`h-12 w-12 mx-auto mb-3 rounded-xl bg-gradient-to-br ${level.color} flex items-center justify-center shadow-md`}>
-                        <Clock className="h-5 w-5 text-white" />
+                      <div className={`h-10 w-10 mx-auto mb-2 rounded-lg bg-gradient-to-br ${level.color} flex items-center justify-center shadow-sm`}>
+                        <Clock className="h-4 w-4 text-white" />
                       </div>
-                      <div className="text-xl font-bold text-gray-900">{level.label}</div>
-                      <div className="text-xs text-gray-500 mt-1">{level.description}</div>
+                      <div className="text-lg font-bold text-gray-900">{level.label}</div>
+                      <div className="text-[10px] text-gray-500 mt-0.5 leading-tight">{level.description}</div>
                     </motion.button>
                   ))}
                 </div>
@@ -164,14 +164,14 @@ export default function Home() {
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="mt-6"
+                    className="mt-4"
                   >
                     <Button 
                       onClick={() => navigate('/pray')}
-                      className="w-full bg-primary hover:bg-primary/90 text-white font-bold px-8 py-5 rounded-xl shadow-lg"
+                      className="w-full bg-primary hover:bg-primary/90 text-white font-bold px-6 py-4 rounded-xl shadow-lg"
                       data-testid="button-start-commitment"
                     >
-                      <Heart className="h-5 w-5 mr-2" />
+                      <Heart className="h-4 w-4 mr-2" />
                       Start Today's Prayer
                     </Button>
                   </motion.div>
