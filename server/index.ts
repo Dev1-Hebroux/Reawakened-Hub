@@ -12,7 +12,8 @@ import { autoSeedDominionContent } from "./auto-seed";
 import { startNightlyContentSync } from "./content-sync";
 import { initializeNotificationScheduler } from "./notification-scheduler";
 import { 
-  setCsrfToken, 
+  setCsrfToken,
+  validateCsrfToken,
   requestIdMiddleware, 
   metricsMiddleware,
   metricsEndpoint,
@@ -50,6 +51,7 @@ app.use(
 
 app.use(express.urlencoded({ extended: false }));
 
+app.use('/api', validateCsrfToken);
 app.get('/metrics', metricsEndpoint);
 
 app.use("/attached_assets", express.static(path.resolve(__dirname, "..", "attached_assets")));
