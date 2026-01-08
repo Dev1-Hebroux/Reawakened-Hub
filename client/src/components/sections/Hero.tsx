@@ -6,15 +6,15 @@ import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { VisionModal } from "@/components/VisionModal";
 import heroImage from "@assets/generated_images/young_man_praying_with_golden_light_overlay.png";
-import studentsCampus from "@assets/stock_images/happy_college_studen_6f86ffcc.jpg";
-import studentsPark from "@assets/stock_images/diverse_mixed_race_y_d0e8cb0e.jpg";
+import studentsCampus from "@assets/Uni_Student_1767866708966.png";
+import studentsSharing from "@assets/Uni_Student_Sharing_1767866708964.png";
 import logoImage from "@assets/1_1765584395888.png";
 import heroBgImage from "@assets/11_1767182385476.png";
 
 const heroImages = [
   { src: heroImage, alt: "Young man praying" },
-  { src: studentsCampus, alt: "Happy students on campus" },
-  { src: studentsPark, alt: "Students enjoying outdoors" },
+  { src: studentsCampus, alt: "Diverse students on university campus" },
+  { src: studentsSharing, alt: "Students sharing and connecting" },
 ];
 
 export function Hero() {
