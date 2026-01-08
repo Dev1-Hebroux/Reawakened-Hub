@@ -1,0 +1,210 @@
+/**
+ * Error Boundary Component
+ * 
+ * Catches React errors and displays a fallback UI.
+ * FIX: Addresses missing error boundaries on major page components.
+ */
+
+import React, { Component, ReactNode } from 'react';
+import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
+interface ErrorBoundaryProps {
+  children: ReactNode;
+  fallback?: ReactNode;
+  onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
+  resetKey?: string | number;
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+  error: Error | null;
+  errorInfo: React.ErrorInfo | null;
+}
+
+export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = {
+      hasError: false,
+      error: null,
+      errorInfo: null,
+    };
+  }
+  
+  static getDerivedStateFromError(error: Error): Partial<ErrorBoundaryState> {
+    return { hasError: true, error };
+  }
+  
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
+    this.setState({ errorInfo });
+    this.props.onError?.(error, errorInfo);
+    
+    // Log to console in development
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error caught by boundary:', error);
+      console.error('Component stack:', errorInfo.componentStack);
+    }
+  }
+  
+  componentDidUpdate(prevProps: ErrorBoundaryProps): void {
+    // Reset error state when resetKey changes
+    if (prevProps.resetKey !== this.props.resetKey && this.state.hasError) {
+      this.setState({
+        hasError: false,
+        error: null,
+        errorInfo: null,
+      });
+    }
+  }
+  
+  handleReset = (): void => {
+    this.setState({
+      hasError: false,
+      error: null,
+      errorInfo: null,
+    });
+  };
+  
+  handleRefresh = (): void => {
+    window.location.reload();
+  };
+  
+  handleGoHome = (): void => {
+    window.location.href = '/';
+  };
+  
+  render(): ReactNode {
+    if (this.state.hasError) {
+      if (this.props.fallback) {
+        return this.props.fallback;
+      }
+      
+      return (
+        <div className="min-h-[400px] flex items-center justify-center p-4">
+          <Card className="max-w-md w-full">
+            <CardHeader className="text-center">
+              <div className="mx-auto w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mb-4">
+                <AlertTriangle className="h-6 w-6 text-red-600" />
+              </div>
+              <CardTitle className="text-xl">Something went wrong</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-center text-muted-foreground">
+                We're sorry, but something unexpected happened. 
+                Please try again or return to the home page.
+              </p>
+              
+              {process.env.NODE_ENV === 'development' && this.state.error && (
+                <div className="bg-gray-100 rounded-lg p-3 text-xs font-mono overflow-auto max-h-32">
+                  <p className="text-red-600 font-semibold mb-1">
+                    {this.state.error.name}: {this.state.error.message}
+                  </p>
+                  {this.state.errorInfo?.componentStack && (
+                    <pre className="text-gray-600 whitespace-pre-wrap">
+                      {this.state.errorInfo.componentStack.slice(0, 500)}
+                    </pre>
+                  )}
+                </div>
+              )}
+              
+              <div className="flex gap-3 justify-center">
+                <Button
+                  variant="outline"
+                  onClick={this.handleReset}
+                  className="gap-2"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  Try Again
+                </Button>
+                <Button
+                  onClick={this.handleGoHome}
+                  className="gap-2"
+                >
+                  <Home className="h-4 w-4" />
+                  Go Home
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      );
+    }
+    
+    return this.props.children;
+  }
+}
+
+/**
+ * Higher-order component to wrap a component with an error boundary.
+ */
+export function withErrorBoundary<P extends object>(
+  WrappedComponent: React.ComponentType<P>,
+  fallback?: ReactNode
+): React.FC<P> {
+  const displayName = WrappedComponent.displayName || WrappedComponent.name || 'Component';
+  
+  const WithErrorBoundary: React.FC<P> = (props) => (
+    <ErrorBoundary fallback={fallback}>
+      <WrappedComponent {...props} />
+    </ErrorBoundary>
+  );
+  
+  WithErrorBoundary.displayName = `withErrorBoundary(${displayName})`;
+  
+  return WithErrorBoundary;
+}
+
+/**
+ * Page-level error boundary with navigation reset.
+ * Resets when the URL changes.
+ */
+export function PageErrorBoundary({ children }: { children: ReactNode }) {
+  // Use the current pathname as the reset key
+  const resetKey = typeof window !== 'undefined' ? window.location.pathname : '';
+  
+  return (
+    <ErrorBoundary
+      resetKey={resetKey}
+      onError={(error, errorInfo) => {
+        // In production, send to error tracking service
+        // Example: Sentry.captureException(error, { extra: errorInfo });
+        console.error('Page error:', error);
+      }}
+    >
+      {children}
+    </ErrorBoundary>
+  );
+}
+
+/**
+ * Async error boundary for handling Suspense-based errors.
+ */
+interface AsyncBoundaryProps {
+  children: ReactNode;
+  fallback?: ReactNode;
+  loadingFallback?: ReactNode;
+}
+
+export function AsyncBoundary({ 
+  children, 
+  fallback, 
+  loadingFallback 
+}: AsyncBoundaryProps) {
+  return (
+    <ErrorBoundary fallback={fallback}>
+      <React.Suspense fallback={loadingFallback || <DefaultLoadingFallback />}>
+        {children}
+      </React.Suspense>
+    </ErrorBoundary>
+  );
+}
+
+function DefaultLoadingFallback() {
+  return (
+    <div className="flex items-center justify-center min-h-[200px]">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-sage-600" />
+    </div>
+  );
+}
