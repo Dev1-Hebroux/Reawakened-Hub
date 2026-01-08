@@ -46,7 +46,7 @@ export function DailySparks({ compact = false }: DailySparksProps) {
             <Link href={`/sparks/${displaySparks[0].id}`}>
               <div className="relative rounded-[20px] overflow-hidden aspect-[3/4] max-w-sm shadow-lg group-hover:shadow-xl transition-all duration-300">
                 <img 
-                  src={displaySparks[0].thumbnailUrl || fallbackImages[0]} 
+                  src={displaySparks[0].thumbnailUrl || displaySparks[0].imageUrl || fallbackImages[0]} 
                   alt={displaySparks[0].title} 
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
                 />
@@ -122,7 +122,7 @@ export function DailySparks({ compact = false }: DailySparksProps) {
                 <Link href={`/sparks/${spark.id}`}>
                   <div className="relative rounded-[24px] overflow-hidden aspect-[3/4] mb-4 shadow-md group-hover:shadow-xl transition-all duration-300">
                     <img 
-                      src={spark.thumbnailUrl || fallbackImages[i % fallbackImages.length]} 
+                      src={spark.thumbnailUrl || spark.imageUrl || fallbackImages[i % fallbackImages.length]} 
                       alt={spark.title} 
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
                     />
