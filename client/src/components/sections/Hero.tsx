@@ -65,8 +65,19 @@ export function Hero() {
                 className="w-full h-[280px] sm:h-[320px] md:h-[400px] lg:h-[600px] object-cover"
               />
               
-              {/* Floating Cards - Hidden on small mobile */}
-              <div className="hidden sm:flex absolute bottom-4 lg:bottom-8 left-4 lg:left-8 bg-white/90 backdrop-blur-md p-3 lg:p-4 rounded-xl lg:rounded-2xl shadow-lg items-center gap-3 lg:gap-4 max-w-xs border border-white/50">
+              {/* Floating Cards with Animations */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ 
+                  opacity: 1, 
+                  y: [0, -6, 0],
+                }}
+                transition={{ 
+                  opacity: { duration: 0.5, delay: 0.5 },
+                  y: { duration: 3, repeat: Infinity, ease: "easeInOut" }
+                }}
+                className="hidden sm:flex absolute bottom-4 lg:bottom-8 left-4 lg:left-8 bg-white/95 backdrop-blur-md p-3 lg:p-4 rounded-xl lg:rounded-2xl shadow-lg items-center gap-3 lg:gap-4 max-w-xs border border-white/50"
+              >
                 <div className="h-8 w-8 lg:h-10 lg:w-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
                   <Globe2 className="h-4 w-4 lg:h-5 lg:w-5" />
                 </div>
@@ -74,11 +85,25 @@ export function Hero() {
                   <p className="font-bold text-gray-900 text-xs lg:text-sm">Global Impact</p>
                   <p className="text-[10px] lg:text-xs text-gray-500">50 Nations to be Reached</p>
                 </div>
-              </div>
+              </motion.div>
 
-              <div className="hidden sm:block absolute top-8 lg:top-12 right-4 lg:right-8 bg-white/90 backdrop-blur-md px-3 lg:px-4 py-1.5 lg:py-2 rounded-full shadow-lg border border-white/50">
-                 <span className="text-xs lg:text-sm font-bold text-gray-900">🔥 500+ Sparks Today</span>
-              </div>
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ 
+                  opacity: 1, 
+                  scale: [1, 1.03, 1],
+                  y: [0, -4, 0],
+                }}
+                transition={{ 
+                  opacity: { duration: 0.4, delay: 0.3 },
+                  scale: { duration: 2.5, repeat: Infinity, ease: "easeInOut" },
+                  y: { duration: 4, repeat: Infinity, ease: "easeInOut", delay: 0.5 }
+                }}
+                className="hidden sm:flex absolute top-8 lg:top-12 right-4 lg:right-8 bg-white/95 backdrop-blur-md px-3 lg:px-4 py-1.5 lg:py-2 rounded-full shadow-lg border border-white/50 items-center gap-1.5"
+              >
+                <span className="text-sm lg:text-base">🔥</span>
+                <span className="text-xs lg:text-sm font-bold text-gray-900">500+ Sparks Today</span>
+              </motion.div>
             </div>
             
             {/* Background Shape - Hidden on mobile */}
