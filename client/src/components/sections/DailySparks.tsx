@@ -11,13 +11,73 @@ import boldnessImg from "@assets/generated_images/boldness_at_work_abstract.png"
 
 const fallbackImages = [identityImg, believeImg, hearingImg, boldnessImg];
 
-export function DailySparks() {
+interface DailySparksProps {
+  compact?: boolean;
+}
+
+export function DailySparks({ compact = false }: DailySparksProps) {
   const { data: sparks, isLoading, error } = useQuery<Spark[]>({
     queryKey: ["/api/sparks/featured"],
     staleTime: 1000 * 60 * 5,
   });
 
-  const displaySparks = sparks?.slice(0, 4) || [];
+  const displaySparks = sparks?.slice(0, compact ? 1 : 4) || [];
+
+  if (compact) {
+    return (
+      <div>
+        {isLoading ? (
+          <div className="flex justify-center py-8">
+            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+          </div>
+        ) : error || displaySparks.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-gray-500 text-sm">New devotionals coming soon!</p>
+          </div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            viewport={{ once: true }}
+            className="group cursor-pointer"
+            data-testid={`card-spark-featured-${displaySparks[0].id}`}
+          >
+            <Link href={`/sparks/${displaySparks[0].id}`}>
+              <div className="relative rounded-[24px] overflow-hidden aspect-square max-w-[280px] shadow-lg group-hover:shadow-xl transition-all duration-300">
+                <img 
+                  src={displaySparks[0].thumbnailUrl || fallbackImages[0]} 
+                  alt={displaySparks[0].title} 
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#1a2744]/70 via-transparent to-transparent opacity-70" />
+                
+                <div className="absolute top-4 left-4 bg-white/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
+                  <span className="text-xs font-bold text-white capitalize">Daily Devotional</span>
+                </div>
+
+                <div className="absolute bottom-4 left-4 right-4">
+                  <span className="text-white font-display font-bold text-lg drop-shadow-lg">
+                    {displaySparks[0].thumbnailText || displaySparks[0].title}
+                  </span>
+                </div>
+
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <div className="h-14 w-14 bg-white/30 backdrop-blur-md rounded-full flex items-center justify-center border border-white/50">
+                    <Play className="h-6 w-6 text-white fill-white ml-1" />
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-4 max-w-[280px]">
+                <h3 className="text-lg font-bold text-gray-900 group-hover:text-primary transition-colors">{displaySparks[0].title}</h3>
+              </div>
+            </Link>
+          </motion.div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <section id="sparks" className="py-24 bg-white relative">

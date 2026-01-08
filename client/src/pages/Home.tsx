@@ -92,67 +92,92 @@ export default function Home() {
           </section>
         )}
 
-        <DailySparks />
-
-        <section className="py-12 bg-gradient-to-b from-white to-gray-50/50 relative">
-          <div className="max-w-2xl mx-auto px-4">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-center mb-6"
-            >
-              <div className="inline-flex items-center gap-2 bg-primary/10 rounded-full px-4 py-2 mb-3">
-                <Clock className="h-4 w-4 text-primary" />
-                <span className="text-sm font-bold text-primary">Daily Commitment</span>
+        {/* Side-by-side: Daily Sparks + Daily Commitment */}
+        <section id="sparks" className="py-16 bg-white relative">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
+              {/* Left: Daily Sparks Featured */}
+              <div>
+                <div className="mb-6">
+                  <span className="text-primary font-bold tracking-wider uppercase text-sm">Daily Inspiration</span>
+                  <h2 className="text-3xl md:text-4xl font-display font-bold text-gray-900 leading-tight mt-2">
+                    Ignite Your <br /><span className="text-primary">Spiritual Journey</span>
+                  </h2>
+                </div>
+                <Link href="/sparks">
+                  <button 
+                    data-testid="button-view-all-sparks-inline"
+                    className="mb-6 bg-gray-100 hover:bg-gray-200 text-gray-900 font-bold px-5 py-2.5 rounded-full flex items-center gap-2 transition-colors text-sm"
+                  >
+                    View All Sparks <ArrowRight className="h-4 w-4" />
+                  </button>
+                </Link>
+                <DailySparks compact />
               </div>
-              <h3 className="text-2xl font-display font-bold text-gray-900">How much time will you give?</h3>
-            </motion.div>
 
-            <div className="flex gap-3 justify-center mb-4">
-              {commitmentLevels.map((level) => (
-                <motion.button
-                  key={level.id}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setSelectedCommitment(level.id)}
-                  className={`relative flex-1 max-w-[120px] p-4 rounded-2xl border-2 transition-all ${
-                    selectedCommitment === level.id
-                      ? 'border-primary bg-primary/5 shadow-lg'
-                      : 'border-gray-200 bg-white hover:border-gray-300'
-                  }`}
-                  data-testid={`commitment-${level.id}`}
+              {/* Right: Daily Commitment */}
+              <div>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  className="mb-8"
                 >
-                  {selectedCommitment === level.id && (
-                    <div className="absolute -top-2 -right-2 bg-primary text-white rounded-full p-1">
-                      <CheckCircle2 className="h-4 w-4" />
-                    </div>
-                  )}
-                  <div className={`h-10 w-10 mx-auto mb-2 rounded-xl bg-gradient-to-br ${level.color} flex items-center justify-center`}>
-                    <Clock className="h-5 w-5 text-white" />
+                  <div className="inline-flex items-center gap-2 bg-gray-100 rounded-full px-4 py-2 mb-4">
+                    <Clock className="h-4 w-4 text-gray-600" />
+                    <span className="text-sm font-semibold text-gray-700">Daily Commitment</span>
                   </div>
-                  <div className="text-lg font-bold text-gray-900">{level.label}</div>
-                  <div className="text-[10px] text-gray-500">{level.description}</div>
-                </motion.button>
-              ))}
-            </div>
+                  <h3 className="text-3xl md:text-4xl font-display font-bold text-gray-900">How much time will you give?</h3>
+                </motion.div>
 
-            {selectedCommitment && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="text-center"
-              >
-                <Button 
-                  onClick={() => navigate('/pray')}
-                  className="bg-primary hover:bg-primary/90 text-white font-bold px-8 py-6 rounded-xl shadow-lg"
-                  data-testid="button-start-commitment"
-                >
-                  <Heart className="h-5 w-5 mr-2" />
-                  Start Today's Prayer
-                </Button>
-              </motion.div>
-            )}
+                <div className="grid grid-cols-3 gap-3">
+                  {commitmentLevels.map((level, index) => (
+                    <motion.button
+                      key={level.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: index * 0.1 }}
+                      whileHover={{ scale: 1.03, y: -4 }}
+                      whileTap={{ scale: 0.97 }}
+                      onClick={() => {
+                        setSelectedCommitment(level.id);
+                        navigate('/pray');
+                      }}
+                      className={`relative p-5 rounded-2xl border-2 transition-all text-center bg-[#F5F7F6] hover:shadow-lg ${
+                        selectedCommitment === level.id
+                          ? 'border-primary shadow-lg'
+                          : 'border-transparent hover:border-gray-200'
+                      }`}
+                      data-testid={`commitment-${level.id}`}
+                    >
+                      <div className={`h-12 w-12 mx-auto mb-3 rounded-xl bg-gradient-to-br ${level.color} flex items-center justify-center shadow-md`}>
+                        <Clock className="h-5 w-5 text-white" />
+                      </div>
+                      <div className="text-xl font-bold text-gray-900">{level.label}</div>
+                      <div className="text-xs text-gray-500 mt-1">{level.description}</div>
+                    </motion.button>
+                  ))}
+                </div>
+
+                {selectedCommitment && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mt-6"
+                  >
+                    <Button 
+                      onClick={() => navigate('/pray')}
+                      className="w-full bg-primary hover:bg-primary/90 text-white font-bold px-8 py-5 rounded-xl shadow-lg"
+                      data-testid="button-start-commitment"
+                    >
+                      <Heart className="h-5 w-5 mr-2" />
+                      Start Today's Prayer
+                    </Button>
+                  </motion.div>
+                )}
+              </div>
+            </div>
           </div>
         </section>
         
