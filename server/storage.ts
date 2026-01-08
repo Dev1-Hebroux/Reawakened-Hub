@@ -544,6 +544,7 @@ export interface IStorage {
   getEventRegistrations(eventId: number): Promise<EventRegistration[]>;
   getAllEventRegistrations(): Promise<EventRegistration[]>;
   getUserEventRegistration(eventId: number, userId: string): Promise<EventRegistration | undefined>;
+  getUserEventRegistrations(userId: string): Promise<{ registration: EventRegistration; event: Event }[]>;
   createEventRegistration(registration: InsertEventRegistration): Promise<EventRegistration>;
 
   // Blog
@@ -1553,6 +1554,23 @@ export class DatabaseStorage implements IStorage {
   async createEventRegistration(registrationData: InsertEventRegistration): Promise<EventRegistration> {
     const [registration] = await db.insert(eventRegistrations).values(registrationData).returning();
     return registration;
+  }
+
+  async getUserEventRegistrations(userId: string): Promise<{ registration: EventRegistration; event: Event }[]> {
+    const registrations = await db
+      .select()
+      .from(eventRegistrations)
+      .where(eq(eventRegistrations.userId, userId))
+      .orderBy(desc(eventRegistrations.createdAt));
+    
+    const results: { registration: EventRegistration; event: Event }[] = [];
+    for (const reg of registrations) {
+      const event = await this.getEvent(reg.eventId);
+      if (event) {
+        results.push({ registration: reg, event });
+      }
+    }
+    return results;
   }
 
   // Blog

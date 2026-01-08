@@ -1274,6 +1274,18 @@ export async function registerRoutes(
     }
   });
 
+  // Get user's event registrations (protected)
+  app.get('/api/me/events', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const registrations = await storage.getUserEventRegistrations(userId);
+      res.json(registrations);
+    } catch (error) {
+      console.error("Error fetching user event registrations:", error);
+      res.status(500).json({ message: "Failed to fetch event registrations" });
+    }
+  });
+
   // Get a specific day's content (protected)
   app.get('/api/user-journeys/:id/day/:dayNumber', isAuthenticated, async (req: any, res) => {
     try {
