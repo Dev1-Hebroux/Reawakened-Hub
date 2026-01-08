@@ -1,18 +1,34 @@
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Play, Globe2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { VisionModal } from "@/components/VisionModal";
 import heroImage from "@assets/generated_images/young_man_praying_with_golden_light_overlay.png";
+import studentsCampus from "@assets/stock_images/happy_college_studen_6f86ffcc.jpg";
+import studentsPark from "@assets/stock_images/diverse_mixed_race_y_d0e8cb0e.jpg";
 import logoImage from "@assets/1_1765584395888.png";
 import heroBgImage from "@assets/11_1767182385476.png";
 
+const heroImages = [
+  { src: heroImage, alt: "Young man praying" },
+  { src: studentsCampus, alt: "Happy students on campus" },
+  { src: studentsPark, alt: "Students enjoying outdoors" },
+];
+
 export function Hero() {
   const [showVisionModal, setShowVisionModal] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [, navigate] = useLocation();
   const { isAuthenticated } = useAuth();
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % heroImages.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <section className="relative min-h-[90vh] flex items-center pt-32 md:pt-36 pb-12 overflow-hidden">
@@ -59,11 +75,34 @@ export function Hero() {
             className="relative order-first lg:order-last w-full"
           >
             <div className="relative z-10 rounded-[24px] lg:rounded-[40px] overflow-hidden shadow-2xl border-2 lg:border-4 border-white lg:rotate-2 lg:hover:rotate-0 transition-transform duration-500 mx-auto max-w-sm lg:max-w-none">
-              <img 
-                src={heroImage} 
-                alt="Young man praying" 
-                className="w-full h-[280px] sm:h-[320px] md:h-[400px] lg:h-[600px] object-cover"
-              />
+              <AnimatePresence mode="wait">
+                <motion.img 
+                  key={currentImageIndex}
+                  src={heroImages[currentImageIndex].src} 
+                  alt={heroImages[currentImageIndex].alt} 
+                  className="w-full h-[280px] sm:h-[320px] md:h-[400px] lg:h-[600px] object-cover"
+                  initial={{ opacity: 0, scale: 1.05 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ duration: 0.8, ease: "easeInOut" }}
+                />
+              </AnimatePresence>
+              
+              {/* Carousel Indicators */}
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 z-20">
+                {heroImages.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentImageIndex(index)}
+                    className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                      index === currentImageIndex 
+                        ? 'bg-white w-4' 
+                        : 'bg-white/50 hover:bg-white/70'
+                    }`}
+                    aria-label={`Go to slide ${index + 1}`}
+                  />
+                ))}
+              </div>
               
               {/* Floating Cards with Animations - Visible on all screens */}
               <motion.div 
