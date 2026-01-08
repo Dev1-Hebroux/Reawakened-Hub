@@ -3,7 +3,7 @@ export const COMMUNITY_LINKS = {
   instagram: "https://www.instagram.com/reawakened.one/",
   youtube: "https://youtube.com/@reawakenedone",
   twitter: "https://twitter.com/reawakenedone",
-  facebook: "https://www.facebook.com/groups/1210715277600267/",
+  facebook: "https://www.facebook.com/profile.php?id=61573917744913",
   tiktok: "https://tiktok.com/@reawakenedone",
 };
 
