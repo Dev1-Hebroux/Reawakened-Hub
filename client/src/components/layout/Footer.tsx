@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { Instagram, Youtube, Twitter, Mail, MessageCircle, Loader2, Check } from "lucide-react";
+import { Instagram, Youtube, Twitter, Facebook, Mail, MessageCircle, Loader2, Check } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { toast } from "sonner";
 import { COMMUNITY_LINKS } from "@/lib/config";
@@ -61,6 +61,9 @@ export function Footer() {
               </a>
               <a href={COMMUNITY_LINKS.twitter} target="_blank" rel="noopener noreferrer" className="h-10 w-10 bg-gray-50 rounded-full flex items-center justify-center text-gray-400 hover:bg-primary hover:text-white transition-all" data-testid="link-social-twitter">
                 <Twitter className="h-5 w-5" />
+              </a>
+              <a href={COMMUNITY_LINKS.facebook} target="_blank" rel="noopener noreferrer" className="h-10 w-10 bg-gray-50 rounded-full flex items-center justify-center text-gray-400 hover:bg-blue-600 hover:text-white transition-all" data-testid="link-social-facebook">
+                <Facebook className="h-5 w-5" />
               </a>
               <a 
                 href={COMMUNITY_LINKS.whatsapp}
