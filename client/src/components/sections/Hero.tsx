@@ -65,7 +65,7 @@ export function Hero() {
                 className="w-full h-[280px] sm:h-[320px] md:h-[400px] lg:h-[600px] object-cover"
               />
               
-              {/* Floating Cards with Animations */}
+              {/* Floating Cards with Animations - Visible on all screens */}
               <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ 
@@ -76,14 +76,14 @@ export function Hero() {
                   opacity: { duration: 0.5, delay: 0.5 },
                   y: { duration: 3, repeat: Infinity, ease: "easeInOut" }
                 }}
-                className="hidden sm:flex absolute bottom-4 lg:bottom-8 left-4 lg:left-8 bg-white/95 backdrop-blur-md p-3 lg:p-4 rounded-xl lg:rounded-2xl shadow-lg items-center gap-3 lg:gap-4 max-w-xs border border-white/50"
+                className="flex absolute bottom-3 sm:bottom-4 lg:bottom-8 left-2 sm:left-4 lg:left-8 bg-white/95 backdrop-blur-md p-2 sm:p-3 lg:p-4 rounded-lg sm:rounded-xl lg:rounded-2xl shadow-lg items-center gap-2 sm:gap-3 lg:gap-4 max-w-[160px] sm:max-w-xs border border-white/50"
               >
-                <div className="h-8 w-8 lg:h-10 lg:w-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
-                  <Globe2 className="h-4 w-4 lg:h-5 lg:w-5" />
+                <div className="h-6 w-6 sm:h-8 sm:w-8 lg:h-10 lg:w-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 flex-shrink-0">
+                  <Globe2 className="h-3 w-3 sm:h-4 sm:w-4 lg:h-5 lg:w-5" />
                 </div>
                 <div>
-                  <p className="font-bold text-gray-900 text-xs lg:text-sm">Global Impact</p>
-                  <p className="text-[10px] lg:text-xs text-gray-500">50 Nations to be Reached</p>
+                  <p className="font-bold text-gray-900 text-[10px] sm:text-xs lg:text-sm">Global Impact</p>
+                  <p className="text-[8px] sm:text-[10px] lg:text-xs text-gray-500">50 Nations</p>
                 </div>
               </motion.div>
 
@@ -99,10 +99,10 @@ export function Hero() {
                   scale: { duration: 2.5, repeat: Infinity, ease: "easeInOut" },
                   y: { duration: 4, repeat: Infinity, ease: "easeInOut", delay: 0.5 }
                 }}
-                className="hidden sm:flex absolute top-8 lg:top-12 right-4 lg:right-8 bg-white/95 backdrop-blur-md px-3 lg:px-4 py-1.5 lg:py-2 rounded-full shadow-lg border border-white/50 items-center gap-1.5"
+                className="flex absolute top-3 sm:top-8 lg:top-12 right-2 sm:right-4 lg:right-8 bg-white/95 backdrop-blur-md px-2 sm:px-3 lg:px-4 py-1 sm:py-1.5 lg:py-2 rounded-full shadow-lg border border-white/50 items-center gap-1 sm:gap-1.5"
               >
-                <span className="text-sm lg:text-base">🔥</span>
-                <span className="text-xs lg:text-sm font-bold text-gray-900">500+ Sparks Today</span>
+                <span className="text-xs sm:text-sm lg:text-base">🔥</span>
+                <span className="text-[10px] sm:text-xs lg:text-sm font-bold text-gray-900">500+ Sparks</span>
               </motion.div>
             </div>
             
