@@ -32,12 +32,30 @@ export function getSession() {
     store: sessionStore,
     resave: false,
     saveUninitialized: false,
-    rolling: true, // Reset session expiry on each request to prevent logout
+    rolling: true,
     cookie: {
       httpOnly: true,
       secure: true,
       maxAge: sessionTtl,
+      sameSite: 'strict' as const,
     },
+  });
+}
+
+function saveSessionAsync(req: Express.Request): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (!req.session) {
+      resolve();
+      return;
+    }
+    req.session.save((err) => {
+      if (err) {
+        console.error('[Session] Failed to save session:', err);
+        reject(err);
+      } else {
+        resolve();
+      }
+    });
   });
 }
 
@@ -195,17 +213,10 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
     const config = await getOidcConfig();
     const tokenResponse = await client.refreshTokenGrant(config, refreshToken);
     updateUserSession(user, tokenResponse);
-    // Explicitly save session after token refresh to persist new tokens
-    if (req.session) {
-      req.session.save((err) => {
-        if (err) {
-          console.error("Failed to save session after token refresh:", err);
-        }
-      });
-    }
+    await saveSessionAsync(req);
     return next();
   } catch (error) {
-    console.error("Token refresh failed:", error);
+    console.error("[Auth] Token refresh failed:", error);
     res.status(401).json({ message: "Unauthorized" });
     return;
   }

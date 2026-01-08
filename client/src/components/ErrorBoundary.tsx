@@ -92,13 +92,63 @@ export function withErrorBoundary<P extends object>(
   WrappedComponent: React.ComponentType<P>,
   fallback?: ReactNode
 ) {
-  return function WithErrorBoundaryWrapper(props: P) {
-    return (
-      <ErrorBoundary fallback={fallback}>
-        <WrappedComponent {...props} />
-      </ErrorBoundary>
-    );
-  };
+  const displayName = WrappedComponent.displayName || WrappedComponent.name || 'Component';
+  
+  const WithErrorBoundaryWrapper: React.FC<P> = (props) => (
+    <ErrorBoundary fallback={fallback}>
+      <WrappedComponent {...props} />
+    </ErrorBoundary>
+  );
+  
+  WithErrorBoundaryWrapper.displayName = `withErrorBoundary(${displayName})`;
+  
+  return WithErrorBoundaryWrapper;
+}
+
+interface PageErrorBoundaryProps {
+  children: ReactNode;
+  resetKey?: string | number;
+}
+
+export function PageErrorBoundary({ children, resetKey }: PageErrorBoundaryProps) {
+  const currentResetKey = resetKey ?? (typeof window !== 'undefined' ? window.location.pathname : '');
+  
+  return (
+    <ErrorBoundary
+      key={currentResetKey}
+      fallback={undefined}
+    >
+      {children}
+    </ErrorBoundary>
+  );
+}
+
+interface AsyncBoundaryProps {
+  children: ReactNode;
+  fallback?: ReactNode;
+  loadingFallback?: ReactNode;
+}
+
+export function AsyncBoundary({ 
+  children, 
+  fallback, 
+  loadingFallback 
+}: AsyncBoundaryProps) {
+  return (
+    <ErrorBoundary fallback={fallback}>
+      <React.Suspense fallback={loadingFallback || <DefaultLoadingFallback />}>
+        {children}
+      </React.Suspense>
+    </ErrorBoundary>
+  );
+}
+
+function DefaultLoadingFallback() {
+  return (
+    <div className="flex items-center justify-center min-h-[200px]">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#4A7C7C]" />
+    </div>
+  );
 }
 
 interface SparkDetailErrorProps {

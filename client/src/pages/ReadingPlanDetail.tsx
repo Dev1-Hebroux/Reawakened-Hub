@@ -165,11 +165,21 @@ export function ReadingPlanDetail() {
   const enrollment = enrollments.find(e => e.planId === planId);
   const completedDays = new Set(enrollment?.progress?.filter(p => p.completed).map(p => p.dayNumber) || []);
 
+  const getCsrfToken = (): string | null => {
+    const match = document.cookie.match(/csrf_token=([^;]+)/);
+    return match ? match[1] : null;
+  };
+
   const enrollMutation = useMutation({
     mutationFn: async () => {
+      const csrfToken = getCsrfToken();
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (csrfToken) headers["X-CSRF-Token"] = csrfToken;
+      
       const res = await fetch(`/api/reading-plans/${planId}/enroll`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
+        credentials: "include",
       });
       if (!res.ok) throw new Error("Failed to enroll");
       return res.json();
@@ -183,10 +193,18 @@ export function ReadingPlanDetail() {
 
   const completeDayMutation = useMutation({
     mutationFn: async ({ dayNumber, journal }: { dayNumber: number; journal?: string }) => {
+      const csrfToken = getCsrfToken();
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (csrfToken) headers["X-CSRF-Token"] = csrfToken;
+      
       const res = await fetch(`/api/reading-plans/${planId}/days/${dayNumber}/complete`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ journalEntry: journal }),
+        headers,
+        credentials: "include",
+        body: JSON.stringify({ 
+          journalEntry: journal,
+          idempotencyKey: `${planId}-${dayNumber}-${new Date().toISOString().split('T')[0]}`
+        }),
       });
       if (!res.ok) throw new Error("Failed to complete day");
       return res.json();
@@ -342,9 +360,12 @@ export function ReadingPlanDetail() {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
           {plan.days?.map((day) => {
             const isCompleted = completedDays.has(day.dayNumber);
-            // Unlock if: day is at or below currentDay, OR day is completed, OR day is the next after any completed day
-            const maxCompletedDay = completedDays.size > 0 ? Math.max(...Array.from(completedDays)) : 0;
-            const isUnlocked = enrollment && (day.dayNumber <= (enrollment.currentDay || 1) || isCompleted || day.dayNumber <= maxCompletedDay + 1);
+            const isDayUnlocked = (dayNumber: number): boolean => {
+              if (dayNumber === 1) return true;
+              if (completedDays.has(dayNumber)) return true;
+              return completedDays.has(dayNumber - 1);
+            };
+            const isUnlocked = enrollment && isDayUnlocked(day.dayNumber);
             const isCurrent = enrollment && day.dayNumber === enrollment.currentDay && !isCompleted;
             
             return (

@@ -1,4 +1,5 @@
 import express, { type Request, Response, NextFunction } from "express";
+import cookieParser from "cookie-parser";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
@@ -10,6 +11,13 @@ import { scheduleAudioPregeneration } from "./audio-pregeneration";
 import { autoSeedDominionContent } from "./auto-seed";
 import { startNightlyContentSync } from "./content-sync";
 import { initializeNotificationScheduler } from "./notification-scheduler";
+import { 
+  setCsrfToken, 
+  requestIdMiddleware, 
+  metricsMiddleware,
+  metricsEndpoint,
+  authRateLimiter 
+} from "./middleware";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -24,7 +32,13 @@ declare module "http" {
 }
 
 app.use(securityHeaders);
+app.use(cookieParser());
+app.use(requestIdMiddleware);
+app.use(metricsMiddleware);
+app.use(setCsrfToken);
 app.use("/api", apiLimiter);
+app.use("/api/login", authRateLimiter);
+app.use("/api/callback", authRateLimiter);
 
 app.use(
   express.json({
@@ -35,6 +49,8 @@ app.use(
 );
 
 app.use(express.urlencoded({ extended: false }));
+
+app.get('/metrics', metricsEndpoint);
 
 app.use("/attached_assets", express.static(path.resolve(__dirname, "..", "attached_assets")));
 app.use("/assets", express.static(path.resolve(__dirname, "..", "attached_assets")));
