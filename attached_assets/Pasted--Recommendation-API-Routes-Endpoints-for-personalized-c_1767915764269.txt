@@ -1,0 +1,147 @@
+/**
+ * Recommendation API Routes
+ * 
+ * Endpoints for personalized content recommendations.
+ */
+
+import { Router } from 'express';
+import { isAuthenticated } from '../middleware/auth';
+import { RecommendationEngine } from '../services/recommendationEngine';
+import { logger } from '../lib/logger';
+
+const router = Router();
+const recommendationEngine = new RecommendationEngine();
+
+/**
+ * GET /api/recommendations/reading-plans
+ * Get personalized reading plan recommendations.
+ */
+router.get('/reading-plans', isAuthenticated, async (req, res, next) => {
+  try {
+    const userId = req.user!.id;
+    const limit = Math.min(parseInt(req.query.limit as string) || 6, 20);
+    const excludeIds = req.query.exclude 
+      ? (req.query.exclude as string).split(',').map(Number).filter(n => !isNaN(n))
+      : [];
+
+    const recommendations = await recommendationEngine.getReadingPlanRecommendations({
+      userId,
+      limit,
+      excludeIds,
+    });
+
+    res.json(recommendations);
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * GET /api/recommendations/journeys
+ * Get personalized journey recommendations.
+ */
+router.get('/journeys', isAuthenticated, async (req, res, next) => {
+  try {
+    const userId = req.user!.id;
+    const limit = Math.min(parseInt(req.query.limit as string) || 6, 20);
+    const excludeIds = req.query.exclude 
+      ? (req.query.exclude as string).split(',').map(Number).filter(n => !isNaN(n))
+      : [];
+
+    const recommendations = await recommendationEngine.getJourneyRecommendations({
+      userId,
+      limit,
+      excludeIds,
+    });
+
+    res.json(recommendations);
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * GET /api/recommendations/continue
+ * Get in-progress content to continue.
+ */
+router.get('/continue', isAuthenticated, async (req, res, next) => {
+  try {
+    const userId = req.user!.id;
+    const continueItems = await recommendationEngine.getContinueRecommendations(userId);
+    res.json(continueItems);
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * GET /api/recommendations/daily-spark
+ * Get today's recommended spark.
+ */
+router.get('/daily-spark', isAuthenticated, async (req, res, next) => {
+  try {
+    const userId = req.user!.id;
+    const spark = await recommendationEngine.getDailySparkRecommendation(userId);
+    
+    if (!spark) {
+      return res.status(404).json({ message: 'No spark available' });
+    }
+    
+    res.json(spark);
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * GET /api/recommendations/wheel-area/:area
+ * Get recommendations for a specific Wheel of Life area.
+ */
+router.get('/wheel-area/:area', isAuthenticated, async (req, res, next) => {
+  try {
+    const userId = req.user!.id;
+    const area = req.params.area as any;
+    const limit = Math.min(parseInt(req.query.limit as string) || 4, 10);
+
+    const validAreas = ['faith', 'family', 'finances', 'fitness', 'friends', 'fun', 'career', 'contribution'];
+    if (!validAreas.includes(area)) {
+      return res.status(400).json({ error: 'Invalid wheel area' });
+    }
+
+    const recommendations = await recommendationEngine.getWheelAreaRecommendations(
+      userId,
+      area,
+      limit
+    );
+
+    res.json(recommendations);
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * GET /api/recommendations/goal/:goalId
+ * Get recommendations aligned with a specific goal.
+ */
+router.get('/goal/:goalId', isAuthenticated, async (req, res, next) => {
+  try {
+    const userId = req.user!.id;
+    const goalId = parseInt(req.params.goalId);
+
+    if (isNaN(goalId)) {
+      return res.status(400).json({ error: 'Invalid goal ID' });
+    }
+
+    const recommendations = await recommendationEngine.getGoalAlignedRecommendations(
+      userId,
+      goalId
+    );
+
+    res.json(recommendations);
+  } catch (error) {
+    next(error);
+  }
+});
+
+export const recommendationRoutes = router;

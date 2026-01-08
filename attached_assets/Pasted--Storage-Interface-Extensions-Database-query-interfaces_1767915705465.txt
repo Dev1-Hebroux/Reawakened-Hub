@@ -1,0 +1,774 @@
+/**
+ * Storage Interface Extensions
+ * 
+ * Database query interfaces for recommendation engine, notification service,
+ * and related features. These extend the base storage layer with the specific
+ * queries needed by the new services.
+ */
+
+import { db } from '../db';
+import { eq, and, desc, asc, sql, inArray, notInArray, gte, lte, isNull, isNotNull } from 'drizzle-orm';
+import type { 
+  ContentCategory, 
+  WheelOfLifeScores, 
+  NotificationType,
+  NotificationSettings,
+  DisplaySettings,
+  PrivacySettings,
+} from '@shared/types';
+
+// ============================================================================
+// Table References (from your existing schema)
+// ============================================================================
+
+// These should be imported from your schema file
+// Shown here for completeness of the interface
+import {
+  users,
+  spiritualProfiles,
+  readingPlans,
+  readingPlanDays,
+  journeys,
+  journeyDays,
+  journeySteps,
+  sparks,
+  userReadingProgress,
+  userJourneyProgress,
+  userGoals,
+  notifications,
+  scheduledNotifications,
+  userPreferences,
+  pushSubscriptions,
+  userSparkViews,
+} from '@shared/schema';
+
+// ============================================================================
+// Recommendation Engine Storage
+// ============================================================================
+
+export interface ContentItem {
+  id: number;
+  title: string;
+  category: string;
+  difficulty: string;
+  totalDays: number;
+  tags: string[];
+  isFeatured: boolean;
+}
+
+export interface SpiritualProfileData {
+  wheelOfLifeScores: WheelOfLifeScores;
+  primaryGrowthAreas: ContentCategory[];
+  spiritualGifts: string[];
+}
+
+export const recommendationStorage = {
+  /**
+   * Get user's spiritual profile for recommendation scoring.
+   */
+  async getSpiritualProfile(userId: string): Promise<SpiritualProfileData | null> {
+    const [profile] = await db
+      .select({
+        wheelOfLifeScores: spiritualProfiles.wheelOfLifeScores,
+        primaryGrowthAreas: spiritualProfiles.primaryGrowthAreas,
+        spiritualGifts: spiritualProfiles.spiritualGifts,
+      })
+      .from(spiritualProfiles)
+      .where(eq(spiritualProfiles.userId, userId))
+      .limit(1);
+    
+    return profile || null;
+  },
+
+  /**
+   * Get IDs of reading plans the user has completed.
+   */
+  async getCompletedReadingPlanIds(userId: string): Promise<number[]> {
+    const results = await db
+      .select({ planId: userReadingProgress.planId })
+      .from(userReadingProgress)
+      .where(and(
+        eq(userReadingProgress.userId, userId),
+        isNotNull(userReadingProgress.completedAt)
+      ));
+    
+    return results.map(r => r.planId);
+  },
+
+  /**
+   * Get IDs of journeys the user has completed.
+   */
+  async getCompletedJourneyIds(userId: string): Promise<number[]> {
+    const results = await db
+      .select({ journeyId: userJourneyProgress.journeyId })
+      .from(userJourneyProgress)
+      .where(and(
+        eq(userJourneyProgress.userId, userId),
+        isNotNull(userJourneyProgress.completedAt)
+      ));
+    
+    return results.map(r => r.journeyId);
+  },
+
+  /**
+   * Get user's active goals with their categories.
+   */
+  async getActiveGoals(userId: string): Promise<{ id: number; category: ContentCategory }[]> {
+    const results = await db
+      .select({
+        id: userGoals.id,
+        category: userGoals.category,
+      })
+      .from(userGoals)
+      .where(and(
+        eq(userGoals.userId, userId),
+        eq(userGoals.status, 'active')
+      ));
+    
+    return results as { id: number; category: ContentCategory }[];
+  },
+
+  /**
+   * Get user engagement patterns for recommendation scoring.
+   */
+  async getEngagementPatterns(userId: string): Promise<{
+    preferredCategories: ContentCategory[];
+    averageSessionLength: number;
+    completionRate: number;
+    preferredDifficulty: 'beginner' | 'intermediate' | 'advanced';
+  }> {
+    // Get completed content to analyze patterns
+    const [completedPlans, completedJourneys] = await Promise.all([
+      db.select({
+        category: readingPlans.category,
+        difficulty: readingPlans.difficulty,
+        totalDays: readingPlans.totalDays,
+      })
+      .from(userReadingProgress)
+      .innerJoin(readingPlans, eq(userReadingProgress.planId, readingPlans.id))
+      .where(and(
+        eq(userReadingProgress.userId, userId),
+        isNotNull(userReadingProgress.completedAt)
+      ))
+      .limit(20),
+      
+      db.select({
+        category: journeys.category,
+        difficulty: journeys.difficulty,
+        totalDays: journeys.totalDays,
+      })
+      .from(userJourneyProgress)
+      .innerJoin(journeys, eq(userJourneyProgress.journeyId, journeys.id))
+      .where(and(
+        eq(userJourneyProgress.userId, userId),
+        isNotNull(userJourneyProgress.completedAt)
+      ))
+      .limit(20),
+    ]);
+
+    const allCompleted = [...completedPlans, ...completedJourneys];
+    
+    if (allCompleted.length === 0) {
+      return {
+        preferredCategories: [],
+        averageSessionLength: 15,
+        completionRate: 0,
+        preferredDifficulty: 'beginner',
+      };
+    }
+
+    // Calculate preferred categories
+    const categoryCounts = allCompleted.reduce((acc, item) => {
+      acc[item.category] = (acc[item.category] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    
+    const preferredCategories = Object.entries(categoryCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([cat]) => cat as ContentCategory);
+
+    // Calculate preferred difficulty
+    const difficultyCounts = allCompleted.reduce((acc, item) => {
+      acc[item.difficulty] = (acc[item.difficulty] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    
+    const preferredDifficulty = Object.entries(difficultyCounts)
+      .sort((a, b) => b[1] - a[1])[0]?.[0] as 'beginner' | 'intermediate' | 'advanced' || 'beginner';
+
+    // Calculate average session length (estimate based on content length)
+    const avgDays = allCompleted.reduce((sum, item) => sum + item.totalDays, 0) / allCompleted.length;
+    const averageSessionLength = avgDays <= 7 ? 10 : avgDays <= 21 ? 15 : 20;
+
+    // Get completion rate
+    const [startedCount] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(userReadingProgress)
+      .where(eq(userReadingProgress.userId, userId));
+    
+    const [completedCount] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(userReadingProgress)
+      .where(and(
+        eq(userReadingProgress.userId, userId),
+        isNotNull(userReadingProgress.completedAt)
+      ));
+    
+    const completionRate = startedCount.count > 0 
+      ? completedCount.count / startedCount.count 
+      : 0;
+
+    return {
+      preferredCategories,
+      averageSessionLength,
+      completionRate,
+      preferredDifficulty,
+    };
+  },
+
+  /**
+   * Get available reading plans for recommendations.
+   */
+  async getAvailableReadingPlans(
+    userId: string, 
+    excludeIds: number[] = []
+  ): Promise<ContentItem[]> {
+    const completedIds = await this.getCompletedReadingPlanIds(userId);
+    const allExcluded = [...new Set([...excludeIds, ...completedIds])];
+
+    let query = db
+      .select({
+        id: readingPlans.id,
+        title: readingPlans.title,
+        category: readingPlans.category,
+        difficulty: readingPlans.difficulty,
+        totalDays: readingPlans.totalDays,
+        tags: readingPlans.tags,
+        isFeatured: readingPlans.isFeatured,
+      })
+      .from(readingPlans)
+      .where(eq(readingPlans.isPublished, true));
+
+    if (allExcluded.length > 0) {
+      query = query.where(notInArray(readingPlans.id, allExcluded));
+    }
+
+    return await query;
+  },
+
+  /**
+   * Get available journeys for recommendations.
+   */
+  async getAvailableJourneys(
+    userId: string, 
+    excludeIds: number[] = []
+  ): Promise<ContentItem[]> {
+    const completedIds = await this.getCompletedJourneyIds(userId);
+    const allExcluded = [...new Set([...excludeIds, ...completedIds])];
+
+    let query = db
+      .select({
+        id: journeys.id,
+        title: journeys.title,
+        category: journeys.category,
+        difficulty: journeys.difficulty,
+        totalDays: journeys.totalDays,
+        tags: journeys.tags,
+        isFeatured: journeys.isFeatured,
+      })
+      .from(journeys)
+      .where(eq(journeys.isPublished, true));
+
+    if (allExcluded.length > 0) {
+      query = query.where(notInArray(journeys.id, allExcluded));
+    }
+
+    return await query;
+  },
+
+  /**
+   * Get sparks the user has viewed recently.
+   */
+  async getRecentSparkIds(userId: string, days: number): Promise<number[]> {
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - days);
+
+    const results = await db
+      .select({ sparkId: userSparkViews.sparkId })
+      .from(userSparkViews)
+      .where(and(
+        eq(userSparkViews.userId, userId),
+        gte(userSparkViews.viewedAt, cutoffDate)
+      ));
+
+    return results.map(r => r.sparkId);
+  },
+
+  /**
+   * Get available sparks excluding recently viewed.
+   */
+  async getAvailableSparks(excludeIds: number[] = []): Promise<ContentItem[]> {
+    let query = db
+      .select({
+        id: sparks.id,
+        title: sparks.title,
+        category: sparks.category,
+        difficulty: sql<string>`'beginner'`.as('difficulty'),
+        totalDays: sql<number>`1`.as('totalDays'),
+        tags: sparks.tags,
+        isFeatured: sql<boolean>`false`.as('isFeatured'),
+      })
+      .from(sparks)
+      .where(eq(sparks.isPublished, true));
+
+    if (excludeIds.length > 0) {
+      query = query.where(notInArray(sparks.id, excludeIds));
+    }
+
+    return await query;
+  },
+
+  /**
+   * Get in-progress reading plans for "continue" recommendations.
+   */
+  async getInProgressReadingPlans(userId: string): Promise<ContentItem[]> {
+    return await db
+      .select({
+        id: readingPlans.id,
+        title: readingPlans.title,
+        category: readingPlans.category,
+        difficulty: readingPlans.difficulty,
+        totalDays: readingPlans.totalDays,
+        tags: readingPlans.tags,
+        isFeatured: readingPlans.isFeatured,
+      })
+      .from(userReadingProgress)
+      .innerJoin(readingPlans, eq(userReadingProgress.planId, readingPlans.id))
+      .where(and(
+        eq(userReadingProgress.userId, userId),
+        isNull(userReadingProgress.completedAt)
+      ))
+      .orderBy(desc(userReadingProgress.lastActivityAt))
+      .limit(5);
+  },
+
+  /**
+   * Get in-progress journeys for "continue" recommendations.
+   */
+  async getInProgressJourneys(userId: string): Promise<ContentItem[]> {
+    return await db
+      .select({
+        id: journeys.id,
+        title: journeys.title,
+        category: journeys.category,
+        difficulty: journeys.difficulty,
+        totalDays: journeys.totalDays,
+        tags: journeys.tags,
+        isFeatured: journeys.isFeatured,
+      })
+      .from(userJourneyProgress)
+      .innerJoin(journeys, eq(userJourneyProgress.journeyId, journeys.id))
+      .where(and(
+        eq(userJourneyProgress.userId, userId),
+        isNull(userJourneyProgress.completedAt)
+      ))
+      .orderBy(desc(userJourneyProgress.lastActivityAt))
+      .limit(5);
+  },
+
+  /**
+   * Get content by categories for targeted recommendations.
+   */
+  async getContentByCategories(
+    contentType: 'reading_plans' | 'journeys',
+    categories: ContentCategory[],
+    limit: number
+  ): Promise<ContentItem[]> {
+    if (categories.length === 0) return [];
+
+    if (contentType === 'reading_plans') {
+      return await db
+        .select({
+          id: readingPlans.id,
+          title: readingPlans.title,
+          category: readingPlans.category,
+          difficulty: readingPlans.difficulty,
+          totalDays: readingPlans.totalDays,
+          tags: readingPlans.tags,
+          isFeatured: readingPlans.isFeatured,
+        })
+        .from(readingPlans)
+        .where(and(
+          eq(readingPlans.isPublished, true),
+          inArray(readingPlans.category, categories)
+        ))
+        .limit(limit);
+    }
+
+    return await db
+      .select({
+        id: journeys.id,
+        title: journeys.title,
+        category: journeys.category,
+        difficulty: journeys.difficulty,
+        totalDays: journeys.totalDays,
+        tags: journeys.tags,
+        isFeatured: journeys.isFeatured,
+      })
+      .from(journeys)
+      .where(and(
+        eq(journeys.isPublished, true),
+        inArray(journeys.category, categories)
+      ))
+      .limit(limit);
+  },
+
+  /**
+   * Get a specific user goal.
+   */
+  async getUserGoal(userId: string, goalId: number): Promise<{ category: ContentCategory } | null> {
+    const [goal] = await db
+      .select({ category: userGoals.category })
+      .from(userGoals)
+      .where(and(
+        eq(userGoals.id, goalId),
+        eq(userGoals.userId, userId)
+      ))
+      .limit(1);
+
+    return goal as { category: ContentCategory } | null;
+  },
+
+  /**
+   * Get featured content as fallback recommendations.
+   */
+  async getFeaturedContent(limit: number): Promise<{
+    readingPlans: ContentItem[];
+    journeys: ContentItem[];
+  }> {
+    const [plans, journeysList] = await Promise.all([
+      db.select({
+        id: readingPlans.id,
+        title: readingPlans.title,
+        category: readingPlans.category,
+        difficulty: readingPlans.difficulty,
+        totalDays: readingPlans.totalDays,
+        tags: readingPlans.tags,
+        isFeatured: readingPlans.isFeatured,
+      })
+      .from(readingPlans)
+      .where(and(
+        eq(readingPlans.isPublished, true),
+        eq(readingPlans.isFeatured, true)
+      ))
+      .limit(limit),
+
+      db.select({
+        id: journeys.id,
+        title: journeys.title,
+        category: journeys.category,
+        difficulty: journeys.difficulty,
+        totalDays: journeys.totalDays,
+        tags: journeys.tags,
+        isFeatured: journeys.isFeatured,
+      })
+      .from(journeys)
+      .where(and(
+        eq(journeys.isPublished, true),
+        eq(journeys.isFeatured, true)
+      ))
+      .limit(limit),
+    ]);
+
+    return { readingPlans: plans, journeys: journeysList };
+  },
+};
+
+// ============================================================================
+// Notification Storage
+// ============================================================================
+
+export const notificationStorage = {
+  /**
+   * Create an in-app notification.
+   */
+  async createNotification(data: {
+    userId: string;
+    type: NotificationType;
+    title: string;
+    body: string;
+    data: Record<string, unknown>;
+  }): Promise<number> {
+    const [result] = await db
+      .insert(notifications)
+      .values({
+        ...data,
+        isRead: false,
+        createdAt: new Date(),
+      })
+      .returning({ id: notifications.id });
+
+    return result.id;
+  },
+
+  /**
+   * Schedule a notification for later delivery.
+   */
+  async scheduleNotification(data: {
+    userId: string;
+    type: NotificationType;
+    title: string;
+    body: string;
+    data: Record<string, unknown>;
+    scheduledFor: Date;
+  }): Promise<number> {
+    const [result] = await db
+      .insert(scheduledNotifications)
+      .values({
+        ...data,
+        status: 'pending',
+        createdAt: new Date(),
+      })
+      .returning({ id: scheduledNotifications.id });
+
+    return result.id;
+  },
+
+  /**
+   * Get pending scheduled notifications that are due.
+   */
+  async getDueScheduledNotifications(limit: number = 100): Promise<Array<{
+    id: number;
+    userId: string;
+    type: string;
+    title: string;
+    body: string;
+    data: Record<string, unknown>;
+  }>> {
+    return await db
+      .select()
+      .from(scheduledNotifications)
+      .where(and(
+        eq(scheduledNotifications.status, 'pending'),
+        lte(scheduledNotifications.scheduledFor, new Date())
+      ))
+      .limit(limit);
+  },
+
+  /**
+   * Mark a scheduled notification as sent.
+   */
+  async markScheduledNotificationSent(id: number): Promise<void> {
+    await db
+      .update(scheduledNotifications)
+      .set({ status: 'sent', sentAt: new Date() })
+      .where(eq(scheduledNotifications.id, id));
+  },
+
+  /**
+   * Mark a scheduled notification as failed.
+   */
+  async markScheduledNotificationFailed(id: number, error: string): Promise<void> {
+    await db
+      .update(scheduledNotifications)
+      .set({ status: 'failed', error })
+      .where(eq(scheduledNotifications.id, id));
+  },
+
+  /**
+   * Get user notification preferences.
+   */
+  async getUserPreferences(userId: string): Promise<{
+    notificationSettings: NotificationSettings;
+    displaySettings: DisplaySettings;
+    privacySettings: PrivacySettings;
+  } | null> {
+    const [prefs] = await db
+      .select()
+      .from(userPreferences)
+      .where(eq(userPreferences.userId, userId))
+      .limit(1);
+
+    if (!prefs) return null;
+
+    return {
+      notificationSettings: prefs.notificationSettings as NotificationSettings,
+      displaySettings: prefs.displaySettings as DisplaySettings,
+      privacySettings: prefs.privacySettings as PrivacySettings,
+    };
+  },
+
+  /**
+   * Get user's push subscription.
+   */
+  async getPushSubscription(userId: string): Promise<{
+    endpoint: string;
+    keys: { p256dh: string; auth: string };
+  } | null> {
+    const [sub] = await db
+      .select()
+      .from(pushSubscriptions)
+      .where(eq(pushSubscriptions.userId, userId))
+      .limit(1);
+
+    return sub ? { endpoint: sub.endpoint, keys: sub.keys as any } : null;
+  },
+
+  /**
+   * Mark notification as read.
+   */
+  async markAsRead(userId: string, notificationId: number): Promise<void> {
+    await db
+      .update(notifications)
+      .set({ isRead: true, readAt: new Date() })
+      .where(and(
+        eq(notifications.id, notificationId),
+        eq(notifications.userId, userId)
+      ));
+  },
+
+  /**
+   * Mark all notifications as read.
+   */
+  async markAllAsRead(userId: string): Promise<number> {
+    const result = await db
+      .update(notifications)
+      .set({ isRead: true, readAt: new Date() })
+      .where(and(
+        eq(notifications.userId, userId),
+        eq(notifications.isRead, false)
+      ));
+
+    return result.rowCount || 0;
+  },
+
+  /**
+   * Get unread count for user.
+   */
+  async getUnreadCount(userId: string): Promise<number> {
+    const [result] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(notifications)
+      .where(and(
+        eq(notifications.userId, userId),
+        eq(notifications.isRead, false)
+      ));
+
+    return Number(result?.count || 0);
+  },
+
+  /**
+   * Get user notifications with pagination.
+   */
+  async getUserNotifications(
+    userId: string,
+    options: { limit: number; offset: number; unreadOnly: boolean }
+  ): Promise<{
+    notifications: any[];
+    total: number;
+    unread: number;
+  }> {
+    const { limit, offset, unreadOnly } = options;
+
+    const conditions = [eq(notifications.userId, userId)];
+    if (unreadOnly) {
+      conditions.push(eq(notifications.isRead, false));
+    }
+
+    const [items, countResult, unreadResult] = await Promise.all([
+      db.select()
+        .from(notifications)
+        .where(and(...conditions))
+        .orderBy(desc(notifications.createdAt))
+        .limit(limit)
+        .offset(offset),
+
+      db.select({ count: sql<number>`count(*)` })
+        .from(notifications)
+        .where(and(...conditions)),
+
+      db.select({ count: sql<number>`count(*)` })
+        .from(notifications)
+        .where(and(
+          eq(notifications.userId, userId),
+          eq(notifications.isRead, false)
+        )),
+    ]);
+
+    return {
+      notifications: items,
+      total: Number(countResult[0]?.count || 0),
+      unread: Number(unreadResult[0]?.count || 0),
+    };
+  },
+
+  /**
+   * Get users who need streak reminders.
+   */
+  async getUsersNeedingStreakReminder(): Promise<Array<{
+    id: string;
+    email: string;
+    currentStreak: number;
+    reminderTime: string;
+  }>> {
+    // Get users with:
+    // 1. Daily reminders enabled
+    // 2. Current streak > 0
+    // 3. No activity today
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const results = await db
+      .select({
+        id: users.id,
+        email: users.email,
+        currentStreak: userReadingProgress.currentStreak,
+        reminderTime: sql<string>`COALESCE(
+          ${userPreferences.notificationSettings}->>'dailyReminderTime', 
+          '08:00'
+        )`,
+      })
+      .from(users)
+      .innerJoin(userReadingProgress, eq(users.id, userReadingProgress.userId))
+      .leftJoin(userPreferences, eq(users.id, userPreferences.userId))
+      .where(and(
+        sql`COALESCE(${userPreferences.notificationSettings}->>'dailyReminders', 'true')::boolean = true`,
+        sql`${userReadingProgress.currentStreak} > 0`,
+        sql`${userReadingProgress.lastActivityAt} < ${today}`
+      ))
+      .groupBy(users.id, userReadingProgress.currentStreak, userPreferences.notificationSettings);
+
+    return results;
+  },
+
+  /**
+   * Get users with streak at risk (haven't read today, evening).
+   */
+  async getUsersWithStreakAtRisk(): Promise<Array<{
+    id: string;
+    currentStreak: number;
+    timezone: string;
+  }>> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    return await db
+      .select({
+        id: users.id,
+        currentStreak: userReadingProgress.currentStreak,
+        timezone: sql<string>`COALESCE(${userPreferences.displaySettings}->>'timezone', 'UTC')`,
+      })
+      .from(users)
+      .innerJoin(userReadingProgress, eq(users.id, userReadingProgress.userId))
+      .leftJoin(userPreferences, eq(users.id, userPreferences.userId))
+      .where(and(
+        sql`COALESCE(${userPreferences.notificationSettings}->>'streakAlerts', 'true')::boolean = true`,
+        sql`${userReadingProgress.currentStreak} > 0`,
+        sql`${userReadingProgress.lastActivityAt} < ${today}`
+      ))
+      .groupBy(users.id, userReadingProgress.currentStreak, userPreferences.displaySettings);
+  },
+};
+
+export { recommendationStorage, notificationStorage };

@@ -1,0 +1,399 @@
+/**
+ * Service Worker for Reawakened Platform
+ * 
+ * Provides offline capabilities including:
+ * - Static asset caching
+ * - API response caching
+ * - Background sync for pending operations
+ * - Push notification handling
+ */
+
+const CACHE_VERSION = 'v1';
+const STATIC_CACHE = `static-${CACHE_VERSION}`;
+const DYNAMIC_CACHE = `dynamic-${CACHE_VERSION}`;
+const API_CACHE = `api-${CACHE_VERSION}`;
+
+// Assets to cache immediately on install
+const STATIC_ASSETS = [
+  '/',
+  '/index.html',
+  '/manifest.json',
+  '/icons/icon-192.png',
+  '/icons/icon-512.png',
+  '/offline.html',
+];
+
+// API routes to cache
+const CACHEABLE_API_ROUTES = [
+  '/api/reading-plans',
+  '/api/journeys',
+  '/api/sparks/daily',
+];
+
+// ============================================================================
+// Install Event
+// ============================================================================
+
+self.addEventListener('install', (event) => {
+  console.log('[SW] Installing service worker...');
+  
+  event.waitUntil(
+    caches.open(STATIC_CACHE)
+      .then((cache) => {
+        console.log('[SW] Caching static assets');
+        return cache.addAll(STATIC_ASSETS);
+      })
+      .then(() => self.skipWaiting())
+  );
+});
+
+// ============================================================================
+// Activate Event
+// ============================================================================
+
+self.addEventListener('activate', (event) => {
+  console.log('[SW] Activating service worker...');
+  
+  event.waitUntil(
+    caches.keys()
+      .then((cacheNames) => {
+        return Promise.all(
+          cacheNames
+            .filter((name) => {
+              return name.startsWith('static-') || 
+                     name.startsWith('dynamic-') || 
+                     name.startsWith('api-');
+            })
+            .filter((name) => {
+              return name !== STATIC_CACHE && 
+                     name !== DYNAMIC_CACHE && 
+                     name !== API_CACHE;
+            })
+            .map((name) => {
+              console.log('[SW] Deleting old cache:', name);
+              return caches.delete(name);
+            })
+        );
+      })
+      .then(() => self.clients.claim())
+  );
+});
+
+// ============================================================================
+// Fetch Event
+// ============================================================================
+
+self.addEventListener('fetch', (event) => {
+  const { request } = event;
+  const url = new URL(request.url);
+  
+  // Skip non-GET requests
+  if (request.method !== 'GET') {
+    return;
+  }
+  
+  // Handle API requests
+  if (url.pathname.startsWith('/api/')) {
+    event.respondWith(handleApiRequest(request));
+    return;
+  }
+  
+  // Handle static assets
+  if (isStaticAsset(url.pathname)) {
+    event.respondWith(handleStaticRequest(request));
+    return;
+  }
+  
+  // Handle navigation requests (SPA)
+  if (request.mode === 'navigate') {
+    event.respondWith(handleNavigationRequest(request));
+    return;
+  }
+  
+  // Default: network first, cache fallback
+  event.respondWith(handleDynamicRequest(request));
+});
+
+// ============================================================================
+// Request Handlers
+// ============================================================================
+
+async function handleApiRequest(request) {
+  const url = new URL(request.url);
+  const isCacheable = CACHEABLE_API_ROUTES.some(route => 
+    url.pathname.startsWith(route)
+  );
+  
+  if (!isCacheable) {
+    return fetch(request);
+  }
+  
+  try {
+    // Try network first
+    const networkResponse = await fetch(request);
+    
+    // Cache successful responses
+    if (networkResponse.ok) {
+      const cache = await caches.open(API_CACHE);
+      cache.put(request, networkResponse.clone());
+    }
+    
+    return networkResponse;
+  } catch (error) {
+    // Fallback to cache
+    const cachedResponse = await caches.match(request);
+    
+    if (cachedResponse) {
+      console.log('[SW] Serving API from cache:', url.pathname);
+      return cachedResponse;
+    }
+    
+    // Return offline JSON response
+    return new Response(
+      JSON.stringify({ 
+        error: 'offline',
+        message: 'You are offline and this data is not cached.'
+      }),
+      {
+        status: 503,
+        headers: { 'Content-Type': 'application/json' }
+      }
+    );
+  }
+}
+
+async function handleStaticRequest(request) {
+  // Cache first for static assets
+  const cachedResponse = await caches.match(request);
+  
+  if (cachedResponse) {
+    return cachedResponse;
+  }
+  
+  try {
+    const networkResponse = await fetch(request);
+    
+    if (networkResponse.ok) {
+      const cache = await caches.open(STATIC_CACHE);
+      cache.put(request, networkResponse.clone());
+    }
+    
+    return networkResponse;
+  } catch (error) {
+    console.log('[SW] Static asset not available:', request.url);
+    return new Response('Not available offline', { status: 503 });
+  }
+}
+
+async function handleNavigationRequest(request) {
+  try {
+    // Try network first for navigation
+    const networkResponse = await fetch(request);
+    return networkResponse;
+  } catch (error) {
+    // Fallback to cached index.html for SPA
+    const cachedResponse = await caches.match('/index.html');
+    
+    if (cachedResponse) {
+      return cachedResponse;
+    }
+    
+    // Last resort: offline page
+    const offlineResponse = await caches.match('/offline.html');
+    return offlineResponse || new Response('Offline', { status: 503 });
+  }
+}
+
+async function handleDynamicRequest(request) {
+  try {
+    const networkResponse = await fetch(request);
+    
+    if (networkResponse.ok) {
+      const cache = await caches.open(DYNAMIC_CACHE);
+      cache.put(request, networkResponse.clone());
+    }
+    
+    return networkResponse;
+  } catch (error) {
+    const cachedResponse = await caches.match(request);
+    return cachedResponse || new Response('Not available', { status: 503 });
+  }
+}
+
+// ============================================================================
+// Background Sync
+// ============================================================================
+
+self.addEventListener('sync', (event) => {
+  console.log('[SW] Background sync triggered:', event.tag);
+  
+  if (event.tag === 'background-sync') {
+    event.waitUntil(processBackgroundSync());
+  }
+});
+
+async function processBackgroundSync() {
+  console.log('[SW] Processing background sync...');
+  
+  // Notify clients to process sync queue
+  const clients = await self.clients.matchAll();
+  
+  for (const client of clients) {
+    client.postMessage({
+      type: 'BACKGROUND_SYNC',
+      action: 'process',
+    });
+  }
+}
+
+// ============================================================================
+// Push Notifications
+// ============================================================================
+
+self.addEventListener('push', (event) => {
+  console.log('[SW] Push notification received');
+  
+  if (!event.data) {
+    return;
+  }
+  
+  const data = event.data.json();
+  
+  const options = {
+    body: data.body,
+    icon: data.icon || '/icons/icon-192.png',
+    badge: '/icons/badge-72.png',
+    vibrate: [100, 50, 100],
+    data: data.data || {},
+    actions: data.actions || [],
+    tag: data.tag || 'default',
+    renotify: true,
+  };
+  
+  event.waitUntil(
+    self.registration.showNotification(data.title, options)
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  console.log('[SW] Notification clicked:', event.action);
+  
+  event.notification.close();
+  
+  const data = event.notification.data;
+  let targetUrl = '/';
+  
+  // Determine target URL based on notification data
+  if (data.url) {
+    targetUrl = data.url;
+  } else if (data.type === 'reading_plan') {
+    targetUrl = `/reading-plans/${data.planId}`;
+  } else if (data.type === 'journey') {
+    targetUrl = `/journeys/${data.journeyId}`;
+  } else if (data.type === 'group') {
+    targetUrl = `/groups/${data.groupId}`;
+  }
+  
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window' })
+      .then((clients) => {
+        // Focus existing window if available
+        for (const client of clients) {
+          if (client.url.includes(self.location.origin) && 'focus' in client) {
+            client.navigate(targetUrl);
+            return client.focus();
+          }
+        }
+        
+        // Open new window
+        if (self.clients.openWindow) {
+          return self.clients.openWindow(targetUrl);
+        }
+      })
+  );
+});
+
+// ============================================================================
+// Message Handling
+// ============================================================================
+
+self.addEventListener('message', (event) => {
+  const { type, payload } = event.data;
+  
+  switch (type) {
+    case 'SKIP_WAITING':
+      self.skipWaiting();
+      break;
+      
+    case 'CACHE_CONTENT':
+      cacheContent(payload);
+      break;
+      
+    case 'CLEAR_CACHE':
+      clearCaches(payload);
+      break;
+      
+    case 'GET_CACHE_STATUS':
+      getCacheStatus().then((status) => {
+        event.ports[0].postMessage(status);
+      });
+      break;
+  }
+});
+
+async function cacheContent(payload) {
+  const { type, id, url } = payload;
+  
+  try {
+    const response = await fetch(url);
+    
+    if (response.ok) {
+      const cache = await caches.open(API_CACHE);
+      await cache.put(url, response);
+      console.log(`[SW] Cached ${type} ${id}`);
+    }
+  } catch (error) {
+    console.error('[SW] Failed to cache content:', error);
+  }
+}
+
+async function clearCaches(types) {
+  const cachesToClear = types || [STATIC_CACHE, DYNAMIC_CACHE, API_CACHE];
+  
+  for (const cacheName of cachesToClear) {
+    const cache = await caches.open(cacheName);
+    const keys = await cache.keys();
+    
+    for (const key of keys) {
+      await cache.delete(key);
+    }
+  }
+  
+  console.log('[SW] Caches cleared:', cachesToClear);
+}
+
+async function getCacheStatus() {
+  const cacheNames = await caches.keys();
+  const status = {};
+  
+  for (const name of cacheNames) {
+    const cache = await caches.open(name);
+    const keys = await cache.keys();
+    status[name] = keys.length;
+  }
+  
+  return status;
+}
+
+// ============================================================================
+// Utility Functions
+// ============================================================================
+
+function isStaticAsset(pathname) {
+  const staticExtensions = [
+    '.js', '.css', '.png', '.jpg', '.jpeg', '.gif', '.svg',
+    '.woff', '.woff2', '.ttf', '.eot', '.ico'
+  ];
+  
+  return staticExtensions.some(ext => pathname.endsWith(ext));
+}

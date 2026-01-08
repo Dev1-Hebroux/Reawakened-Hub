@@ -1,0 +1,468 @@
+/**
+ * Recommendation Engine Service
+ * 
+ * Provides personalized content recommendations based on:
+ * - Spiritual profile and Wheel of Life scores
+ * - Completed content and engagement patterns
+ * - User preferences and goals
+ * - Collaborative filtering from similar users
+ */
+
+import { db } from '../db';
+import { eq, and, desc, sql, inArray, notInArray } from 'drizzle-orm';
+import { logger } from '../lib/logger';
+import type { ContentCategory, WheelOfLifeScores } from '@shared/types';
+
+// ============================================================================
+// Types
+// ============================================================================
+
+interface RecommendationContext {
+  userId: string;
+  limit?: number;
+  excludeIds?: number[];
+}
+
+interface ScoredItem<T> {
+  item: T;
+  score: number;
+  reasons: string[];
+}
+
+interface RecommendationResult<T> {
+  items: ScoredItem<T>[];
+  strategy: string;
+  generatedAt: Date;
+}
+
+interface UserProfile {
+  wheelOfLife: WheelOfLifeScores | null;
+  primaryGrowthAreas: ContentCategory[];
+  completedPlanIds: number[];
+  completedJourneyIds: number[];
+  activeGoalCategories: ContentCategory[];
+  engagementPatterns: EngagementPattern;
+}
+
+interface EngagementPattern {
+  preferredCategories: ContentCategory[];
+  averageSessionLength: number;
+  completionRate: number;
+  preferredDifficulty: 'beginner' | 'intermediate' | 'advanced';
+}
+
+interface ContentItem {
+  id: number;
+  title: string;
+  category: string;
+  difficulty: string;
+  totalDays: number;
+  tags: string[];
+  isFeatured: boolean;
+}
+
+// ============================================================================
+// Category Mapping from Wheel of Life
+// ============================================================================
+
+const wheelToCategories: Record<keyof WheelOfLifeScores, ContentCategory[]> = {
+  faith: ['faith', 'prayer', 'scripture', 'discipleship'],
+  family: ['relationships', 'marriage', 'parenting'],
+  finances: ['finances', 'career'],
+  fitness: ['health'],
+  friends: ['relationships', 'community'],
+  fun: ['purpose', 'mental_health'],
+  career: ['career', 'leadership'],
+  contribution: ['evangelism', 'community', 'leadership'],
+};
+
+// ============================================================================
+// Recommendation Engine
+// ============================================================================
+
+export class RecommendationEngine {
+  
+  /**
+   * Get personalized reading plan recommendations.
+   */
+  async getReadingPlanRecommendations(
+    context: RecommendationContext
+  ): Promise<RecommendationResult<ContentItem>> {
+    const { userId, limit = 6, excludeIds = [] } = context;
+    
+    try {
+      const profile = await this.getUserProfile(userId);
+      const allPlans = await this.getAvailableReadingPlans(userId, excludeIds);
+      
+      const scoredPlans = allPlans.map(plan => this.scoreContent(plan, profile));
+      scoredPlans.sort((a, b) => b.score - a.score);
+      
+      return {
+        items: scoredPlans.slice(0, limit),
+        strategy: this.determineStrategy(profile),
+        generatedAt: new Date(),
+      };
+    } catch (error) {
+      logger.error({ err: error, userId }, 'Failed to generate reading plan recommendations');
+      return this.getFallbackRecommendations('reading_plans', limit);
+    }
+  }
+  
+  /**
+   * Get personalized journey recommendations.
+   */
+  async getJourneyRecommendations(
+    context: RecommendationContext
+  ): Promise<RecommendationResult<ContentItem>> {
+    const { userId, limit = 6, excludeIds = [] } = context;
+    
+    try {
+      const profile = await this.getUserProfile(userId);
+      const allJourneys = await this.getAvailableJourneys(userId, excludeIds);
+      
+      const scoredJourneys = allJourneys.map(journey => this.scoreContent(journey, profile));
+      scoredJourneys.sort((a, b) => b.score - a.score);
+      
+      return {
+        items: scoredJourneys.slice(0, limit),
+        strategy: this.determineStrategy(profile),
+        generatedAt: new Date(),
+      };
+    } catch (error) {
+      logger.error({ err: error, userId }, 'Failed to generate journey recommendations');
+      return this.getFallbackRecommendations('journeys', limit);
+    }
+  }
+  
+  /**
+   * Get daily spark recommendation.
+   */
+  async getDailySparkRecommendation(userId: string): Promise<ScoredItem<ContentItem> | null> {
+    try {
+      const profile = await this.getUserProfile(userId);
+      const recentSparkIds = await this.getRecentSparkIds(userId, 7);
+      const availableSparks = await this.getAvailableSparks(recentSparkIds);
+      
+      if (availableSparks.length === 0) {
+        return null;
+      }
+      
+      const scoredSparks = availableSparks.map(spark => this.scoreContent(spark, profile));
+      scoredSparks.sort((a, b) => b.score - a.score);
+      
+      // Add randomization among top candidates to prevent repetitive recommendations
+      const topCandidates = scoredSparks.slice(0, Math.min(5, scoredSparks.length));
+      const randomIndex = Math.floor(Math.random() * topCandidates.length);
+      
+      return topCandidates[randomIndex];
+    } catch (error) {
+      logger.error({ err: error, userId }, 'Failed to get daily spark recommendation');
+      return null;
+    }
+  }
+  
+  /**
+   * Get "continue where you left off" recommendations.
+   */
+  async getContinueRecommendations(userId: string): Promise<{
+    readingPlans: ContentItem[];
+    journeys: ContentItem[];
+  }> {
+    try {
+      const [inProgressPlans, inProgressJourneys] = await Promise.all([
+        this.getInProgressReadingPlans(userId),
+        this.getInProgressJourneys(userId),
+      ]);
+      
+      return {
+        readingPlans: inProgressPlans.slice(0, 3),
+        journeys: inProgressJourneys.slice(0, 3),
+      };
+    } catch (error) {
+      logger.error({ err: error, userId }, 'Failed to get continue recommendations');
+      return { readingPlans: [], journeys: [] };
+    }
+  }
+  
+  /**
+   * Get recommendations based on a specific Wheel of Life area.
+   */
+  async getWheelAreaRecommendations(
+    userId: string,
+    wheelArea: keyof WheelOfLifeScores,
+    limit: number = 4
+  ): Promise<{ readingPlans: ContentItem[]; journeys: ContentItem[] }> {
+    const targetCategories = wheelToCategories[wheelArea] || [];
+    
+    try {
+      const [plans, journeys] = await Promise.all([
+        this.getContentByCategories('reading_plans', targetCategories, limit),
+        this.getContentByCategories('journeys', targetCategories, limit),
+      ]);
+      
+      return { readingPlans: plans, journeys };
+    } catch (error) {
+      logger.error({ err: error, userId, wheelArea }, 'Failed to get wheel area recommendations');
+      return { readingPlans: [], journeys: [] };
+    }
+  }
+  
+  /**
+   * Get goal-aligned recommendations.
+   */
+  async getGoalAlignedRecommendations(
+    userId: string,
+    goalId: number
+  ): Promise<{ readingPlans: ContentItem[]; journeys: ContentItem[] }> {
+    try {
+      const goal = await this.getUserGoal(userId, goalId);
+      if (!goal) {
+        return { readingPlans: [], journeys: [] };
+      }
+      
+      const targetCategories = [goal.category];
+      const [plans, journeys] = await Promise.all([
+        this.getContentByCategories('reading_plans', targetCategories, 3),
+        this.getContentByCategories('journeys', targetCategories, 3),
+      ]);
+      
+      return { readingPlans: plans, journeys };
+    } catch (error) {
+      logger.error({ err: error, userId, goalId }, 'Failed to get goal-aligned recommendations');
+      return { readingPlans: [], journeys: [] };
+    }
+  }
+  
+  // ============================================================================
+  // Scoring Algorithm
+  // ============================================================================
+  
+  private scoreContent(item: ContentItem, profile: UserProfile): ScoredItem<ContentItem> {
+    let score = 0;
+    const reasons: string[] = [];
+    
+    // Category match with growth areas (weight: 30)
+    if (profile.primaryGrowthAreas.includes(item.category as ContentCategory)) {
+      score += 30;
+      reasons.push('Matches your growth focus');
+    }
+    
+    // Category match with low Wheel of Life scores (weight: 25)
+    const lowAreas = this.getLowWheelAreas(profile.wheelOfLife);
+    const relatedCategories = lowAreas.flatMap(area => wheelToCategories[area] || []);
+    if (relatedCategories.includes(item.category as ContentCategory)) {
+      score += 25;
+      reasons.push('Addresses an area for growth');
+    }
+    
+    // Active goal alignment (weight: 20)
+    if (profile.activeGoalCategories.includes(item.category as ContentCategory)) {
+      score += 20;
+      reasons.push('Supports your current goals');
+    }
+    
+    // Difficulty match (weight: 15)
+    if (item.difficulty === profile.engagementPatterns.preferredDifficulty) {
+      score += 15;
+      reasons.push('Right difficulty level for you');
+    } else if (this.isAdjacentDifficulty(item.difficulty, profile.engagementPatterns.preferredDifficulty)) {
+      score += 8;
+    }
+    
+    // Featured content bonus (weight: 5)
+    if (item.isFeatured) {
+      score += 5;
+      reasons.push('Featured content');
+    }
+    
+    // Engagement pattern match (weight: 5)
+    if (profile.engagementPatterns.preferredCategories.includes(item.category as ContentCategory)) {
+      score += 5;
+      reasons.push('Based on your interests');
+    }
+    
+    // Length preference (weight: 5)
+    const preferredLength = this.getPreferredLength(profile.engagementPatterns.averageSessionLength);
+    if (this.matchesLengthPreference(item.totalDays, preferredLength)) {
+      score += 5;
+    }
+    
+    // Freshness bonus for new users (weight: 5)
+    if (profile.completedPlanIds.length < 3 && profile.completedJourneyIds.length < 3) {
+      if (item.difficulty === 'beginner') {
+        score += 5;
+        reasons.push('Great for getting started');
+      }
+    }
+    
+    return { item, score, reasons };
+  }
+  
+  private getLowWheelAreas(wheelOfLife: WheelOfLifeScores | null): (keyof WheelOfLifeScores)[] {
+    if (!wheelOfLife) return [];
+    
+    const entries = Object.entries(wheelOfLife) as [keyof WheelOfLifeScores, number][];
+    const sortedEntries = entries.sort((a, b) => a[1] - b[1]);
+    
+    // Return the 3 lowest scoring areas
+    return sortedEntries.slice(0, 3).map(([key]) => key);
+  }
+  
+  private isAdjacentDifficulty(a: string, b: string): boolean {
+    const levels = ['beginner', 'intermediate', 'advanced'];
+    const indexA = levels.indexOf(a);
+    const indexB = levels.indexOf(b);
+    return Math.abs(indexA - indexB) === 1;
+  }
+  
+  private getPreferredLength(avgSessionLength: number): 'short' | 'medium' | 'long' {
+    if (avgSessionLength < 10) return 'short';
+    if (avgSessionLength < 20) return 'medium';
+    return 'long';
+  }
+  
+  private matchesLengthPreference(totalDays: number, preference: 'short' | 'medium' | 'long'): boolean {
+    switch (preference) {
+      case 'short': return totalDays <= 7;
+      case 'medium': return totalDays > 7 && totalDays <= 21;
+      case 'long': return totalDays > 21;
+    }
+  }
+  
+  private determineStrategy(profile: UserProfile): string {
+    if (profile.completedPlanIds.length === 0 && profile.completedJourneyIds.length === 0) {
+      return 'new_user_onboarding';
+    }
+    if (profile.wheelOfLife) {
+      return 'wheel_of_life_guided';
+    }
+    if (profile.activeGoalCategories.length > 0) {
+      return 'goal_aligned';
+    }
+    return 'engagement_based';
+  }
+  
+  // ============================================================================
+  // Data Fetching Methods
+  // ============================================================================
+  
+  private async getUserProfile(userId: string): Promise<UserProfile> {
+    // Fetch all profile data in parallel
+    const [
+      spiritualProfile,
+      completedPlans,
+      completedJourneys,
+      activeGoals,
+      engagementData,
+    ] = await Promise.all([
+      this.getSpiritualProfile(userId),
+      this.getCompletedPlanIds(userId),
+      this.getCompletedJourneyIds(userId),
+      this.getActiveGoals(userId),
+      this.getEngagementPatterns(userId),
+    ]);
+    
+    return {
+      wheelOfLife: spiritualProfile?.wheelOfLifeScores || null,
+      primaryGrowthAreas: spiritualProfile?.primaryGrowthAreas || [],
+      completedPlanIds: completedPlans,
+      completedJourneyIds: completedJourneys,
+      activeGoalCategories: activeGoals.map(g => g.category),
+      engagementPatterns: engagementData,
+    };
+  }
+  
+  private async getSpiritualProfile(userId: string): Promise<{
+    wheelOfLifeScores: WheelOfLifeScores;
+    primaryGrowthAreas: ContentCategory[];
+  } | null> {
+    // Implementation would query spiritualProfiles table
+    // Simplified for this example
+    return null;
+  }
+  
+  private async getCompletedPlanIds(userId: string): Promise<number[]> {
+    // Query userReadingProgress where completedAt is not null
+    return [];
+  }
+  
+  private async getCompletedJourneyIds(userId: string): Promise<number[]> {
+    // Query userJourneyProgress where completedAt is not null
+    return [];
+  }
+  
+  private async getActiveGoals(userId: string): Promise<{ category: ContentCategory }[]> {
+    // Query userGoals where status = 'active'
+    return [];
+  }
+  
+  private async getEngagementPatterns(userId: string): Promise<EngagementPattern> {
+    // Analyze user activity to determine patterns
+    // Default values for new users
+    return {
+      preferredCategories: [],
+      averageSessionLength: 15,
+      completionRate: 0,
+      preferredDifficulty: 'beginner',
+    };
+  }
+  
+  private async getAvailableReadingPlans(userId: string, excludeIds: number[]): Promise<ContentItem[]> {
+    // Query reading_plans that are published and not in excludeIds or completed
+    return [];
+  }
+  
+  private async getAvailableJourneys(userId: string, excludeIds: number[]): Promise<ContentItem[]> {
+    // Query journeys that are published and not in excludeIds or completed
+    return [];
+  }
+  
+  private async getAvailableSparks(excludeIds: number[]): Promise<ContentItem[]> {
+    // Query sparks that are published and not recently shown
+    return [];
+  }
+  
+  private async getRecentSparkIds(userId: string, days: number): Promise<number[]> {
+    // Query user_spark_views from the last N days
+    return [];
+  }
+  
+  private async getInProgressReadingPlans(userId: string): Promise<ContentItem[]> {
+    // Query reading plans with progress but not completed
+    return [];
+  }
+  
+  private async getInProgressJourneys(userId: string): Promise<ContentItem[]> {
+    // Query journeys with progress but not completed
+    return [];
+  }
+  
+  private async getContentByCategories(
+    contentType: string,
+    categories: ContentCategory[],
+    limit: number
+  ): Promise<ContentItem[]> {
+    // Query content filtered by categories
+    return [];
+  }
+  
+  private async getUserGoal(userId: string, goalId: number): Promise<{ category: ContentCategory } | null> {
+    // Query specific goal
+    return null;
+  }
+  
+  private getFallbackRecommendations<T>(
+    contentType: string,
+    limit: number
+  ): RecommendationResult<T> {
+    // Return featured content as fallback
+    return {
+      items: [],
+      strategy: 'fallback_featured',
+      generatedAt: new Date(),
+    };
+  }
+}
+
+// Export singleton instance
+export const recommendationEngine = new RecommendationEngine();

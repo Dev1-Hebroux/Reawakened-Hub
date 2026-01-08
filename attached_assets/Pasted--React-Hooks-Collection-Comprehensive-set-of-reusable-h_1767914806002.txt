@@ -1,0 +1,630 @@
+/**
+ * React Hooks Collection
+ * 
+ * Comprehensive set of reusable hooks for the platform.
+ */
+
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
+import { offlineService } from '../services/offlineService';
+import type { SyncStatus } from '../services/offlineService';
+
+// ============================================================================
+// Network and Offline Hooks
+// ============================================================================
+
+/**
+ * Hook to track online/offline status.
+ */
+export function useOnlineStatus(): boolean {
+  const [isOnline, setIsOnline] = useState(
+    typeof navigator !== 'undefined' ? navigator.onLine : true
+  );
+  
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+  
+  return isOnline;
+}
+
+/**
+ * Hook to track sync status for offline operations.
+ */
+export function useSyncStatus(): SyncStatus {
+  const [status, setStatus] = useState<SyncStatus>(offlineService.getStatus());
+  
+  useEffect(() => {
+    return offlineService.subscribe(setStatus);
+  }, []);
+  
+  return status;
+}
+
+// ============================================================================
+// Data Fetching Hooks
+// ============================================================================
+
+/**
+ * Hook for paginated data with infinite scroll.
+ */
+export function usePaginatedQuery<T>(
+  queryKey: string[],
+  fetchFn: (page: number) => Promise<{ items: T[]; hasMore: boolean; total?: number }>,
+  options?: { enabled?: boolean; pageSize?: number }
+) {
+  const { enabled = true, pageSize = 20 } = options || {};
+  
+  return useInfiniteQuery({
+    queryKey,
+    queryFn: ({ pageParam = 1 }) => fetchFn(pageParam),
+    getNextPageParam: (lastPage, pages) => 
+      lastPage.hasMore ? pages.length + 1 : undefined,
+    initialPageParam: 1,
+    enabled,
+  });
+}
+
+/**
+ * Hook for data that should work offline.
+ */
+export function useOfflineQuery<T>(
+  queryKey: string[],
+  fetchFn: () => Promise<T>,
+  offlineFetchFn: () => Promise<T | null>,
+  options?: { staleTime?: number }
+) {
+  const isOnline = useOnlineStatus();
+  const { staleTime = 5 * 60 * 1000 } = options || {};
+  
+  return useQuery({
+    queryKey,
+    queryFn: async () => {
+      if (isOnline) {
+        try {
+          return await fetchFn();
+        } catch (error) {
+          const cached = await offlineFetchFn();
+          if (cached) return cached;
+          throw error;
+        }
+      } else {
+        const cached = await offlineFetchFn();
+        if (cached) return cached;
+        throw new Error('No cached data available offline');
+      }
+    },
+    staleTime,
+    networkMode: 'offlineFirst',
+  });
+}
+
+// ============================================================================
+// UI State Hooks
+// ============================================================================
+
+/**
+ * Hook for debounced values.
+ */
+export function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+  
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedValue(value), delay);
+    return () => clearTimeout(timer);
+  }, [value, delay]);
+  
+  return debouncedValue;
+}
+
+/**
+ * Hook for throttled callbacks.
+ */
+export function useThrottle<T extends (...args: any[]) => any>(
+  callback: T,
+  delay: number
+): T {
+  const lastCall = useRef(0);
+  const lastArgs = useRef<Parameters<T> | null>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  return useCallback((...args: Parameters<T>) => {
+    const now = Date.now();
+    
+    if (now - lastCall.current >= delay) {
+      lastCall.current = now;
+      callback(...args);
+    } else {
+      lastArgs.current = args;
+      
+      if (!timeoutRef.current) {
+        timeoutRef.current = setTimeout(() => {
+          if (lastArgs.current) {
+            lastCall.current = Date.now();
+            callback(...lastArgs.current);
+            lastArgs.current = null;
+          }
+          timeoutRef.current = null;
+        }, delay - (now - lastCall.current));
+      }
+    }
+  }, [callback, delay]) as T;
+}
+
+/**
+ * Hook for local storage with SSR support.
+ */
+export function useLocalStorage<T>(
+  key: string,
+  initialValue: T
+): [T, (value: T | ((prev: T) => T)) => void] {
+  const [storedValue, setStoredValue] = useState<T>(() => {
+    if (typeof window === 'undefined') return initialValue;
+    
+    try {
+      const item = window.localStorage.getItem(key);
+      return item ? JSON.parse(item) : initialValue;
+    } catch {
+      return initialValue;
+    }
+  });
+  
+  const setValue = useCallback((value: T | ((prev: T) => T)) => {
+    setStoredValue((prev) => {
+      const valueToStore = value instanceof Function ? value(prev) : value;
+      
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem(key, JSON.stringify(valueToStore));
+      }
+      
+      return valueToStore;
+    });
+  }, [key]);
+  
+  return [storedValue, setValue];
+}
+
+/**
+ * Hook for measuring element dimensions.
+ */
+export function useMeasure<T extends HTMLElement>(): [
+  React.RefObject<T>,
+  { width: number; height: number }
+] {
+  const ref = useRef<T>(null);
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  
+  useEffect(() => {
+    if (!ref.current) return;
+    
+    const observer = new ResizeObserver((entries) => {
+      const { width, height } = entries[0].contentRect;
+      setDimensions({ width, height });
+    });
+    
+    observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
+  
+  return [ref, dimensions];
+}
+
+/**
+ * Hook for intersection observer (lazy loading, animations).
+ */
+export function useIntersectionObserver(
+  options?: IntersectionObserverInit
+): [React.RefObject<HTMLElement>, boolean] {
+  const ref = useRef<HTMLElement>(null);
+  const [isIntersecting, setIsIntersecting] = useState(false);
+  
+  useEffect(() => {
+    if (!ref.current) return;
+    
+    const observer = new IntersectionObserver(([entry]) => {
+      setIsIntersecting(entry.isIntersecting);
+    }, options);
+    
+    observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, [options]);
+  
+  return [ref, isIntersecting];
+}
+
+/**
+ * Hook for detecting clicks outside an element.
+ */
+export function useClickOutside<T extends HTMLElement>(
+  callback: () => void
+): React.RefObject<T> {
+  const ref = useRef<T>(null);
+  
+  useEffect(() => {
+    const handleClick = (event: MouseEvent) => {
+      if (ref.current && !ref.current.contains(event.target as Node)) {
+        callback();
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [callback]);
+  
+  return ref;
+}
+
+// ============================================================================
+// Form and Input Hooks
+// ============================================================================
+
+/**
+ * Hook for managing form state with validation.
+ */
+export function useForm<T extends Record<string, any>>(
+  initialValues: T,
+  validate?: (values: T) => Partial<Record<keyof T, string>>
+) {
+  const [values, setValues] = useState<T>(initialValues);
+  const [errors, setErrors] = useState<Partial<Record<keyof T, string>>>({});
+  const [touched, setTouched] = useState<Partial<Record<keyof T, boolean>>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const handleChange = useCallback((name: keyof T, value: any) => {
+    setValues((prev) => ({ ...prev, [name]: value }));
+    
+    if (validate) {
+      const newErrors = validate({ ...values, [name]: value });
+      setErrors((prev) => ({ ...prev, [name]: newErrors[name] }));
+    }
+  }, [values, validate]);
+  
+  const handleBlur = useCallback((name: keyof T) => {
+    setTouched((prev) => ({ ...prev, [name]: true }));
+  }, []);
+  
+  const handleSubmit = useCallback(async (
+    onSubmit: (values: T) => Promise<void>
+  ) => {
+    setTouched(
+      Object.keys(values).reduce((acc, key) => ({ ...acc, [key]: true }), {})
+    );
+    
+    if (validate) {
+      const newErrors = validate(values);
+      setErrors(newErrors);
+      
+      if (Object.keys(newErrors).length > 0) {
+        return;
+      }
+    }
+    
+    setIsSubmitting(true);
+    try {
+      await onSubmit(values);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [values, validate]);
+  
+  const reset = useCallback(() => {
+    setValues(initialValues);
+    setErrors({});
+    setTouched({});
+  }, [initialValues]);
+  
+  const getFieldProps = useCallback((name: keyof T) => ({
+    value: values[name],
+    onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => 
+      handleChange(name, e.target.value),
+    onBlur: () => handleBlur(name),
+    error: touched[name] ? errors[name] : undefined,
+  }), [values, errors, touched, handleChange, handleBlur]);
+  
+  return {
+    values,
+    errors,
+    touched,
+    isSubmitting,
+    handleChange,
+    handleBlur,
+    handleSubmit,
+    reset,
+    getFieldProps,
+    setValues,
+    setErrors,
+  };
+}
+
+// ============================================================================
+// Animation Hooks
+// ============================================================================
+
+/**
+ * Hook for reduced motion preference.
+ */
+export function usePrefersReducedMotion(): boolean {
+  const [prefersReduced, setPrefersReduced] = useState(false);
+  
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReduced(mediaQuery.matches);
+    
+    const handler = (event: MediaQueryListEvent) => {
+      setPrefersReduced(event.matches);
+    };
+    
+    mediaQuery.addEventListener('change', handler);
+    return () => mediaQuery.removeEventListener('change', handler);
+  }, []);
+  
+  return prefersReduced;
+}
+
+/**
+ * Hook for counting animation.
+ */
+export function useCountUp(
+  end: number,
+  duration: number = 1000,
+  start: number = 0
+): number {
+  const [count, setCount] = useState(start);
+  const prefersReduced = usePrefersReducedMotion();
+  
+  useEffect(() => {
+    if (prefersReduced) {
+      setCount(end);
+      return;
+    }
+    
+    const startTime = Date.now();
+    const diff = end - start;
+    
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      
+      // Ease out quad
+      const eased = 1 - (1 - progress) * (1 - progress);
+      
+      setCount(Math.round(start + diff * eased));
+      
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      }
+    };
+    
+    requestAnimationFrame(animate);
+  }, [end, duration, start, prefersReduced]);
+  
+  return count;
+}
+
+// ============================================================================
+// Accessibility Hooks
+// ============================================================================
+
+/**
+ * Hook for keyboard navigation.
+ */
+export function useKeyboardNavigation(
+  items: any[],
+  options?: {
+    onSelect?: (index: number) => void;
+    onEscape?: () => void;
+    loop?: boolean;
+  }
+) {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const { onSelect, onEscape, loop = true } = options || {};
+  
+  const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
+    switch (event.key) {
+      case 'ArrowDown':
+        event.preventDefault();
+        setActiveIndex((prev) => {
+          const next = prev + 1;
+          return next >= items.length ? (loop ? 0 : prev) : next;
+        });
+        break;
+      case 'ArrowUp':
+        event.preventDefault();
+        setActiveIndex((prev) => {
+          const next = prev - 1;
+          return next < 0 ? (loop ? items.length - 1 : prev) : next;
+        });
+        break;
+      case 'Enter':
+        event.preventDefault();
+        onSelect?.(activeIndex);
+        break;
+      case 'Escape':
+        event.preventDefault();
+        onEscape?.();
+        break;
+    }
+  }, [items.length, activeIndex, onSelect, onEscape, loop]);
+  
+  return {
+    activeIndex,
+    setActiveIndex,
+    handleKeyDown,
+    getItemProps: (index: number) => ({
+      'aria-selected': index === activeIndex,
+      tabIndex: index === activeIndex ? 0 : -1,
+    }),
+  };
+}
+
+/**
+ * Hook for focus trap in modals.
+ */
+export function useFocusTrap<T extends HTMLElement>(
+  isActive: boolean
+): React.RefObject<T> {
+  const containerRef = useRef<T>(null);
+  
+  useEffect(() => {
+    if (!isActive || !containerRef.current) return;
+    
+    const container = containerRef.current;
+    const focusableElements = container.querySelectorAll<HTMLElement>(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+    );
+    
+    const firstElement = focusableElements[0];
+    const lastElement = focusableElements[focusableElements.length - 1];
+    
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Tab') return;
+      
+      if (event.shiftKey) {
+        if (document.activeElement === firstElement) {
+          event.preventDefault();
+          lastElement?.focus();
+        }
+      } else {
+        if (document.activeElement === lastElement) {
+          event.preventDefault();
+          firstElement?.focus();
+        }
+      }
+    };
+    
+    container.addEventListener('keydown', handleKeyDown);
+    firstElement?.focus();
+    
+    return () => container.removeEventListener('keydown', handleKeyDown);
+  }, [isActive]);
+  
+  return containerRef;
+}
+
+// ============================================================================
+// Platform-Specific Hooks
+// ============================================================================
+
+/**
+ * Hook for streak tracking.
+ */
+export function useStreak(userId: string) {
+  return useQuery({
+    queryKey: ['streak', userId],
+    queryFn: async () => {
+      const response = await fetch(`/api/users/${userId}/streak`);
+      if (!response.ok) throw new Error('Failed to fetch streak');
+      return response.json() as Promise<{
+        currentStreak: number;
+        longestStreak: number;
+        lastActivityDate: string | null;
+        streakAtRisk: boolean;
+      }>;
+    },
+    staleTime: 60 * 1000, // 1 minute
+  });
+}
+
+/**
+ * Hook for user progress across all content.
+ */
+export function useUserProgress(userId: string) {
+  return useQuery({
+    queryKey: ['userProgress', userId],
+    queryFn: async () => {
+      const response = await fetch(`/api/users/${userId}/progress`);
+      if (!response.ok) throw new Error('Failed to fetch progress');
+      return response.json() as Promise<{
+        readingPlans: { inProgress: number; completed: number };
+        journeys: { inProgress: number; completed: number };
+        goals: { active: number; completed: number };
+        totalDaysCompleted: number;
+      }>;
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+}
+
+/**
+ * Hook for notifications.
+ */
+export function useNotifications() {
+  const queryClient = useQueryClient();
+  
+  const { data, isLoading } = useQuery({
+    queryKey: ['notifications'],
+    queryFn: async () => {
+      const response = await fetch('/api/notifications');
+      if (!response.ok) throw new Error('Failed to fetch notifications');
+      return response.json() as Promise<{
+        notifications: any[];
+        total: number;
+        unread: number;
+      }>;
+    },
+    refetchInterval: 60 * 1000, // Poll every minute
+  });
+  
+  const markAsRead = useMutation({
+    mutationFn: async (notificationId: number) => {
+      const response = await fetch(`/api/notifications/${notificationId}/read`, {
+        method: 'POST',
+      });
+      if (!response.ok) throw new Error('Failed to mark as read');
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    },
+  });
+  
+  const markAllAsRead = useMutation({
+    mutationFn: async () => {
+      const response = await fetch('/api/notifications/read-all', {
+        method: 'POST',
+      });
+      if (!response.ok) throw new Error('Failed to mark all as read');
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    },
+  });
+  
+  return {
+    notifications: data?.notifications || [],
+    total: data?.total || 0,
+    unreadCount: data?.unread || 0,
+    isLoading,
+    markAsRead: markAsRead.mutate,
+    markAllAsRead: markAllAsRead.mutate,
+  };
+}
+
+export {
+  useOnlineStatus,
+  useSyncStatus,
+  usePaginatedQuery,
+  useOfflineQuery,
+  useDebounce,
+  useThrottle,
+  useLocalStorage,
+  useMeasure,
+  useIntersectionObserver,
+  useClickOutside,
+  useForm,
+  usePrefersReducedMotion,
+  useCountUp,
+  useKeyboardNavigation,
+  useFocusTrap,
+  useStreak,
+  useUserProgress,
+  useNotifications,
+};

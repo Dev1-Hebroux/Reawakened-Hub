@@ -1,0 +1,370 @@
+/**
+ * Database Schema Additions
+ * 
+ * New tables and indexes required for the platform improvements.
+ * Use this with Drizzle ORM to extend your existing schema.
+ */
+
+import { 
+  pgTable, 
+  serial, 
+  text, 
+  varchar, 
+  integer, 
+  boolean, 
+  timestamp, 
+  jsonb, 
+  index, 
+  unique,
+  primaryKey,
+} from 'drizzle-orm/pg-core';
+import { relations } from 'drizzle-orm';
+import { users } from './existingSchema'; // Import your existing users table
+
+// ============================================================================
+// Notification Tables
+// ============================================================================
+
+export const notifications = pgTable('notifications', {
+  id: serial('id').primaryKey(),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  type: varchar('type', { length: 50 }).notNull(),
+  title: varchar('title', { length: 200 }).notNull(),
+  body: text('body').notNull(),
+  data: jsonb('data').default({}).notNull(),
+  isRead: boolean('is_read').default(false).notNull(),
+  readAt: timestamp('read_at', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+}, (table) => ({
+  userUnreadIdx: index('idx_notifications_user_unread')
+    .on(table.userId, table.isRead)
+    .where(sql`${table.isRead} = false`),
+  createdAtIdx: index('idx_notifications_created_at').on(table.createdAt),
+}));
+
+export const scheduledNotifications = pgTable('scheduled_notifications', {
+  id: serial('id').primaryKey(),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  type: varchar('type', { length: 50 }).notNull(),
+  title: varchar('title', { length: 200 }).notNull(),
+  body: text('body').notNull(),
+  data: jsonb('data').default({}).notNull(),
+  scheduledFor: timestamp('scheduled_for', { withTimezone: true }).notNull(),
+  status: varchar('status', { length: 20 }).default('pending').notNull(),
+  sentAt: timestamp('sent_at', { withTimezone: true }),
+  error: text('error'),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+}, (table) => ({
+  pendingIdx: index('idx_scheduled_notifications_pending')
+    .on(table.scheduledFor)
+    .where(sql`${table.status} = 'pending'`),
+}));
+
+export const pushSubscriptions = pgTable('push_subscriptions', {
+  id: serial('id').primaryKey(),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  endpoint: text('endpoint').notNull(),
+  keys: jsonb('keys').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+}, (table) => ({
+  userEndpointUnique: unique('push_subscriptions_user_endpoint').on(table.userId, table.endpoint),
+}));
+
+// ============================================================================
+// User Preferences Table
+// ============================================================================
+
+export const userPreferences = pgTable('user_preferences', {
+  id: serial('id').primaryKey(),
+  userId: text('user_id').notNull().unique().references(() => users.id, { onDelete: 'cascade' }),
+  notificationSettings: jsonb('notification_settings').default({
+    dailyReminders: true,
+    dailyReminderTime: '08:00',
+    streakAlerts: true,
+    groupNotifications: true,
+    emailDigest: 'weekly',
+    pushEnabled: true,
+  }).notNull(),
+  displaySettings: jsonb('display_settings').default({
+    theme: 'system',
+    fontSize: 'medium',
+    reducedMotion: false,
+    highContrast: false,
+  }).notNull(),
+  privacySettings: jsonb('privacy_settings').default({
+    profileVisibility: 'group',
+    showStreak: true,
+    showProgress: true,
+    allowAccountabilityRequests: true,
+  }).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+// ============================================================================
+// Spiritual Profile Table (if not existing)
+// ============================================================================
+
+export const spiritualProfiles = pgTable('spiritual_profiles', {
+  id: serial('id').primaryKey(),
+  userId: text('user_id').notNull().unique().references(() => users.id, { onDelete: 'cascade' }),
+  wheelOfLifeScores: jsonb('wheel_of_life_scores').notNull(),
+  primaryGrowthAreas: jsonb('primary_growth_areas').default([]).notNull(),
+  spiritualGifts: jsonb('spiritual_gifts').default([]).notNull(),
+  assessmentCompletedAt: timestamp('assessment_completed_at', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+// ============================================================================
+// User Spark Views (for recommendation tracking)
+// ============================================================================
+
+export const userSparkViews = pgTable('user_spark_views', {
+  id: serial('id').primaryKey(),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  sparkId: integer('spark_id').notNull(),
+  viewedAt: timestamp('viewed_at', { withTimezone: true }).defaultNow().notNull(),
+}, (table) => ({
+  userSparkIdx: index('idx_user_spark_views_user').on(table.userId),
+  viewedAtIdx: index('idx_user_spark_views_date').on(table.viewedAt),
+}));
+
+// ============================================================================
+// Journal Entries Table
+// ============================================================================
+
+export const journalEntries = pgTable('journal_entries', {
+  id: serial('id').primaryKey(),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  contextType: varchar('context_type', { length: 50 }).notNull(),
+  contextId: integer('context_id'),
+  content: text('content').notNull(),
+  isPrivate: boolean('is_private').default(true).notNull(),
+  tags: jsonb('tags').default([]).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+}, (table) => ({
+  userIdx: index('idx_journal_entries_user').on(table.userId),
+  contextIdx: index('idx_journal_entries_context').on(table.contextType, table.contextId),
+}));
+
+// ============================================================================
+// Idempotency Keys Table (for mutation deduplication)
+// ============================================================================
+
+export const idempotencyKeys = pgTable('idempotency_keys', {
+  key: varchar('key', { length: 100 }).primaryKey(),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  response: jsonb('response'),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+}, (table) => ({
+  userIdx: index('idx_idempotency_keys_user').on(table.userId),
+  expiresIdx: index('idx_idempotency_keys_expires').on(table.expiresAt),
+}));
+
+// ============================================================================
+// Relations
+// ============================================================================
+
+export const notificationRelations = relations(notifications, ({ one }) => ({
+  user: one(users, {
+    fields: [notifications.userId],
+    references: [users.id],
+  }),
+}));
+
+export const scheduledNotificationRelations = relations(scheduledNotifications, ({ one }) => ({
+  user: one(users, {
+    fields: [scheduledNotifications.userId],
+    references: [users.id],
+  }),
+}));
+
+export const userPreferencesRelations = relations(userPreferences, ({ one }) => ({
+  user: one(users, {
+    fields: [userPreferences.userId],
+    references: [users.id],
+  }),
+}));
+
+export const spiritualProfileRelations = relations(spiritualProfiles, ({ one }) => ({
+  user: one(users, {
+    fields: [spiritualProfiles.userId],
+    references: [users.id],
+  }),
+}));
+
+export const journalEntryRelations = relations(journalEntries, ({ one }) => ({
+  user: one(users, {
+    fields: [journalEntries.userId],
+    references: [users.id],
+  }),
+}));
+
+// ============================================================================
+// SQL Migration Script
+// ============================================================================
+
+export const migrationSQL = `
+-- Notifications table
+CREATE TABLE IF NOT EXISTS notifications (
+  id SERIAL PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  type VARCHAR(50) NOT NULL,
+  title VARCHAR(200) NOT NULL,
+  body TEXT NOT NULL,
+  data JSONB DEFAULT '{}' NOT NULL,
+  is_read BOOLEAN DEFAULT FALSE NOT NULL,
+  read_at TIMESTAMP WITH TIME ZONE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_notifications_user_unread 
+  ON notifications(user_id, is_read) 
+  WHERE is_read = FALSE;
+
+CREATE INDEX IF NOT EXISTS idx_notifications_created_at 
+  ON notifications(created_at);
+
+-- Scheduled notifications table
+CREATE TABLE IF NOT EXISTS scheduled_notifications (
+  id SERIAL PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  type VARCHAR(50) NOT NULL,
+  title VARCHAR(200) NOT NULL,
+  body TEXT NOT NULL,
+  data JSONB DEFAULT '{}' NOT NULL,
+  scheduled_for TIMESTAMP WITH TIME ZONE NOT NULL,
+  status VARCHAR(20) DEFAULT 'pending' NOT NULL,
+  sent_at TIMESTAMP WITH TIME ZONE,
+  error TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_scheduled_notifications_pending 
+  ON scheduled_notifications(scheduled_for) 
+  WHERE status = 'pending';
+
+-- Push subscriptions table
+CREATE TABLE IF NOT EXISTS push_subscriptions (
+  id SERIAL PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  endpoint TEXT NOT NULL,
+  keys JSONB NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
+  UNIQUE(user_id, endpoint)
+);
+
+-- User preferences table
+CREATE TABLE IF NOT EXISTS user_preferences (
+  id SERIAL PRIMARY KEY,
+  user_id TEXT NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+  notification_settings JSONB DEFAULT '{
+    "dailyReminders": true,
+    "dailyReminderTime": "08:00",
+    "streakAlerts": true,
+    "groupNotifications": true,
+    "emailDigest": "weekly",
+    "pushEnabled": true
+  }' NOT NULL,
+  display_settings JSONB DEFAULT '{
+    "theme": "system",
+    "fontSize": "medium",
+    "reducedMotion": false,
+    "highContrast": false
+  }' NOT NULL,
+  privacy_settings JSONB DEFAULT '{
+    "profileVisibility": "group",
+    "showStreak": true,
+    "showProgress": true,
+    "allowAccountabilityRequests": true
+  }' NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
+);
+
+-- Spiritual profiles table
+CREATE TABLE IF NOT EXISTS spiritual_profiles (
+  id SERIAL PRIMARY KEY,
+  user_id TEXT NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+  wheel_of_life_scores JSONB NOT NULL,
+  primary_growth_areas JSONB DEFAULT '[]' NOT NULL,
+  spiritual_gifts JSONB DEFAULT '[]' NOT NULL,
+  assessment_completed_at TIMESTAMP WITH TIME ZONE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
+);
+
+-- User spark views table
+CREATE TABLE IF NOT EXISTS user_spark_views (
+  id SERIAL PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  spark_id INTEGER NOT NULL,
+  viewed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_spark_views_user 
+  ON user_spark_views(user_id);
+
+CREATE INDEX IF NOT EXISTS idx_user_spark_views_date 
+  ON user_spark_views(viewed_at);
+
+-- Journal entries table
+CREATE TABLE IF NOT EXISTS journal_entries (
+  id SERIAL PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  context_type VARCHAR(50) NOT NULL,
+  context_id INTEGER,
+  content TEXT NOT NULL,
+  is_private BOOLEAN DEFAULT TRUE NOT NULL,
+  tags JSONB DEFAULT '[]' NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_journal_entries_user 
+  ON journal_entries(user_id);
+
+CREATE INDEX IF NOT EXISTS idx_journal_entries_context 
+  ON journal_entries(context_type, context_id);
+
+-- Idempotency keys table
+CREATE TABLE IF NOT EXISTS idempotency_keys (
+  key VARCHAR(100) PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  response JSONB,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
+  expires_at TIMESTAMP WITH TIME ZONE NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_idempotency_keys_user 
+  ON idempotency_keys(user_id);
+
+CREATE INDEX IF NOT EXISTS idx_idempotency_keys_expires 
+  ON idempotency_keys(expires_at);
+
+-- Add missing columns to existing tables if needed
+ALTER TABLE user_reading_progress 
+  ADD COLUMN IF NOT EXISTS current_streak INTEGER DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS longest_streak INTEGER DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS last_activity_at TIMESTAMP WITH TIME ZONE;
+
+ALTER TABLE user_journey_progress 
+  ADD COLUMN IF NOT EXISTS last_activity_at TIMESTAMP WITH TIME ZONE;
+
+ALTER TABLE reading_plans 
+  ADD COLUMN IF NOT EXISTS tags JSONB DEFAULT '[]',
+  ADD COLUMN IF NOT EXISTS is_featured BOOLEAN DEFAULT FALSE;
+
+ALTER TABLE journeys 
+  ADD COLUMN IF NOT EXISTS tags JSONB DEFAULT '[]',
+  ADD COLUMN IF NOT EXISTS is_featured BOOLEAN DEFAULT FALSE;
+
+ALTER TABLE sparks 
+  ADD COLUMN IF NOT EXISTS tags JSONB DEFAULT '[]';
+`;
+
+// Import for sql template tag
+import { sql } from 'drizzle-orm';
