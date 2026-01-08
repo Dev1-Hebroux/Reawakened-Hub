@@ -1113,15 +1113,19 @@ export function SparksPage() {
                       />
                       <button
                         type="submit"
-                        disabled={emailSubmitting}
-                        className="bg-white hover:bg-gray-100 text-black font-bold px-6 py-3 rounded-xl flex items-center gap-2 transition-colors disabled:opacity-50"
+                        disabled={emailSubmitting || subscriptions.length === 0}
+                        className="bg-white hover:bg-gray-100 text-black font-bold px-6 py-3 rounded-xl flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         data-testid="button-subscribe-email"
                       >
                         {emailSubmitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Mail className="h-5 w-5" />}
                         Subscribe
                       </button>
                     </div>
-                    <p className="text-xs text-gray-500 text-center">Get daily devotionals, worship, and testimonies delivered to your inbox</p>
+                    <p className="text-xs text-gray-500 text-center">
+                      {subscriptions.length === 0 
+                        ? "Select at least one category above to subscribe" 
+                        : "Get daily devotionals, worship, and testimonies delivered to your inbox"}
+                    </p>
                   </form>
                 )}
               </div>

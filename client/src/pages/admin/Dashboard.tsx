@@ -1,11 +1,14 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { 
   Users, Trophy, Map, GraduationCap, TrendingUp, 
-  Flame, Calendar, FileText, Plus, ChevronRight, Activity
+  Flame, Calendar, FileText, Plus, ChevronRight, Activity,
+  MessageCircle, Copy, Check
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { toast } from "sonner";
 import { motion } from "framer-motion";
 import { Link } from "wouter";
 import {
@@ -17,7 +20,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import type { User, Event } from "@shared/schema";
+import type { User, Event, Spark } from "@shared/schema";
 
 interface AdminStats {
   users: number;
@@ -45,9 +48,45 @@ const userGrowthData = [
 ];
 
 export function AdminDashboard() {
+  const [copied, setCopied] = useState(false);
+  
   const { data: stats, isLoading } = useQuery<AdminStats>({
     queryKey: ["/api/admin/stats"],
   });
+
+  const { data: todaySpark } = useQuery<Spark>({
+    queryKey: ["/api/sparks/today"],
+  });
+
+  const generateWhatsAppMessage = (spark: Spark) => {
+    const passage = spark.fullPassage ? `_"${spark.fullPassage.slice(0, 200)}..."_` : '';
+    const prayer = spark.prayerLine ? `\n\n🙏 *Prayer:*\n${spark.prayerLine}` : '';
+    const action = spark.todayAction ? `\n\n💡 *Today's Action:*\n${spark.todayAction}` : '';
+    
+    return `*${spark.title}* 🔥
+
+${spark.description || ''}
+
+📖 *${spark.scriptureRef || 'Scripture'}*
+${passage}${prayer}${action}
+
+---
+📱 Read the full devotional: https://reawakened.app/spark/${spark.id}
+🌟 DOMINION Campaign - Day by Day`;
+  };
+
+  const copyToClipboard = async () => {
+    if (!todaySpark) return;
+    try {
+      const message = generateWhatsAppMessage(todaySpark);
+      await navigator.clipboard.writeText(message);
+      setCopied(true);
+      toast.success("Message copied! Paste it in your WhatsApp group.");
+      setTimeout(() => setCopied(false), 3000);
+    } catch (error) {
+      toast.error("Failed to copy. Please try again.");
+    }
+  };
 
   const metricCards = [
     { 
@@ -209,6 +248,54 @@ export function AdminDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* WhatsApp Shareable Message */}
+      <Card className="border-0 shadow-sm mb-8" data-testid="card-whatsapp-share">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg font-display flex items-center gap-2">
+            <MessageCircle className="h-5 w-5 text-[#25D366]" />
+            Today's WhatsApp Message
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {todaySpark ? (
+            <div className="space-y-4">
+              <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                <p className="text-sm font-bold text-gray-900 mb-2">{todaySpark.title}</p>
+                <p className="text-xs text-gray-600 mb-2">{todaySpark.description}</p>
+                <p className="text-xs text-gray-500">📖 {todaySpark.scriptureRef}</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <Button 
+                  onClick={copyToClipboard}
+                  className={`flex-1 ${copied ? 'bg-green-500 hover:bg-green-600' : 'bg-[#25D366] hover:bg-[#20bd5a]'} text-white`}
+                  data-testid="button-copy-whatsapp"
+                >
+                  {copied ? (
+                    <>
+                      <Check className="h-4 w-4 mr-2" />
+                      Copied!
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-4 w-4 mr-2" />
+                      Copy for WhatsApp
+                    </>
+                  )}
+                </Button>
+              </div>
+              <p className="text-xs text-gray-500 text-center">
+                Copy and paste this formatted message to your WhatsApp group daily
+              </p>
+            </div>
+          ) : (
+            <div className="text-center py-6">
+              <Flame className="h-10 w-10 text-gray-300 mx-auto mb-2" />
+              <p className="text-sm text-gray-500">No spark for today yet</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <div className="grid md:grid-cols-2 gap-6">
         <Card className="border-0 shadow-sm" data-testid="card-recent-activity">
