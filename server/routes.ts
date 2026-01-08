@@ -1286,6 +1286,46 @@ export async function registerRoutes(
     }
   });
 
+  // Get user's consolidated activity (events, challenges, journeys)
+  app.get('/api/me/activity', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Fetch all user activities in parallel
+      const [eventRegistrations, challengeEnrollments, userJourneys] = await Promise.all([
+        storage.getUserEventRegistrations(userId),
+        storage.getChallengeEnrollments(userId),
+        storage.getUserJourneys(userId),
+      ]);
+      
+      // Enrich challenge enrollments with challenge details
+      const enrichedChallenges = await Promise.all(challengeEnrollments.map(async (enrollment) => {
+        const challenge = await storage.getChallenge(enrollment.challengeId);
+        return { enrollment, challenge };
+      }));
+      
+      // Enrich journeys with journey details and progress
+      const enrichedJourneys = await Promise.all(userJourneys.map(async (uj) => {
+        const journey = await storage.getJourneyById(uj.journeyId);
+        const completedDays = await storage.getUserJourneyDays(uj.id);
+        return {
+          userJourney: uj,
+          journey,
+          completedDaysCount: completedDays.filter(d => d.completedAt).length,
+        };
+      }));
+      
+      res.json({
+        events: eventRegistrations,
+        challenges: enrichedChallenges.filter(c => c.challenge),
+        journeys: enrichedJourneys.filter(j => j.journey),
+      });
+    } catch (error) {
+      console.error("Error fetching user activity:", error);
+      res.status(500).json({ message: "Failed to fetch user activity" });
+    }
+  });
+
   // Get a specific day's content (protected)
   app.get('/api/user-journeys/:id/day/:dayNumber', isAuthenticated, async (req: any, res) => {
     try {

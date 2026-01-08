@@ -62,6 +62,7 @@ const MissionOnboarding = lazy(() => import("@/pages/MissionOnboarding").then(m 
 const DigitalActions = lazy(() => import("@/pages/DigitalActions").then(m => ({ default: m.DigitalActions })));
 const MissionProjectDetail = lazy(() => import("@/pages/MissionProjectDetail").then(m => ({ default: m.MissionProjectDetail })));
 const Profile = lazy(() => import("@/pages/Profile"));
+const MyActivity = lazy(() => import("@/pages/MyActivity"));
 const Notifications = lazy(() => import("@/pages/Notifications"));
 const Settings = lazy(() => import("@/pages/Settings"));
 const Privacy = lazy(() => import("@/pages/Privacy"));
@@ -171,6 +172,7 @@ function Router() {
         <Route path="/give" component={GiveHub} />
         <Route path="/movement" component={MovementHub} />
         <Route path="/profile" component={Profile} />
+        <Route path="/activity" component={MyActivity} />
         <Route path="/notifications" component={Notifications} />
         <Route path="/settings" component={Settings} />
         <Route path="/privacy" component={Privacy} />

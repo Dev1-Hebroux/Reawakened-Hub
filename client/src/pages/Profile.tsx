@@ -1,25 +1,13 @@
 import { motion } from "framer-motion";
 import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/button";
-import { User, Settings, Award, Heart, Globe, Clock, ChevronRight, LogOut, Bell, Shield, LayoutDashboard, LogIn, FileText, Calendar, MapPin } from "lucide-react";
+import { User, Settings, Award, Heart, Globe, Clock, ChevronRight, LogOut, Bell, Shield, LayoutDashboard, LogIn, FileText, Sparkles } from "lucide-react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
-import { useQuery } from "@tanstack/react-query";
-import type { Event } from "@shared/schema";
-
-type EventRegistration = {
-  registration: { id: number; eventId: number; userId: string; createdAt: string };
-  event: Event;
-};
 
 export default function Profile() {
   const [, navigate] = useLocation();
   const { user, isAuthenticated } = useAuth();
-  
-  const { data: myEvents = [] } = useQuery<EventRegistration[]>({
-    queryKey: ["/api/me/events"],
-    enabled: isAuthenticated,
-  });
 
   const isAdmin = user?.role === 'admin' || user?.role === 'super_admin';
 
@@ -40,6 +28,7 @@ export default function Profile() {
   const isSuperAdmin = user?.role === 'super_admin';
   
   const menuItems = [
+    { label: "My Activity", description: "Events, challenges & journeys", icon: Sparkles, href: "/activity" },
     { label: "My Journey", description: "View your progress", icon: Globe, href: "/vision" },
     { label: "Notifications", description: "Manage alerts", icon: Bell, href: "/notifications" },
     { label: "Privacy & Security", description: "Account settings", icon: Shield, href: "/privacy" },
@@ -98,40 +87,6 @@ export default function Profile() {
               </div>
             ))}
           </motion.div>
-
-          {isAuthenticated && myEvents.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.12 }}
-              className="mb-6"
-            >
-              <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-[#D4A574]" />
-                My Registered Events
-              </h3>
-              <div className="space-y-3">
-                {myEvents.map(({ event }) => (
-                  <div 
-                    key={event.id}
-                    className="bg-[#FAF8F5] dark:bg-[#243656] rounded-xl p-3 border border-gray-200 dark:border-[#4A7C7C]/30"
-                  >
-                    <div className="font-bold text-gray-900 dark:text-white text-sm">{event.title}</div>
-                    <div className="flex items-center gap-2 mt-1 text-xs text-gray-500 dark:text-[#7C9A8E]">
-                      <Calendar className="h-3 w-3" />
-                      {new Date(event.startDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-                      {event.location && (
-                        <>
-                          <MapPin className="h-3 w-3 ml-2" />
-                          {event.location}
-                        </>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          )}
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
