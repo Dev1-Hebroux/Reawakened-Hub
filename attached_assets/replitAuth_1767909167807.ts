@@ -8,6 +8,19 @@ import memoize from "memoizee";
 import connectPg from "connect-pg-simple";
 import { storage } from "./storage";
 
+// Structured logger for consistent logging
+const logger = {
+  info: (message: string, context: Record<string, unknown> = {}) => {
+    console.log(JSON.stringify({ level: 'info', message, ...context, timestamp: new Date().toISOString() }));
+  },
+  error: (message: string, context: Record<string, unknown> = {}) => {
+    console.error(JSON.stringify({ level: 'error', message, ...context, timestamp: new Date().toISOString() }));
+  },
+  warn: (message: string, context: Record<string, unknown> = {}) => {
+    console.warn(JSON.stringify({ level: 'warn', message, ...context, timestamp: new Date().toISOString() }));
+  },
+};
+
 const getOidcConfig = memoize(
   async () => {
     return await client.discovery(
@@ -51,55 +64,72 @@ function updateUserSession(
   user.expires_at = user.claims?.exp;
 }
 
+/**
+ * Parse and validate super admin emails from environment variable.
+ * Handles edge cases like empty strings, whitespace, and malformed entries.
+ */
 function getSuperAdminEmails(): string[] {
   const emails = process.env.SUPER_ADMIN_EMAILS || '';
-  return emails.split(',').map(e => e.trim().toLowerCase()).filter(e => e.length > 0);
+  return emails
+    .split(',')
+    .map(e => e.trim().toLowerCase())
+    .filter(e => e.length > 0 && e.includes('@')); // Basic email validation
 }
 
-const ROLE_HIERARCHY = ['member', 'leader', 'admin', 'super_admin'] as const;
-type Role = typeof ROLE_HIERARCHY[number];
-
-function isValidRole(role: string | null | undefined): role is Role {
-  if (!role) return false;
-  return ROLE_HIERARCHY.includes(role as Role);
-}
-
+/**
+ * Determine the appropriate role for a user.
+ * Preserves existing elevated roles while allowing super_admin override.
+ * Role hierarchy: super_admin > admin > leader > member
+ */
 function determineUserRole(
-  existingRole: string | null | undefined,
-  isSuperAdmin: boolean
+  isSuperAdmin: boolean,
+  existingRole: string | null | undefined
 ): string {
+  // Super admin from env takes precedence
   if (isSuperAdmin) {
     return 'super_admin';
   }
   
-  if (existingRole === 'super_admin') {
-    return 'admin';
-  }
-  
-  if (isValidRole(existingRole) && existingRole !== 'member') {
+  // Preserve existing elevated roles
+  const elevatedRoles = ['super_admin', 'admin', 'leader'];
+  if (existingRole && elevatedRoles.includes(existingRole)) {
     return existingRole;
   }
   
-  return 'member';
+  // Default to member
+  return existingRole || 'member';
 }
 
-async function upsertUser(
-  claims: any,
-) {
+async function upsertUser(claims: any) {
   const email = claims["email"]?.toLowerCase();
+  const userId = claims["sub"];
+  
+  if (!userId) {
+    logger.error('Missing user ID in claims', { email });
+    return;
+  }
+  
   const superAdminEmails = getSuperAdminEmails();
   const isSuperAdmin = email && superAdminEmails.includes(email);
   
-  const existingUser = await storage.getUser(claims["sub"]);
-  const newRole = determineUserRole(existingUser?.role, isSuperAdmin);
+  const existingUser = await storage.getUser(userId);
+  const role = determineUserRole(isSuperAdmin, existingUser?.role);
+  
+  logger.info('Upserting user', { 
+    userId, 
+    email, 
+    previousRole: existingUser?.role, 
+    newRole: role,
+    isSuperAdmin 
+  });
   
   await storage.upsertUser({
-    id: claims["sub"],
+    id: userId,
     email: claims["email"],
     firstName: claims["first_name"],
     lastName: claims["last_name"],
     profileImageUrl: claims["profile_image_url"],
-    role: newRole,
+    role,
   });
 }
 
@@ -173,6 +203,25 @@ export async function setupAuth(app: Express) {
   });
 }
 
+/**
+ * Save session and wait for completion.
+ * Returns true if save succeeded, false otherwise.
+ */
+async function saveSessionAsync(req: Express.Request): Promise<boolean> {
+  if (!req.session) return false;
+  
+  return new Promise((resolve) => {
+    req.session.save((err) => {
+      if (err) {
+        logger.error('Failed to save session', { error: err.message });
+        resolve(false);
+      } else {
+        resolve(true);
+      }
+    });
+  });
+}
+
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
   const user = req.user as any;
 
@@ -187,6 +236,9 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
 
   const refreshToken = user.refresh_token;
   if (!refreshToken) {
+    logger.warn('No refresh token available for token refresh', { 
+      userId: user.claims?.sub 
+    });
     res.status(401).json({ message: "Unauthorized" });
     return;
   }
@@ -195,17 +247,22 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
     const config = await getOidcConfig();
     const tokenResponse = await client.refreshTokenGrant(config, refreshToken);
     updateUserSession(user, tokenResponse);
-    // Explicitly save session after token refresh to persist new tokens
-    if (req.session) {
-      req.session.save((err) => {
-        if (err) {
-          console.error("Failed to save session after token refresh:", err);
-        }
+    
+    // Wait for session save to complete before continuing
+    const saved = await saveSessionAsync(req);
+    if (!saved) {
+      logger.warn('Session save failed after token refresh, continuing anyway', {
+        userId: user.claims?.sub
       });
     }
+    
     return next();
   } catch (error) {
-    console.error("Token refresh failed:", error);
+    const err = error as Error;
+    logger.error('Token refresh failed', { 
+      error: err.message, 
+      userId: user.claims?.sub 
+    });
     res.status(401).json({ message: "Unauthorized" });
     return;
   }
@@ -221,11 +278,20 @@ export const isSuperAdmin: RequestHandler = async (req, res, next) => {
   try {
     const dbUser = await storage.getUser(user.claims.sub);
     if (!dbUser || dbUser.role !== 'super_admin') {
+      logger.warn('Super admin access denied', { 
+        userId: user.claims.sub, 
+        role: dbUser?.role 
+      });
       return res.status(403).json({ message: "Super admin access required" });
     }
     (req as any).dbUser = dbUser;
     return next();
   } catch (error) {
+    const err = error as Error;
+    logger.error('Error checking super admin status', { 
+      error: err.message, 
+      userId: user.claims.sub 
+    });
     return res.status(500).json({ message: "Server error" });
   }
 };
@@ -240,11 +306,20 @@ export const isAdmin: RequestHandler = async (req, res, next) => {
   try {
     const dbUser = await storage.getUser(user.claims.sub);
     if (!dbUser || !['admin', 'super_admin'].includes(dbUser.role || '')) {
+      logger.warn('Admin access denied', { 
+        userId: user.claims.sub, 
+        role: dbUser?.role 
+      });
       return res.status(403).json({ message: "Admin access required" });
     }
     (req as any).dbUser = dbUser;
     return next();
   } catch (error) {
+    const err = error as Error;
+    logger.error('Error checking admin status', { 
+      error: err.message, 
+      userId: user.claims.sub 
+    });
     return res.status(500).json({ message: "Server error" });
   }
 };
@@ -259,11 +334,20 @@ export const isLeaderOrAbove: RequestHandler = async (req, res, next) => {
   try {
     const dbUser = await storage.getUser(user.claims.sub);
     if (!dbUser || !['leader', 'admin', 'super_admin'].includes(dbUser.role || '')) {
+      logger.warn('Leader access denied', { 
+        userId: user.claims.sub, 
+        role: dbUser?.role 
+      });
       return res.status(403).json({ message: "Leader access required" });
     }
     (req as any).dbUser = dbUser;
     return next();
   } catch (error) {
+    const err = error as Error;
+    logger.error('Error checking leader status', { 
+      error: err.message, 
+      userId: user.claims.sub 
+    });
     return res.status(500).json({ message: "Server error" });
   }
 };

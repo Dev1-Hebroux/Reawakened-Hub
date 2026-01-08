@@ -151,6 +151,71 @@ export async function registerRoutes(
 
   // ===== SPARKS ROUTES =====
   
+  // Combined dashboard endpoint - consolidates multiple API calls into one
+  app.get('/api/sparks/dashboard', async (req, res) => {
+    const startTime = Date.now();
+    
+    try {
+      const audienceParam = req.query.audience as string | undefined;
+      const audienceSegment = audienceParam && ['schools', 'universities', 'early-career', 'builders', 'couples'].includes(audienceParam) 
+        ? audienceParam 
+        : null;
+      
+      // Execute all queries in parallel for maximum efficiency
+      const [sparks, todaySpark, featured, reflection, sessions] = await Promise.all([
+        storage.getPublishedSparks(audienceSegment || undefined),
+        storage.getTodaySpark(audienceSegment || undefined),
+        storage.getFeaturedSparks(audienceSegment || undefined),
+        storage.getTodayReflectionCard(audienceSegment || undefined),
+        storage.getActivePrayerSessions(),
+      ]);
+      
+      const response = {
+        sparks,
+        todaySpark: todaySpark || null,
+        featured,
+        reflection: reflection || null,
+        sessions,
+        meta: {
+          timestamp: new Date().toISOString(),
+          audienceSegment,
+          totalSparks: sparks.length,
+        },
+      };
+      
+      const duration = Date.now() - startTime;
+      console.log(JSON.stringify({
+        level: 'info',
+        message: 'Dashboard API request completed',
+        duration_ms: duration,
+        audience_segment: audienceSegment,
+        sparks_count: sparks.length,
+        timestamp: new Date().toISOString(),
+      }));
+      
+      res.set({
+        'Cache-Control': 'public, max-age=60, stale-while-revalidate=300',
+        'X-Response-Time': `${duration}ms`,
+      });
+      
+      res.json(response);
+    } catch (error) {
+      const err = error as Error;
+      console.error(JSON.stringify({
+        level: 'error',
+        message: 'Dashboard API error',
+        error: err.message,
+        stack: err.stack,
+        timestamp: new Date().toISOString(),
+      }));
+      
+      res.status(500).json({ 
+        error: 'Failed to load dashboard data',
+        message: process.env.NODE_ENV === 'development' ? err.message : undefined,
+      });
+    }
+  });
+
   // Get all sparks (with optional category filter)
   app.get('/api/sparks', async (req, res) => {
     try {

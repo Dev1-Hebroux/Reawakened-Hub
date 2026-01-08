@@ -4,8 +4,8 @@ import { AdminLayout } from "./Admin";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Flame, Plus, Edit2, Trash2, Play, Headphones, BookOpen, Download, Loader2 } from "lucide-react";
-import { motion } from "framer-motion";
+import { Flame, Plus, Loader2 } from "lucide-react";
+import { SparkRow } from "@/components/admin/SparkRow";
 import { toast } from "sonner";
 import { apiRequest } from "@/lib/queryClient";
 import {
@@ -31,10 +31,10 @@ const categories = [
 ];
 
 const mediaTypes = [
-  { value: "video", label: "Video", icon: Play },
-  { value: "audio", label: "Audio", icon: Headphones },
-  { value: "quick-read", label: "Quick Read", icon: BookOpen },
-  { value: "download", label: "Download", icon: Download },
+  { value: "video", label: "Video" },
+  { value: "audio", label: "Audio" },
+  { value: "quick-read", label: "Quick Read" },
+  { value: "download", label: "Download" },
 ];
 
 const statusOptions = [
@@ -223,11 +223,6 @@ export function AdminSparks() {
     }
   };
 
-  const getMediaIcon = (type: string) => {
-    const media = mediaTypes.find(m => m.value === type);
-    return media?.icon || Play;
-  };
-
   return (
     <AdminLayout 
       title="Sparks Manager" 
@@ -253,72 +248,15 @@ export function AdminSparks() {
         </div>
       ) : (
         <div className="grid gap-4">
-          {sparks.map((spark, i) => {
-            const MediaIcon = getMediaIcon(spark.mediaType || "video");
-            return (
-              <motion.div
-                key={spark.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
-                className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex items-center gap-4"
-              >
-                {spark.thumbnailUrl ? (
-                  <img 
-                    src={spark.thumbnailUrl} 
-                    alt="" 
-                    className="w-20 h-14 rounded-lg object-cover flex-shrink-0"
-                  />
-                ) : (
-                  <div className="w-20 h-14 rounded-lg bg-orange-100 flex items-center justify-center flex-shrink-0">
-                    <Flame className="h-6 w-6 text-orange-600" />
-                  </div>
-                )}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <h3 className="font-bold text-gray-900 truncate">{spark.title}</h3>
-                    <span className="text-xs bg-orange-100 text-orange-600 px-2 py-0.5 rounded-full capitalize">
-                      {spark.category.replace("-", " ")}
-                    </span>
-                    <span className={`text-xs px-2 py-0.5 rounded-full ${
-                      spark.status === 'published' ? 'bg-green-100 text-green-700' :
-                      spark.status === 'scheduled' ? 'bg-blue-100 text-blue-700' :
-                      spark.status === 'draft' ? 'bg-gray-100 text-gray-600' :
-                      'bg-red-100 text-red-600'
-                    }`}>
-                      {spark.status || 'draft'}
-                    </span>
-                    {spark.featured && (
-                      <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">Featured</span>
-                    )}
-                    {spark.audienceSegment && (
-                      <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full capitalize">
-                        {spark.audienceSegment.replace("-", " ")}
-                      </span>
-                    )}
-                    <MediaIcon className="h-4 w-4 text-gray-400" />
-                  </div>
-                  <p className="text-sm text-gray-500 truncate">{spark.description}</p>
-                  {spark.dailyDate && (
-                    <p className="text-xs text-gray-400 mt-1">Daily: {spark.dailyDate}</p>
-                  )}
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" onClick={() => openEditModal(spark)}>
-                    <Edit2 className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => handleDelete(spark)}
-                    className="text-red-600 hover:bg-red-50"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </motion.div>
-            );
-          })}
+          {sparks.map((spark, i) => (
+            <SparkRow
+              key={spark.id}
+              spark={spark}
+              index={i}
+              onEdit={openEditModal}
+              onDelete={handleDelete}
+            />
+          ))}
         </div>
       )}
 

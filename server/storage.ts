@@ -526,6 +526,7 @@ export interface IStorage {
   createLeaderPrayerSession(session: InsertPrayerSession): Promise<PrayerSession>;
   endLeaderPrayerSession(id: number, leaderId: string): Promise<PrayerSession>;
   incrementLeaderPrayerSessionParticipants(id: number): Promise<void>;
+  getActivePrayerSessions(): Promise<PrayerSession[]>;
 
   // Spark Subscriptions
   getSubscriptions(userId: string): Promise<SparkSubscription[]>;
@@ -1469,6 +1470,12 @@ export class DatabaseStorage implements IStorage {
     await db.update(prayerSessions)
       .set({ participantCount: sql`${prayerSessions.participantCount} + 1` })
       .where(eq(prayerSessions.id, id));
+  }
+
+  async getActivePrayerSessions(): Promise<PrayerSession[]> {
+    return db.select().from(prayerSessions)
+      .where(eq(prayerSessions.status, 'active'))
+      .orderBy(desc(prayerSessions.startedAt));
   }
 
   // Spark Subscriptions

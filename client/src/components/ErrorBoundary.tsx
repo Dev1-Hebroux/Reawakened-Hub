@@ -100,3 +100,45 @@ export function withErrorBoundary<P extends object>(
     );
   };
 }
+
+interface SparkDetailErrorProps {
+  sparkId?: string | number;
+  onRetry?: () => void;
+}
+
+export function SparkDetailError({ sparkId, onRetry }: SparkDetailErrorProps) {
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-[#1a2744] to-[#19233b] flex items-center justify-center p-8">
+      <div className="text-center max-w-md">
+        <div className="w-16 h-16 bg-amber-400/20 rounded-full flex items-center justify-center mx-auto mb-4">
+          <AlertTriangle className="w-8 h-8 text-amber-400" />
+        </div>
+        <h2 className="text-xl font-semibold text-white mb-2">
+          Couldn't load this devotional
+        </h2>
+        <p className="text-gray-300 mb-6">
+          {sparkId 
+            ? `We had trouble loading devotional #${sparkId}. It may have been removed or there was a connection issue.`
+            : 'We had trouble loading this content. Please try again.'}
+        </p>
+        <div className="flex gap-3 justify-center">
+          <button
+            onClick={onRetry || (() => window.location.reload())}
+            data-testid="button-retry-spark"
+            className="flex items-center gap-2 px-4 py-2 border border-white/20 text-white rounded-lg hover:bg-white/10 transition-colors"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Try Again
+          </button>
+          <button
+            onClick={() => window.location.href = '/sparks'}
+            data-testid="button-back-sparks"
+            className="flex items-center gap-2 px-4 py-2 bg-[#7C9A8E] text-white rounded-lg hover:bg-[#6a8a7e] transition-colors"
+          >
+            Back to Sparks
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
