@@ -17,11 +17,20 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 const TTS_CONFIG = {
   model: 'tts-1-hd' as const,
-  voice: 'fable' as const, // UK-style narrative voice for devotionals
   speed: 0.95,
 };
 
 type TTSVoice = 'alloy' | 'echo' | 'fable' | 'onyx' | 'nova' | 'shimmer';
+
+const VOICE_OPTIONS: { voice: TTSVoice; accent: string }[] = [
+  { voice: 'fable', accent: 'UK' },   // British narrative style
+  { voice: 'nova', accent: 'US' },    // Warm US female
+];
+
+function selectVoiceForSpark(sparkId: number): TTSVoice {
+  const index = sparkId % VOICE_OPTIONS.length;
+  return VOICE_OPTIONS[index].voice;
+}
 
 const AUDIO_STORAGE_PREFIX = 'public/audio';
 
@@ -138,10 +147,13 @@ function composeNarrationScript(spark: SparkContent): string {
   return sections.join('\n');
 }
 
-async function generateTTSAudio(text: string): Promise<Buffer> {
+async function generateTTSAudio(text: string, sparkId: number): Promise<Buffer> {
+  const voice = selectVoiceForSpark(sparkId);
+  logger.info({ sparkId, voice }, 'Using voice for TTS generation');
+  
   const response = await openai.audio.speech.create({
     model: TTS_CONFIG.model,
-    voice: TTS_CONFIG.voice,
+    voice,
     speed: TTS_CONFIG.speed,
     input: text,
   });
@@ -271,7 +283,7 @@ export class SparkAudioService {
       logger.info({ sparkId, contentHash }, 'Generating new audio');
       
       const script = composeNarrationScript(spark);
-      const audioBuffer = await generateTTSAudio(script);
+      const audioBuffer = await generateTTSAudio(script, sparkId);
       
       if (!this.bucketId) {
         return { success: false, sparkId, error: 'Object storage not configured' };
