@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { useLocation } from 'wouter';
 
 interface User {
   id: string;
