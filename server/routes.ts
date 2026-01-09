@@ -10,6 +10,8 @@ import { setupAuth, isAuthenticated, isAdmin, isSuperAdmin } from "./replitAuth"
 import { getAICoachInsights, type AICoachRequest } from "./ai-service";
 import { registerObjectStorageRoutes, objectStorageClient } from "./replit_integrations/object_storage";
 import { generateSparkAudio, getSparkAudioUrl, generateReadingPlanDayAudio, getReadingPlanDayAudioUrl } from "./tts-service";
+import notificationRoutes from "./routes/notificationRoutes";
+import recommendationRoutes from "./routes/recommendationRoutes";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 import { 
@@ -34,6 +36,10 @@ export async function registerRoutes(
 ): Promise<Server> {
   // Auth middleware - must be called before routes
   await setupAuth(app);
+
+  // Register modular route handlers
+  app.use('/api', notificationRoutes);
+  app.use('/api', recommendationRoutes);
 
   // Twilio domain verification
   app.get('/6fb6008290b49155dde41016be0276b0.html', (req, res) => {
@@ -6602,3 +6608,7 @@ function getDominionSeedContent() {
   
   return { sparks, reflectionCards };
 }
+
+// ===== NOTIFICATION & RECOMMENDATION API ROUTES =====
+// Note: These routes are registered separately to keep the main routes file organized.
+// See server/services/notificationService.ts and server/services/recommendationEngine.ts

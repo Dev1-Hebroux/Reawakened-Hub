@@ -824,6 +824,7 @@ export interface IStorage {
   getNotificationPreferences(userId: string): Promise<NotificationPreferences | undefined>;
   upsertNotificationPreferences(userId: string, prefs: Partial<InsertNotificationPreferences>): Promise<NotificationPreferences>;
   getNotifications(userId: string, limit?: number): Promise<Notification[]>;
+  getNotificationsCount(userId: string): Promise<number>;
   getUnreadNotificationsCount(userId: string): Promise<number>;
   createNotification(notification: InsertNotification): Promise<Notification>;
   markNotificationRead(id: number, userId: string): Promise<void>;
@@ -899,6 +900,12 @@ export interface IStorage {
     isEnabled: boolean;
     modulesCount: number;
   }>>;
+
+  // ===== RECOMMENDATIONS =====
+  getUserCompletedPlanIds(userId: string): Promise<number[]>;
+  getPublishedReadingPlans(limit: number): Promise<ReadingPlan[]>;
+  getActiveEnrollmentWithPlan(userId: string): Promise<{ planId: number | null; currentDay: number; title: string; lastReadAt: Date | null } | null>;
+  getUserStreakData(userId: string): Promise<{ currentStreak: number; longestStreak: number; lastReadAt: Date | null }>;
 
   // ===== USER SETTINGS =====
   getUserSettings(userId: string): Promise<UserSettings | null>;
@@ -3609,6 +3616,13 @@ export class DatabaseStorage implements IStorage {
       .limit(limit);
   }
 
+  async getNotificationsCount(userId: string): Promise<number> {
+    const result = await db.select({ count: count() })
+      .from(notifications)
+      .where(eq(notifications.userId, userId));
+    return result[0]?.count || 0;
+  }
+
   async getUnreadNotificationsCount(userId: string): Promise<number> {
     const result = await db.select({ count: count() })
       .from(notifications)
@@ -3661,6 +3675,84 @@ export class DatabaseStorage implements IStorage {
   async createBulkNotifications(notificationsData: InsertNotification[]): Promise<void> {
     if (notificationsData.length === 0) return;
     await db.insert(notifications).values(notificationsData);
+  }
+
+  // ===== RECOMMENDATIONS =====
+  async getUserCompletedPlanIds(userId: string): Promise<number[]> {
+    const enrollments = await db
+      .select({ planId: userPlanEnrollments.planId })
+      .from(userPlanEnrollments)
+      .where(
+        and(
+          eq(userPlanEnrollments.userId, userId),
+          eq(userPlanEnrollments.status, 'completed')
+        )
+      );
+    return enrollments.map(e => e.planId).filter((id): id is number => id !== null);
+  }
+
+  async getPublishedReadingPlans(limit: number): Promise<ReadingPlan[]> {
+    return db
+      .select()
+      .from(readingPlans)
+      .where(eq(readingPlans.status, 'published'))
+      .limit(limit);
+  }
+
+  async getActiveEnrollmentWithPlan(userId: string): Promise<{ planId: number | null; currentDay: number; title: string; lastReadAt: Date | null } | null> {
+    const [enrollment] = await db
+      .select({
+        planId: userPlanEnrollments.planId,
+        currentDay: userPlanEnrollments.currentDay,
+        title: readingPlans.title,
+        lastReadAt: userPlanEnrollments.lastReadAt,
+      })
+      .from(userPlanEnrollments)
+      .innerJoin(readingPlans, eq(userPlanEnrollments.planId, readingPlans.id))
+      .where(
+        and(
+          eq(userPlanEnrollments.userId, userId),
+          eq(userPlanEnrollments.status, 'active')
+        )
+      )
+      .orderBy(desc(userPlanEnrollments.lastReadAt))
+      .limit(1);
+    if (!enrollment) return null;
+    return {
+      planId: enrollment.planId,
+      currentDay: enrollment.currentDay ?? 1,
+      title: enrollment.title,
+      lastReadAt: enrollment.lastReadAt,
+    };
+  }
+
+  async getUserStreakData(userId: string): Promise<{ currentStreak: number; longestStreak: number; lastReadAt: Date | null }> {
+    const [profile] = await db
+      .select({ longestStreak: userSpiritualProfiles.longestStreak })
+      .from(userSpiritualProfiles)
+      .where(eq(userSpiritualProfiles.userId, userId))
+      .limit(1);
+
+    const [enrollment] = await db
+      .select({
+        currentStreak: userPlanEnrollments.currentStreak,
+        lastReadAt: userPlanEnrollments.lastReadAt,
+      })
+      .from(userPlanEnrollments)
+      .where(
+        and(
+          eq(userPlanEnrollments.userId, userId),
+          eq(userPlanEnrollments.status, 'active')
+        )
+      )
+      .orderBy(desc(userPlanEnrollments.currentStreak))
+      .limit(1);
+
+    return {
+      currentStreak: enrollment?.currentStreak || 0,
+      longestStreak: profile?.longestStreak || 0,
+      lastReadAt: enrollment?.lastReadAt || null,
+    };
   }
 
   // ===== ADMIN COACHING =====

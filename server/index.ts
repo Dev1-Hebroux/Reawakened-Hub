@@ -19,6 +19,8 @@ import {
   metricsEndpoint,
   authRateLimiter 
 } from "./middleware";
+import { jobScheduler, CronPatterns } from "./lib/jobScheduler";
+import { notificationService } from "./services/notificationService";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -143,6 +145,19 @@ app.use((req, res, next) => {
       
       // Start notification scheduler for daily devotionals and event reminders
       initializeNotificationScheduler();
+      
+      // Register background jobs
+      jobScheduler.register(
+        'process-scheduled-notifications',
+        CronPatterns.EVERY_5_MINUTES,
+        async () => {
+          const result = await notificationService.processPending();
+          log(`Processed ${result.processed} scheduled notifications`);
+        }
+      );
+      
+      jobScheduler.start();
+      log('Background job scheduler started');
     },
   );
 })();

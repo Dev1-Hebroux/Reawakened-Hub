@@ -30,6 +30,10 @@ Preferred communication style: Simple, everyday language.
 - **DOMINION Campaign**: A 30-day devotional campaign with segmented content for schools, universities, early-career, builders, and couples, following specific weekly themes. Content rotates daily and prioritizes segment-specific devotionals.
 - **Automated Content Sync**: An `auto-seed` system runs on every server startup (development and production) to `upsert` all Spark and Reflection Card content, ensuring data consistency across environments. A nightly sync acts as a backup.
 - **Email Notifications**: Transactional and scheduled emails using Resend for user actions (subscriptions, prayer requests, event registrations) and daily devotionals/event reminders, respecting user notification preferences.
+- **Background Job Scheduler**: Cron-based job scheduler (`server/lib/jobScheduler.ts`) for processing scheduled notifications every 5 minutes and other recurring tasks.
+- **Notification API**: RESTful endpoints (`/api/notifications/*`) for fetching, marking as read, and managing notification preferences.
+- **Recommendation API**: RESTful endpoints (`/api/recommendations/*`) for personalized reading plan recommendations, continue reading suggestions, and streak data.
+- **PWA Infrastructure**: Service worker (`public/sw.js`) for offline caching and push notifications, plus IndexedDB-based offline service (`client/src/services/offlineService.ts`) with sync queue.
 
 ## External Dependencies
 

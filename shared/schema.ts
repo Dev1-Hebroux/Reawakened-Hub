@@ -3024,3 +3024,101 @@ export const userReadingProgress = pgTable("user_reading_progress", {
 export const insertUserReadingProgressSchema = createInsertSchema(userReadingProgress).omit({ id: true, completedAt: true });
 export type InsertUserReadingProgress = z.infer<typeof insertUserReadingProgressSchema>;
 export type UserReadingProgress = typeof userReadingProgress.$inferSelect;
+
+// ===== ENHANCED NOTIFICATIONS SYSTEM =====
+
+// Scheduled Notifications - Future notifications to be sent
+export const scheduledNotifications = pgTable("scheduled_notifications", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  type: varchar("type").notNull(),
+  title: varchar("title").notNull(),
+  body: text("body").notNull(),
+  data: jsonb("data").default({}),
+  scheduledFor: timestamp("scheduled_for").notNull(),
+  status: varchar("status").default("pending"), // 'pending', 'sent', 'failed', 'cancelled'
+  sentAt: timestamp("sent_at"),
+  error: text("error"),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [index("idx_scheduled_notifications_status").on(table.status, table.scheduledFor)]);
+
+export const insertScheduledNotificationSchema = createInsertSchema(scheduledNotifications).omit({ id: true, createdAt: true, sentAt: true });
+export type InsertScheduledNotification = z.infer<typeof insertScheduledNotificationSchema>;
+export type ScheduledNotification = typeof scheduledNotifications.$inferSelect;
+
+// Push Subscriptions - Web push notification subscriptions
+export const pushSubscriptions = pgTable("push_subscriptions", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  endpoint: text("endpoint").notNull().unique(),
+  keys: jsonb("keys").notNull(), // { p256dh: string, auth: string }
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [index("idx_push_subscriptions_user").on(table.userId)]);
+
+export const insertPushSubscriptionSchema = createInsertSchema(pushSubscriptions).omit({ id: true, createdAt: true });
+export type InsertPushSubscription = z.infer<typeof insertPushSubscriptionSchema>;
+export type PushSubscription = typeof pushSubscriptions.$inferSelect;
+
+// User Preferences - Notification and display settings
+export const userPreferences = pgTable("user_preferences", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }).unique(),
+  notificationSettings: jsonb("notification_settings").default({
+    dailyReminders: true,
+    dailyReminderTime: '08:00',
+    streakAlerts: true,
+    groupNotifications: true,
+    emailDigest: 'weekly',
+    pushEnabled: true,
+  }),
+  displaySettings: jsonb("display_settings").default({
+    theme: 'system',
+    fontSize: 'medium',
+    reducedMotion: false,
+    highContrast: false,
+  }),
+  privacySettings: jsonb("privacy_settings").default({
+    profileVisibility: 'group',
+    showStreak: true,
+    showProgress: true,
+    allowAccountabilityRequests: true,
+  }),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertUserPreferencesSchema = createInsertSchema(userPreferences).omit({ id: true, createdAt: true, updatedAt: true });
+export type InsertUserPreferences = z.infer<typeof insertUserPreferencesSchema>;
+export type UserPreferences = typeof userPreferences.$inferSelect;
+
+// Journal Entries - Personal reflection entries
+export const journalEntries = pgTable("journal_entries", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  contextType: varchar("context_type").notNull(), // 'reading_plan', 'journey', 'spark', 'goal', 'personal'
+  contextId: integer("context_id"),
+  content: text("content").notNull(),
+  isPrivate: boolean("is_private").default(true),
+  tags: text("tags").array().default([]),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => [index("idx_journal_entries_user").on(table.userId, table.createdAt)]);
+
+export const insertJournalEntrySchema = createInsertSchema(journalEntries).omit({ id: true, createdAt: true, updatedAt: true });
+export type InsertJournalEntry = z.infer<typeof insertJournalEntrySchema>;
+export type JournalEntry = typeof journalEntries.$inferSelect;
+
+// Idempotency Keys - Prevent duplicate operations
+export const idempotencyKeys = pgTable("idempotency_keys", {
+  id: serial("id").primaryKey(),
+  key: varchar("key").notNull().unique(),
+  userId: varchar("user_id").references(() => users.id, { onDelete: 'cascade' }),
+  response: jsonb("response"),
+  statusCode: integer("status_code"),
+  createdAt: timestamp("created_at").defaultNow(),
+  expiresAt: timestamp("expires_at").notNull(),
+}, (table) => [index("idx_idempotency_keys_expires").on(table.expiresAt)]);
+
+export const insertIdempotencyKeySchema = createInsertSchema(idempotencyKeys).omit({ id: true, createdAt: true });
+export type InsertIdempotencyKey = z.infer<typeof insertIdempotencyKeySchema>;
+export type IdempotencyKey = typeof idempotencyKeys.$inferSelect;

@@ -8,6 +8,13 @@
       "when": 1767860394279,
       "tag": "0000_add_subscription_fields",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1767917268360,
+      "tag": "0001_pretty_victor_mancha",
+      "breakpoints": true
     }
   ]
 }
