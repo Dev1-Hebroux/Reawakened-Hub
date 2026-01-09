@@ -8,9 +8,8 @@
 import { useEffect, useRef, useCallback, useState } from 'react';
 import { useDashboard } from './useDashboard';
 
-interface PreloadedAudio {
+interface CachedAudioData {
   url: string;
-  audio: HTMLAudioElement;
   duration: number;
   ready: boolean;
 }
@@ -27,24 +26,20 @@ interface UseAudioPreloaderReturn {
   error: string | null;
 }
 
-const audioCache = new Map<string, PreloadedAudio>();
+const audioDataCache = new Map<string, CachedAudioData>();
 
-function getCachedAudio(url: string): PreloadedAudio | null {
-  return audioCache.get(url) || null;
+function getCachedData(url: string): CachedAudioData | null {
+  return audioDataCache.get(url) || null;
 }
 
-function setCachedAudio(url: string, audio: PreloadedAudio): void {
-  if (audioCache.size > 5) {
-    const firstKey = audioCache.keys().next().value;
+function setCachedData(url: string, data: CachedAudioData): void {
+  if (audioDataCache.size > 10) {
+    const firstKey = audioDataCache.keys().next().value;
     if (firstKey) {
-      const old = audioCache.get(firstKey);
-      if (old) {
-        old.audio.src = '';
-      }
-      audioCache.delete(firstKey);
+      audioDataCache.delete(firstKey);
     }
   }
-  audioCache.set(url, audio);
+  audioDataCache.set(url, data);
 }
 
 export function useAudioPreloader(audioUrl: string | null | undefined): UseAudioPreloaderReturn {
@@ -62,17 +57,7 @@ export function useAudioPreloader(audioUrl: string | null | undefined): UseAudio
       return;
     }
 
-    const cached = getCachedAudio(audioUrl);
-    if (cached?.ready) {
-      audioRef.current = cached.audio;
-      setDuration(cached.duration);
-      setStatus('ready');
-      return;
-    }
-
-    setStatus('loading');
-    setError(null);
-
+    const cached = getCachedData(audioUrl);
     const audio = new Audio();
     audioRef.current = audio;
     audio.preload = 'auto';
@@ -83,9 +68,8 @@ export function useAudioPreloader(audioUrl: string | null | undefined): UseAudio
 
     const handleCanPlayThrough = () => {
       setStatus('ready');
-      setCachedAudio(audioUrl, {
+      setCachedData(audioUrl, {
         url: audioUrl,
-        audio,
         duration: audio.duration,
         ready: true,
       });
@@ -111,15 +95,25 @@ export function useAudioPreloader(audioUrl: string | null | undefined): UseAudio
     audio.addEventListener('ended', handleEnded);
     audio.addEventListener('timeupdate', handleTimeUpdate);
 
+    if (cached?.ready) {
+      setDuration(cached.duration);
+      setStatus('ready');
+    } else {
+      setStatus('loading');
+      setError(null);
+    }
+
     audio.src = audioUrl;
     audio.load();
 
     return () => {
+      audio.pause();
       audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
       audio.removeEventListener('canplaythrough', handleCanPlayThrough);
       audio.removeEventListener('error', handleError);
       audio.removeEventListener('ended', handleEnded);
       audio.removeEventListener('timeupdate', handleTimeUpdate);
+      audio.src = '';
     };
   }, [audioUrl]);
 

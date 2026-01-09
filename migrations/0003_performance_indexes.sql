@@ -52,7 +52,7 @@ ON user_streaks(user_id);
 
 -- Unread notifications count (header badge)
 CREATE INDEX IF NOT EXISTS idx_notifications_user_read 
-ON notifications(user_id, read_at);
+ON notifications(user_id, read);
 
 -- User notifications listing by created date
 CREATE INDEX IF NOT EXISTS idx_notifications_user_created 
@@ -63,8 +63,8 @@ ON notifications(user_id, created_at DESC);
 -- ============================================================================
 
 -- User journey progress lookup
-CREATE INDEX IF NOT EXISTS idx_user_journey_progress_user 
-ON user_journey_progress(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_journeys_user 
+ON user_journeys(user_id);
 
 -- ============================================================================
 -- Security Indexes
@@ -91,7 +91,7 @@ ANALYZE users;
 ANALYZE sparks;
 ANALYZE user_streaks;
 ANALYZE notifications;
-ANALYZE user_journey_progress;
+ANALYZE user_journeys;
 ANALYZE password_reset_tokens;
 ANALYZE email_verification_tokens;
 ANALYZE auth_audit_log;
