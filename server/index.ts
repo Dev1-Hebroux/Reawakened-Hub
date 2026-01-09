@@ -21,6 +21,8 @@ import {
 } from "./middleware";
 import { jobScheduler, CronPatterns } from "./lib/jobScheduler";
 import { notificationService } from "./services/notificationService";
+import { compressionMiddleware, serverTiming, slowRequestLogger } from "./middleware/performance";
+import initRoutes from "./routes/initRoutes";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -34,6 +36,9 @@ declare module "http" {
   }
 }
 
+app.use(compressionMiddleware);
+app.use(serverTiming);
+app.use(slowRequestLogger({ threshold: 300 }));
 app.use(securityHeaders);
 app.use(cookieParser());
 app.use(requestIdMiddleware);

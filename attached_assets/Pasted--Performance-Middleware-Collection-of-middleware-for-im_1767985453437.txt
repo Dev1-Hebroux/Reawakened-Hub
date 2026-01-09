@@ -1,0 +1,292 @@
+/**
+ * Performance Middleware
+ * 
+ * Collection of middleware for improving response times:
+ * - Compression (gzip/brotli)
+ * - Response timing headers
+ * - Request logging
+ * - Cache headers
+ */
+
+import { Request, Response, NextFunction } from 'express';
+import compression from 'compression';
+
+// ============================================================================
+// Response Compression
+// ============================================================================
+
+/**
+ * Compression middleware configuration.
+ * 
+ * Install: npm install compression @types/compression
+ */
+export const compressionMiddleware = compression({
+  // Compress responses larger than 1KB
+  threshold: 1024,
+  
+  // Compression level (1-9, higher = more compression but slower)
+  level: 6,
+  
+  // Only compress these content types
+  filter: (req, res) => {
+    // Don't compress if client doesn't support it
+    if (req.headers['x-no-compression']) {
+      return false;
+    }
+    
+    // Use default filter (compresses text-based responses)
+    return compression.filter(req, res);
+  },
+});
+
+// ============================================================================
+// Response Timing
+// ============================================================================
+
+/**
+ * Adds Server-Timing header for performance debugging.
+ * View in browser DevTools Network tab.
+ */
+export function serverTiming(req: Request, res: Response, next: NextFunction): void {
+  const startTime = process.hrtime.bigint();
+  
+  // Store timing data
+  const timings: Array<{ name: string; duration: number; description?: string }> = [];
+  
+  // Add timing helper to request
+  (req as any).addTiming = (name: string, duration: number, description?: string) => {
+    timings.push({ name, duration, description });
+  };
+  
+  // Add header before response is sent
+  const originalSend = res.send;
+  res.send = function(body) {
+    const endTime = process.hrtime.bigint();
+    const totalDuration = Number(endTime - startTime) / 1_000_000; // Convert to ms
+    
+    // Build Server-Timing header
+    const timingValues = [
+      `total;dur=${totalDuration.toFixed(2)}`,
+      ...timings.map(t => 
+        t.description 
+          ? `${t.name};dur=${t.duration.toFixed(2)};desc="${t.description}"`
+          : `${t.name};dur=${t.duration.toFixed(2)}`
+      ),
+    ];
+    
+    res.setHeader('Server-Timing', timingValues.join(', '));
+    
+    return originalSend.call(this, body);
+  };
+  
+  next();
+}
+
+// ============================================================================
+// Slow Request Logging
+// ============================================================================
+
+interface SlowRequestLoggerOptions {
+  /** Threshold in milliseconds. Requests slower than this are logged. */
+  threshold?: number;
+  /** Custom logger function */
+  logger?: (message: string, data: any) => void;
+}
+
+export function slowRequestLogger(options: SlowRequestLoggerOptions = {}) {
+  const { 
+    threshold = 200, 
+    logger = console.warn 
+  } = options;
+  
+  return (req: Request, res: Response, next: NextFunction): void => {
+    const startTime = Date.now();
+    
+    res.on('finish', () => {
+      const duration = Date.now() - startTime;
+      
+      if (duration > threshold) {
+        logger(`Slow request: ${req.method} ${req.path}`, {
+          method: req.method,
+          path: req.path,
+          query: req.query,
+          duration: `${duration}ms`,
+          status: res.statusCode,
+          userId: (req as any).user?.id,
+        });
+      }
+    });
+    
+    next();
+  };
+}
+
+// ============================================================================
+// Cache Headers
+// ============================================================================
+
+interface CacheOptions {
+  /** Cache duration in seconds */
+  maxAge?: number;
+  /** Whether cache is public or private */
+  isPublic?: boolean;
+  /** Stale-while-revalidate duration in seconds */
+  staleWhileRevalidate?: number;
+}
+
+/**
+ * Set cache headers for a route.
+ */
+export function cacheControl(options: CacheOptions = {}) {
+  const {
+    maxAge = 60,
+    isPublic = true,
+    staleWhileRevalidate = 60,
+  } = options;
+  
+  return (req: Request, res: Response, next: NextFunction): void => {
+    // Don't cache if authenticated and private
+    if ((req as any).user && !isPublic) {
+      res.setHeader('Cache-Control', 'private, no-cache');
+    } else {
+      const directives = [
+        isPublic ? 'public' : 'private',
+        `max-age=${maxAge}`,
+      ];
+      
+      if (staleWhileRevalidate > 0) {
+        directives.push(`stale-while-revalidate=${staleWhileRevalidate}`);
+      }
+      
+      res.setHeader('Cache-Control', directives.join(', '));
+    }
+    
+    next();
+  };
+}
+
+/**
+ * No-cache for dynamic/authenticated routes
+ */
+export function noCache(req: Request, res: Response, next: NextFunction): void {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  next();
+}
+
+// ============================================================================
+// ETag Support
+// ============================================================================
+
+/**
+ * Generates ETag for response body.
+ * Helps with 304 Not Modified responses.
+ */
+export function etag(req: Request, res: Response, next: NextFunction): void {
+  const originalJson = res.json;
+  
+  res.json = function(body) {
+    // Generate simple hash for ETag
+    const content = JSON.stringify(body);
+    const hash = simpleHash(content);
+    const etagValue = `"${hash}"`;
+    
+    // Check If-None-Match header
+    const clientEtag = req.headers['if-none-match'];
+    if (clientEtag === etagValue) {
+      res.status(304).end();
+      return this;
+    }
+    
+    res.setHeader('ETag', etagValue);
+    return originalJson.call(this, body);
+  };
+  
+  next();
+}
+
+function simpleHash(str: string): string {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+  return Math.abs(hash).toString(36);
+}
+
+// ============================================================================
+// Request ID
+// ============================================================================
+
+/**
+ * Adds unique request ID for tracing.
+ */
+export function requestId(req: Request, res: Response, next: NextFunction): void {
+  const id = req.headers['x-request-id'] as string || 
+    `${Date.now().toString(36)}-${Math.random().toString(36).substr(2, 9)}`;
+  
+  (req as any).requestId = id;
+  res.setHeader('X-Request-ID', id);
+  
+  next();
+}
+
+// ============================================================================
+// Combined Performance Middleware
+// ============================================================================
+
+/**
+ * Apply all performance middleware at once.
+ * 
+ * Usage:
+ * ```typescript
+ * import { applyPerformanceMiddleware } from './middleware/performance';
+ * applyPerformanceMiddleware(app);
+ * ```
+ */
+export function applyPerformanceMiddleware(app: any): void {
+  // Request ID first (for logging)
+  app.use(requestId);
+  
+  // Compression
+  app.use(compressionMiddleware);
+  
+  // Server timing
+  app.use(serverTiming);
+  
+  // Slow request logging
+  app.use(slowRequestLogger({ threshold: 200 }));
+  
+  console.log('✓ Performance middleware applied');
+}
+
+// ============================================================================
+// Usage Examples
+// ============================================================================
+
+/*
+// In your routes:
+
+// Cache static content for 5 minutes
+router.get('/api/sparks/featured', 
+  cacheControl({ maxAge: 300, isPublic: true }),
+  async (req, res) => { ... }
+);
+
+// No cache for user-specific data
+router.get('/api/user/preferences',
+  noCache,
+  async (req, res) => { ... }
+);
+
+// Add timing for database queries
+router.get('/api/sparks/dashboard', async (req, res) => {
+  const dbStart = Date.now();
+  const data = await getSparks();
+  (req as any).addTiming?.('db', Date.now() - dbStart, 'Database query');
+  
+  res.json(data);
+});
+*/

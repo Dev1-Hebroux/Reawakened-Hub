@@ -1,0 +1,330 @@
+# Performance Diagnostic & Optimization Guide
+
+## Quick Diagnosis Checklist
+
+### 1. Check Server Startup Time
+The server might be doing heavy operations at startup:
+
+```bash
+# Add timing to your server startup
+console.time('server-startup');
+// ... server initialization
+console.timeEnd('server-startup');
+```
+
+Common culprits:
+- Database connection pooling taking too long
+- Loading all sparks/content at startup
+- TTS audio generation on startup
+- Large file reads (JSON, configs)
+
+### 2. Check Network Tab in Browser DevTools
+
+Look for:
+- **Large bundle sizes** (main.js > 500KB is concerning)
+- **Slow API calls** (especially /api/auth/me, /api/auth/csrf)
+- **Blocking resources** (CSS, fonts loading before JS)
+- **Too many requests** (waterfall effect)
+
+### 3. Check Database Queries
+
+Slow queries on page load:
+```sql
+-- Check for slow queries in PostgreSQL
+SELECT pid, now() - pg_stat_activity.query_start AS duration, query
+FROM pg_stat_activity
+WHERE (now() - pg_stat_activity.query_start) > interval '1 second';
+```
+
+---
+
+## Common Performance Issues & Fixes
+
+### Issue 1: Auth Check on Every Page Load
+
+**Problem:** The AuthContext fetches `/api/auth/me` on mount, which:
+- Makes a database query
+- Validates session
+- Returns user data
+
+**Fix:** Add caching and optimize the query:
+
+```typescript
+// In AuthContext.tsx - cache the initial check
+const [state, setState] = useState<AuthState>(() => {
+  // Check for cached user in sessionStorage (fast)
+  const cached = sessionStorage.getItem('auth_user');
+  if (cached) {
+    try {
+      const user = JSON.parse(cached);
+      return {
+        user,
+        isAuthenticated: true,
+        isLoading: true, // Still verify with server
+        error: null,
+      };
+    } catch {}
+  }
+  return {
+    user: null,
+    isAuthenticated: false,
+    isLoading: true,
+    error: null,
+  };
+});
+
+// After successful auth check, cache it
+if (data?.user) {
+  sessionStorage.setItem('auth_user', JSON.stringify(data.user));
+  // ...
+}
+```
+
+### Issue 2: CSRF Token Fetch Blocking
+
+**Problem:** CSRF token is fetched before any POST request, adding latency.
+
+**Fix:** Fetch CSRF token in parallel with page load:
+
+```typescript
+// In AuthContext.tsx - prefetch CSRF token
+useEffect(() => {
+  // Prefetch CSRF token in background
+  fetchCsrfToken().catch(() => {});
+}, []);
+```
+
+### Issue 3: Large JavaScript Bundle
+
+**Problem:** Single bundle with all code loads slowly.
+
+**Fix:** Code splitting with lazy loading:
+
+```typescript
+// In App.tsx
+import { lazy, Suspense } from 'react';
+
+// Lazy load non-critical pages
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const RegisterPage = lazy(() => import('./pages/RegisterPage'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+
+// In routes
+<Suspense fallback={<LoadingSpinner />}>
+  <Route path="/login" component={LoginPage} />
+</Suspense>
+```
+
+### Issue 4: Database Connection Pool
+
+**Problem:** Cold start creates new DB connections slowly.
+
+**Fix:** Pre-warm connection pool:
+
+```typescript
+// In server startup
+import { db } from './db';
+
+async function warmupDatabase() {
+  // Make a simple query to warm up the pool
+  await db.execute(sql`SELECT 1`);
+  console.log('Database pool warmed up');
+}
+
+warmupDatabase();
+```
+
+### Issue 5: Session Validation Too Complex
+
+**Problem:** `validateSession()` does multiple DB operations.
+
+**Current flow:**
+1. Query session by token
+2. Check expiration
+3. Update last activity
+4. Query user by ID
+
+**Fix:** Single optimized query:
+
+```typescript
+// Optimized session validation
+export async function validateSessionOptimized(token: string) {
+  const result = await db.execute(sql`
+    SELECT 
+      s.id as session_id,
+      s.expires_at,
+      u.id,
+      u.email,
+      u.first_name,
+      u.last_name,
+      u.role,
+      u.email_verified,
+      u.auth_provider
+    FROM user_sessions s
+    JOIN users u ON s.user_id = u.id
+    WHERE s.token = ${token}
+      AND s.expires_at > NOW()
+      AND u.is_disabled = false
+    LIMIT 1
+  `);
+  
+  if (result.rows.length === 0) return null;
+  
+  // Update last activity in background (non-blocking)
+  db.execute(sql`
+    UPDATE user_sessions 
+    SET last_activity_at = NOW() 
+    WHERE id = ${result.rows[0].session_id}
+  `).catch(() => {});
+  
+  return result.rows[0];
+}
+```
+
+### Issue 6: Too Many Initial API Calls
+
+**Problem:** Page load triggers multiple API calls:
+- /api/auth/csrf
+- /api/auth/me
+- /api/notifications/unread-count
+- /api/user/preferences
+- etc.
+
+**Fix:** Consolidate into single initial load endpoint:
+
+```typescript
+// New endpoint: GET /api/init
+router.get('/init', loadUser, async (req, res) => {
+  const [notifications, preferences] = await Promise.all([
+    req.user ? getUnreadCount(req.user.id) : 0,
+    req.user ? getUserPreferences(req.user.id) : null,
+  ]);
+  
+  res.json({
+    user: req.user || null,
+    csrfToken: generateCsrfToken(res),
+    notifications: { unread: notifications },
+    preferences,
+  });
+});
+```
+
+### Issue 7: Fonts & Assets Blocking Render
+
+**Problem:** Custom fonts block text rendering.
+
+**Fix:** Use font-display and preload:
+
+```html
+<!-- In index.html -->
+<link rel="preload" href="/fonts/your-font.woff2" as="font" type="font/woff2" crossorigin>
+
+<style>
+  @font-face {
+    font-family: 'YourFont';
+    src: url('/fonts/your-font.woff2') format('woff2');
+    font-display: swap; /* Show fallback font immediately */
+  }
+</style>
+```
+
+### Issue 8: PWA Service Worker Issues
+
+**Problem:** Service worker caching stale content or not caching properly.
+
+**Fix:** Update service worker cache strategy:
+
+```javascript
+// In service-worker.js
+const CACHE_VERSION = 'v2'; // Increment on updates
+
+self.addEventListener('fetch', (event) => {
+  // Network-first for API calls
+  if (event.request.url.includes('/api/')) {
+    event.respondWith(
+      fetch(event.request)
+        .catch(() => caches.match(event.request))
+    );
+    return;
+  }
+  
+  // Cache-first for static assets
+  event.respondWith(
+    caches.match(event.request)
+      .then(cached => cached || fetch(event.request))
+  );
+});
+```
+
+---
+
+## Quick Wins Checklist
+
+### Server-side
+- [ ] Add database connection pooling (min: 2, max: 10)
+- [ ] Use Redis for session storage instead of PostgreSQL
+- [ ] Add response compression (gzip/brotli)
+- [ ] Cache static API responses (e.g., reading plan list)
+- [ ] Optimize session validation to single query
+
+### Client-side
+- [ ] Enable code splitting / lazy loading
+- [ ] Preload critical resources
+- [ ] Use `font-display: swap`
+- [ ] Cache auth state in sessionStorage
+- [ ] Prefetch CSRF token on app load
+- [ ] Consolidate initial API calls
+
+### Infrastructure
+- [ ] Enable CDN for static assets
+- [ ] Enable HTTP/2
+- [ ] Add proper caching headers
+- [ ] Consider edge caching for API responses
+
+---
+
+## Measuring Performance
+
+### Add Server Timing Headers
+
+```typescript
+// Middleware to track response time
+app.use((req, res, next) => {
+  const start = Date.now();
+  
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    if (duration > 100) {
+      console.warn(`Slow request: ${req.method} ${req.path} took ${duration}ms`);
+    }
+  });
+  
+  next();
+});
+```
+
+### React Query DevTools
+
+```typescript
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+
+// In App.tsx
+<QueryClientProvider client={queryClient}>
+  <App />
+  <ReactQueryDevtools initialIsOpen={false} />
+</QueryClientProvider>
+```
+
+### Lighthouse Audit
+
+Run in Chrome DevTools:
+1. Open DevTools (F12)
+2. Go to "Lighthouse" tab
+3. Select "Performance" + "Progressive Web App"
+4. Click "Analyze page load"
+
+Target scores:
+- Performance: > 70
+- First Contentful Paint: < 1.8s
+- Largest Contentful Paint: < 2.5s
+- Time to Interactive: < 3.8s

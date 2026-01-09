@@ -14,6 +14,7 @@ import notificationRoutes from "./routes/notificationRoutes";
 import recommendationRoutes from "./routes/recommendationRoutes";
 import sparkAudioRoutes from "./routes/sparkAudioRoutes";
 import authRoutes from "./routes/authRoutes";
+import initRoutes from "./routes/initRoutes";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 import { 
@@ -40,6 +41,7 @@ export async function registerRoutes(
   await setupAuth(app);
 
   // Register modular route handlers
+  app.use('/api', initRoutes);
   app.use('/api', notificationRoutes);
   app.use('/api', recommendationRoutes);
   app.use('/api', sparkAudioRoutes);
