@@ -1356,3 +1356,212 @@ export async function sendEventReminderEmail(to: string, name: string, data: {
     return { success: false, error };
   }
 }
+
+// ===== AUTH EMAILS =====
+
+export async function sendAuthWelcomeEmail(to: string, firstName: string | null) {
+  const name = firstName || 'there';
+  const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #FAF8F5;">
+  <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+    ${getEmailHeader("Welcome to Reawakened!", `Hey ${name}, your journey starts now`)}
+    <div style="background: #ffffff; border-radius: 16px; padding: 32px; margin-bottom: 24px; border: 1px solid #E8E4DE;">
+      <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
+        We're so glad you're here. Reawakened is a community for young people who want to grow, connect, and make an impact.
+      </p>
+      <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
+        Here's what you can explore:
+      </p>
+      <ul style="color: #374151; font-size: 16px; line-height: 1.8; margin: 0 0 24px 0; padding-left: 20px;">
+        <li><strong>Daily Sparks</strong> — bite-sized devotionals to start your day</li>
+        <li><strong>Reading Plans</strong> — guided journeys through Scripture</li>
+        <li><strong>Prayer Wall</strong> — pray and be prayed for</li>
+        <li><strong>Community</strong> — connect with others on the journey</li>
+      </ul>
+      <a href="https://reawakened.app/sparks" style="display: inline-block; background: linear-gradient(135deg, #1a2744 0%, #2d3a52 100%); color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 12px; font-weight: 600; font-size: 15px;">
+        Start Exploring
+      </a>
+    </div>
+    ${getEmailFooter(to, 'For I know the plans I have for you, declares the Lord. — Jeremiah 29:11')}
+  </div>
+</body>
+</html>`;
+
+  if (!resend) {
+    console.warn('Resend not configured, skipping welcome email');
+    return { success: false, error: 'Email service not configured' };
+  }
+
+  try {
+    const result = await resend.emails.send({
+      from: 'Reawakened <hello@reawakened.app>',
+      to: [to],
+      subject: `Welcome to Reawakened, ${name}!`,
+      html: htmlContent,
+    });
+    console.log('Auth welcome email sent:', result);
+    return { success: true, data: result };
+  } catch (error) {
+    console.error('Failed to send auth welcome email:', error);
+    return { success: false, error };
+  }
+}
+
+export async function sendEmailVerificationEmail(to: string, firstName: string | null, token: string) {
+  const name = firstName || 'there';
+  const verifyUrl = `https://reawakened.app/verify-email?token=${token}`;
+  
+  const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #FAF8F5;">
+  <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+    ${getEmailHeader("Verify Your Email", `Hey ${name}, one quick step`)}
+    <div style="background: #ffffff; border-radius: 16px; padding: 32px; margin-bottom: 24px; border: 1px solid #E8E4DE;">
+      <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
+        Please verify your email address to complete your account setup.
+      </p>
+      <a href="${verifyUrl}" style="display: inline-block; background: linear-gradient(135deg, #1a2744 0%, #2d3a52 100%); color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 12px; font-weight: 600; font-size: 15px;">
+        Verify Email Address
+      </a>
+      <p style="color: #6B7280; font-size: 14px; margin: 24px 0 0 0;">
+        This link expires in 24 hours. If you didn't create an account, you can ignore this email.
+      </p>
+    </div>
+    ${getEmailFooter(to)}
+  </div>
+</body>
+</html>`;
+
+  if (!resend) {
+    console.warn('Resend not configured, skipping email verification');
+    return { success: false, error: 'Email service not configured' };
+  }
+
+  try {
+    const result = await resend.emails.send({
+      from: 'Reawakened <noreply@reawakened.app>',
+      to: [to],
+      subject: 'Verify your email for Reawakened',
+      html: htmlContent,
+    });
+    console.log('Email verification sent:', result);
+    return { success: true, data: result };
+  } catch (error) {
+    console.error('Failed to send email verification:', error);
+    return { success: false, error };
+  }
+}
+
+export async function sendPasswordResetEmail(to: string, firstName: string | null, token: string) {
+  const name = firstName || 'there';
+  const resetUrl = `https://reawakened.app/reset-password?token=${token}`;
+  
+  const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #FAF8F5;">
+  <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+    ${getEmailHeader("Reset Your Password", `Hey ${name}, let's get you back in`)}
+    <div style="background: #ffffff; border-radius: 16px; padding: 32px; margin-bottom: 24px; border: 1px solid #E8E4DE;">
+      <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
+        We received a request to reset your password. Click the button below to create a new password.
+      </p>
+      <a href="${resetUrl}" style="display: inline-block; background: linear-gradient(135deg, #1a2744 0%, #2d3a52 100%); color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 12px; font-weight: 600; font-size: 15px;">
+        Reset Password
+      </a>
+      <p style="color: #6B7280; font-size: 14px; margin: 24px 0 0 0;">
+        This link expires in 1 hour. If you didn't request this, you can safely ignore this email.
+      </p>
+    </div>
+    ${getEmailFooter(to)}
+  </div>
+</body>
+</html>`;
+
+  if (!resend) {
+    console.warn('Resend not configured, skipping password reset email');
+    return { success: false, error: 'Email service not configured' };
+  }
+
+  try {
+    const result = await resend.emails.send({
+      from: 'Reawakened <noreply@reawakened.app>',
+      to: [to],
+      subject: 'Reset your Reawakened password',
+      html: htmlContent,
+    });
+    console.log('Password reset email sent:', result);
+    return { success: true, data: result };
+  } catch (error) {
+    console.error('Failed to send password reset email:', error);
+    return { success: false, error };
+  }
+}
+
+export async function sendMigrationEmail(to: string, firstName: string | null, token: string) {
+  const name = firstName || 'there';
+  const setupUrl = `https://reawakened.app/reset-password?token=${token}&migration=true`;
+  
+  const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #FAF8F5;">
+  <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+    ${getEmailHeader("Set Up Your Password", `Hey ${name}, we've got an upgrade for you`)}
+    <div style="background: #ffffff; border-radius: 16px; padding: 32px; margin-bottom: 24px; border: 1px solid #E8E4DE;">
+      <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
+        Great news! You can now log in with your email and password, in addition to Replit SSO.
+      </p>
+      <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
+        Click below to set up a password for your account. This is optional — you can still use Replit to sign in.
+      </p>
+      <a href="${setupUrl}" style="display: inline-block; background: linear-gradient(135deg, #1a2744 0%, #2d3a52 100%); color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 12px; font-weight: 600; font-size: 15px;">
+        Set Up Password
+      </a>
+      <p style="color: #6B7280; font-size: 14px; margin: 24px 0 0 0;">
+        This link expires in 7 days. No action needed if you're happy using Replit.
+      </p>
+    </div>
+    ${getEmailFooter(to)}
+  </div>
+</body>
+</html>`;
+
+  if (!resend) {
+    console.warn('Resend not configured, skipping migration email');
+    return { success: false, error: 'Email service not configured' };
+  }
+
+  try {
+    const result = await resend.emails.send({
+      from: 'Reawakened <hello@reawakened.app>',
+      to: [to],
+      subject: 'Set up your Reawakened password',
+      html: htmlContent,
+    });
+    console.log('Migration email sent:', result);
+    return { success: true, data: result };
+  } catch (error) {
+    console.error('Failed to send migration email:', error);
+    return { success: false, error };
+  }
+}

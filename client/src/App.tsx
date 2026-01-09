@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { MobileNav } from "@/components/layout/MobileNav";
 import { PWAInstallBanner } from "@/components/PWAInstallBanner";
 import { Suspense, lazy } from "react";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
@@ -74,6 +75,11 @@ const ReadingPlans = lazy(() => import("@/pages/ReadingPlans").then(m => ({ defa
 const ReadingPlanDetail = lazy(() => import("@/pages/ReadingPlanDetail").then(m => ({ default: m.ReadingPlanDetail })));
 const PartnerVision = lazy(() => import("@/pages/PartnerVision").then(m => ({ default: m.PartnerVision })));
 const UnsubscribePage = lazy(() => import("@/pages/Unsubscribe").then(m => ({ default: m.UnsubscribePage })));
+
+const LoginPage = lazy(() => import("@/pages/auth/LoginPage").then(m => ({ default: m.LoginPage })));
+const RegisterPage = lazy(() => import("@/pages/auth/RegisterPage").then(m => ({ default: m.RegisterPage })));
+const ForgotPasswordPage = lazy(() => import("@/pages/auth/PasswordRecoveryPages").then(m => ({ default: m.ForgotPasswordPage })));
+const ResetPasswordPage = lazy(() => import("@/pages/auth/PasswordRecoveryPages").then(m => ({ default: m.ResetPasswordPage })));
 
 const AdminDashboard = lazy(() => import("@/pages/Admin").then(m => ({ default: m.AdminDashboard })));
 const AdminEvents = lazy(() => import("@/pages/AdminEvents").then(m => ({ default: m.AdminEvents })));
@@ -198,6 +204,10 @@ function Router() {
         <Route path="/mission-trips" component={MissionTripsPublic} />
         <Route path="/coaching-public" component={CoachingPublic} />
         <Route path="/goals" component={Goals} />
+        <Route path="/login" component={LoginPage} />
+        <Route path="/register" component={RegisterPage} />
+        <Route path="/forgot-password" component={ForgotPasswordPage} />
+        <Route path="/reset-password" component={ResetPasswordPage} />
         <Route component={NotFound} />
       </Switch>
     </Suspense>
@@ -233,9 +243,11 @@ function App() {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <AppContent />
-        </TooltipProvider>
+        <AuthProvider>
+          <TooltipProvider>
+            <AppContent />
+          </TooltipProvider>
+        </AuthProvider>
       </QueryClientProvider>
     </ErrorBoundary>
   );

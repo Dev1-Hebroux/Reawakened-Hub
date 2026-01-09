@@ -13,6 +13,7 @@ import { generateSparkAudio, getSparkAudioUrl, generateReadingPlanDayAudio, getR
 import notificationRoutes from "./routes/notificationRoutes";
 import recommendationRoutes from "./routes/recommendationRoutes";
 import sparkAudioRoutes from "./routes/sparkAudioRoutes";
+import authRoutes from "./routes/authRoutes";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 import { 
@@ -42,6 +43,7 @@ export async function registerRoutes(
   app.use('/api', notificationRoutes);
   app.use('/api', recommendationRoutes);
   app.use('/api', sparkAudioRoutes);
+  app.use('/api/auth', authRoutes);
 
   // Twilio domain verification
   app.get('/6fb6008290b49155dde41016be0276b0.html', (req, res) => {
