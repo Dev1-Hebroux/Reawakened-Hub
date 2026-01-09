@@ -221,7 +221,7 @@ export function SparksPage() {
 
   const subscribeMutation = useMutation({
     mutationFn: async (category: string) => {
-      const res = await apiRequest("POST", "/api/subscriptions", { category });
+      const res = await apiRequest("POST", "/api/subscriptions", { category }) as Response;
       return res.json();
     },
     onSuccess: () => {
@@ -268,7 +268,7 @@ export function SparksPage() {
 
   const reactionMutation = useMutation({
     mutationFn: async ({ sparkId, reactionType }: { sparkId: number; reactionType: string }) => {
-      const res = await apiRequest("POST", `/api/sparks/${sparkId}/reactions`, { reactionType });
+      const res = await apiRequest("POST", `/api/sparks/${sparkId}/reactions`, { reactionType }) as Response;
       return res.json();
     },
     onSuccess: () => {
