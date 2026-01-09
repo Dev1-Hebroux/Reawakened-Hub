@@ -44,11 +44,15 @@ Preferred communication style: Simple, everyday language.
 - **Sparks Page Optimization**: Uses `useDashboard` hook to fetch consolidated data in one request.
 - **CSRF Token Prefetch**: AuthContext prefetches CSRF token with request deduplication.
 
+#### Completed Optimizations (January 2026)
+- Frontend now consumes `/api/init` endpoint on bootstrap instead of separate `/api/auth/me` calls.
+- Streak storage returns both current and longest streak values (UTC-safe calculation).
+- Bootstrap data (notifications, preferences, streak) hydrated after login/register and cleared on logout.
+
 #### Follow-up Optimizations (TODO)
-- Wire frontend to consume `/api/init` endpoint on bootstrap instead of separate `/api/auth/me` calls.
 - Implement per-user auth caching with proper TTL and isolation.
 - Add granular loading/error states to useDashboard hook for better UX.
-- Extend streak storage to return both current and longest streak values.
+- Add automated test coverage for streak calculations (DST transitions, duplicate entries).
 
 ## External Dependencies
 
