@@ -1,0 +1,320 @@
+/**
+ * Authentication Middleware
+ * 
+ * Express middleware for dual authentication (Replit SSO + Email/Password).
+ * Handles session cookies, CSRF protection, and role-based access control.
+ */
+
+import { Request, Response, NextFunction } from 'express';
+import { getUserBySession, validateSession, type AuthUser } from '../services/authService';
+import { logger } from '../lib/logger';
+import crypto from 'crypto';
+
+// ============================================================================
+// Configuration
+// ============================================================================
+
+const SESSION_COOKIE_NAME = 'reawakened_session';
+const CSRF_COOKIE_NAME = 'reawakened_csrf';
+const CSRF_HEADER_NAME = 'x-csrf-token';
+
+const isProduction = process.env.NODE_ENV === 'production';
+
+const COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: isProduction,
+  sameSite: 'lax' as const,
+  path: '/',
+  maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+};
+
+// ============================================================================
+// Type Extensions
+// ============================================================================
+
+declare global {
+  namespace Express {
+    interface Request {
+      user?: AuthUser;
+      sessionToken?: string;
+      authMethod?: 'session' | 'replit';
+    }
+  }
+}
+
+// ============================================================================
+// Session Cookie Management
+// ============================================================================
+
+export function setSessionCookie(res: Response, token: string): void {
+  res.cookie(SESSION_COOKIE_NAME, token, COOKIE_OPTIONS);
+}
+
+export function clearSessionCookie(res: Response): void {
+  res.clearCookie(SESSION_COOKIE_NAME, { path: '/' });
+}
+
+export function getSessionToken(req: Request): string | null {
+  return req.cookies?.[SESSION_COOKIE_NAME] || null;
+}
+
+// ============================================================================
+// CSRF Protection
+// ============================================================================
+
+export function generateCsrfToken(res: Response): string {
+  const token = crypto.randomBytes(32).toString('hex');
+  res.cookie(CSRF_COOKIE_NAME, token, {
+    ...COOKIE_OPTIONS,
+    httpOnly: false, // Must be readable by JavaScript
+  });
+  return token;
+}
+
+function validateCsrfToken(req: Request): boolean {
+  const cookieToken = req.cookies?.[CSRF_COOKIE_NAME];
+  const headerToken = req.headers[CSRF_HEADER_NAME] as string;
+  
+  if (!cookieToken || !headerToken) return false;
+  
+  try {
+    return crypto.timingSafeEqual(
+      Buffer.from(cookieToken),
+      Buffer.from(headerToken)
+    );
+  } catch {
+    return false;
+  }
+}
+
+// ============================================================================
+// Auth Middleware
+// ============================================================================
+
+/**
+ * Load user from session cookie or Replit auth.
+ * Supports both authentication methods simultaneously.
+ */
+export async function loadUser(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    // First, try session cookie (our auth)
+    const sessionToken = getSessionToken(req);
+    
+    if (sessionToken) {
+      const user = await getUserBySession(sessionToken);
+      if (user) {
+        req.user = user;
+        req.sessionToken = sessionToken;
+        req.authMethod = 'session';
+        return next();
+      } else {
+        // Invalid session, clear cookie
+        clearSessionCookie(res);
+      }
+    }
+    
+    // Fall back to Replit auth if available
+    // This checks if user is authenticated via Replit
+    const replitUser = (req as any).user; // From Replit auth middleware
+    if (replitUser?.id) {
+      // User is authenticated via Replit but doesn't have our session
+      // This happens during the transition period
+      req.authMethod = 'replit';
+      // Note: You may want to create a session here for consistency
+    }
+    
+    next();
+  } catch (error) {
+    logger.error({ error }, 'Error loading user session');
+    next();
+  }
+}
+
+/**
+ * Require authentication (either method).
+ */
+export function requireAuth(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void {
+  if (!req.user) {
+    res.status(401).json({
+      error: 'Authentication required',
+      code: 'AUTH_REQUIRED',
+    });
+    return;
+  }
+  next();
+}
+
+/**
+ * Require specific role(s).
+ */
+export function requireRole(...roles: string[]) {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    if (!req.user) {
+      res.status(401).json({ error: 'Authentication required', code: 'AUTH_REQUIRED' });
+      return;
+    }
+    
+    if (!roles.includes(req.user.role)) {
+      logger.warn({
+        userId: req.user.id,
+        requiredRoles: roles,
+        userRole: req.user.role,
+      }, 'Access denied - insufficient role');
+      
+      res.status(403).json({ error: 'Access denied', code: 'INSUFFICIENT_PERMISSIONS' });
+      return;
+    }
+    
+    next();
+  };
+}
+
+export const requireAdmin = requireRole('admin');
+export const requireModerator = requireRole('admin', 'moderator');
+
+/**
+ * Require verified email.
+ */
+export function requireVerifiedEmail(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void {
+  if (!req.user) {
+    res.status(401).json({ error: 'Authentication required', code: 'AUTH_REQUIRED' });
+    return;
+  }
+  
+  if (!req.user.emailVerified) {
+    res.status(403).json({
+      error: 'Please verify your email to continue',
+      code: 'EMAIL_NOT_VERIFIED',
+    });
+    return;
+  }
+  
+  next();
+}
+
+/**
+ * CSRF protection for state-changing requests.
+ */
+export function csrfProtection(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void {
+  const safeMethods = ['GET', 'HEAD', 'OPTIONS'];
+  if (safeMethods.includes(req.method)) {
+    next();
+    return;
+  }
+  
+  if (!validateCsrfToken(req)) {
+    logger.warn({ method: req.method, path: req.path, ip: req.ip }, 'CSRF validation failed');
+    res.status(403).json({ error: 'Invalid or missing CSRF token', code: 'CSRF_INVALID' });
+    return;
+  }
+  
+  next();
+}
+
+// ============================================================================
+// Rate Limiting
+// ============================================================================
+
+interface RateLimitEntry {
+  count: number;
+  resetAt: number;
+}
+
+const rateLimitStore = new Map<string, RateLimitEntry>();
+
+export function authRateLimit(options: {
+  windowMs?: number;
+  maxAttempts?: number;
+  keyPrefix?: string;
+} = {}) {
+  const windowMs = options.windowMs || 15 * 60 * 1000; // 15 minutes
+  const maxAttempts = options.maxAttempts || 5;
+  const keyPrefix = options.keyPrefix || 'auth';
+  
+  return (req: Request, res: Response, next: NextFunction): void => {
+    const key = `${keyPrefix}:${req.ip}:${req.path}`;
+    const now = Date.now();
+    
+    let entry = rateLimitStore.get(key);
+    
+    if (!entry || entry.resetAt < now) {
+      entry = { count: 0, resetAt: now + windowMs };
+      rateLimitStore.set(key, entry);
+    }
+    
+    entry.count++;
+    
+    if (entry.count > maxAttempts) {
+      const retryAfter = Math.ceil((entry.resetAt - now) / 1000);
+      
+      logger.warn({ ip: req.ip, path: req.path, attempts: entry.count }, 'Rate limit exceeded');
+      
+      res.status(429)
+        .set('Retry-After', String(retryAfter))
+        .json({
+          error: 'Too many attempts. Please try again later.',
+          code: 'RATE_LIMITED',
+          retryAfter,
+        });
+      return;
+    }
+    
+    next();
+  };
+}
+
+export function resetRateLimit(ip: string, path: string, prefix: string = 'auth'): void {
+  rateLimitStore.delete(`${prefix}:${ip}:${path}`);
+}
+
+// Cleanup expired entries periodically
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of rateLimitStore.entries()) {
+    if (entry.resetAt < now) rateLimitStore.delete(key);
+  }
+}, 5 * 60 * 1000);
+
+// ============================================================================
+// Utility Middleware
+// ============================================================================
+
+/**
+ * Ensure CSRF token cookie exists.
+ */
+export function ensureCsrfToken(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void {
+  if (!req.cookies?.[CSRF_COOKIE_NAME]) {
+    generateCsrfToken(res);
+  }
+  next();
+}
+
+/**
+ * Get client info for session/audit logging.
+ */
+export function getClientInfo(req: Request) {
+  return {
+    ipAddress: req.ip || req.socket.remoteAddress,
+    userAgent: req.headers['user-agent'],
+  };
+}

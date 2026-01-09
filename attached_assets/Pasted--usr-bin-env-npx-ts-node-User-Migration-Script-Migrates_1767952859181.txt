@@ -1,0 +1,318 @@
+#!/usr/bin/env npx ts-node
+/**
+ * User Migration Script
+ * 
+ * Migrates existing users from Replit Auth to the new password-based system.
+ * 
+ * Migration Strategy:
+ * 1. Users with Replit Auth have a replitId in their record
+ * 2. These users need to set a password before they can log in
+ * 3. We generate password reset tokens for all users
+ * 4. Send them an email to set their password
+ * 
+ * Usage:
+ *   npx ts-node scripts/migrate-users.ts [command]
+ * 
+ * Commands:
+ *   analyze     Show migration status
+ *   migrate     Generate reset tokens and send emails
+ *   dry-run     Show what would happen without making changes
+ */
+
+import { config } from 'dotenv';
+config();
+
+import { db } from '../server/db';
+import { users } from '@shared/schema';
+import { eq, isNull, isNotNull, sql } from 'drizzle-orm';
+import { generateToken, hashPassword } from '../server/services/authService';
+import { sendEmail } from '../server/services/emailService';
+
+const APP_URL = process.env.APP_URL || 'http://localhost:5000';
+
+// ANSI colors
+const colors = {
+  reset: '\x1b[0m',
+  bright: '\x1b[1m',
+  green: '\x1b[32m',
+  yellow: '\x1b[33m',
+  red: '\x1b[31m',
+  cyan: '\x1b[36m',
+  gray: '\x1b[90m',
+};
+
+function log(message: string, color: string = colors.reset) {
+  console.log(`${color}${message}${colors.reset}`);
+}
+
+function logHeader(message: string) {
+  console.log();
+  log(`═══════════════════════════════════════════════════════════`, colors.cyan);
+  log(`  ${message}`, colors.bright);
+  log(`═══════════════════════════════════════════════════════════`, colors.cyan);
+  console.log();
+}
+
+interface MigrationUser {
+  id: number;
+  email: string;
+  firstName: string | null;
+  replitId: string | null;
+  hasPassword: boolean;
+}
+
+async function getUsers(): Promise<MigrationUser[]> {
+  const result = await db
+    .select({
+      id: users.id,
+      email: users.email,
+      firstName: users.firstName,
+      replitId: users.replitId,
+      passwordHash: users.passwordHash,
+    })
+    .from(users)
+    .orderBy(users.id);
+  
+  return result.map(u => ({
+    id: u.id,
+    email: u.email,
+    firstName: u.firstName,
+    replitId: u.replitId,
+    hasPassword: !!u.passwordHash && u.passwordHash.length > 0,
+  }));
+}
+
+async function analyze() {
+  logHeader('User Migration Analysis');
+  
+  const allUsers = await getUsers();
+  
+  const stats = {
+    total: allUsers.length,
+    withPassword: allUsers.filter(u => u.hasPassword).length,
+    needsMigration: allUsers.filter(u => !u.hasPassword).length,
+    replitUsers: allUsers.filter(u => u.replitId).length,
+  };
+  
+  log(`Total Users:        ${stats.total}`);
+  log(`With Password:      ${stats.withPassword}`, colors.green);
+  log(`Needs Migration:    ${stats.needsMigration}`, colors.yellow);
+  log(`Replit Auth Users:  ${stats.replitUsers}`, colors.cyan);
+  
+  console.log();
+  
+  if (stats.needsMigration > 0) {
+    log('Users requiring migration:', colors.bright);
+    console.log();
+    
+    const needsMigration = allUsers.filter(u => !u.hasPassword);
+    for (const user of needsMigration.slice(0, 20)) {
+      log(`  [${user.id}] ${user.email} ${user.replitId ? '(Replit)' : ''}`, colors.gray);
+    }
+    
+    if (needsMigration.length > 20) {
+      log(`  ... and ${needsMigration.length - 20} more`, colors.gray);
+    }
+  } else {
+    log('✓ All users have passwords. No migration needed.', colors.green);
+  }
+}
+
+async function migrateUsers(dryRun: boolean = false) {
+  logHeader(dryRun ? 'Migration Dry Run' : 'User Migration');
+  
+  const allUsers = await getUsers();
+  const needsMigration = allUsers.filter(u => !u.hasPassword);
+  
+  if (needsMigration.length === 0) {
+    log('✓ No users need migration.', colors.green);
+    return;
+  }
+  
+  log(`Found ${needsMigration.length} users to migrate`);
+  console.log();
+  
+  let migrated = 0;
+  let failed = 0;
+  const errors: string[] = [];
+  
+  for (const user of needsMigration) {
+    try {
+      if (dryRun) {
+        log(`  Would migrate: ${user.email}`, colors.gray);
+        migrated++;
+        continue;
+      }
+      
+      // Generate a password reset token
+      const token = generateToken(32);
+      const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+      
+      // Store the token (you may need to adjust this based on your schema)
+      await db.execute(sql`
+        INSERT INTO password_reset_tokens (user_id, token, expires_at, created_at)
+        VALUES (${user.id}, ${token}, ${expiresAt}, NOW())
+        ON CONFLICT (user_id) DO UPDATE SET token = ${token}, expires_at = ${expiresAt}
+      `);
+      
+      // Send the migration email
+      const resetUrl = `${APP_URL}/reset-password?token=${token}`;
+      
+      await sendEmail({
+        to: user.email,
+        subject: 'Set Your Password - Reawakened',
+        html: `
+          <h1>Welcome to the New Reawakened!</h1>
+          <p>Hi${user.firstName ? ` ${user.firstName}` : ''},</p>
+          <p>We've upgraded our authentication system to give you more control over your account. Please set a password to continue using Reawakened.</p>
+          <p>
+            <a href="${resetUrl}" style="display: inline-block; padding: 14px 28px; background-color: #7C9A8E; color: white; text-decoration: none; border-radius: 8px; font-weight: 600;">
+              Set Your Password
+            </a>
+          </p>
+          <p>This link will expire in 7 days.</p>
+          <p>If you have any questions, please don't hesitate to reach out to our support team.</p>
+          <p>Blessings,<br>The Reawakened Team</p>
+        `,
+        text: `
+Welcome to the New Reawakened!
+
+Hi${user.firstName ? ` ${user.firstName}` : ''},
+
+We've upgraded our authentication system to give you more control over your account. Please set a password to continue using Reawakened.
+
+Set your password: ${resetUrl}
+
+This link will expire in 7 days.
+
+If you have any questions, please don't hesitate to reach out to our support team.
+
+Blessings,
+The Reawakened Team
+        `,
+      });
+      
+      log(`  ✓ Migrated: ${user.email}`, colors.green);
+      migrated++;
+      
+      // Rate limiting - don't overwhelm email service
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+      errors.push(`${user.email}: ${errorMsg}`);
+      log(`  ✗ Failed: ${user.email} - ${errorMsg}`, colors.red);
+      failed++;
+    }
+  }
+  
+  console.log();
+  logHeader('Migration Summary');
+  
+  log(`Migrated: ${migrated}`, colors.green);
+  log(`Failed:   ${failed}`, colors.red);
+  
+  if (errors.length > 0) {
+    console.log();
+    log('Errors:', colors.red);
+    for (const err of errors) {
+      log(`  ${err}`, colors.gray);
+    }
+  }
+}
+
+async function addPasswordColumn() {
+  logHeader('Adding Password Column');
+  
+  // Check if column exists
+  const result = await db.execute(sql`
+    SELECT column_name 
+    FROM information_schema.columns 
+    WHERE table_name = 'users' AND column_name = 'password_hash'
+  `);
+  
+  if (result.rows.length > 0) {
+    log('✓ password_hash column already exists', colors.green);
+    return;
+  }
+  
+  log('Adding password_hash column to users table...');
+  
+  await db.execute(sql`
+    ALTER TABLE users 
+    ADD COLUMN IF NOT EXISTS password_hash TEXT,
+    ADD COLUMN IF NOT EXISTS last_login_at TIMESTAMP,
+    ADD COLUMN IF NOT EXISTS is_disabled BOOLEAN DEFAULT FALSE,
+    ADD COLUMN IF NOT EXISTS disabled_at TIMESTAMP,
+    ADD COLUMN IF NOT EXISTS disabled_reason TEXT,
+    ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT FALSE,
+    ADD COLUMN IF NOT EXISTS email_verification_token TEXT,
+    ADD COLUMN IF NOT EXISTS email_verification_expires TIMESTAMP
+  `);
+  
+  log('✓ Columns added successfully', colors.green);
+}
+
+function showHelp() {
+  log(`
+${colors.bright}User Migration Script${colors.reset}
+
+Migrates users from Replit Auth to password-based authentication.
+
+${colors.cyan}Usage:${colors.reset}
+  npx ts-node scripts/migrate-users.ts [command]
+
+${colors.cyan}Commands:${colors.reset}
+  analyze       Show migration status and user counts
+  prepare       Add necessary database columns
+  migrate       Generate reset tokens and send emails
+  dry-run       Show what would happen without making changes
+  help          Show this help message
+
+${colors.cyan}Process:${colors.reset}
+  1. Run 'analyze' to see how many users need migration
+  2. Run 'prepare' to add necessary database columns
+  3. Run 'dry-run' to preview the migration
+  4. Run 'migrate' to send password setup emails
+
+${colors.cyan}Notes:${colors.reset}
+  - Users will receive an email with a link to set their password
+  - The link expires in 7 days
+  - Users can still access the app but will be prompted to set a password
+`);
+}
+
+async function main() {
+  const command = process.argv[2] || 'help';
+  
+  try {
+    switch (command) {
+      case 'analyze':
+        await analyze();
+        break;
+      
+      case 'prepare':
+        await addPasswordColumn();
+        break;
+      
+      case 'migrate':
+        await migrateUsers(false);
+        break;
+      
+      case 'dry-run':
+        await migrateUsers(true);
+        break;
+      
+      case 'help':
+      default:
+        showHelp();
+        break;
+    }
+  } catch (error) {
+    log(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`, colors.red);
+    console.error(error);
+    process.exit(1);
+  }
+}
+
+main();

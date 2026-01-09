@@ -1,0 +1,835 @@
+/**
+ * Authentication Service
+ * 
+ * Core authentication logic supporting dual auth (Replit + Email/Password).
+ * Uses bcrypt for password hashing and crypto for secure token generation.
+ */
+
+import bcrypt from 'bcrypt';
+import crypto from 'crypto';
+import { db } from '../db';
+import { users } from '@shared/schema';
+import { 
+  userSessions, 
+  passwordResetTokens, 
+  emailVerificationTokens,
+  authAuditLog,
+  AUTH_EVENTS,
+  type AuthProvider,
+  type UserWithAuth,
+  type AuthEventType,
+} from '@shared/schema/auth';
+import { eq, and, gt, lt, or } from 'drizzle-orm';
+import { logger } from '../lib/logger';
+
+// ============================================================================
+// Configuration
+// ============================================================================
+
+const CONFIG = {
+  bcryptRounds: 12,
+  sessionDurationDays: 30,
+  sessionRefreshThresholdDays: 7,
+  passwordResetExpiryHours: 24,
+  emailVerificationExpiryHours: 48,
+  minPasswordLength: 8,
+  maxLoginAttempts: 5,
+  lockoutDurationMinutes: 15,
+};
+
+// ============================================================================
+// Types
+// ============================================================================
+
+export interface AuthUser {
+  id: number;
+  email: string;
+  firstName: string | null;
+  lastName: string | null;
+  avatarUrl: string | null;
+  role: string;
+  authProvider: AuthProvider;
+  emailVerified: boolean;
+  replitId: string | null;
+}
+
+export interface AuthResult {
+  success: boolean;
+  user?: AuthUser;
+  sessionToken?: string;
+  error?: string;
+  errorCode?: AuthErrorCode;
+}
+
+export type AuthErrorCode = 
+  | 'INVALID_CREDENTIALS'
+  | 'EMAIL_EXISTS'
+  | 'WEAK_PASSWORD'
+  | 'ACCOUNT_DISABLED'
+  | 'ACCOUNT_LOCKED'
+  | 'INVALID_TOKEN'
+  | 'TOKEN_EXPIRED'
+  | 'EMAIL_NOT_VERIFIED'
+  | 'USER_NOT_FOUND'
+  | 'SAME_PASSWORD'
+  | 'RATE_LIMITED';
+
+export interface PasswordValidation {
+  isValid: boolean;
+  errors: string[];
+  strength: 'weak' | 'fair' | 'strong' | 'very_strong';
+}
+
+// ============================================================================
+// Password Utilities
+// ============================================================================
+
+export async function hashPassword(password: string): Promise<string> {
+  return bcrypt.hash(password, CONFIG.bcryptRounds);
+}
+
+export async function verifyPassword(password: string, hash: string): Promise<boolean> {
+  return bcrypt.compare(password, hash);
+}
+
+export function validatePassword(password: string): PasswordValidation {
+  const errors: string[] = [];
+  let score = 0;
+  
+  if (password.length < CONFIG.minPasswordLength) {
+    errors.push(`Password must be at least ${CONFIG.minPasswordLength} characters`);
+  } else {
+    score++;
+  }
+  
+  if (password.length >= 12) score++;
+  
+  if (!/[A-Z]/.test(password)) {
+    errors.push('Password must contain at least one uppercase letter');
+  } else {
+    score++;
+  }
+  
+  if (!/[a-z]/.test(password)) {
+    errors.push('Password must contain at least one lowercase letter');
+  } else {
+    score++;
+  }
+  
+  if (!/[0-9]/.test(password)) {
+    errors.push('Password must contain at least one number');
+  } else {
+    score++;
+  }
+  
+  if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+    errors.push('Password must contain at least one special character');
+  } else {
+    score++;
+  }
+  
+  const strength = score <= 2 ? 'weak' : score <= 3 ? 'fair' : score <= 4 ? 'strong' : 'very_strong';
+  
+  return {
+    isValid: errors.length === 0,
+    errors,
+    strength,
+  };
+}
+
+export function generateToken(length: number = 32): string {
+  return crypto.randomBytes(length).toString('hex');
+}
+
+// ============================================================================
+// Audit Logging
+// ============================================================================
+
+async function logAuthEvent(
+  eventType: AuthEventType,
+  userId: number | null,
+  metadata: Record<string, any> = {},
+  request?: { ip?: string; userAgent?: string }
+): Promise<void> {
+  try {
+    await db.insert(authAuditLog).values({
+      userId,
+      eventType,
+      ipAddress: request?.ip || null,
+      userAgent: request?.userAgent || null,
+      metadata,
+    });
+  } catch (error) {
+    logger.error({ error, eventType, userId }, 'Failed to log auth event');
+  }
+}
+
+// ============================================================================
+// Session Management
+// ============================================================================
+
+export async function createSession(
+  userId: number,
+  options: { userAgent?: string; ipAddress?: string; deviceName?: string } = {}
+): Promise<string> {
+  const token = generateToken(32);
+  const expiresAt = new Date(Date.now() + CONFIG.sessionDurationDays * 24 * 60 * 60 * 1000);
+  
+  await db.insert(userSessions).values({
+    userId,
+    token,
+    expiresAt,
+    userAgent: options.userAgent || null,
+    ipAddress: options.ipAddress || null,
+    deviceName: options.deviceName || null,
+  });
+  
+  await logAuthEvent(AUTH_EVENTS.SESSION_CREATED, userId, {}, options);
+  
+  logger.info({ userId }, 'Session created');
+  
+  return token;
+}
+
+export async function validateSession(token: string): Promise<{ userId: number; session: any } | null> {
+  const [session] = await db
+    .select()
+    .from(userSessions)
+    .where(and(
+      eq(userSessions.token, token),
+      gt(userSessions.expiresAt, new Date())
+    ))
+    .limit(1);
+  
+  if (!session) return null;
+  
+  // Refresh session if approaching expiration
+  const refreshThreshold = new Date(
+    Date.now() + CONFIG.sessionRefreshThresholdDays * 24 * 60 * 60 * 1000
+  );
+  
+  if (session.expiresAt < refreshThreshold) {
+    const newExpiresAt = new Date(
+      Date.now() + CONFIG.sessionDurationDays * 24 * 60 * 60 * 1000
+    );
+    
+    await db
+      .update(userSessions)
+      .set({ expiresAt: newExpiresAt, lastActivityAt: new Date() })
+      .where(eq(userSessions.id, session.id));
+  } else {
+    await db
+      .update(userSessions)
+      .set({ lastActivityAt: new Date() })
+      .where(eq(userSessions.id, session.id));
+  }
+  
+  return { userId: session.userId, session };
+}
+
+export async function invalidateSession(token: string): Promise<void> {
+  const [session] = await db
+    .select({ userId: userSessions.userId })
+    .from(userSessions)
+    .where(eq(userSessions.token, token))
+    .limit(1);
+  
+  await db.delete(userSessions).where(eq(userSessions.token, token));
+  
+  if (session) {
+    await logAuthEvent(AUTH_EVENTS.SESSION_REVOKED, session.userId);
+  }
+}
+
+export async function invalidateAllUserSessions(userId: number): Promise<number> {
+  const result = await db
+    .delete(userSessions)
+    .where(eq(userSessions.userId, userId))
+    .returning({ id: userSessions.id });
+  
+  await logAuthEvent(AUTH_EVENTS.ALL_SESSIONS_REVOKED, userId, { count: result.length });
+  
+  return result.length;
+}
+
+export async function getUserSessions(userId: number) {
+  return db
+    .select()
+    .from(userSessions)
+    .where(and(
+      eq(userSessions.userId, userId),
+      gt(userSessions.expiresAt, new Date())
+    ))
+    .orderBy(userSessions.lastActivityAt);
+}
+
+// ============================================================================
+// User Registration (Email/Password)
+// ============================================================================
+
+export async function registerWithEmail(
+  email: string,
+  password: string,
+  options: {
+    firstName?: string;
+    lastName?: string;
+    userAgent?: string;
+    ipAddress?: string;
+  } = {}
+): Promise<AuthResult> {
+  const normalizedEmail = email.toLowerCase().trim();
+  
+  // Validate password
+  const passwordValidation = validatePassword(password);
+  if (!passwordValidation.isValid) {
+    return {
+      success: false,
+      error: passwordValidation.errors[0],
+      errorCode: 'WEAK_PASSWORD',
+    };
+  }
+  
+  // Check if user exists
+  const [existingUser] = await db
+    .select({ id: users.id, authProvider: users.authProvider })
+    .from(users)
+    .where(eq(users.email, normalizedEmail))
+    .limit(1);
+  
+  if (existingUser) {
+    // If user exists with Replit auth, allow adding password
+    if (existingUser.authProvider === 'replit') {
+      return await addPasswordToReplitUser(existingUser.id, password, options);
+    }
+    
+    return {
+      success: false,
+      error: 'An account with this email already exists',
+      errorCode: 'EMAIL_EXISTS',
+    };
+  }
+  
+  // Hash password and create user
+  const passwordHash = await hashPassword(password);
+  
+  const [newUser] = await db
+    .insert(users)
+    .values({
+      email: normalizedEmail,
+      passwordHash,
+      firstName: options.firstName || null,
+      lastName: options.lastName || null,
+      authProvider: 'email',
+      role: 'user',
+    })
+    .returning();
+  
+  // Create session
+  const sessionToken = await createSession(newUser.id, {
+    userAgent: options.userAgent,
+    ipAddress: options.ipAddress,
+  });
+  
+  await logAuthEvent(AUTH_EVENTS.REGISTER, newUser.id, { provider: 'email' }, options);
+  
+  logger.info({ userId: newUser.id, email: normalizedEmail }, 'User registered with email');
+  
+  return {
+    success: true,
+    user: sanitizeUser(newUser),
+    sessionToken,
+  };
+}
+
+/**
+ * Add password authentication to existing Replit user.
+ */
+async function addPasswordToReplitUser(
+  userId: number,
+  password: string,
+  options: { userAgent?: string; ipAddress?: string } = {}
+): Promise<AuthResult> {
+  const passwordHash = await hashPassword(password);
+  
+  const [updatedUser] = await db
+    .update(users)
+    .set({
+      passwordHash,
+      authProvider: 'both',
+      updatedAt: new Date(),
+    })
+    .where(eq(users.id, userId))
+    .returning();
+  
+  const sessionToken = await createSession(userId, options);
+  
+  logger.info({ userId }, 'Password added to Replit user');
+  
+  return {
+    success: true,
+    user: sanitizeUser(updatedUser),
+    sessionToken,
+  };
+}
+
+// ============================================================================
+// User Login (Email/Password)
+// ============================================================================
+
+export async function loginWithEmail(
+  email: string,
+  password: string,
+  options: { userAgent?: string; ipAddress?: string } = {}
+): Promise<AuthResult> {
+  const normalizedEmail = email.toLowerCase().trim();
+  
+  // Find user
+  const [user] = await db
+    .select()
+    .from(users)
+    .where(eq(users.email, normalizedEmail))
+    .limit(1);
+  
+  if (!user) {
+    await logAuthEvent(AUTH_EVENTS.LOGIN_FAILED, null, { email: normalizedEmail, reason: 'user_not_found' }, options);
+    return {
+      success: false,
+      error: 'Invalid email or password',
+      errorCode: 'INVALID_CREDENTIALS',
+    };
+  }
+  
+  // Check if account is disabled
+  if (user.isDisabled) {
+    return {
+      success: false,
+      error: 'This account has been disabled',
+      errorCode: 'ACCOUNT_DISABLED',
+    };
+  }
+  
+  // Check if account is locked
+  if (user.lockedUntil && user.lockedUntil > new Date()) {
+    const minutesLeft = Math.ceil((user.lockedUntil.getTime() - Date.now()) / 60000);
+    return {
+      success: false,
+      error: `Account is locked. Try again in ${minutesLeft} minutes.`,
+      errorCode: 'ACCOUNT_LOCKED',
+    };
+  }
+  
+  // Check if user has password auth
+  if (!user.passwordHash) {
+    return {
+      success: false,
+      error: 'Please use your Replit account to sign in, or set up a password first.',
+      errorCode: 'INVALID_CREDENTIALS',
+    };
+  }
+  
+  // Verify password
+  const isValidPassword = await verifyPassword(password, user.passwordHash);
+  
+  if (!isValidPassword) {
+    // Increment login attempts
+    const newAttempts = (user.loginAttempts || 0) + 1;
+    const shouldLock = newAttempts >= CONFIG.maxLoginAttempts;
+    
+    await db
+      .update(users)
+      .set({
+        loginAttempts: newAttempts,
+        lockedUntil: shouldLock 
+          ? new Date(Date.now() + CONFIG.lockoutDurationMinutes * 60 * 1000)
+          : null,
+      })
+      .where(eq(users.id, user.id));
+    
+    if (shouldLock) {
+      await logAuthEvent(AUTH_EVENTS.ACCOUNT_LOCKED, user.id, { attempts: newAttempts }, options);
+    }
+    
+    await logAuthEvent(AUTH_EVENTS.LOGIN_FAILED, user.id, { reason: 'invalid_password' }, options);
+    
+    return {
+      success: false,
+      error: shouldLock 
+        ? `Too many failed attempts. Account locked for ${CONFIG.lockoutDurationMinutes} minutes.`
+        : 'Invalid email or password',
+      errorCode: shouldLock ? 'ACCOUNT_LOCKED' : 'INVALID_CREDENTIALS',
+    };
+  }
+  
+  // Reset login attempts on successful login
+  await db
+    .update(users)
+    .set({
+      loginAttempts: 0,
+      lockedUntil: null,
+      lastLoginAt: new Date(),
+    })
+    .where(eq(users.id, user.id));
+  
+  // Create session
+  const sessionToken = await createSession(user.id, options);
+  
+  await logAuthEvent(AUTH_EVENTS.LOGIN_SUCCESS, user.id, { provider: 'email' }, options);
+  
+  return {
+    success: true,
+    user: sanitizeUser(user),
+    sessionToken,
+  };
+}
+
+// ============================================================================
+// Replit SSO Integration
+// ============================================================================
+
+export async function loginWithReplit(
+  replitUser: { id: string; email: string; name?: string; profileImage?: string },
+  options: { userAgent?: string; ipAddress?: string } = {}
+): Promise<AuthResult> {
+  // Find or create user
+  let [user] = await db
+    .select()
+    .from(users)
+    .where(or(
+      eq(users.replitId, replitUser.id),
+      eq(users.email, replitUser.email.toLowerCase())
+    ))
+    .limit(1);
+  
+  if (!user) {
+    // Create new user from Replit
+    const nameParts = replitUser.name?.split(' ') || [];
+    
+    [user] = await db
+      .insert(users)
+      .values({
+        email: replitUser.email.toLowerCase(),
+        replitId: replitUser.id,
+        firstName: nameParts[0] || null,
+        lastName: nameParts.slice(1).join(' ') || null,
+        avatarUrl: replitUser.profileImage || null,
+        authProvider: 'replit',
+        emailVerifiedAt: new Date(), // Replit emails are verified
+        role: 'user',
+      })
+      .returning();
+    
+    await logAuthEvent(AUTH_EVENTS.REGISTER, user.id, { provider: 'replit' }, options);
+  } else {
+    // Update existing user with Replit info
+    if (!user.replitId) {
+      await db
+        .update(users)
+        .set({
+          replitId: replitUser.id,
+          authProvider: user.passwordHash ? 'both' : 'replit',
+          avatarUrl: user.avatarUrl || replitUser.profileImage,
+          lastLoginAt: new Date(),
+        })
+        .where(eq(users.id, user.id));
+    } else {
+      await db
+        .update(users)
+        .set({ lastLoginAt: new Date() })
+        .where(eq(users.id, user.id));
+    }
+  }
+  
+  if (user.isDisabled) {
+    return {
+      success: false,
+      error: 'This account has been disabled',
+      errorCode: 'ACCOUNT_DISABLED',
+    };
+  }
+  
+  const sessionToken = await createSession(user.id, options);
+  
+  await logAuthEvent(AUTH_EVENTS.LOGIN_SUCCESS, user.id, { provider: 'replit' }, options);
+  
+  return {
+    success: true,
+    user: sanitizeUser(user),
+    sessionToken,
+  };
+}
+
+// ============================================================================
+// Password Reset
+// ============================================================================
+
+export async function createPasswordResetToken(email: string): Promise<string | null> {
+  const normalizedEmail = email.toLowerCase().trim();
+  
+  const [user] = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(eq(users.email, normalizedEmail))
+    .limit(1);
+  
+  if (!user) return null;
+  
+  // Delete existing tokens
+  await db
+    .delete(passwordResetTokens)
+    .where(eq(passwordResetTokens.userId, user.id));
+  
+  // Create new token
+  const token = generateToken(32);
+  const expiresAt = new Date(Date.now() + CONFIG.passwordResetExpiryHours * 60 * 60 * 1000);
+  
+  await db.insert(passwordResetTokens).values({
+    userId: user.id,
+    token,
+    expiresAt,
+  });
+  
+  await logAuthEvent(AUTH_EVENTS.PASSWORD_RESET_REQUEST, user.id);
+  
+  return token;
+}
+
+export async function resetPassword(token: string, newPassword: string): Promise<AuthResult> {
+  const passwordValidation = validatePassword(newPassword);
+  if (!passwordValidation.isValid) {
+    return {
+      success: false,
+      error: passwordValidation.errors[0],
+      errorCode: 'WEAK_PASSWORD',
+    };
+  }
+  
+  const [resetToken] = await db
+    .select()
+    .from(passwordResetTokens)
+    .where(and(
+      eq(passwordResetTokens.token, token),
+      gt(passwordResetTokens.expiresAt, new Date())
+    ))
+    .limit(1);
+  
+  if (!resetToken) {
+    return {
+      success: false,
+      error: 'Invalid or expired reset link',
+      errorCode: 'INVALID_TOKEN',
+    };
+  }
+  
+  const passwordHash = await hashPassword(newPassword);
+  
+  // Get current user to check auth provider
+  const [user] = await db
+    .select({ authProvider: users.authProvider })
+    .from(users)
+    .where(eq(users.id, resetToken.userId))
+    .limit(1);
+  
+  // Update password and auth provider
+  await db
+    .update(users)
+    .set({
+      passwordHash,
+      authProvider: user?.authProvider === 'replit' ? 'both' : 'email',
+      loginAttempts: 0,
+      lockedUntil: null,
+      updatedAt: new Date(),
+    })
+    .where(eq(users.id, resetToken.userId));
+  
+  // Mark token as used
+  await db
+    .update(passwordResetTokens)
+    .set({ usedAt: new Date() })
+    .where(eq(passwordResetTokens.id, resetToken.id));
+  
+  // Invalidate all sessions
+  await invalidateAllUserSessions(resetToken.userId);
+  
+  await logAuthEvent(AUTH_EVENTS.PASSWORD_RESET_COMPLETE, resetToken.userId);
+  
+  return { success: true };
+}
+
+// ============================================================================
+// Password Change (authenticated)
+// ============================================================================
+
+export async function changePassword(
+  userId: number,
+  currentPassword: string,
+  newPassword: string
+): Promise<AuthResult> {
+  const [user] = await db
+    .select()
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+  
+  if (!user) {
+    return { success: false, error: 'User not found', errorCode: 'USER_NOT_FOUND' };
+  }
+  
+  // If user doesn't have password yet, skip current password check
+  if (user.passwordHash) {
+    const isValid = await verifyPassword(currentPassword, user.passwordHash);
+    if (!isValid) {
+      return { success: false, error: 'Current password is incorrect', errorCode: 'INVALID_CREDENTIALS' };
+    }
+    
+    const isSame = await verifyPassword(newPassword, user.passwordHash);
+    if (isSame) {
+      return { success: false, error: 'New password must be different', errorCode: 'SAME_PASSWORD' };
+    }
+  }
+  
+  const passwordValidation = validatePassword(newPassword);
+  if (!passwordValidation.isValid) {
+    return { success: false, error: passwordValidation.errors[0], errorCode: 'WEAK_PASSWORD' };
+  }
+  
+  const passwordHash = await hashPassword(newPassword);
+  
+  await db
+    .update(users)
+    .set({
+      passwordHash,
+      authProvider: user.authProvider === 'replit' ? 'both' : user.authProvider,
+      updatedAt: new Date(),
+    })
+    .where(eq(users.id, userId));
+  
+  await logAuthEvent(AUTH_EVENTS.PASSWORD_CHANGE, userId);
+  
+  return { success: true };
+}
+
+// ============================================================================
+// Email Verification
+// ============================================================================
+
+export async function createEmailVerificationToken(userId: number, email: string): Promise<string> {
+  // Delete existing tokens
+  await db
+    .delete(emailVerificationTokens)
+    .where(eq(emailVerificationTokens.userId, userId));
+  
+  const token = generateToken(32);
+  const expiresAt = new Date(Date.now() + CONFIG.emailVerificationExpiryHours * 60 * 60 * 1000);
+  
+  await db.insert(emailVerificationTokens).values({
+    userId,
+    email,
+    token,
+    expiresAt,
+  });
+  
+  await logAuthEvent(AUTH_EVENTS.EMAIL_VERIFICATION_SENT, userId);
+  
+  return token;
+}
+
+export async function verifyEmail(token: string): Promise<AuthResult> {
+  const [verificationToken] = await db
+    .select()
+    .from(emailVerificationTokens)
+    .where(and(
+      eq(emailVerificationTokens.token, token),
+      gt(emailVerificationTokens.expiresAt, new Date())
+    ))
+    .limit(1);
+  
+  if (!verificationToken) {
+    return { success: false, error: 'Invalid or expired verification link', errorCode: 'INVALID_TOKEN' };
+  }
+  
+  await db
+    .update(users)
+    .set({ emailVerifiedAt: new Date(), updatedAt: new Date() })
+    .where(eq(users.id, verificationToken.userId));
+  
+  await db
+    .update(emailVerificationTokens)
+    .set({ verifiedAt: new Date() })
+    .where(eq(emailVerificationTokens.id, verificationToken.id));
+  
+  await logAuthEvent(AUTH_EVENTS.EMAIL_VERIFIED, verificationToken.userId);
+  
+  return { success: true };
+}
+
+// ============================================================================
+// User Retrieval
+// ============================================================================
+
+export async function getUserById(id: number): Promise<AuthUser | null> {
+  const [user] = await db
+    .select()
+    .from(users)
+    .where(eq(users.id, id))
+    .limit(1);
+  
+  if (!user || user.isDisabled) return null;
+  
+  return sanitizeUser(user);
+}
+
+export async function getUserBySession(token: string): Promise<AuthUser | null> {
+  const sessionResult = await validateSession(token);
+  if (!sessionResult) return null;
+  
+  return getUserById(sessionResult.userId);
+}
+
+// ============================================================================
+// Utilities
+// ============================================================================
+
+function sanitizeUser(user: any): AuthUser {
+  return {
+    id: user.id,
+    email: user.email,
+    firstName: user.firstName,
+    lastName: user.lastName,
+    avatarUrl: user.avatarUrl,
+    role: user.role,
+    authProvider: user.authProvider || 'replit',
+    emailVerified: !!user.emailVerifiedAt,
+    replitId: user.replitId,
+  };
+}
+
+// ============================================================================
+// Cleanup
+// ============================================================================
+
+export async function cleanupExpiredSessions(): Promise<number> {
+  const result = await db
+    .delete(userSessions)
+    .where(lt(userSessions.expiresAt, new Date()))
+    .returning({ id: userSessions.id });
+  
+  return result.length;
+}
+
+export async function cleanupExpiredTokens(): Promise<number> {
+  let count = 0;
+  
+  const resetResult = await db
+    .delete(passwordResetTokens)
+    .where(lt(passwordResetTokens.expiresAt, new Date()))
+    .returning({ id: passwordResetTokens.id });
+  count += resetResult.length;
+  
+  const verifyResult = await db
+    .delete(emailVerificationTokens)
+    .where(lt(emailVerificationTokens.expiresAt, new Date()))
+    .returning({ id: emailVerificationTokens.id });
+  count += verifyResult.length;
+  
+  return count;
+}

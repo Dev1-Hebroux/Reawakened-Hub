@@ -1,0 +1,311 @@
+/**
+ * Email Service
+ * 
+ * Handles transactional emails using Resend.
+ * Adapted from nodemailer version to use your existing Resend setup.
+ */
+
+import { Resend } from 'resend';
+import { logger } from '../lib/logger';
+
+// ============================================================================
+// Configuration
+// ============================================================================
+
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+const EMAIL_FROM = process.env.EMAIL_FROM || 'Reawakened <noreply@reawakened.app>';
+const APP_URL = process.env.APP_URL || 'http://localhost:5000';
+const APP_NAME = 'Reawakened';
+
+// ============================================================================
+// Types
+// ============================================================================
+
+export interface EmailOptions {
+  to: string | string[];
+  subject: string;
+  html: string;
+  text?: string;
+  from?: string;
+  replyTo?: string;
+}
+
+interface EmailResult {
+  success: boolean;
+  messageId?: string;
+  error?: string;
+}
+
+// ============================================================================
+// Core Email Sending
+// ============================================================================
+
+export async function sendEmail(options: EmailOptions): Promise<EmailResult> {
+  const { to, subject, html, text, from, replyTo } = options;
+  
+  // Development mode: log instead of sending
+  if (process.env.NODE_ENV === 'development' && !process.env.SEND_EMAILS_IN_DEV) {
+    logger.info({ to, subject }, 'Email would be sent (dev mode)');
+    console.log('\n📧 Email Preview:');
+    console.log('================');
+    console.log(`To: ${Array.isArray(to) ? to.join(', ') : to}`);
+    console.log(`Subject: ${subject}`);
+    console.log('----------------');
+    console.log(text || stripHtml(html));
+    console.log('================\n');
+    return { success: true, messageId: `dev-${Date.now()}` };
+  }
+  
+  try {
+    const { data, error } = await resend.emails.send({
+      from: from || EMAIL_FROM,
+      to: Array.isArray(to) ? to : [to],
+      subject,
+      html,
+      text: text || stripHtml(html),
+      reply_to: replyTo,
+    });
+    
+    if (error) {
+      logger.error({ error, to, subject }, 'Failed to send email');
+      return { success: false, error: error.message };
+    }
+    
+    logger.info({ messageId: data?.id, to, subject }, 'Email sent successfully');
+    return { success: true, messageId: data?.id };
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logger.error({ error: errorMessage, to, subject }, 'Failed to send email');
+    return { success: false, error: errorMessage };
+  }
+}
+
+// ============================================================================
+// Auth Email Templates
+// ============================================================================
+
+export async function sendWelcomeEmail(
+  email: string, 
+  firstName: string | null
+): Promise<EmailResult> {
+  const name = firstName || 'there';
+  
+  return sendEmail({
+    to: email,
+    subject: `Welcome to ${APP_NAME}!`,
+    html: wrapEmailTemplate(`
+      <h1>Welcome to ${APP_NAME}, ${name}!</h1>
+      <p>We're so glad you've joined our community.</p>
+      <p>Start your spiritual journey today by exploring our reading plans, journeys, and daily sparks.</p>
+      <p style="margin: 30px 0;">
+        <a href="${APP_URL}/dashboard" class="button">
+          Go to Dashboard
+        </a>
+      </p>
+      <p>Blessings,<br>The ${APP_NAME} Team</p>
+    `),
+  });
+}
+
+export async function sendVerificationEmail(
+  email: string, 
+  token: string
+): Promise<EmailResult> {
+  const verifyUrl = `${APP_URL}/api/auth/verify-email?token=${token}`;
+  
+  return sendEmail({
+    to: email,
+    subject: `Verify your email - ${APP_NAME}`,
+    html: wrapEmailTemplate(`
+      <h1>Verify Your Email</h1>
+      <p>Please click the button below to verify your email address.</p>
+      <p style="margin: 30px 0;">
+        <a href="${verifyUrl}" class="button">
+          Verify Email
+        </a>
+      </p>
+      <p>This link will expire in 48 hours.</p>
+      <p>If you didn't create an account, you can safely ignore this email.</p>
+    `),
+  });
+}
+
+export async function sendPasswordResetEmail(
+  email: string, 
+  token: string
+): Promise<EmailResult> {
+  const resetUrl = `${APP_URL}/reset-password?token=${token}`;
+  
+  return sendEmail({
+    to: email,
+    subject: `Reset your password - ${APP_NAME}`,
+    html: wrapEmailTemplate(`
+      <h1>Reset Your Password</h1>
+      <p>You requested to reset your password. Click the button below to create a new password.</p>
+      <p style="margin: 30px 0;">
+        <a href="${resetUrl}" class="button">
+          Reset Password
+        </a>
+      </p>
+      <p>This link will expire in 24 hours.</p>
+      <p>If you didn't request this, you can safely ignore this email. Your password will remain unchanged.</p>
+    `),
+  });
+}
+
+export async function sendPasswordChangedEmail(email: string): Promise<EmailResult> {
+  return sendEmail({
+    to: email,
+    subject: `Password changed - ${APP_NAME}`,
+    html: wrapEmailTemplate(`
+      <h1>Password Changed</h1>
+      <p>Your password has been successfully changed.</p>
+      <p>If you didn't make this change, please <a href="${APP_URL}/forgot-password">reset your password immediately</a> or contact our support team.</p>
+    `),
+  });
+}
+
+export async function sendMigrationEmail(
+  email: string,
+  firstName: string | null,
+  token: string
+): Promise<EmailResult> {
+  const resetUrl = `${APP_URL}/reset-password?token=${token}`;
+  const name = firstName || 'there';
+  
+  return sendEmail({
+    to: email,
+    subject: `Set up your ${APP_NAME} password`,
+    html: wrapEmailTemplate(`
+      <h1>Welcome to the new ${APP_NAME}!</h1>
+      <p>Hi ${name},</p>
+      <p>We've upgraded our authentication system to give you more control over your account. Please set a password to continue using ${APP_NAME}.</p>
+      <p><strong>You can still sign in with your Replit account</strong>, but setting a password gives you another way to access your account.</p>
+      <p style="margin: 30px 0;">
+        <a href="${resetUrl}" class="button">
+          Set Your Password
+        </a>
+      </p>
+      <p>This link will expire in 7 days.</p>
+      <p>Blessings,<br>The ${APP_NAME} Team</p>
+    `),
+  });
+}
+
+// ============================================================================
+// Email Template Wrapper
+// ============================================================================
+
+function wrapEmailTemplate(content: string): string {
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${APP_NAME}</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      line-height: 1.6;
+      color: #2C3E2D;
+      background-color: #FAF8F5;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .header {
+      text-align: center;
+      padding: 30px 0;
+    }
+    .logo {
+      font-size: 28px;
+      font-weight: bold;
+      color: #7C9A8E;
+      text-decoration: none;
+    }
+    .content {
+      background-color: #ffffff;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+    h1 {
+      color: #2C3E2D;
+      font-size: 24px;
+      margin-top: 0;
+      margin-bottom: 20px;
+    }
+    p {
+      margin: 0 0 16px;
+      color: #4A5A4B;
+    }
+    .button {
+      display: inline-block;
+      padding: 14px 28px;
+      background-color: #7C9A8E;
+      color: #ffffff !important;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 600;
+    }
+    .footer {
+      text-align: center;
+      padding: 30px 0;
+      color: #8B9B8C;
+      font-size: 14px;
+    }
+    .footer a {
+      color: #7C9A8E;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <a href="${APP_URL}" class="logo">${APP_NAME}</a>
+    </div>
+    <div class="content">
+      ${content}
+    </div>
+    <div class="footer">
+      <p>© ${new Date().getFullYear()} ${APP_NAME}. All rights reserved.</p>
+      <p>
+        <a href="${APP_URL}/privacy">Privacy Policy</a> · 
+        <a href="${APP_URL}/terms">Terms of Service</a>
+      </p>
+    </div>
+  </div>
+</body>
+</html>
+  `.trim();
+}
+
+// ============================================================================
+// Utilities
+// ============================================================================
+
+function stripHtml(html: string): string {
+  return html
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n\n')
+    .replace(/<\/div>/gi, '\n')
+    .replace(/<\/h[1-6]>/gi, '\n\n')
+    .replace(/<a[^>]*href="([^"]*)"[^>]*>([^<]*)<\/a>/gi, '$2 ($1)')
+    .replace(/<[^>]*>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/\n\s*\n\s*\n/g, '\n\n')
+    .trim();
+}

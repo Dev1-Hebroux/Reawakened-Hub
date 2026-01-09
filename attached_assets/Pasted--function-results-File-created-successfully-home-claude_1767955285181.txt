@@ -1,0 +1,94 @@
+<function_results>File created successfully: /home/claude/auth-system/client/contexts/AuthContext.tsx</parameter>
+
+Let me complete that file and continue with the components:Now let me copy everything to outputs and present the files:I've created the complete dual-authentication system adapted to your existing setup. Here's the summary:
+
+## Auth System Files (11 files in `/auth-system/`)
+
+**Database Migration** (`migrations/001_auth_schema.sql`)
+- Adds columns to existing `users` table: `password_hash`, `auth_provider`, `email_verified_at`, `login_attempts`, `locked_until`
+- Creates `user_sessions` table (separate from express-session)
+- Creates `password_reset_tokens` and `email_verification_tokens` tables
+- Creates `auth_audit_log` for security monitoring
+- Includes cleanup functions for expired sessions/tokens
+
+**Drizzle Schema** (`shared/schema/auth.ts`)
+- Type definitions for all auth tables
+- `AuthProvider` type: `'replit' | 'email' | 'both'`
+- Audit event constants for logging
+
+**Auth Service** (`server/services/authService.ts`)
+- `loginWithEmail()` - Email/password authentication with lockout protection
+- `loginWithReplit()` - Handles Replit SSO, creates/links users automatically
+- `registerWithEmail()` - New user registration
+- Session management with 30-day duration and auto-refresh
+- Password reset and email verification flows
+- Audit logging for all auth events
+
+**Email Service** (`server/services/emailService.ts`)
+- Adapted for **Resend** (your existing provider)
+- Templates: welcome, verification, password reset, password changed, migration
+- Development mode logs to console instead of sending
+
+**Auth Middleware** (`server/middleware/auth.ts`)
+- `loadUser()` - Loads user from session cookie or Replit auth
+- `requireAuth`, `requireRole`, `requireAdmin`
+- CSRF protection with double-submit cookies
+- Rate limiting (5 attempts per 15 minutes)
+
+**Auth Routes** (`server/routes/auth.ts`)
+- `POST /api/auth/register` - Email registration
+- `POST /api/auth/login` - Email login
+- `POST /api/auth/replit` - Replit SSO callback
+- `POST /api/auth/logout`, `/logout-all`
+- `POST /api/auth/forgot-password`, `/reset-password`
+- `GET /api/auth/verify-email`, `POST /api/auth/resend-verification`
+- `GET /api/auth/me`, `/sessions`, `/csrf`
+
+**React Context** (`client/contexts/AuthContext.tsx`)
+- Uses **wouter** for routing (not react-router-dom)
+- Provides `login`, `loginWithReplit`, `register`, `logout`
+- Hooks: `useAuth`, `useRequireAuth`, `useRequireRole`, `useDisplayName`
+- `hasPassword` and `canAddPassword` computed properties
+
+**Client Pages** (using wouter)
+- `LoginPage.tsx` - Dual auth with Replit button + email form
+- `RegisterPage.tsx` - Registration with password strength indicator
+- `PasswordRecoveryPages.tsx` - Forgot password + reset password flows
+
+**Migration Script** (`scripts/migrate-users.ts`)
+- `analyze` - Shows how many users need migration
+- `prepare` - Adds database columns and tables
+- `dry-run` - Preview migration without changes
+- `migrate` - Sends password setup emails to Replit users
+
+## Integration Steps
+
+1. **Install bcrypt**: `npm install bcrypt && npm install -D @types/bcrypt`
+
+2. **Run database migration**: `psql $DATABASE_URL -f migrations/001_auth_schema.sql`
+
+3. **Update your Express app**:
+```typescript
+import { authRoutes } from './routes/auth';
+import { loadUser, ensureCsrfToken } from './middleware/auth';
+
+app.use(ensureCsrfToken);
+app.use('/api/auth', authRoutes);
+```
+
+4. **Update your React app**:
+```typescript
+import { AuthProvider } from './contexts/AuthContext';
+
+<AuthProvider>
+  <App />
+</AuthProvider>
+```
+
+5. **Migrate existing users**: 
+```bash
+npx ts-node scripts/migrate-users.ts prepare
+npx ts-node scripts/migrate-users.ts migrate
+```
+
+The system keeps Replit SSO working while adding email/password as an option. Users can use either method, and existing Replit users can add a password to have both.

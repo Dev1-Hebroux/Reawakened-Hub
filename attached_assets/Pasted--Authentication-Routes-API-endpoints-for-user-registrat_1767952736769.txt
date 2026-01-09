@@ -1,0 +1,580 @@
+/**
+ * Authentication Routes
+ * 
+ * API endpoints for user registration, login, logout, password reset,
+ * and session management.
+ */
+
+import { Router } from 'express';
+import { z } from 'zod';
+import {
+  registerUser,
+  loginUser,
+  invalidateSession,
+  invalidateAllUserSessions,
+  createPasswordResetToken,
+  resetPassword,
+  changePassword,
+  createEmailVerificationToken,
+  verifyEmail,
+  getUserSessions,
+  getUserById,
+} from '../services/authService';
+import {
+  loadUser,
+  requireAuth,
+  setSessionCookie,
+  clearSessionCookie,
+  getSessionToken,
+  authRateLimit,
+  resetRateLimit,
+  generateCsrfToken,
+  csrfProtection,
+} from '../middleware/auth';
+import { logger } from '../lib/logger';
+import { sendEmail } from '../services/emailService';
+
+const router = Router();
+
+// ============================================================================
+// Validation Schemas
+// ============================================================================
+
+const registerSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+  firstName: z.string().min(1).max(50).optional(),
+  lastName: z.string().min(1).max(50).optional(),
+});
+
+const loginSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(1, 'Password is required'),
+  rememberMe: z.boolean().optional(),
+});
+
+const forgotPasswordSchema = z.object({
+  email: z.string().email('Invalid email address'),
+});
+
+const resetPasswordSchema = z.object({
+  token: z.string().min(1, 'Token is required'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+});
+
+const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, 'Current password is required'),
+  newPassword: z.string().min(8, 'New password must be at least 8 characters'),
+});
+
+// ============================================================================
+// Public Routes
+// ============================================================================
+
+/**
+ * POST /api/auth/register
+ * 
+ * Register a new user account.
+ */
+router.post(
+  '/register',
+  authRateLimit({ maxAttempts: 5, windowMs: 60 * 60 * 1000 }), // 5 per hour
+  async (req, res, next) => {
+    try {
+      const validation = registerSchema.safeParse(req.body);
+      
+      if (!validation.success) {
+        return res.status(400).json({
+          error: validation.error.errors[0].message,
+          code: 'VALIDATION_ERROR',
+          details: validation.error.errors,
+        });
+      }
+      
+      const { email, password, firstName, lastName } = validation.data;
+      
+      const result = await registerUser(email, password, {
+        firstName,
+        lastName,
+        userAgent: req.headers['user-agent'],
+        ipAddress: req.ip,
+      });
+      
+      if (!result.success) {
+        return res.status(400).json({
+          error: result.error,
+          code: result.errorCode,
+        });
+      }
+      
+      // Set session cookie
+      setSessionCookie(res, result.session!.token);
+      
+      // Generate CSRF token
+      const csrfToken = generateCsrfToken(res);
+      
+      // Send welcome email (async, don't wait)
+      sendWelcomeEmail(result.user!.email, result.user!.firstName).catch(err => {
+        logger.error({ error: err }, 'Failed to send welcome email');
+      });
+      
+      // Create email verification token and send email
+      createEmailVerificationToken(result.user!.id)
+        .then(token => sendVerificationEmail(result.user!.email, token))
+        .catch(err => {
+          logger.error({ error: err }, 'Failed to send verification email');
+        });
+      
+      logger.info({ userId: result.user!.id }, 'User registered');
+      
+      res.status(201).json({
+        user: result.user,
+        csrfToken,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * POST /api/auth/login
+ * 
+ * Authenticate user and create session.
+ */
+router.post(
+  '/login',
+  authRateLimit({ maxAttempts: 5, windowMs: 15 * 60 * 1000 }), // 5 per 15 min
+  async (req, res, next) => {
+    try {
+      const validation = loginSchema.safeParse(req.body);
+      
+      if (!validation.success) {
+        return res.status(400).json({
+          error: validation.error.errors[0].message,
+          code: 'VALIDATION_ERROR',
+        });
+      }
+      
+      const { email, password } = validation.data;
+      
+      const result = await loginUser(email, password, {
+        userAgent: req.headers['user-agent'],
+        ipAddress: req.ip,
+      });
+      
+      if (!result.success) {
+        return res.status(401).json({
+          error: result.error,
+          code: result.errorCode,
+        });
+      }
+      
+      // Reset rate limit on successful login
+      resetRateLimit(req.ip!, '/api/auth/login');
+      
+      // Set session cookie
+      setSessionCookie(res, result.session!.token);
+      
+      // Generate CSRF token
+      const csrfToken = generateCsrfToken(res);
+      
+      res.json({
+        user: result.user,
+        csrfToken,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * POST /api/auth/logout
+ * 
+ * Invalidate current session.
+ */
+router.post('/logout', loadUser, async (req, res, next) => {
+  try {
+    const token = getSessionToken(req);
+    
+    if (token) {
+      await invalidateSession(token);
+    }
+    
+    clearSessionCookie(res);
+    
+    res.json({ success: true });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * POST /api/auth/forgot-password
+ * 
+ * Request password reset email.
+ */
+router.post(
+  '/forgot-password',
+  authRateLimit({ maxAttempts: 3, windowMs: 60 * 60 * 1000 }), // 3 per hour
+  async (req, res, next) => {
+    try {
+      const validation = forgotPasswordSchema.safeParse(req.body);
+      
+      if (!validation.success) {
+        return res.status(400).json({
+          error: validation.error.errors[0].message,
+          code: 'VALIDATION_ERROR',
+        });
+      }
+      
+      const { email } = validation.data;
+      
+      // Always return success to prevent email enumeration
+      const token = await createPasswordResetToken(email);
+      
+      if (token) {
+        sendPasswordResetEmail(email, token).catch(err => {
+          logger.error({ error: err }, 'Failed to send password reset email');
+        });
+      }
+      
+      res.json({
+        message: 'If an account exists with that email, you will receive a password reset link.',
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * POST /api/auth/reset-password
+ * 
+ * Reset password using token from email.
+ */
+router.post(
+  '/reset-password',
+  authRateLimit({ maxAttempts: 5, windowMs: 60 * 60 * 1000 }),
+  async (req, res, next) => {
+    try {
+      const validation = resetPasswordSchema.safeParse(req.body);
+      
+      if (!validation.success) {
+        return res.status(400).json({
+          error: validation.error.errors[0].message,
+          code: 'VALIDATION_ERROR',
+        });
+      }
+      
+      const { token, password } = validation.data;
+      
+      const result = await resetPassword(token, password);
+      
+      if (!result.success) {
+        return res.status(400).json({
+          error: result.error,
+          code: result.errorCode,
+        });
+      }
+      
+      res.json({
+        message: 'Password reset successfully. Please log in with your new password.',
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * GET /api/auth/verify-email
+ * 
+ * Verify email address using token.
+ */
+router.get('/verify-email', async (req, res, next) => {
+  try {
+    const token = req.query.token as string;
+    
+    if (!token) {
+      return res.status(400).json({
+        error: 'Verification token is required',
+        code: 'MISSING_TOKEN',
+      });
+    }
+    
+    const result = await verifyEmail(token);
+    
+    if (!result.success) {
+      return res.status(400).json({
+        error: result.error,
+        code: result.errorCode,
+      });
+    }
+    
+    // Redirect to success page or return JSON
+    if (req.accepts('html')) {
+      res.redirect('/email-verified');
+    } else {
+      res.json({
+        message: 'Email verified successfully',
+        user: result.user,
+      });
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ============================================================================
+// Protected Routes
+// ============================================================================
+
+/**
+ * GET /api/auth/me
+ * 
+ * Get current authenticated user.
+ */
+router.get('/me', loadUser, requireAuth, async (req, res) => {
+  res.json({ user: req.user });
+});
+
+/**
+ * POST /api/auth/change-password
+ * 
+ * Change password for authenticated user.
+ */
+router.post(
+  '/change-password',
+  loadUser,
+  requireAuth,
+  csrfProtection,
+  async (req, res, next) => {
+    try {
+      const validation = changePasswordSchema.safeParse(req.body);
+      
+      if (!validation.success) {
+        return res.status(400).json({
+          error: validation.error.errors[0].message,
+          code: 'VALIDATION_ERROR',
+        });
+      }
+      
+      const { currentPassword, newPassword } = validation.data;
+      
+      const result = await changePassword(
+        req.user!.id,
+        currentPassword,
+        newPassword
+      );
+      
+      if (!result.success) {
+        return res.status(400).json({
+          error: result.error,
+          code: result.errorCode,
+        });
+      }
+      
+      res.json({
+        message: 'Password changed successfully',
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * POST /api/auth/logout-all
+ * 
+ * Invalidate all sessions for current user.
+ */
+router.post(
+  '/logout-all',
+  loadUser,
+  requireAuth,
+  csrfProtection,
+  async (req, res, next) => {
+    try {
+      const count = await invalidateAllUserSessions(req.user!.id);
+      
+      clearSessionCookie(res);
+      
+      res.json({
+        message: `Logged out of ${count} session(s)`,
+        count,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * GET /api/auth/sessions
+ * 
+ * Get all active sessions for current user.
+ */
+router.get('/sessions', loadUser, requireAuth, async (req, res, next) => {
+  try {
+    const sessions = await getUserSessions(req.user!.id);
+    
+    // Remove sensitive token from response
+    const sanitizedSessions = sessions.map(session => ({
+      id: session.id,
+      createdAt: session.createdAt,
+      lastActivityAt: session.lastActivityAt,
+      expiresAt: session.expiresAt,
+      userAgent: session.userAgent,
+      ipAddress: session.ipAddress,
+      isCurrent: session.token === req.sessionToken,
+    }));
+    
+    res.json({ sessions: sanitizedSessions });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * POST /api/auth/resend-verification
+ * 
+ * Resend email verification link.
+ */
+router.post(
+  '/resend-verification',
+  loadUser,
+  requireAuth,
+  authRateLimit({ maxAttempts: 3, windowMs: 60 * 60 * 1000 }),
+  async (req, res, next) => {
+    try {
+      if (req.user!.emailVerified) {
+        return res.status(400).json({
+          error: 'Email is already verified',
+          code: 'ALREADY_VERIFIED',
+        });
+      }
+      
+      const token = await createEmailVerificationToken(req.user!.id);
+      
+      await sendVerificationEmail(req.user!.email, token);
+      
+      res.json({
+        message: 'Verification email sent',
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+/**
+ * GET /api/auth/csrf
+ * 
+ * Get a new CSRF token.
+ */
+router.get('/csrf', (req, res) => {
+  const token = generateCsrfToken(res);
+  res.json({ csrfToken: token });
+});
+
+// ============================================================================
+// Email Sending Functions
+// ============================================================================
+
+async function sendWelcomeEmail(email: string, firstName: string | null): Promise<void> {
+  const name = firstName || 'there';
+  
+  await sendEmail({
+    to: email,
+    subject: 'Welcome to Reawakened!',
+    html: `
+      <h1>Welcome to Reawakened, ${name}!</h1>
+      <p>We're so glad you've joined our community.</p>
+      <p>Start your spiritual journey today by exploring our reading plans, journeys, and daily sparks.</p>
+      <p>
+        <a href="${process.env.APP_URL}/dashboard" style="display: inline-block; padding: 12px 24px; background-color: #7C9A8E; color: white; text-decoration: none; border-radius: 8px;">
+          Go to Dashboard
+        </a>
+      </p>
+      <p>Blessings,<br>The Reawakened Team</p>
+    `,
+    text: `
+Welcome to Reawakened, ${name}!
+
+We're so glad you've joined our community.
+
+Start your spiritual journey today by exploring our reading plans, journeys, and daily sparks.
+
+Visit: ${process.env.APP_URL}/dashboard
+
+Blessings,
+The Reawakened Team
+    `,
+  });
+}
+
+async function sendVerificationEmail(email: string, token: string): Promise<void> {
+  const verifyUrl = `${process.env.APP_URL}/api/auth/verify-email?token=${token}`;
+  
+  await sendEmail({
+    to: email,
+    subject: 'Verify your email - Reawakened',
+    html: `
+      <h1>Verify Your Email</h1>
+      <p>Please click the button below to verify your email address.</p>
+      <p>
+        <a href="${verifyUrl}" style="display: inline-block; padding: 12px 24px; background-color: #7C9A8E; color: white; text-decoration: none; border-radius: 8px;">
+          Verify Email
+        </a>
+      </p>
+      <p>This link will expire in 24 hours.</p>
+      <p>If you didn't create an account, you can safely ignore this email.</p>
+    `,
+    text: `
+Verify Your Email
+
+Please visit the link below to verify your email address:
+
+${verifyUrl}
+
+This link will expire in 24 hours.
+
+If you didn't create an account, you can safely ignore this email.
+    `,
+  });
+}
+
+async function sendPasswordResetEmail(email: string, token: string): Promise<void> {
+  const resetUrl = `${process.env.APP_URL}/reset-password?token=${token}`;
+  
+  await sendEmail({
+    to: email,
+    subject: 'Reset your password - Reawakened',
+    html: `
+      <h1>Reset Your Password</h1>
+      <p>You requested to reset your password. Click the button below to create a new password.</p>
+      <p>
+        <a href="${resetUrl}" style="display: inline-block; padding: 12px 24px; background-color: #7C9A8E; color: white; text-decoration: none; border-radius: 8px;">
+          Reset Password
+        </a>
+      </p>
+      <p>This link will expire in 24 hours.</p>
+      <p>If you didn't request this, you can safely ignore this email. Your password will remain unchanged.</p>
+    `,
+    text: `
+Reset Your Password
+
+You requested to reset your password. Visit the link below to create a new password:
+
+${resetUrl}
+
+This link will expire in 24 hours.
+
+If you didn't request this, you can safely ignore this email. Your password will remain unchanged.
+    `,
+  });
+}
+
+export const authRoutes = router;
