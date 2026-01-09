@@ -4,11 +4,21 @@
  * Provides offline capability, caching, and push notifications.
  */
 
-const CACHE_NAME = 'reawakened-v1';
+const CACHE_NAME = 'reawakened-v2';
+const API_CACHE_NAME = 'reawakened-api-v1';
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',
 ];
+
+const API_CACHE_CONFIG = {
+  '/api/sparks/published': { maxAge: 5 * 60 * 1000 },
+  '/api/sparks/today': { maxAge: 60 * 60 * 1000 },
+  '/api/sparks/featured': { maxAge: 5 * 60 * 1000 },
+  '/api/sparks/dashboard': { maxAge: 5 * 60 * 1000 },
+  '/api/journeys': { maxAge: 30 * 60 * 1000 },
+  '/api/reflection-cards/today': { maxAge: 60 * 60 * 1000 },
+};
 
 // ============================================================================
 // Install Event
@@ -37,11 +47,13 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   console.log('[SW] Activating service worker');
   
+  const validCaches = [CACHE_NAME, API_CACHE_NAME];
+  
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames
-          .filter((name) => name !== CACHE_NAME)
+          .filter((name) => !validCaches.includes(name))
           .map((name) => {
             console.log('[SW] Deleting old cache:', name);
             return caches.delete(name);
@@ -55,35 +67,98 @@ self.addEventListener('activate', (event) => {
 });
 
 // ============================================================================
-// Fetch Event - Network First Strategy
+// Fetch Event - Network First with API Caching
 // ============================================================================
+
+function isCacheableApi(pathname) {
+  return Object.keys(API_CACHE_CONFIG).some(pattern => pathname.startsWith(pattern));
+}
+
+function getCacheConfig(pathname) {
+  for (const pattern of Object.keys(API_CACHE_CONFIG)) {
+    if (pathname.startsWith(pattern)) {
+      return API_CACHE_CONFIG[pattern];
+    }
+  }
+  return null;
+}
+
+async function handleApiRequest(request, url) {
+  const config = getCacheConfig(url.pathname);
+  if (!config) {
+    return fetch(request);
+  }
+
+  const cache = await caches.open(API_CACHE_NAME);
+  const cachedResponse = await cache.match(request);
+  
+  if (cachedResponse) {
+    const cachedTime = cachedResponse.headers.get('sw-cached-at');
+    const age = cachedTime ? Date.now() - parseInt(cachedTime) : Infinity;
+    
+    if (age < config.maxAge) {
+      fetch(request).then(response => {
+        if (response.ok) {
+          const headers = new Headers(response.headers);
+          headers.set('sw-cached-at', Date.now().toString());
+          const cachedCopy = new Response(response.clone().body, {
+            status: response.status,
+            statusText: response.statusText,
+            headers,
+          });
+          cache.put(request, cachedCopy);
+        }
+      }).catch(() => {});
+      
+      return cachedResponse;
+    }
+  }
+
+  try {
+    const response = await fetch(request);
+    if (response.ok) {
+      const headers = new Headers(response.headers);
+      headers.set('sw-cached-at', Date.now().toString());
+      const cachedCopy = new Response(response.clone().body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers,
+      });
+      cache.put(request, cachedCopy);
+    }
+    return response;
+  } catch (error) {
+    if (cachedResponse) {
+      return cachedResponse;
+    }
+    throw error;
+  }
+}
 
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Skip non-GET requests
   if (request.method !== 'GET') {
     return;
   }
 
-  // Skip API requests (they should be handled by the offline service)
-  if (url.pathname.startsWith('/api/')) {
+  if (url.origin !== self.location.origin) {
     return;
   }
 
-  // Skip external requests
-  if (url.origin !== self.location.origin) {
+  if (url.pathname.startsWith('/api/')) {
+    if (isCacheableApi(url.pathname)) {
+      event.respondWith(handleApiRequest(request, url));
+    }
     return;
   }
 
   event.respondWith(
     fetch(request)
       .then((response) => {
-        // Clone the response for caching
         const responseToCache = response.clone();
 
-        // Cache successful responses for static assets
         if (response.ok && (
           request.destination === 'script' ||
           request.destination === 'style' ||
@@ -98,13 +173,11 @@ self.addEventListener('fetch', (event) => {
         return response;
       })
       .catch(() => {
-        // Network failed, try cache
         return caches.match(request).then((cachedResponse) => {
           if (cachedResponse) {
             return cachedResponse;
           }
 
-          // For navigation requests, return the offline page (index.html)
           if (request.mode === 'navigate') {
             return caches.match('/');
           }
