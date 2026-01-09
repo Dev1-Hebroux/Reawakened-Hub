@@ -49,11 +49,15 @@ Preferred communication style: Simple, everyday language.
 - Streak storage returns both current and longest streak values (UTC-safe calculation).
 - Bootstrap data (notifications, preferences, streak) hydrated after login/register and cleared on logout.
 - **Service Worker API Caching**: Stale-while-revalidate strategy for API responses (`/api/sparks/*`, `/api/journeys`, `/api/reflection-cards/today`) with configurable TTLs (5-60 min). Uses `event.waitUntil()` for reliable background cache updates.
+- **Database Performance Indexes**: Migration `0003_performance_indexes.sql` adds indexes for sessions, sparks (daily_date, featured, status), notifications (user+read), user_journeys, streaks, and security tokens.
+- **Audio Preloader**: `useAudioPreloader` hook preloads today's spark audio in background for instant playback. Creates fresh HTMLAudioElement per consumer with proper cleanup. `AudioPreloader` component integrated in App.tsx.
+- **Optimized Image Components**: `OptimizedImage` and `OptimizedAvatar` components in `client/src/components/ui/optimized-image.tsx` with lazy loading via Intersection Observer, blur placeholders, WebP support, and aspect ratio preservation for layout shift prevention.
 
 #### Follow-up Optimizations (TODO)
 - Implement per-user auth caching with proper TTL and isolation.
 - Add granular loading/error states to useDashboard hook for better UX.
 - Add automated test coverage for streak calculations (DST transitions, duplicate entries).
+- Integrate OptimizedImage components into spark cards and other media-heavy pages.
 
 ## External Dependencies
 
