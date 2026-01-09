@@ -35,6 +35,21 @@ Preferred communication style: Simple, everyday language.
 - **Recommendation API**: RESTful endpoints (`/api/recommendations/*`) for personalized reading plan recommendations, continue reading suggestions, and streak data.
 - **PWA Infrastructure**: Service worker (`public/sw.js`) for offline caching and push notifications, plus IndexedDB-based offline service (`client/src/services/offlineService.ts`) with sync queue.
 
+### Performance Optimizations (January 2026)
+- **Compression Middleware**: Response compression via `server/middleware/performance.ts` with gzip (~70% payload reduction).
+- **Server Timing Headers**: Performance monitoring via Server-Timing response headers.
+- **Slow Request Logging**: Logs requests >300ms for performance monitoring.
+- **Dashboard API**: `/api/sparks/dashboard` consolidates sparks, today's spark, featured, reflection cards, and prayer sessions into one request.
+- **Init Endpoint**: `/api/init` provides auth state, CSRF token, notifications count, preferences, and streak data (not yet consumed by frontend).
+- **Sparks Page Optimization**: Uses `useDashboard` hook to fetch consolidated data in one request.
+- **CSRF Token Prefetch**: AuthContext prefetches CSRF token with request deduplication.
+
+#### Follow-up Optimizations (TODO)
+- Wire frontend to consume `/api/init` endpoint on bootstrap instead of separate `/api/auth/me` calls.
+- Implement per-user auth caching with proper TTL and isolation.
+- Add granular loading/error states to useDashboard hook for better UX.
+- Extend streak storage to return both current and longest streak values.
+
 ## External Dependencies
 
 ### Database

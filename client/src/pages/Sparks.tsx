@@ -169,15 +169,15 @@ export function SparksPage() {
   const storedAudience = typeof window !== 'undefined' ? localStorage.getItem('user_audience_segment') : null;
   const effectiveAudience = userAudienceSegment || storedAudience || '';
 
-  const {
-    sparks = [],
-    todaySpark,
-    featured: featuredSparks = [],
-    reflection: todayReflection,
-    sessions: activeSessions = [],
-    isLoading,
-  } = useDashboard({ userAudienceSegment: effectiveAudience });
-
+  const dashboardResult = useDashboard({ userAudienceSegment: effectiveAudience });
+  
+  const sparks = dashboardResult.sparks ?? [];
+  const todaySpark = dashboardResult.todaySpark;
+  const featuredSparks = dashboardResult.featured ?? [];
+  const todayReflection = dashboardResult.reflection;
+  const activeSessions = dashboardResult.sessions ?? [];
+  const isLoading = dashboardResult.isLoading;
+  const isError = dashboardResult.isError;
   const todayLoading = isLoading;
 
   useEffect(() => {

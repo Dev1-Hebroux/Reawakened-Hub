@@ -31,37 +31,6 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const AUTH_CACHE_KEY = 'reawakened_auth_cache';
-const CACHE_TTL = 5 * 60 * 1000;
-
-function getCachedAuth(): User | null {
-  try {
-    const cached = sessionStorage.getItem(AUTH_CACHE_KEY);
-    if (!cached) return null;
-    
-    const { user, timestamp } = JSON.parse(cached);
-    
-    if (Date.now() - timestamp > CACHE_TTL) {
-      sessionStorage.removeItem(AUTH_CACHE_KEY);
-      return null;
-    }
-    
-    return user;
-  } catch {
-    return null;
-  }
-}
-
-function setCachedAuth(user: User | null): void {
-  if (user) {
-    sessionStorage.setItem(AUTH_CACHE_KEY, JSON.stringify({
-      user,
-      timestamp: Date.now(),
-    }));
-  } else {
-    sessionStorage.removeItem(AUTH_CACHE_KEY);
-  }
-}
 
 function getCsrfToken(): string | null {
   const match = document.cookie.match(/csrf_token=([^;]+)/);
@@ -117,8 +86,8 @@ async function authFetch(url: string, options: RequestInit = {}): Promise<Respon
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const loadingRef = useRef(false);
   
-  const [user, setUser] = useState<User | null>(() => getCachedAuth());
-  const [isLoading, setIsLoading] = useState(() => !getCachedAuth());
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -134,14 +103,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (response.ok) {
         const data = await response.json();
         setUser(data.user);
-        setCachedAuth(data.user);
       } else {
         setUser(null);
-        setCachedAuth(null);
       }
     } catch (err) {
       setUser(null);
-      setCachedAuth(null);
     } finally {
       setIsLoading(false);
       loadingRef.current = false;
@@ -168,7 +134,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       setUser(data.user);
-      setCachedAuth(data.user);
       return { success: true };
     } catch (err) {
       const message = 'An error occurred during login';
@@ -193,7 +158,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       setUser(result.user);
-      setCachedAuth(result.user);
       return { success: true };
     } catch (err) {
       const message = 'An error occurred during registration';
@@ -209,7 +173,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error('Logout error:', err);
     } finally {
       setUser(null);
-      setCachedAuth(null);
     }
   };
 

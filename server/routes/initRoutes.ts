@@ -3,7 +3,7 @@
  * 
  * Returns all data needed for initial page load in a single request:
  * - Auth state (user data)
- * - CSRF token
+ * - CSRF token (from res.locals set by setCsrfToken middleware)
  * - Notification count
  * - User preferences
  * - Streak data
@@ -27,15 +27,11 @@ interface InitResponse {
   loadTime: number;
 }
 
-function getCsrfTokenFromCookie(req: Request): string | null {
-  return req.cookies?.csrf_token || null;
-}
-
 router.get('/init', async (req: Request, res: Response) => {
   const startTime = Date.now();
   
   try {
-    const csrfToken = getCsrfTokenFromCookie(req);
+    const csrfToken = (res.locals.csrfToken as string) || req.cookies?.csrf_token || null;
     const user = (req as any).user;
     
     if (!user) {
@@ -88,7 +84,7 @@ router.get('/init', async (req: Request, res: Response) => {
     res.json({
       authenticated: false,
       user: null,
-      csrfToken: getCsrfTokenFromCookie(req),
+      csrfToken: (res.locals.csrfToken as string) || req.cookies?.csrf_token || null,
       notifications: { unread: 0 },
       preferences: null,
       streak: null,
