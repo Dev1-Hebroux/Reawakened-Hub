@@ -12,6 +12,7 @@ import { MobileNav } from "@/components/layout/MobileNav";
 import { PWAInstallBanner } from "@/components/PWAInstallBanner";
 import { Suspense, lazy } from "react";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { AudioPreloader } from "@/hooks/useAudioPreloader";
 
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
@@ -255,6 +256,7 @@ function AppContent() {
   return (
     <>
       <ScrollToTop />
+      <AudioPreloader />
       <div className="dove-background min-h-screen relative pb-20 xl:pb-0">
         <Toaster />
         <Router />
