@@ -11,6 +11,12 @@ interface User {
   role: string | null;
 }
 
+interface BootstrapData {
+  notifications: { unread: number };
+  preferences: Record<string, unknown> | null;
+  streak: { current: number; longest: number } | null;
+}
+
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
@@ -18,6 +24,7 @@ interface AuthContextType {
   error: string | null;
   hasPassword: boolean;
   canAddPassword: boolean;
+  bootstrap: BootstrapData;
   login: (credentials: { email: string; password: string }) => Promise<{ success: boolean; error?: string }>;
   register: (data: { email: string; password: string; firstName?: string; lastName?: string }) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
@@ -83,31 +90,45 @@ async function authFetch(url: string, options: RequestInit = {}): Promise<Respon
   });
 }
 
+const defaultBootstrap: BootstrapData = {
+  notifications: { unread: 0 },
+  preferences: null,
+  streak: null,
+};
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const loadingRef = useRef(false);
   
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    ensureCsrfToken().catch(() => {});
-  }, []);
+  const [bootstrap, setBootstrap] = useState<BootstrapData>(defaultBootstrap);
 
   const refreshUser = useCallback(async () => {
     if (loadingRef.current) return;
     loadingRef.current = true;
     
     try {
-      const response = await authFetch('/api/auth/me');
+      const response = await fetch('/api/init', { credentials: 'include' });
       if (response.ok) {
         const data = await response.json();
-        setUser(data.user);
+        if (data.authenticated && data.user) {
+          setUser(data.user);
+        } else {
+          setUser(null);
+        }
+        setBootstrap({
+          notifications: data.notifications || { unread: 0 },
+          preferences: data.preferences || null,
+          streak: data.streak || null,
+        });
       } else {
         setUser(null);
+        setBootstrap(defaultBootstrap);
       }
     } catch (err) {
       setUser(null);
+      setBootstrap(defaultBootstrap);
     } finally {
       setIsLoading(false);
       loadingRef.current = false;
@@ -134,6 +155,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       setUser(data.user);
+      loadingRef.current = false;
+      refreshUser();
       return { success: true };
     } catch (err) {
       const message = 'An error occurred during login';
@@ -158,6 +181,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       setUser(result.user);
+      loadingRef.current = false;
+      refreshUser();
       return { success: true };
     } catch (err) {
       const message = 'An error occurred during registration';
@@ -173,6 +198,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error('Logout error:', err);
     } finally {
       setUser(null);
+      setBootstrap(defaultBootstrap);
     }
   };
 
@@ -243,6 +269,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     error,
     hasPassword,
     canAddPassword,
+    bootstrap,
     login,
     register,
     logout,

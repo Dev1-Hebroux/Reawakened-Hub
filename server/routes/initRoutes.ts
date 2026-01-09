@@ -120,8 +120,7 @@ async function getUserPreferences(userId: string): Promise<any | null> {
 
 async function getCurrentStreak(userId: string): Promise<{ current: number; longest: number } | null> {
   try {
-    const streak = await storage.getUserActionStreak(userId);
-    return { current: streak || 0, longest: streak || 0 };
+    return await storage.getUserStreakData(userId);
   } catch {
     return null;
   }

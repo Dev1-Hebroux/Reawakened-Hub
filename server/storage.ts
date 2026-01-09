@@ -516,6 +516,7 @@ export interface IStorage {
   getSparkActionCompletion(sparkId: number, userId: string): Promise<SparkActionCompletion | undefined>;
   createSparkActionCompletion(completion: InsertSparkActionCompletion): Promise<SparkActionCompletion>;
   getUserActionStreak(userId: string): Promise<number>;
+  getUserStreakData(userId: string): Promise<{ current: number; longest: number }>;
 
   // Prayer Messages (Live Intercession)
   getPrayerMessages(sparkId?: number, sessionId?: number, limit?: number): Promise<PrayerMessage[]>;
@@ -1417,6 +1418,67 @@ export class DatabaseStorage implements IStorage {
     }
     
     return streak;
+  }
+
+  async getUserStreakData(userId: string): Promise<{ current: number; longest: number }> {
+    const completions = await db.select().from(sparkActionCompletions)
+      .where(eq(sparkActionCompletions.userId, userId))
+      .orderBy(desc(sparkActionCompletions.completedAt));
+    
+    if (completions.length === 0) return { current: 0, longest: 0 };
+    
+    const toDateKey = (d: Date): string => {
+      return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
+    };
+    
+    const toDayIndex = (dateKey: string): number => {
+      const [y, m, d] = dateKey.split('-').map(Number);
+      return Math.floor(Date.UTC(y, m - 1, d) / 86400000);
+    };
+    
+    const uniqueDays = new Set<string>();
+    for (const c of completions) {
+      const d = new Date(c.completedAt!);
+      uniqueDays.add(toDateKey(d));
+    }
+    
+    const sortedDayKeys = Array.from(uniqueDays).sort();
+    if (sortedDayKeys.length === 0) return { current: 0, longest: 0 };
+    
+    let longestStreak = 1;
+    let tempStreak = 1;
+    for (let i = 1; i < sortedDayKeys.length; i++) {
+      const prevDayIdx = toDayIndex(sortedDayKeys[i - 1]);
+      const currDayIdx = toDayIndex(sortedDayKeys[i]);
+      if (currDayIdx - prevDayIdx === 1) {
+        tempStreak++;
+        longestStreak = Math.max(longestStreak, tempStreak);
+      } else {
+        tempStreak = 1;
+      }
+    }
+    
+    const now = new Date();
+    const todayKey = toDateKey(now);
+    const todayIdx = toDayIndex(todayKey);
+    
+    const sortedDesc = [...sortedDayKeys].sort().reverse();
+    
+    let currentStreak = 0;
+    for (let i = 0; i < sortedDesc.length; i++) {
+      const dayIdx = toDayIndex(sortedDesc[i]);
+      const expectedIdx = todayIdx - i;
+      
+      if (dayIdx === expectedIdx) {
+        currentStreak++;
+      } else if (i === 0 && dayIdx === todayIdx - 1) {
+        currentStreak = 1;
+      } else {
+        break;
+      }
+    }
+    
+    return { current: currentStreak, longest: Math.max(longestStreak, currentStreak) };
   }
 
   // Prayer Messages (Live Intercession)
