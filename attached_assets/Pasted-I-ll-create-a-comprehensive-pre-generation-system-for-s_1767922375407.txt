@@ -1,0 +1,36 @@
+I'll create a comprehensive pre-generation system for spark devotional audio that ensures consistency, eliminates duplicates, and provides reliable audio delivery.
+
+Now let me copy everything to outputs and present the new files:
+
+I've created a comprehensive spark audio pre-generation system. The package now contains 37 files. Here's what's included for the audio solution:
+
+**SparkAudioService** (`server/services/sparkAudioService.ts`) is the core service that handles all audio generation and management. It generates a content hash from the spark's title, scripture, teaching, reflection, action step, and prayer to detect when content changes. The service composes a natural narration script with appropriate pauses and transitions, then generates TTS audio using OpenAI's HD model with the "nova" voice. Audio files are stored with the content hash in the filename (e.g., `spark-5-a1b2c3d4.mp3`) to ensure correct version alignment. The service provides methods for single spark generation, batch generation with configurable concurrency, checking for outdated audio, and cleanup of existing files.
+
+**API Routes** (`server/routes/sparkAudio.ts`) provide endpoints for retrieving pre-generated audio URLs and admin endpoints for managing generation. The client-facing endpoint simply returns the cached URL or 404 if not available, eliminating runtime generation entirely. Admin endpoints allow triggering batch generation, regenerating outdated content, and full cleanup operations.
+
+**CLI Script** (`scripts/generate-spark-audio.ts`) is a command-line tool for managing audio generation. It provides commands for checking status, generating all audio, regenerating specific sparks, handling outdated content, and performing full resets. This is the tool to use for the initial cleanup and regeneration of all 34 sparks.
+
+**Database Migration** (`shared/schema/spark-audio-migration.ts`) adds `audio_url` and `audio_metadata` columns to the sparks table. The metadata stores the content hash, generation timestamp, file size, and storage path, enabling efficient change detection.
+
+**Client Hook** (`client/hooks/useSparkAudio.ts`) provides React state management for audio playback with background music mixing, progress tracking, and all playback controls.
+
+**Audio Player Component** (`client/components/SparkAudioPlayer.tsx`) is a polished, accessible player with full and compact variants, progress bar with seeking, and proper loading and error states.
+
+**To perform the cleanup and regeneration:**
+
+```bash
+# 1. Run the database migration
+psql $DATABASE_URL -f spark-audio-migration.sql
+
+# 2. Check current status
+npx ts-node scripts/generate-spark-audio.ts status
+
+# 3. Delete all existing audio and regenerate fresh
+npx ts-node scripts/generate-spark-audio.ts full-reset
+
+# Or step by step:
+npx ts-node scripts/generate-spark-audio.ts cleanup
+npx ts-node scripts/generate-spark-audio.ts generate-all --force
+```
+
+This approach ensures every user receives the same pre-generated audio file, eliminates the duplicate content alignment issue by using content hashes, and removes any runtime TTS generation from the API request flow.

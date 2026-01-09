@@ -114,6 +114,7 @@ export const sparks = pgTable("sparks", {
   scenarioVignette: text("scenario_vignette"), // relatable real-life scenario
   shareableVersion: text("shareable_version"), // 1-minute shareable version
   narrationAudioUrl: varchar("narration_audio_url"), // pre-generated TTS audio URL
+  audioMetadata: jsonb("audio_metadata"), // metadata about generated audio including content hash
   createdAt: timestamp("created_at").defaultNow(),
 });
 

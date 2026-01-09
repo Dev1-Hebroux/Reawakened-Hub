@@ -1,0 +1,352 @@
+/**
+ * Spark Audio Hook
+ * 
+ * React hook for playing pre-generated spark devotional audio.
+ * Handles audio loading, playback controls, and background music mixing.
+ */
+
+import { useState, useRef, useCallback, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+
+interface SparkAudioState {
+  isLoading: boolean;
+  isPlaying: boolean;
+  isPaused: boolean;
+  isReady: boolean;
+  error: string | null;
+  currentTime: number;
+  duration: number;
+  progress: number;
+}
+
+interface UseSparkAudioOptions {
+  backgroundMusicUrl?: string;
+  backgroundMusicVolume?: number;
+  autoPlay?: boolean;
+  onEnded?: () => void;
+  onError?: (error: Error) => void;
+}
+
+interface UseSparkAudioReturn extends SparkAudioState {
+  play: () => void;
+  pause: () => void;
+  toggle: () => void;
+  seek: (time: number) => void;
+  setVolume: (volume: number) => void;
+  restart: () => void;
+}
+
+const DEFAULT_BACKGROUND_MUSIC = '/audio/ambient-meditation.mp3';
+const DEFAULT_BACKGROUND_VOLUME = 0.15;
+
+/**
+ * Fetch the pre-generated audio URL for a spark.
+ */
+async function fetchSparkAudioUrl(sparkId: number): Promise<string> {
+  const response = await fetch(`/api/sparks/${sparkId}/audio`);
+  
+  if (!response.ok) {
+    if (response.status === 404) {
+      throw new Error('Audio not available for this spark');
+    }
+    throw new Error('Failed to load audio');
+  }
+  
+  const data = await response.json();
+  return data.audioUrl;
+}
+
+/**
+ * Hook for managing spark audio playback with optional background music.
+ */
+export function useSparkAudio(
+  sparkId: number,
+  options: UseSparkAudioOptions = {}
+): UseSparkAudioReturn {
+  const {
+    backgroundMusicUrl = DEFAULT_BACKGROUND_MUSIC,
+    backgroundMusicVolume = DEFAULT_BACKGROUND_VOLUME,
+    autoPlay = false,
+    onEnded,
+    onError,
+  } = options;
+
+  // Audio element refs
+  const narrationRef = useRef<HTMLAudioElement | null>(null);
+  const backgroundRef = useRef<HTMLAudioElement | null>(null);
+
+  // State
+  const [state, setState] = useState<SparkAudioState>({
+    isLoading: true,
+    isPlaying: false,
+    isPaused: false,
+    isReady: false,
+    error: null,
+    currentTime: 0,
+    duration: 0,
+    progress: 0,
+  });
+
+  // Fetch the audio URL
+  const { data: audioUrl, error: fetchError, isLoading: isFetching } = useQuery({
+    queryKey: ['sparkAudio', sparkId],
+    queryFn: () => fetchSparkAudioUrl(sparkId),
+    staleTime: Infinity,
+    gcTime: 30 * 60 * 1000,
+    retry: 1,
+  });
+
+  // Initialize audio elements when URL is available
+  useEffect(() => {
+    if (!audioUrl) return;
+
+    // Create narration audio element
+    const narration = new Audio(audioUrl);
+    narration.preload = 'auto';
+    narrationRef.current = narration;
+
+    // Create background music element
+    const background = new Audio(backgroundMusicUrl);
+    background.preload = 'auto';
+    background.loop = true;
+    background.volume = backgroundMusicVolume;
+    backgroundRef.current = background;
+
+    // Set up event listeners
+    const handleCanPlay = () => {
+      setState(prev => ({
+        ...prev,
+        isLoading: false,
+        isReady: true,
+        duration: narration.duration || 0,
+      }));
+
+      if (autoPlay) {
+        playAudio();
+      }
+    };
+
+    const handleTimeUpdate = () => {
+      setState(prev => ({
+        ...prev,
+        currentTime: narration.currentTime,
+        progress: narration.duration ? (narration.currentTime / narration.duration) * 100 : 0,
+      }));
+    };
+
+    const handleEnded = () => {
+      setState(prev => ({
+        ...prev,
+        isPlaying: false,
+        isPaused: false,
+      }));
+
+      // Fade out background music
+      fadeOutBackground();
+
+      onEnded?.();
+    };
+
+    const handleError = (e: ErrorEvent) => {
+      const error = new Error('Failed to load audio');
+      setState(prev => ({
+        ...prev,
+        isLoading: false,
+        error: error.message,
+      }));
+      onError?.(error);
+    };
+
+    narration.addEventListener('canplay', handleCanPlay);
+    narration.addEventListener('timeupdate', handleTimeUpdate);
+    narration.addEventListener('ended', handleEnded);
+    narration.addEventListener('error', handleError as any);
+
+    // Cleanup
+    return () => {
+      narration.removeEventListener('canplay', handleCanPlay);
+      narration.removeEventListener('timeupdate', handleTimeUpdate);
+      narration.removeEventListener('ended', handleEnded);
+      narration.removeEventListener('error', handleError as any);
+      
+      narration.pause();
+      background.pause();
+      
+      narrationRef.current = null;
+      backgroundRef.current = null;
+    };
+  }, [audioUrl, backgroundMusicUrl, backgroundMusicVolume, autoPlay, onEnded, onError]);
+
+  // Handle fetch error
+  useEffect(() => {
+    if (fetchError) {
+      setState(prev => ({
+        ...prev,
+        isLoading: false,
+        error: fetchError instanceof Error ? fetchError.message : 'Failed to load audio',
+      }));
+      onError?.(fetchError instanceof Error ? fetchError : new Error('Failed to load audio'));
+    }
+  }, [fetchError, onError]);
+
+  // Update loading state
+  useEffect(() => {
+    setState(prev => ({
+      ...prev,
+      isLoading: isFetching,
+    }));
+  }, [isFetching]);
+
+  // Fade out background music
+  const fadeOutBackground = useCallback(() => {
+    const background = backgroundRef.current;
+    if (!background) return;
+
+    const fadeInterval = setInterval(() => {
+      if (background.volume > 0.01) {
+        background.volume = Math.max(0, background.volume - 0.02);
+      } else {
+        background.pause();
+        background.volume = backgroundMusicVolume;
+        clearInterval(fadeInterval);
+      }
+    }, 50);
+  }, [backgroundMusicVolume]);
+
+  // Fade in background music
+  const fadeInBackground = useCallback(() => {
+    const background = backgroundRef.current;
+    if (!background) return;
+
+    background.volume = 0;
+    background.play().catch(() => {});
+
+    const fadeInterval = setInterval(() => {
+      if (background.volume < backgroundMusicVolume) {
+        background.volume = Math.min(backgroundMusicVolume, background.volume + 0.02);
+      } else {
+        clearInterval(fadeInterval);
+      }
+    }, 50);
+  }, [backgroundMusicVolume]);
+
+  // Play audio
+  const playAudio = useCallback(() => {
+    const narration = narrationRef.current;
+    if (!narration) return;
+
+    narration.play()
+      .then(() => {
+        setState(prev => ({
+          ...prev,
+          isPlaying: true,
+          isPaused: false,
+        }));
+        fadeInBackground();
+      })
+      .catch(error => {
+        setState(prev => ({
+          ...prev,
+          error: 'Failed to play audio. Please try again.',
+        }));
+        onError?.(error);
+      });
+  }, [fadeInBackground, onError]);
+
+  // Pause audio
+  const pauseAudio = useCallback(() => {
+    const narration = narrationRef.current;
+    const background = backgroundRef.current;
+
+    if (narration) {
+      narration.pause();
+    }
+    if (background) {
+      background.pause();
+    }
+
+    setState(prev => ({
+      ...prev,
+      isPlaying: false,
+      isPaused: true,
+    }));
+  }, []);
+
+  // Toggle play/pause
+  const toggleAudio = useCallback(() => {
+    if (state.isPlaying) {
+      pauseAudio();
+    } else {
+      playAudio();
+    }
+  }, [state.isPlaying, playAudio, pauseAudio]);
+
+  // Seek to specific time
+  const seekTo = useCallback((time: number) => {
+    const narration = narrationRef.current;
+    if (!narration) return;
+
+    narration.currentTime = Math.max(0, Math.min(time, narration.duration || 0));
+  }, []);
+
+  // Set volume
+  const setVolume = useCallback((volume: number) => {
+    const narration = narrationRef.current;
+    if (narration) {
+      narration.volume = Math.max(0, Math.min(1, volume));
+    }
+  }, []);
+
+  // Restart from beginning
+  const restart = useCallback(() => {
+    const narration = narrationRef.current;
+    if (narration) {
+      narration.currentTime = 0;
+      playAudio();
+    }
+  }, [playAudio]);
+
+  return {
+    ...state,
+    play: playAudio,
+    pause: pauseAudio,
+    toggle: toggleAudio,
+    seek: seekTo,
+    setVolume,
+    restart,
+  };
+}
+
+/**
+ * Format seconds to MM:SS display.
+ */
+export function formatAudioTime(seconds: number): string {
+  if (!seconds || !isFinite(seconds)) return '0:00';
+  
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = Math.floor(seconds % 60);
+  
+  return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+}
+
+/**
+ * Hook for checking if audio is available for a spark.
+ */
+export function useSparkAudioAvailability(sparkId: number): {
+  isAvailable: boolean;
+  isChecking: boolean;
+} {
+  const { data, isLoading } = useQuery({
+    queryKey: ['sparkAudioAvailability', sparkId],
+    queryFn: async () => {
+      const response = await fetch(`/api/sparks/${sparkId}/audio`);
+      return response.ok;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+
+  return {
+    isAvailable: data ?? false,
+    isChecking: isLoading,
+  };
+}
