@@ -83,56 +83,62 @@ function getCacheConfig(pathname) {
   return null;
 }
 
-async function handleApiRequest(request, url) {
+function handleApiRequest(request, url, event) {
   const config = getCacheConfig(url.pathname);
   if (!config) {
     return fetch(request);
   }
 
-  const cache = await caches.open(API_CACHE_NAME);
-  const cachedResponse = await cache.match(request);
-  
-  if (cachedResponse) {
-    const cachedTime = cachedResponse.headers.get('sw-cached-at');
-    const age = cachedTime ? Date.now() - parseInt(cachedTime) : Infinity;
+  return caches.open(API_CACHE_NAME).then(async (cache) => {
+    const cachedResponse = await cache.match(request);
     
-    if (age < config.maxAge) {
-      fetch(request).then(response => {
-        if (response.ok) {
-          const headers = new Headers(response.headers);
-          headers.set('sw-cached-at', Date.now().toString());
-          const cachedCopy = new Response(response.clone().body, {
-            status: response.status,
-            statusText: response.statusText,
-            headers,
-          });
-          cache.put(request, cachedCopy);
-        }
-      }).catch(() => {});
-      
-      return cachedResponse;
-    }
-  }
-
-  try {
-    const response = await fetch(request);
-    if (response.ok) {
-      const headers = new Headers(response.headers);
-      headers.set('sw-cached-at', Date.now().toString());
-      const cachedCopy = new Response(response.clone().body, {
-        status: response.status,
-        statusText: response.statusText,
-        headers,
-      });
-      cache.put(request, cachedCopy);
-    }
-    return response;
-  } catch (error) {
     if (cachedResponse) {
-      return cachedResponse;
+      const cachedTime = cachedResponse.headers.get('sw-cached-at');
+      const age = cachedTime ? Date.now() - parseInt(cachedTime) : Infinity;
+      
+      if (age < config.maxAge) {
+        const revalidatePromise = fetch(request)
+          .then(response => {
+            if (response.ok) {
+              const headers = new Headers(response.headers);
+              headers.set('sw-cached-at', Date.now().toString());
+              const cachedCopy = new Response(response.clone().body, {
+                status: response.status,
+                statusText: response.statusText,
+                headers,
+              });
+              return cache.put(request, cachedCopy);
+            }
+          })
+          .catch(err => {
+            console.log('[SW] Background revalidation failed:', err.message);
+          });
+        
+        event.waitUntil(revalidatePromise);
+        return cachedResponse;
+      }
     }
-    throw error;
-  }
+
+    try {
+      const response = await fetch(request);
+      if (response.ok) {
+        const headers = new Headers(response.headers);
+        headers.set('sw-cached-at', Date.now().toString());
+        const cachedCopy = new Response(response.clone().body, {
+          status: response.status,
+          statusText: response.statusText,
+          headers,
+        });
+        event.waitUntil(cache.put(request, cachedCopy));
+      }
+      return response;
+    } catch (error) {
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+      throw error;
+    }
+  });
 }
 
 self.addEventListener('fetch', (event) => {
@@ -149,7 +155,7 @@ self.addEventListener('fetch', (event) => {
 
   if (url.pathname.startsWith('/api/')) {
     if (isCacheableApi(url.pathname)) {
-      event.respondWith(handleApiRequest(request, url));
+      event.respondWith(handleApiRequest(request, url, event));
     }
     return;
   }
