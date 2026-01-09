@@ -5,7 +5,8 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { 
   Settings as SettingsIcon, ArrowLeft, Moon, Sun, Monitor, Globe, 
-  Bell, Mail, Heart, MessageCircle, Calendar, Flame
+  Bell, Mail, Heart, MessageCircle, Calendar, Flame, Smartphone, 
+  BellRing, Users, Loader2
 } from "lucide-react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
@@ -13,6 +14,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
+import { useNotifications } from "@/services/NotificationService";
 import {
   Select,
   SelectContent,
@@ -60,6 +62,16 @@ export default function Settings() {
   const [, navigate] = useLocation();
   const { user, isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
+  
+  const { 
+    permission, 
+    isSubscribed, 
+    isLoading: notifLoading, 
+    subscribe, 
+    unsubscribe,
+    preferences: pushPreferences,
+    updatePreferences: updatePushPreferences
+  } = useNotifications();
 
   const [theme, setTheme] = useState("system");
   const [language, setLanguage] = useState("en");
@@ -73,6 +85,7 @@ export default function Settings() {
   const [newSparkAlerts, setNewSparkAlerts] = useState(true);
   const [eventReminders, setEventReminders] = useState(true);
   const [weeklyDigest, setWeeklyDigest] = useState(true);
+  const [isSubscribing, setIsSubscribing] = useState(false);
 
   const { data: settings } = useQuery<UserSettings>({
     queryKey: ["/api/user/settings"],
@@ -167,6 +180,40 @@ export default function Settings() {
       case "weeklyDigest": setWeeklyDigest(value); break;
     }
     updateNotifPrefsMutation.mutate(updates);
+  };
+
+  const handlePushSubscriptionToggle = async () => {
+    setIsSubscribing(true);
+    try {
+      if (isSubscribed) {
+        await unsubscribe();
+        toast.success("Push notifications disabled");
+      } else {
+        const success = await subscribe();
+        if (success) {
+          toast.success("Push notifications enabled!");
+        } else if (permission === 'denied') {
+          toast.error("Please enable notifications in your browser settings");
+        }
+      }
+    } catch (error) {
+      toast.error("Failed to update push notification settings");
+    } finally {
+      setIsSubscribing(false);
+    }
+  };
+
+  const handlePushPreferenceToggle = async (key: string, value: boolean) => {
+    try {
+      const success = await updatePushPreferences({ [key]: value });
+      if (success) {
+        toast.success("Preference updated");
+      } else {
+        toast.error("Failed to update preference");
+      }
+    } catch (error) {
+      toast.error("Failed to update preference");
+    }
   };
 
   if (!isAuthenticated) {
@@ -314,31 +361,128 @@ export default function Settings() {
             </div>
           </motion.div>
 
-          {/* Notification Preferences */}
+          {/* Push Notifications */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="bg-[#FAF8F5] dark:bg-[#243656] rounded-3xl p-6 border border-gray-200 dark:border-[#4A7C7C]/30"
+            className="bg-[#FAF8F5] dark:bg-[#243656] rounded-3xl p-6 mb-4 border border-gray-200 dark:border-[#4A7C7C]/30"
           >
             <h2 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-              <Bell className="h-5 w-5 text-[#7C9A8E]" />
-              Notifications
+              <Smartphone className="h-5 w-5 text-[#7C9A8E]" />
+              Push Notifications
             </h2>
             
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between p-3 bg-white dark:bg-[#1a2744] rounded-xl">
                 <div className="flex items-center gap-3">
-                  <Bell className="h-4 w-4 text-gray-500" />
-                  <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">Push Notifications</Label>
+                  <div className={`p-2 rounded-full ${isSubscribed ? 'bg-green-100 dark:bg-green-900/30' : 'bg-gray-100 dark:bg-gray-800'}`}>
+                    <BellRing className={`h-5 w-5 ${isSubscribed ? 'text-green-600 dark:text-green-400' : 'text-gray-400'}`} />
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 block">
+                      Browser Push Notifications
+                    </Label>
+                    <span className="text-xs text-gray-500">
+                      {isSubscribed ? 'Enabled - you\'ll receive alerts' : permission === 'denied' ? 'Blocked by browser' : 'Enable to receive alerts'}
+                    </span>
+                  </div>
                 </div>
-                <Switch 
-                  checked={pushEnabled} 
-                  onCheckedChange={(v) => handleNotifToggle("pushEnabled", v)}
-                  data-testid="switch-push"
-                />
+                <Button
+                  variant={isSubscribed ? "outline" : "default"}
+                  size="sm"
+                  onClick={handlePushSubscriptionToggle}
+                  disabled={isSubscribing || notifLoading || permission === 'denied'}
+                  className={isSubscribed ? '' : 'bg-primary hover:bg-primary/90'}
+                  data-testid="button-push-toggle"
+                >
+                  {isSubscribing ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : isSubscribed ? (
+                    'Disable'
+                  ) : (
+                    'Enable'
+                  )}
+                </Button>
               </div>
 
+              {permission === 'denied' && (
+                <div className="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-700/30">
+                  <p className="text-xs text-amber-700 dark:text-amber-400">
+                    Notifications are blocked. To enable them, click the lock icon in your browser's address bar and allow notifications.
+                  </p>
+                </div>
+              )}
+
+              {isSubscribed && (
+                <div className="border-t border-gray-200 dark:border-[#4A7C7C]/20 pt-4 space-y-3">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">Choose what you want to be notified about:</p>
+                  
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Flame className="h-4 w-4 text-orange-500" />
+                      <Label className="text-sm text-gray-600 dark:text-gray-400">Daily Spark Reminders</Label>
+                    </div>
+                    <Switch 
+                      checked={pushPreferences?.dailyReminder ?? true}
+                      onCheckedChange={(v) => handlePushPreferenceToggle("dailyReminder", v)}
+                      data-testid="switch-push-spark"
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Flame className="h-4 w-4 text-red-500" />
+                      <Label className="text-sm text-gray-600 dark:text-gray-400">Streak Reminders</Label>
+                    </div>
+                    <Switch 
+                      checked={pushPreferences?.streakReminders ?? true}
+                      onCheckedChange={(v) => handlePushPreferenceToggle("streakReminders", v)}
+                      data-testid="switch-push-streak"
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Heart className="h-4 w-4 text-pink-500" />
+                      <Label className="text-sm text-gray-600 dark:text-gray-400">Prayer Reminders</Label>
+                    </div>
+                    <Switch 
+                      checked={pushPreferences?.prayerReminders ?? true}
+                      onCheckedChange={(v) => handlePushPreferenceToggle("prayerReminders", v)}
+                      data-testid="switch-push-prayer"
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Users className="h-4 w-4 text-blue-500" />
+                      <Label className="text-sm text-gray-600 dark:text-gray-400">Community Updates</Label>
+                    </div>
+                    <Switch 
+                      checked={pushPreferences?.communityUpdates ?? true}
+                      onCheckedChange={(v) => handlePushPreferenceToggle("communityUpdates", v)}
+                      data-testid="switch-push-community"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          </motion.div>
+
+          {/* Email & In-App Notifications */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 }}
+            className="bg-[#FAF8F5] dark:bg-[#243656] rounded-3xl p-6 border border-gray-200 dark:border-[#4A7C7C]/30"
+          >
+            <h2 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+              <Mail className="h-5 w-5 text-[#7C9A8E]" />
+              Email & In-App Notifications
+            </h2>
+            
+            <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <Mail className="h-4 w-4 text-gray-500" />
