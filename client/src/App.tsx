@@ -18,6 +18,8 @@ import Home from "@/pages/Home";
 import { LoginPage } from "@/pages/auth/LoginPage";
 import { RegisterPage } from "@/pages/auth/RegisterPage";
 import { ForgotPasswordPage, ResetPasswordPage } from "@/pages/auth/PasswordRecoveryPages";
+import { useAuth as useEmailAuth } from "@/contexts/AuthContext";
+import { Redirect } from "wouter";
 import AboutPage from "@/pages/About";
 import Blog from "@/pages/Blog";
 import BlogPostPage from "@/pages/BlogPost";
@@ -109,6 +111,35 @@ function LoadingFallback() {
       </div>
     </div>
   );
+}
+
+function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
+  const { isAuthenticated, isLoading } = useEmailAuth();
+  
+  if (isLoading) {
+    return <LoadingFallback />;
+  }
+  
+  if (!isAuthenticated) {
+    const returnUrl = encodeURIComponent(window.location.pathname);
+    return <Redirect to={`/login?redirect=${returnUrl}`} />;
+  }
+  
+  return <Component />;
+}
+
+function GuestRoute({ component: Component }: { component: React.ComponentType }) {
+  const { isAuthenticated, isLoading } = useEmailAuth();
+  
+  if (isLoading) {
+    return <LoadingFallback />;
+  }
+  
+  if (isAuthenticated) {
+    return <Redirect to="/" />;
+  }
+  
+  return <Component />;
 }
 
 function Router() {
@@ -203,8 +234,12 @@ function Router() {
         <Route path="/mission-trips" component={MissionTripsPublic} />
         <Route path="/coaching-public" component={CoachingPublic} />
         <Route path="/goals" component={Goals} />
-        <Route path="/login" component={LoginPage} />
-        <Route path="/register" component={RegisterPage} />
+        <Route path="/login">
+          <GuestRoute component={LoginPage} />
+        </Route>
+        <Route path="/register">
+          <GuestRoute component={RegisterPage} />
+        </Route>
         <Route path="/forgot-password" component={ForgotPasswordPage} />
         <Route path="/reset-password" component={ResetPasswordPage} />
         <Route component={NotFound} />

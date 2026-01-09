@@ -1,0 +1,179 @@
+/**
+ * Auth System Integration
+ * 
+ * This file shows how to integrate the custom auth system into your existing app.
+ * 
+ * ISSUE: Login page returns 404
+ * CAUSE: Client routes (/login, /register, etc.) need to be served by the SPA
+ * 
+ * SOLUTION: Update your Express server to serve the SPA for these routes
+ */
+
+// =============================================================================
+// SERVER SETUP (add to your server/index.ts or server/routes.ts)
+// =============================================================================
+
+import express from 'express';
+import { authRoutes } from './routes/authRoutes';  // Your new auth routes
+import { loadUser, ensureCsrfToken } from './middleware/auth';
+import path from 'path';
+
+const app = express();
+
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+// Cookie parser if not already using
+// app.use(cookieParser());
+
+// Ensure CSRF token is set for all responses
+app.use(ensureCsrfToken);
+
+// Auth routes (must be before other API routes)
+app.use('/api/auth', authRoutes);
+
+// Apply loadUser middleware to all other routes that need user context
+// This loads the user from session cookie if present
+app.use(loadUser);
+
+// Your existing API routes...
+// app.use('/api/reading-plans', readingPlansRoutes);
+// etc.
+
+// =============================================================================
+// CRITICAL: SPA FALLBACK FOR CLIENT ROUTES
+// =============================================================================
+
+// This is what fixes the 404 issue!
+// These routes should be handled by the React app, not the server
+
+const CLIENT_ROUTES = [
+  '/login',
+  '/register', 
+  '/forgot-password',
+  '/reset-password',
+  '/email-verified',
+  '/email-verification-failed',
+];
+
+// Serve index.html for client-side routes
+CLIENT_ROUTES.forEach(route => {
+  app.get(route, (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+  });
+});
+
+// Or use a catch-all (more common approach):
+// This serves the SPA for any route that isn't an API route
+app.get('*', (req, res, next) => {
+  // Skip API routes
+  if (req.path.startsWith('/api')) {
+    return next();
+  }
+  
+  // Serve the SPA
+  res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+});
+
+// =============================================================================
+// CLIENT ROUTER SETUP (add to your client/src/App.tsx)
+// =============================================================================
+
+/*
+import { Switch, Route } from 'wouter';
+import { LoginPage } from './pages/LoginPage';
+import { RegisterPage } from './pages/RegisterPage';
+import { ForgotPasswordPage, ResetPasswordPage } from './pages/PasswordRecoveryPages';
+import { AuthProvider } from './contexts/AuthContext';
+
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <Switch>
+          {/* Public auth routes *}
+          <Route path="/login" component={LoginPage} />
+          <Route path="/register" component={RegisterPage} />
+          <Route path="/forgot-password" component={ForgotPasswordPage} />
+          <Route path="/reset-password" component={ResetPasswordPage} />
+          
+          {/* Your existing routes *}
+          <Route path="/dashboard" component={Dashboard} />
+          {/* ... *}
+          
+          {/* Fallback *}
+          <Route component={NotFound} />
+        </Switch>
+      </AuthProvider>
+    </QueryClientProvider>
+  );
+}
+*/
+
+// =============================================================================
+// QUICK CHECK: Is the auth route mounted?
+// =============================================================================
+
+// Test by visiting: /api/auth/csrf
+// Should return: { "csrfToken": "..." }
+// If 404, the authRoutes aren't mounted correctly
+
+// =============================================================================
+// EXAMPLE: Updated routes.ts for Reawakened
+// =============================================================================
+
+export function setupRoutes(app: express.Application) {
+  // Essential middleware
+  app.use(ensureCsrfToken);
+  
+  // Auth routes FIRST
+  app.use('/api/auth', authRoutes);
+  
+  // Load user for all subsequent requests
+  app.use(loadUser);
+  
+  // ... your other API routes
+  
+  // IMPORTANT: SPA fallback for client routes
+  // This MUST come AFTER all API routes
+  if (process.env.NODE_ENV === 'production') {
+    // Serve static files
+    app.use(express.static(path.join(__dirname, '../client/dist')));
+    
+    // SPA fallback
+    app.get('*', (req, res) => {
+      if (!req.path.startsWith('/api')) {
+        res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+      }
+    });
+  }
+}
+
+// =============================================================================
+// DEBUGGING CHECKLIST
+// =============================================================================
+
+/*
+1. Check if auth routes are mounted:
+   curl http://localhost:5000/api/auth/csrf
+   → Should return JSON with csrfToken
+
+2. Check if login API works:
+   curl -X POST http://localhost:5000/api/auth/login \
+     -H "Content-Type: application/json" \
+     -d '{"email":"test@test.com","password":"test"}'
+   → Should return 401 (invalid credentials) not 404
+
+3. Check client route serving:
+   curl http://localhost:5000/login
+   → Should return HTML (the SPA), not 404
+
+4. Check browser console for errors:
+   - CORS issues?
+   - Failed to fetch CSRF token?
+   - Module not found errors?
+
+5. Verify wouter routes are set up:
+   - Is <Route path="/login"> present in App.tsx?
+   - Is AuthProvider wrapping the routes?
+*/
