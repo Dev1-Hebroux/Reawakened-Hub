@@ -15,6 +15,9 @@ import { AuthProvider } from "@/contexts/AuthContext";
 
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
+import { LoginPage } from "@/pages/auth/LoginPage";
+import { RegisterPage } from "@/pages/auth/RegisterPage";
+import { ForgotPasswordPage, ResetPasswordPage } from "@/pages/auth/PasswordRecoveryPages";
 import AboutPage from "@/pages/About";
 import Blog from "@/pages/Blog";
 import BlogPostPage from "@/pages/BlogPost";
@@ -76,10 +79,6 @@ const ReadingPlanDetail = lazy(() => import("@/pages/ReadingPlanDetail").then(m 
 const PartnerVision = lazy(() => import("@/pages/PartnerVision").then(m => ({ default: m.PartnerVision })));
 const UnsubscribePage = lazy(() => import("@/pages/Unsubscribe").then(m => ({ default: m.UnsubscribePage })));
 
-const LoginPage = lazy(() => import("@/pages/auth/LoginPage").then(m => ({ default: m.LoginPage })));
-const RegisterPage = lazy(() => import("@/pages/auth/RegisterPage").then(m => ({ default: m.RegisterPage })));
-const ForgotPasswordPage = lazy(() => import("@/pages/auth/PasswordRecoveryPages").then(m => ({ default: m.ForgotPasswordPage })));
-const ResetPasswordPage = lazy(() => import("@/pages/auth/PasswordRecoveryPages").then(m => ({ default: m.ResetPasswordPage })));
 
 const AdminDashboard = lazy(() => import("@/pages/Admin").then(m => ({ default: m.AdminDashboard })));
 const AdminEvents = lazy(() => import("@/pages/AdminEvents").then(m => ({ default: m.AdminEvents })));
