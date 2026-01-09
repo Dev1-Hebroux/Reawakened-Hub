@@ -33,7 +33,10 @@ Preferred communication style: Simple, everyday language.
 - **Background Job Scheduler**: Cron-based job scheduler (`server/lib/jobScheduler.ts`) for processing scheduled notifications every 5 minutes and other recurring tasks.
 - **Notification API**: RESTful endpoints (`/api/notifications/*`) for fetching, marking as read, and managing notification preferences.
 - **Recommendation API**: RESTful endpoints (`/api/recommendations/*`) for personalized reading plan recommendations, continue reading suggestions, and streak data.
-- **PWA Infrastructure**: Service worker (`public/sw.js`) for offline caching and push notifications, plus IndexedDB-based offline service (`client/src/services/offlineService.ts`) with sync queue.
+- **PWA Infrastructure**: Advanced service worker (`public/sw.js`) with 5 caching strategies (Cache-First for images/audio, Network-First for auth, Stale-While-Revalidate for APIs), push notification handling, and offline fallback page.
+- **Push Notifications**: Server-side push notification system (`server/routes/pushRoutes.ts`) using web-push library with VAPID keys, subscription management, and scheduled notification functions (daily spark, streak reminders, milestone celebrations).
+- **PWA Components**: Premium install experience (`client/src/components/PWAComponents.tsx`) with PWAProvider context, smart install prompts, app update notifications, offline status indicator, and iOS-specific install instructions.
+- **Notification Service**: Client-side notification management (`client/src/services/NotificationService.ts`) with permission handling, subscription management, notification templates, preferences sync, and React hook (`useNotifications`).
 
 ### Performance Optimizations (January 2026)
 - **Compression Middleware**: Response compression via `server/middleware/performance.ts` with gzip (~70% payload reduction).

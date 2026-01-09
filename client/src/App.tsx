@@ -9,10 +9,11 @@ import { AiCoachDrawer } from "@/components/AiCoachDrawer";
 import { OnboardingTour, useOnboardingTour } from "@/components/OnboardingTour";
 import { useAuth } from "@/hooks/useAuth";
 import { MobileNav } from "@/components/layout/MobileNav";
-import { PWAInstallBanner } from "@/components/PWAInstallBanner";
 import { Suspense, lazy } from "react";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AudioPreloader } from "@/hooks/useAudioPreloader";
+import { PWAProvider, InstallBanner, UpdateBanner, OfflineIndicator, IOSInstallInstructions } from "@/components/PWAComponents";
+import { useNotifications } from "@/services/NotificationService";
 
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
@@ -249,6 +250,11 @@ function Router() {
   );
 }
 
+function NotificationInitializer() {
+  useNotifications();
+  return null;
+}
+
 function AppContent() {
   const { user, isAuthenticated } = useAuth() as { user: any; isAuthenticated: boolean };
   const { showTour, completeTour } = useOnboardingTour();
@@ -257,13 +263,17 @@ function AppContent() {
     <>
       <ScrollToTop />
       <AudioPreloader />
+      {isAuthenticated && <NotificationInitializer />}
       <div className="dove-background min-h-screen relative pb-20 xl:pb-0">
         <Toaster />
         <Router />
         <AiCoachDrawer />
       </div>
       <MobileNav />
-      <PWAInstallBanner />
+      <UpdateBanner />
+      <InstallBanner delay={30000} requireEngagement />
+      <IOSInstallInstructions />
+      <OfflineIndicator />
       {isAuthenticated && (
         <OnboardingTour 
           isOpen={showTour} 
@@ -280,9 +290,11 @@ function App() {
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <TooltipProvider>
-            <AppContent />
-          </TooltipProvider>
+          <PWAProvider>
+            <TooltipProvider>
+              <AppContent />
+            </TooltipProvider>
+          </PWAProvider>
         </AuthProvider>
       </QueryClientProvider>
     </ErrorBoundary>
