@@ -23,6 +23,7 @@ import { DailyQuiz } from "@/components/DailyQuiz";
 import { LiveIntercession } from "@/components/LiveIntercession";
 import { COMMUNITY_LINKS } from "@/lib/config";
 import { SEO } from "@/components/SEO";
+import { useDashboard } from "@/hooks/useDashboard";
 
 import spark1 from "@assets/generated_images/raw_street_worship_in_brazil.png";
 import spark2 from "@assets/generated_images/testimony_of_healing_in_a_village.png";
@@ -167,32 +168,24 @@ export function SparksPage() {
 
   const storedAudience = typeof window !== 'undefined' ? localStorage.getItem('user_audience_segment') : null;
   const effectiveAudience = userAudienceSegment || storedAudience || '';
-  const audienceParam = effectiveAudience ? `?audience=${effectiveAudience}` : '';
 
-  const { data: sparks = [], isLoading } = useQuery<Spark[]>({
-    queryKey: ["/api/sparks/published", userAudienceSegment],
-    queryFn: () => fetch(`/api/sparks/published${audienceParam}`).then(r => r.json()),
-  });
+  const {
+    sparks = [],
+    todaySpark,
+    featured: featuredSparks = [],
+    reflection: todayReflection,
+    sessions: activeSessions = [],
+    isLoading,
+  } = useDashboard({ userAudienceSegment: effectiveAudience });
 
-  const { data: todaySpark, isLoading: todayLoading } = useQuery<Spark>({
-    queryKey: ["/api/sparks/today", userAudienceSegment],
-    queryFn: () => fetch(`/api/sparks/today${audienceParam}`).then(r => r.json()),
-    retry: false,
-  });
+  const todayLoading = isLoading;
 
-  const { data: featuredSparks = [] } = useQuery<Spark[]>({
-    queryKey: ["/api/sparks/featured", userAudienceSegment],
-    queryFn: () => fetch(`/api/sparks/featured${audienceParam}`).then(r => r.json()),
-  });
-
-  // Redirect /sparks/:id to /spark/:id for the detail page
   useEffect(() => {
     if (sparkIdFromUrl) {
       navigate(`/spark/${sparkIdFromUrl}`, { replace: true });
     }
   }, [sparkIdFromUrl, navigate]);
 
-  // Update URL when modal is closed
   const handleCloseSparkModal = () => {
     setSelectedSpark(null);
     if (sparkIdFromUrl) {
@@ -203,18 +196,6 @@ export function SparksPage() {
   const { data: subscriptions = [], isLoading: subscriptionsLoading } = useQuery<SparkSubscription[]>({
     queryKey: ["/api/subscriptions"],
     enabled: !!user,
-  });
-
-  const { data: todayReflection } = useQuery<ReflectionCard>({
-    queryKey: ["/api/reflection-cards/today", userAudienceSegment],
-    queryFn: () => fetch(`/api/reflection-cards/today${audienceParam}`).then(r => r.json()),
-    retry: false,
-  });
-
-  const { data: activeSessions = [] } = useQuery<PrayerSession[]>({
-    queryKey: ["/api/leader-prayer-sessions"],
-    queryFn: () => fetch("/api/leader-prayer-sessions?status=active").then(r => r.json()),
-    refetchInterval: 30000,
   });
 
   const hasActiveSessions = activeSessions.length > 0;
