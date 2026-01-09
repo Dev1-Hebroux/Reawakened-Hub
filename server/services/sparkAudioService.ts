@@ -16,10 +16,12 @@ import { objectStorageClient } from '../replit_integrations/object_storage';
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 const TTS_CONFIG = {
-  model: 'tts-1' as const,
-  voice: 'nova' as const,
+  model: 'tts-1-hd' as const,
+  voice: 'fable' as const, // UK-style narrative voice for devotionals
   speed: 0.95,
 };
+
+type TTSVoice = 'alloy' | 'echo' | 'fable' | 'onyx' | 'nova' | 'shimmer';
 
 const AUDIO_STORAGE_PREFIX = 'public/audio';
 
