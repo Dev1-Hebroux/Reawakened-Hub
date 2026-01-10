@@ -28,7 +28,7 @@ Preferred communication style: Simple, everyday language.
 - **Bible Reading Plans**: Personalized reading journeys based on spiritual maturity and interests, with progress tracking.
 - **Growth Tools**: Tracks for personal mastery, communication, leadership, including assessments, strengths discovery, style profiles (DISC-inspired), EQ exercises, WDEP reality therapy, and Self-Concordant Action builders.
 - **DOMINION Campaign**: A 30-day devotional campaign with segmented content for schools, universities, early-career, builders, and couples, following specific weekly themes. Content rotates daily and prioritizes segment-specific devotionals.
-- **Automated Content Sync**: An `auto-seed` system runs on every server startup (development and production) to `upsert` all Spark and Reflection Card content, ensuring data consistency across environments. A nightly sync acts as a backup.
+- **Automated Content Sync**: An `auto-seed` system runs on every server startup (development and production) to `upsert` all Spark and Reflection Card content, ensuring data consistency across environments. **Runs asynchronously in background** to prevent blocking page loads. A nightly sync acts as a backup.
 - **Email Notifications**: Transactional and scheduled emails using Resend for user actions (subscriptions, prayer requests, event registrations) and daily devotionals/event reminders, respecting user notification preferences.
 - **Background Job Scheduler**: Cron-based job scheduler (`server/lib/jobScheduler.ts`) for processing scheduled notifications every 5 minutes and other recurring tasks.
 - **Notification API**: RESTful endpoints (`/api/notifications/*`) for fetching, marking as read, and managing notification preferences.
@@ -53,7 +53,7 @@ Preferred communication style: Simple, everyday language.
 - Bootstrap data (notifications, preferences, streak) hydrated after login/register and cleared on logout.
 - **Service Worker API Caching**: Stale-while-revalidate strategy for API responses (`/api/sparks/*`, `/api/journeys`, `/api/reflection-cards/today`) with configurable TTLs (5-60 min). Uses `event.waitUntil()` for reliable background cache updates.
 - **Database Performance Indexes**: Migration `0003_performance_indexes.sql` adds indexes for sessions, sparks (daily_date, featured, status), notifications (user+read), user_journeys, streaks, and security tokens.
-- **Audio Preloader**: `useAudioPreloader` hook preloads today's spark audio in background for instant playback. Creates fresh HTMLAudioElement per consumer with proper cleanup. `AudioPreloader` component integrated in App.tsx.
+- **Audio Preloader**: `useAudioPreloader` hook preloads today's spark audio in background for instant playback. Creates fresh HTMLAudioElement per consumer with proper cleanup. `AudioPreloader` component integrated in App.tsx. **Deferred until user interaction** to reduce mobile bandwidth on initial load.
 - **Optimized Image Components**: `OptimizedImage` and `OptimizedAvatar` components in `client/src/components/ui/optimized-image.tsx` with lazy loading via Intersection Observer, blur placeholders, WebP support, and aspect ratio preservation for layout shift prevention.
 
 #### Follow-up Optimizations (TODO)
