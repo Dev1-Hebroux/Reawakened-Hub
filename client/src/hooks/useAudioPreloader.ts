@@ -159,7 +159,53 @@ export function useTodaySparkAudioPreloader() {
   return useAudioPreloader(audioUrl);
 }
 
+/**
+ * Hook to track user interaction - returns true after first click/touch
+ * Used to defer resource-heavy operations until user engages with the page
+ */
+function useHasInteracted(): boolean {
+  const [hasInteracted, setHasInteracted] = useState(false);
+  
+  useEffect(() => {
+    if (hasInteracted) return;
+    
+    const handleInteraction = () => {
+      setHasInteracted(true);
+    };
+    
+    window.addEventListener('click', handleInteraction, { once: true });
+    window.addEventListener('touchstart', handleInteraction, { once: true });
+    
+    return () => {
+      window.removeEventListener('click', handleInteraction);
+      window.removeEventListener('touchstart', handleInteraction);
+    };
+  }, [hasInteracted]);
+  
+  return hasInteracted;
+}
+
+/**
+ * Deferred audio preloader - only loads audio after user interaction
+ * Passes null URL until interaction, preventing early downloads on mobile
+ */
+function useDeferredTodaySparkAudioPreloader() {
+  const { todaySpark } = useDashboard();
+  const hasInteracted = useHasInteracted();
+  
+  // Only provide the URL after user interaction to defer loading
+  const audioUrl = hasInteracted 
+    ? (todaySpark?.narrationAudioUrl || todaySpark?.audioUrl)
+    : null;
+    
+  return useAudioPreloader(audioUrl);
+}
+
+/**
+ * AudioPreloader component - defers audio loading until user interaction
+ * This prevents mobile bandwidth issues by not auto-downloading audio on page load
+ */
 export function AudioPreloader(): null {
-  useTodaySparkAudioPreloader();
+  useDeferredTodaySparkAudioPreloader();
   return null;
 }

@@ -137,8 +137,11 @@ app.use((req, res, next) => {
     async () => {
       log(`serving on port ${port}`);
       
-      // Auto-seed DOMINION content if database is empty (works in both dev and prod)
-      await autoSeedDominionContent();
+      // Auto-seed DOMINION content in background (non-blocking so server starts immediately)
+      // This allows the site to load for users while content syncs in the background
+      autoSeedDominionContent().catch(err => {
+        console.error('[Auto-Seed] Background sync failed:', err);
+      });
       
       // Start nightly content sync scheduler (runs at 23:00 London time daily)
       startNightlyContentSync();
