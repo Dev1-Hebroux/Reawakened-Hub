@@ -52,7 +52,13 @@ interface UseDashboardReturn {
 const STORAGE_KEY = 'dashboard-cache';
 const GC_TIME = 24 * 60 * 60 * 1000; // 24 hours
 
+function isStorageAvailable(): boolean {
+  return typeof window !== 'undefined' && 'localStorage' in window;
+}
+
 function persistToStorage(audience: string | null, data: DashboardData): void {
+  if (!isStorageAvailable()) return;
+  
   try {
     const cached = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
     cached[audience || 'default'] = {
@@ -66,6 +72,8 @@ function persistToStorage(audience: string | null, data: DashboardData): void {
 }
 
 function getFromStorage(audience: string | null): DashboardData | undefined {
+  if (!isStorageAvailable()) return undefined;
+  
   try {
     const cached = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
     const entry = cached[audience || 'default'];
