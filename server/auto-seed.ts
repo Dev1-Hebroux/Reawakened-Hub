@@ -1,66 +1,108 @@
 import { storage } from "./storage";
 
-export async function autoSeedDominionContent(): Promise<void> {
-  try {
-    console.log('[Auto-Seed] Running full DOMINION content sync...');
+// ============================================================================
+// OPTIMIZED AUTO-SEED WITH BATCHING
+// ============================================================================
+
+const BATCH_SIZE = 20; // Process 20 items at a time
+const BATCH_DELAY_MS = 10; // Small delay between batches to yield to event loop
+
+/**
+ * Yields to the event loop to prevent blocking other requests.
+ * This is critical for maintaining server responsiveness during seeding.
+ */
+function yieldToEventLoop(): Promise<void> {
+  return new Promise(resolve => setImmediate(resolve));
+}
+
+/**
+ * Process items in batches with yields to prevent blocking the event loop.
+ */
+async function processBatch<T, R = unknown>(
+  items: T[],
+  processor: (item: T) => Promise<R>,
+  batchSize = BATCH_SIZE
+): Promise<number> {
+  let processed = 0;
+  
+  for (let i = 0; i < items.length; i += batchSize) {
+    const batch = items.slice(i, i + batchSize);
     
-    // Always run a full upsert to ensure all 180 sparks and 180 reflection cards exist
-    // This handles both initial seeding and updates to existing content
+    // Process batch items in parallel
+    await Promise.all(batch.map(processor));
+    processed += batch.length;
+    
+    // Yield to event loop between batches
+    await yieldToEventLoop();
+    
+    // Optional: Add small delay to reduce database pressure
+    if (i + batchSize < items.length) {
+      await new Promise(resolve => setTimeout(resolve, BATCH_DELAY_MS));
+    }
+  }
+  
+  return processed;
+}
+
+export async function autoSeedDominionContent(): Promise<void> {
+  const startTime = Date.now();
+  
+  try {
+    console.log('[Auto-Seed] Starting background content sync...');
     
     const content = getDominionSeedContent();
     
-    let sparksUpserted = 0;
-    let reflectionsUpserted = 0;
-    let blogsUpserted = 0;
+    // Process sparks in batches (yields between batches to allow requests through)
+    const sparksUpserted = await processBatch(
+      content.sparks,
+      spark => storage.upsertSpark(spark)
+    );
+    console.log(`[Auto-Seed] Synced ${sparksUpserted} sparks`);
     
-    // Use upsert to create or update each spark
-    for (const spark of content.sparks) {
-      await storage.upsertSpark(spark);
-      sparksUpserted++;
-    }
+    // Process reflection cards in batches
+    const reflectionsUpserted = await processBatch(
+      content.reflectionCards,
+      card => storage.upsertReflectionCard(card)
+    );
+    console.log(`[Auto-Seed] Synced ${reflectionsUpserted} reflection cards`);
     
-    // Use upsert to create or update each reflection card
-    for (const card of content.reflectionCards) {
-      await storage.upsertReflectionCard(card);
-      reflectionsUpserted++;
-    }
-    
-    // Upsert blog posts
+    // Process blog posts in batches
     const blogPosts = getBlogSeedContent();
-    for (const blog of blogPosts) {
-      await storage.upsertBlogPost(blog);
-      blogsUpserted++;
-    }
+    const blogsUpserted = await processBatch(
+      blogPosts,
+      blog => storage.upsertBlogPost(blog)
+    );
+    console.log(`[Auto-Seed] Synced ${blogsUpserted} blog posts`);
     
-    // Events are now admin-managed - only seed if no events exist yet
+    // Events - only seed if none exist (admin-managed)
     const existingEvents = await storage.getEvents();
-    let eventsSeeded = 0;
-    
     if (existingEvents.length === 0) {
       const events = getEventSeedContent();
-      for (const event of events) {
-        await storage.upsertEvent(event);
-        eventsSeeded++;
-      }
-      console.log(`[Auto-Seed] Seeded ${eventsSeeded} initial events.`);
+      const eventsSeeded = await processBatch(
+        events,
+        event => storage.upsertEvent(event)
+      );
+      console.log(`[Auto-Seed] Seeded ${eventsSeeded} initial events`);
     } else {
-      console.log(`[Auto-Seed] Skipping events (${existingEvents.length} already exist - admin managed).`);
+      console.log(`[Auto-Seed] Skipping events (${existingEvents.length} already exist)`);
     }
     
-    console.log(`[Auto-Seed] Complete: ${sparksUpserted} sparks, ${reflectionsUpserted} reflection cards, ${blogsUpserted} blog posts synced.`);
+    // Seed journeys if none exist
+    await seedJourneys();
     
-    // Validate counts - use exact date range for DOMINION campaign (Jan 3 - Feb 1, 2026)
+    // Validation
     const allSparks = await storage.getSparks();
     const dominionSparks = allSparks.filter((s: any) => {
       if (!s.dailyDate) return false;
       return s.dailyDate >= '2026-01-03' && s.dailyDate <= '2026-02-01';
     });
-    console.log(`[Auto-Seed] Validation: ${dominionSparks.length} DOMINION sparks in database (expected: 180).`);
     
-    // Seed journeys if none exist
-    await seedJourneys();
+    const duration = ((Date.now() - startTime) / 1000).toFixed(1);
+    console.log(`[Auto-Seed] Complete in ${duration}s: ${dominionSparks.length} DOMINION sparks in database`);
+    
   } catch (error) {
-    console.error('[Auto-Seed] Error syncing DOMINION content:', error);
+    console.error('[Auto-Seed] Error during content sync:', error);
+    // Don't re-throw - this runs in background and shouldn't crash the server
   }
 }
 

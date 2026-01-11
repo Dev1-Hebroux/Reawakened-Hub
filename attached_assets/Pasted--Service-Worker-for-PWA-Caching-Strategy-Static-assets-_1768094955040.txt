@@ -1,0 +1,321 @@
+/**
+ * Service Worker for PWA
+ * 
+ * Caching Strategy:
+ * - Static assets: Cache-first (JS, CSS, images, fonts)
+ * - API data: Network-first with cache fallback
+ * - HTML: Stale-while-revalidate
+ * - Audio: Cache on demand
+ */
+
+const CACHE_VERSION = 'v1';
+const STATIC_CACHE = `static-${CACHE_VERSION}`;
+const API_CACHE = `api-${CACHE_VERSION}`;
+const AUDIO_CACHE = `audio-${CACHE_VERSION}`;
+
+// Assets to precache on install
+const PRECACHE_ASSETS = [
+  '/',
+  '/index.html',
+  '/manifest.json',
+  '/offline.html',
+];
+
+// API endpoints that benefit from caching
+const CACHEABLE_API = [
+  '/api/sparks/dashboard',
+  '/api/sparks',
+  '/api/events',
+  '/api/blogs',
+];
+
+// ============================================================================
+// LIFECYCLE EVENTS
+// ============================================================================
+
+self.addEventListener('install', (event) => {
+  console.log('[SW] Installing service worker...');
+  
+  event.waitUntil(
+    caches.open(STATIC_CACHE)
+      .then((cache) => {
+        console.log('[SW] Precaching static assets');
+        return cache.addAll(PRECACHE_ASSETS);
+      })
+      .then(() => self.skipWaiting())
+  );
+});
+
+self.addEventListener('activate', (event) => {
+  console.log('[SW] Activating service worker...');
+  
+  event.waitUntil(
+    caches.keys()
+      .then((cacheNames) => {
+        return Promise.all(
+          cacheNames
+            .filter((name) => {
+              // Delete old versions of our caches
+              return name.startsWith('static-') && name !== STATIC_CACHE ||
+                     name.startsWith('api-') && name !== API_CACHE ||
+                     name.startsWith('audio-') && name !== AUDIO_CACHE;
+            })
+            .map((name) => {
+              console.log('[SW] Deleting old cache:', name);
+              return caches.delete(name);
+            })
+        );
+      })
+      .then(() => self.clients.claim())
+  );
+});
+
+// ============================================================================
+// FETCH HANDLING
+// ============================================================================
+
+self.addEventListener('fetch', (event) => {
+  const { request } = event;
+  const url = new URL(request.url);
+  
+  // Only handle same-origin requests
+  if (url.origin !== self.location.origin) {
+    return;
+  }
+  
+  // Handle different request types with appropriate strategies
+  if (url.pathname.startsWith('/api/')) {
+    event.respondWith(handleApiRequest(request));
+  } else if (isStaticAsset(url.pathname)) {
+    event.respondWith(handleStaticAsset(request));
+  } else if (isAudioFile(url.pathname)) {
+    event.respondWith(handleAudioRequest(request));
+  } else if (request.headers.get('accept')?.includes('text/html')) {
+    event.respondWith(handleHtmlRequest(request));
+  }
+});
+
+// ============================================================================
+// CACHING STRATEGIES
+// ============================================================================
+
+/**
+ * Network-first for API requests
+ * Returns cached data if offline
+ */
+async function handleApiRequest(request) {
+  const url = new URL(request.url);
+  
+  // Only cache GET requests
+  if (request.method !== 'GET') {
+    return fetch(request);
+  }
+  
+  try {
+    // Try network first
+    const networkResponse = await fetch(request);
+    
+    // Cache successful responses for cacheable endpoints
+    if (networkResponse.ok && isCacheableApi(url.pathname)) {
+      const cache = await caches.open(API_CACHE);
+      cache.put(request, networkResponse.clone());
+    }
+    
+    return networkResponse;
+  } catch (error) {
+    // Network failed, try cache
+    const cachedResponse = await caches.match(request);
+    
+    if (cachedResponse) {
+      console.log('[SW] Serving cached API response:', url.pathname);
+      return cachedResponse;
+    }
+    
+    // Return offline fallback for dashboard
+    if (url.pathname.includes('/api/sparks/dashboard')) {
+      return new Response(JSON.stringify({
+        sparks: [],
+        todaySpark: null,
+        featured: [],
+        reflection: null,
+        sessions: [],
+        meta: { offline: true, timestamp: new Date().toISOString() }
+      }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+    
+    // Return generic offline error
+    return new Response(JSON.stringify({
+      error: 'offline',
+      message: 'You appear to be offline'
+    }), {
+      status: 503,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+}
+
+/**
+ * Cache-first for static assets
+ * Fast loading from cache, background update
+ */
+async function handleStaticAsset(request) {
+  const cachedResponse = await caches.match(request);
+  
+  if (cachedResponse) {
+    // Return cached immediately, update in background
+    updateStaticCache(request);
+    return cachedResponse;
+  }
+  
+  // Not in cache, fetch and cache
+  try {
+    const networkResponse = await fetch(request);
+    
+    if (networkResponse.ok) {
+      const cache = await caches.open(STATIC_CACHE);
+      cache.put(request, networkResponse.clone());
+    }
+    
+    return networkResponse;
+  } catch (error) {
+    // Return offline page for navigation requests
+    if (request.mode === 'navigate') {
+      return caches.match('/offline.html');
+    }
+    throw error;
+  }
+}
+
+/**
+ * Cache audio files on demand
+ * Audio is large, so we only cache what's been played
+ */
+async function handleAudioRequest(request) {
+  const cachedResponse = await caches.match(request);
+  
+  if (cachedResponse) {
+    return cachedResponse;
+  }
+  
+  try {
+    const networkResponse = await fetch(request);
+    
+    if (networkResponse.ok) {
+      const cache = await caches.open(AUDIO_CACHE);
+      cache.put(request, networkResponse.clone());
+    }
+    
+    return networkResponse;
+  } catch (error) {
+    return new Response('Audio unavailable offline', {
+      status: 503,
+      statusText: 'Audio unavailable offline'
+    });
+  }
+}
+
+/**
+ * Stale-while-revalidate for HTML
+ * Show cached page immediately, update in background
+ */
+async function handleHtmlRequest(request) {
+  const cachedResponse = await caches.match(request);
+  
+  const fetchPromise = fetch(request)
+    .then((networkResponse) => {
+      if (networkResponse.ok) {
+        const cache = caches.open(STATIC_CACHE);
+        cache.then((c) => c.put(request, networkResponse.clone()));
+      }
+      return networkResponse;
+    })
+    .catch(() => {
+      // Network failed, return offline page if we don't have cache
+      if (!cachedResponse) {
+        return caches.match('/offline.html');
+      }
+      return cachedResponse;
+    });
+  
+  // Return cached immediately if available, otherwise wait for network
+  return cachedResponse || fetchPromise;
+}
+
+// ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
+
+function isStaticAsset(pathname) {
+  return /\.(js|css|png|jpg|jpeg|gif|svg|webp|woff2?|ttf|eot|ico)$/i.test(pathname);
+}
+
+function isAudioFile(pathname) {
+  return /\.(mp3|wav|ogg|m4a|aac)$/i.test(pathname);
+}
+
+function isCacheableApi(pathname) {
+  return CACHEABLE_API.some((endpoint) => pathname.startsWith(endpoint));
+}
+
+async function updateStaticCache(request) {
+  try {
+    const networkResponse = await fetch(request);
+    if (networkResponse.ok) {
+      const cache = await caches.open(STATIC_CACHE);
+      cache.put(request, networkResponse);
+    }
+  } catch {
+    // Silently fail - we already have cached version
+  }
+}
+
+// ============================================================================
+// BACKGROUND SYNC (for offline mutations)
+// ============================================================================
+
+self.addEventListener('sync', (event) => {
+  if (event.tag === 'sync-journals') {
+    event.waitUntil(syncJournalEntries());
+  }
+});
+
+async function syncJournalEntries() {
+  // Get pending journal entries from IndexedDB
+  // This would integrate with your offlineService
+  console.log('[SW] Syncing offline journal entries...');
+}
+
+// ============================================================================
+// PUSH NOTIFICATIONS
+// ============================================================================
+
+self.addEventListener('push', (event) => {
+  if (!event.data) return;
+  
+  const data = event.data.json();
+  
+  event.waitUntil(
+    self.registration.showNotification(data.title || 'New Update', {
+      body: data.body,
+      icon: '/icon-192.png',
+      badge: '/badge-72.png',
+      data: data.url,
+      tag: data.tag || 'default',
+    })
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  
+  if (event.notification.data) {
+    event.waitUntil(
+      clients.openWindow(event.notification.data)
+    );
+  }
+});
+
+console.log('[SW] Service worker loaded');

@@ -1,5 +1,15 @@
+/**
+ * Optimized Dashboard Hook
+ * 
+ * Features:
+ * - Stale-while-revalidate pattern
+ * - Persistent cache across sessions (localStorage)
+ * - Graceful offline handling
+ * - Instant data on repeat visits
+ */
+
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { getEffectiveAudience, buildAudienceParam } from '@/lib/sparksUtils';
 import type { Spark, ReflectionCard, PrayerSession } from '@shared/schema';
 import { API_CACHE } from '@shared/constants';
@@ -14,6 +24,7 @@ interface DashboardData {
     timestamp: string;
     audienceSegment: string | null;
     totalSparks: number;
+    offline?: boolean;
   };
 }
 
@@ -33,8 +44,39 @@ interface UseDashboardReturn {
   sessions: PrayerSession[];
   isLoading: boolean;
   isError: boolean;
+  isOffline: boolean;
   error: Error | null;
   refetch: () => void;
+}
+
+const STORAGE_KEY = 'dashboard-cache';
+const GC_TIME = 24 * 60 * 60 * 1000; // 24 hours
+
+function persistToStorage(audience: string | null, data: DashboardData): void {
+  try {
+    const cached = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    cached[audience || 'default'] = {
+      data,
+      timestamp: Date.now(),
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(cached));
+  } catch {
+    // Storage full or unavailable, ignore
+  }
+}
+
+function getFromStorage(audience: string | null): DashboardData | undefined {
+  try {
+    const cached = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    const entry = cached[audience || 'default'];
+    
+    if (entry && Date.now() - entry.timestamp < GC_TIME) {
+      return entry.data;
+    }
+  } catch {
+    // Corrupted storage, ignore
+  }
+  return undefined;
 }
 
 export function useDashboard(options: UseDashboardOptions = {}): UseDashboardReturn {
@@ -47,6 +89,9 @@ export function useDashboard(options: UseDashboardOptions = {}): UseDashboardRet
 
   const effectiveAudience = getEffectiveAudience(userAudienceSegment);
   const audienceParam = buildAudienceParam(effectiveAudience);
+  
+  // Get persisted data for instant render on repeat visits
+  const persistedData = getFromStorage(effectiveAudience);
 
   const query = useQuery<DashboardData>({
     queryKey: ['/api/sparks/dashboard', effectiveAudience],
@@ -63,9 +108,30 @@ export function useDashboard(options: UseDashboardOptions = {}): UseDashboardRet
     enabled,
     staleTime,
     refetchInterval,
+    
+    // Use persisted data as placeholder for instant render
+    placeholderData: persistedData,
+    
+    // Keep previous data while refetching
+    gcTime: GC_TIME,
+    
     retry: 3,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
+    
+    // Refetch on reconnect/focus for fresh data
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+    
+    // Network mode for offline support
+    networkMode: 'offlineFirst',
   });
+  
+  // Persist successful fetches to localStorage
+  useEffect(() => {
+    if (query.data && !query.data.meta?.offline) {
+      persistToStorage(effectiveAudience, query.data);
+    }
+  }, [query.data, effectiveAudience]);
 
   const data = query.data;
   const sparks = data?.sparks ?? [];
@@ -73,6 +139,7 @@ export function useDashboard(options: UseDashboardOptions = {}): UseDashboardRet
   const featured = data?.featured ?? [];
   const reflection = data?.reflection ?? null;
   const sessions = data?.sessions ?? [];
+  const isOffline = data?.meta?.offline === true;
 
   return {
     data,
@@ -81,8 +148,9 @@ export function useDashboard(options: UseDashboardOptions = {}): UseDashboardRet
     featured,
     reflection,
     sessions,
-    isLoading: query.isLoading,
+    isLoading: query.isLoading && !persistedData,
     isError: query.isError,
+    isOffline,
     error: query.error,
     refetch: query.refetch,
   };

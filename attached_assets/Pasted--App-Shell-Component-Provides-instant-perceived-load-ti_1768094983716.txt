@@ -1,0 +1,245 @@
+/**
+ * App Shell Component
+ * 
+ * Provides instant perceived load time by rendering a skeleton UI
+ * while the main application loads. This is critical for PWA performance.
+ * 
+ * The shell renders immediately from the browser cache while:
+ * - JavaScript bundles download
+ * - API calls resolve
+ * - Heavy components lazy-load
+ */
+
+import React, { Suspense, lazy, ComponentType } from 'react';
+
+// ============================================================================
+// SKELETON COMPONENTS
+// ============================================================================
+
+function HeaderSkeleton() {
+  return (
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container flex h-14 items-center">
+        {/* Logo placeholder */}
+        <div className="h-8 w-32 rounded bg-muted animate-pulse" />
+        
+        {/* Nav placeholder */}
+        <div className="flex-1" />
+        
+        {/* Avatar placeholder */}
+        <div className="h-8 w-8 rounded-full bg-muted animate-pulse" />
+      </div>
+    </header>
+  );
+}
+
+function HeroSkeleton() {
+  return (
+    <div className="relative w-full h-48 sm:h-64 lg:h-80 bg-muted animate-pulse rounded-lg overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
+      <div className="absolute bottom-4 left-4 right-4 space-y-2">
+        <div className="h-6 w-3/4 bg-muted-foreground/20 rounded" />
+        <div className="h-4 w-1/2 bg-muted-foreground/20 rounded" />
+      </div>
+    </div>
+  );
+}
+
+function CardSkeleton() {
+  return (
+    <div className="rounded-lg border bg-card p-4 space-y-3">
+      <div className="h-4 w-3/4 bg-muted animate-pulse rounded" />
+      <div className="h-3 w-full bg-muted animate-pulse rounded" />
+      <div className="h-3 w-2/3 bg-muted animate-pulse rounded" />
+    </div>
+  );
+}
+
+function ContentSkeleton() {
+  return (
+    <main className="container mx-auto px-4 py-6 space-y-6">
+      {/* Hero section */}
+      <HeroSkeleton />
+      
+      {/* Cards grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <CardSkeleton />
+        <CardSkeleton />
+        <CardSkeleton />
+      </div>
+      
+      {/* More cards */}
+      <div className="space-y-4">
+        <div className="h-5 w-32 bg-muted animate-pulse rounded" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <CardSkeleton />
+          <CardSkeleton />
+        </div>
+      </div>
+    </main>
+  );
+}
+
+function BottomNavSkeleton() {
+  return (
+    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 md:hidden">
+      <div className="container flex h-16 items-center justify-around">
+        {[1, 2, 3, 4, 5].map((i) => (
+          <div key={i} className="flex flex-col items-center gap-1">
+            <div className="h-6 w-6 rounded bg-muted animate-pulse" />
+            <div className="h-2 w-8 rounded bg-muted animate-pulse" />
+          </div>
+        ))}
+      </div>
+    </nav>
+  );
+}
+
+// ============================================================================
+// FULL PAGE SKELETON
+// ============================================================================
+
+export function AppSkeleton() {
+  return (
+    <div className="min-h-screen bg-background flex flex-col">
+      <HeaderSkeleton />
+      <ContentSkeleton />
+      <BottomNavSkeleton />
+    </div>
+  );
+}
+
+// ============================================================================
+// ERROR BOUNDARY FALLBACK
+// ============================================================================
+
+interface ErrorFallbackProps {
+  error?: Error;
+  resetErrorBoundary?: () => void;
+}
+
+function ErrorFallback({ error, resetErrorBoundary }: ErrorFallbackProps) {
+  return (
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="text-center space-y-4 max-w-md">
+        <div className="text-6xl">😔</div>
+        <h1 className="text-xl font-semibold">Something went wrong</h1>
+        <p className="text-muted-foreground text-sm">
+          {error?.message || 'An unexpected error occurred'}
+        </p>
+        {resetErrorBoundary && (
+          <button
+            onClick={resetErrorBoundary}
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+          >
+            Try again
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// OFFLINE FALLBACK
+// ============================================================================
+
+export function OfflineFallback() {
+  return (
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="text-center space-y-4 max-w-md">
+        <div className="text-6xl">📡</div>
+        <h1 className="text-xl font-semibold">You're offline</h1>
+        <p className="text-muted-foreground text-sm">
+          Check your internet connection and try again.
+        </p>
+        <button
+          onClick={() => window.location.reload()}
+          className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
+        >
+          Retry
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// APP SHELL WRAPPER
+// ============================================================================
+
+interface AppShellProps {
+  children: React.ReactNode;
+  fallback?: React.ReactNode;
+}
+
+export function AppShell({ children, fallback }: AppShellProps) {
+  return (
+    <Suspense fallback={fallback || <AppSkeleton />}>
+      {children}
+    </Suspense>
+  );
+}
+
+// ============================================================================
+// LAZY LOADING HELPERS
+// ============================================================================
+
+/**
+ * Creates a lazy-loaded component with built-in loading state
+ */
+export function lazyWithPreload<T extends ComponentType<any>>(
+  factory: () => Promise<{ default: T }>
+) {
+  const Component = lazy(factory);
+  
+  // Attach preload method for route prefetching
+  (Component as any).preload = factory;
+  
+  return Component;
+}
+
+/**
+ * Preload critical routes on idle
+ */
+export function preloadOnIdle(preloadFn: () => Promise<any>) {
+  if ('requestIdleCallback' in window) {
+    requestIdleCallback(() => preloadFn());
+  } else {
+    setTimeout(preloadFn, 200);
+  }
+}
+
+// ============================================================================
+// USAGE EXAMPLE
+// ============================================================================
+
+/*
+// In your main App.tsx:
+
+import { AppShell, lazyWithPreload, preloadOnIdle } from './components/AppShell';
+
+// Lazy load routes
+const Dashboard = lazyWithPreload(() => import('./pages/Dashboard'));
+const SparkDetail = lazyWithPreload(() => import('./pages/SparkDetail'));
+const Profile = lazyWithPreload(() => import('./pages/Profile'));
+
+// Preload likely next routes
+useEffect(() => {
+  preloadOnIdle(() => Dashboard.preload());
+}, []);
+
+function App() {
+  return (
+    <AppShell>
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/spark/:id" element={<SparkDetail />} />
+        <Route path="/profile" element={<Profile />} />
+      </Routes>
+    </AppShell>
+  );
+}
+*/
+
+export default AppShell;

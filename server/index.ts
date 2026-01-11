@@ -102,6 +102,68 @@ app.use((req, res, next) => {
   next();
 });
 
+// ============================================================================
+// BACKGROUND SERVICES INITIALIZATION
+// ============================================================================
+
+/**
+ * Initialize all background services AFTER the server is ready to accept requests.
+ * This ensures the server responds immediately while heavy tasks run in background.
+ * 
+ * CRITICAL: Uses setImmediate() and delays to ensure initial page requests
+ * get priority over background work.
+ */
+async function initializeBackgroundServices(): Promise<void> {
+  log('Starting background services initialization...', 'background');
+  
+  try {
+    // PHASE 1: Content seeding (runs immediately but doesn't block)
+    // Using Promise.resolve().then() to ensure it runs in next tick
+    autoSeedDominionContent()
+      .then(() => log('Content seeding completed', 'background'))
+      .catch(err => console.error('[Background] Seeding error:', err));
+    
+    // PHASE 2: Delayed scheduler initialization (5 seconds after server start)
+    // This prevents competing with initial page load requests
+    setTimeout(() => {
+      log('Initializing schedulers...', 'background');
+      
+      // Start nightly content sync scheduler
+      startNightlyContentSync();
+      
+      // Start audio pre-generation (only if API key configured)
+      if (process.env.OPENAI_API_KEY) {
+        scheduleAudioPregeneration();
+      }
+      
+      // Start notification scheduler
+      initializeNotificationScheduler();
+      
+      // Register and start background job scheduler
+      jobScheduler.register(
+        'process-scheduled-notifications',
+        CronPatterns.EVERY_5_MINUTES,
+        async () => {
+          const result = await notificationService.processPending();
+          log(`Processed ${result.processed} scheduled notifications`, 'jobs');
+        }
+      );
+      
+      jobScheduler.start();
+      log('All background services initialized', 'background');
+      
+    }, 5000); // 5 second delay to prioritize initial page requests
+    
+  } catch (error) {
+    console.error('[Background] Failed to initialize services:', error);
+    // Don't throw - background service failures shouldn't crash the server
+  }
+}
+
+// ============================================================================
+// SERVER STARTUP
+// ============================================================================
+
 (async () => {
   await registerRoutes(httpServer, app);
 
@@ -113,9 +175,7 @@ app.use((req, res, next) => {
     throw err;
   });
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
+  // Setup static serving / Vite based on environment
   if (process.env.NODE_ENV === "production") {
     serveStatic(app);
   } else {
@@ -123,49 +183,23 @@ app.use((req, res, next) => {
     await setupVite(httpServer, app);
   }
 
-  // ALWAYS serve the app on the port specified in the environment variable PORT
-  // Other ports are firewalled. Default to 5000 if not specified.
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
+  // Start the server
   const port = parseInt(process.env.PORT || "5000", 10);
+  
   httpServer.listen(
     {
       port,
       host: "0.0.0.0",
       reusePort: true,
     },
-    async () => {
-      log(`serving on port ${port}`);
+    () => {
+      log(`Server ready on port ${port}`);
       
-      // Auto-seed DOMINION content in background (non-blocking so server starts immediately)
-      // This allows the site to load for users while content syncs in the background
-      autoSeedDominionContent().catch(err => {
-        console.error('[Auto-Seed] Background sync failed:', err);
+      // CRITICAL: Initialize background services AFTER server is listening
+      // Using setImmediate ensures the listen callback completes first
+      setImmediate(() => {
+        initializeBackgroundServices();
       });
-      
-      // Start nightly content sync scheduler (runs at 23:00 London time daily)
-      startNightlyContentSync();
-      
-      // Start audio pre-generation scheduler (only if OpenAI key is configured)
-      if (process.env.OPENAI_API_KEY) {
-        scheduleAudioPregeneration();
-      }
-      
-      // Start notification scheduler for daily devotionals and event reminders
-      initializeNotificationScheduler();
-      
-      // Register background jobs
-      jobScheduler.register(
-        'process-scheduled-notifications',
-        CronPatterns.EVERY_5_MINUTES,
-        async () => {
-          const result = await notificationService.processPending();
-          log(`Processed ${result.processed} scheduled notifications`);
-        }
-      );
-      
-      jobScheduler.start();
-      log('Background job scheduler started');
     },
   );
 })();

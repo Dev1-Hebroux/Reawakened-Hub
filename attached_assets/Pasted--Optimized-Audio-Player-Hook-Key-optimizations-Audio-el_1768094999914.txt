@@ -1,0 +1,416 @@
+/**
+ * Optimized Audio Player Hook
+ * 
+ * Key optimizations:
+ * - Audio elements created on-demand (not on mount)
+ * - No preloading until user interaction
+ * - Lazy track switching
+ * - Memory cleanup on unmount
+ */
+
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { toast } from 'sonner';
+
+// ============================================================================
+// TYPES
+// ============================================================================
+
+export interface BackgroundTrack {
+  id: string;
+  name: string;
+  url: string;
+}
+
+interface UseAudioPlayerOptions {
+  initialTrack?: BackgroundTrack;
+  backgroundVolume?: number;
+}
+
+interface UseAudioPlayerReturn {
+  audioRef: React.RefObject<HTMLAudioElement | null>;
+  selectedTrack: BackgroundTrack;
+  setSelectedTrack: (track: BackgroundTrack) => void;
+  isBackgroundPlaying: boolean;
+  isInitialized: boolean;
+  toggleBackgroundPlayback: () => Promise<void>;
+  cleanup: () => void;
+}
+
+// ============================================================================
+// CONSTANTS
+// ============================================================================
+
+export const DEFAULT_BACKGROUND_TRACKS: BackgroundTrack[] = [
+  { id: "track1", name: "Peaceful Dawn", url: "/attached_assets/DappyTKeys_-_Background_Music_-_01_Background_Music_-_1_1767469486425.mp3" },
+  { id: "track2", name: "Gentle Waters", url: "/attached_assets/DappyTKeys_-_Background_Music_-_02_Background_Music_-_2_1767469511632.mp3" },
+  { id: "track3", name: "Morning Light", url: "/attached_assets/DappyTKeys_-_Background_Music_-_03_Background_Music_-_3_1767469511633.mp3" },
+  { id: "track4", name: "Still Moments", url: "/attached_assets/DappyTKeys_-_Background_Music_-_04_Background_Music_-_4_1767469511634.mp3" },
+  { id: "track5", name: "Grace Notes", url: "/attached_assets/DappyTKeys_-_Background_Music_-_05_Background_Music_-_5_1767469511635.mp3" },
+];
+
+const DEFAULT_VOLUME = 0.3;
+
+// ============================================================================
+// MAIN HOOK
+// ============================================================================
+
+export function useAudioPlayer(options: UseAudioPlayerOptions = {}): UseAudioPlayerReturn {
+  const { 
+    initialTrack = DEFAULT_BACKGROUND_TRACKS[0],
+    backgroundVolume = DEFAULT_VOLUME,
+  } = options;
+  
+  // State
+  const [selectedTrack, setSelectedTrackState] = useState<BackgroundTrack>(initialTrack);
+  const [isBackgroundPlaying, setIsBackgroundPlaying] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
+  
+  // Refs
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const volumeRef = useRef(backgroundVolume);
+  
+  // Keep volume ref updated
+  useEffect(() => {
+    volumeRef.current = backgroundVolume;
+    if (audioRef.current) {
+      audioRef.current.volume = backgroundVolume;
+    }
+  }, [backgroundVolume]);
+
+  /**
+   * Initialize audio element on demand
+   * This is the key optimization - we don't create an Audio element
+   * until the user actually tries to play something
+   */
+  const initializeAudio = useCallback((): HTMLAudioElement => {
+    if (audioRef.current) {
+      return audioRef.current;
+    }
+    
+    const audio = new Audio();
+    
+    // CRITICAL: Don't preload until we actually need to play
+    audio.preload = 'none';
+    audio.loop = true;
+    audio.volume = volumeRef.current;
+    
+    // Error handling
+    audio.onerror = () => {
+      console.error('[Audio] Failed to load:', audio.src);
+      setIsBackgroundPlaying(false);
+    };
+    
+    audio.onended = () => {
+      // Shouldn't happen with loop=true, but handle it anyway
+      setIsBackgroundPlaying(false);
+    };
+    
+    audioRef.current = audio;
+    setIsInitialized(true);
+    
+    return audio;
+  }, []);
+
+  /**
+   * Safe play with error handling
+   */
+  const safePlay = useCallback(async (audio: HTMLAudioElement): Promise<boolean> => {
+    try {
+      // Set source if needed
+      if (!audio.src || audio.src !== selectedTrack.url) {
+        audio.src = selectedTrack.url;
+      }
+      
+      // Start loading if not loaded
+      if (audio.readyState < HTMLMediaElement.HAVE_ENOUGH_DATA) {
+        audio.load();
+      }
+      
+      audio.volume = volumeRef.current;
+      await audio.play();
+      return true;
+    } catch (err) {
+      const error = err as Error;
+      
+      // AbortError is normal when quickly toggling
+      if (error.name !== 'AbortError') {
+        console.error("[Audio] Play error:", error);
+        toast.error("Could not play audio");
+      }
+      return false;
+    }
+  }, [selectedTrack.url]);
+
+  /**
+   * Toggle playback - initializes audio on first call
+   */
+  const toggleBackgroundPlayback = useCallback(async () => {
+    // Initialize on first interaction
+    const audio = initializeAudio();
+    
+    if (isBackgroundPlaying) {
+      audio.pause();
+      setIsBackgroundPlaying(false);
+    } else {
+      const success = await safePlay(audio);
+      setIsBackgroundPlaying(success);
+    }
+  }, [isBackgroundPlaying, safePlay, initializeAudio]);
+
+  /**
+   * Change track - only loads if currently playing
+   */
+  const setSelectedTrack = useCallback((track: BackgroundTrack) => {
+    setSelectedTrackState(track);
+    
+    // Only update audio element if it exists and is playing
+    if (audioRef.current) {
+      const wasPlaying = isBackgroundPlaying;
+      
+      // Pause current
+      audioRef.current.pause();
+      
+      // Update source (lazy - don't load yet)
+      audioRef.current.src = track.url;
+      
+      // Resume if was playing
+      if (wasPlaying) {
+        audioRef.current.load();
+        safePlay(audioRef.current);
+      }
+    }
+  }, [isBackgroundPlaying, safePlay]);
+
+  /**
+   * Cleanup - release audio resources
+   */
+  const cleanup = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.src = '';
+      audioRef.current = null;
+    }
+    setIsBackgroundPlaying(false);
+    setIsInitialized(false);
+  }, []);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return cleanup;
+  }, [cleanup]);
+
+  return {
+    audioRef,
+    selectedTrack,
+    setSelectedTrack,
+    isBackgroundPlaying,
+    isInitialized,
+    toggleBackgroundPlayback,
+    cleanup,
+  };
+}
+
+// ============================================================================
+// TTS HOOK (Optimized)
+// ============================================================================
+
+interface UseTTSOptions {
+  sparkId: number | null;
+  textContent: string | null | undefined;
+  onPlaybackStart?: () => void;
+  onPlaybackEnd?: () => void;
+  backgroundAudioRef?: React.RefObject<HTMLAudioElement | null>;
+  backgroundVolume?: number;
+}
+
+interface UseTTSReturn {
+  isSpeaking: boolean;
+  isLoadingTTS: boolean;
+  startTextToSpeech: () => Promise<void>;
+  stopTextToSpeech: () => void;
+  cleanup: () => void;
+}
+
+export function useTTS(options: UseTTSOptions): UseTTSReturn {
+  const {
+    sparkId,
+    textContent,
+    onPlaybackStart,
+    onPlaybackEnd,
+    backgroundAudioRef,
+    backgroundVolume = 0.3,
+  } = options;
+
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isLoadingTTS, setIsLoadingTTS] = useState(false);
+  
+  // Refs for cleanup
+  const ttsAudioRef = useRef<HTMLAudioElement | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const currentSparkIdRef = useRef<number | null>(null);
+  const audioUrlRef = useRef<string | null>(null);
+
+  /**
+   * Cleanup TTS resources
+   */
+  const cleanupTTS = useCallback(() => {
+    // Abort any pending fetch
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    
+    // Stop and cleanup audio
+    if (ttsAudioRef.current) {
+      ttsAudioRef.current.pause();
+      ttsAudioRef.current.src = '';
+      ttsAudioRef.current = null;
+    }
+    
+    audioUrlRef.current = null;
+    currentSparkIdRef.current = null;
+    setIsSpeaking(false);
+    setIsLoadingTTS(false);
+  }, []);
+
+  /**
+   * Stop playback without full cleanup
+   */
+  const stopTextToSpeech = useCallback(() => {
+    if (ttsAudioRef.current) {
+      ttsAudioRef.current.pause();
+    }
+    if (backgroundAudioRef?.current) {
+      backgroundAudioRef.current.pause();
+    }
+    setIsSpeaking(false);
+  }, [backgroundAudioRef]);
+
+  /**
+   * Start or resume TTS playback
+   */
+  const startTextToSpeech = useCallback(async () => {
+    if (!textContent || !sparkId) return;
+    if (isLoadingTTS) return;
+    
+    // Toggle off if speaking
+    if (isSpeaking) {
+      stopTextToSpeech();
+      return;
+    }
+    
+    // Different spark - cleanup old audio
+    if (currentSparkIdRef.current !== sparkId) {
+      cleanupTTS();
+      currentSparkIdRef.current = sparkId;
+    }
+    
+    // Resume existing audio if available
+    if (ttsAudioRef.current && audioUrlRef.current) {
+      try {
+        await ttsAudioRef.current.play();
+        setIsSpeaking(true);
+        onPlaybackStart?.();
+        
+        // Resume background music
+        if (backgroundAudioRef?.current) {
+          backgroundAudioRef.current.volume = backgroundVolume;
+          backgroundAudioRef.current.play().catch(() => {});
+        }
+        return;
+      } catch {
+        // Failed to resume, fetch fresh
+      }
+    }
+
+    // Fetch new audio
+    setIsLoadingTTS(true);
+    abortControllerRef.current = new AbortController();
+    
+    try {
+      const response = await fetch(`/api/sparks/${sparkId}/audio`, {
+        signal: abortControllerRef.current.signal,
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to get audio');
+      }
+      
+      const data = await response.json();
+      const audioUrl = data.audioUrl;
+      
+      // Create audio element on demand
+      const audio = new Audio();
+      audio.preload = 'auto'; // Preload since we're about to play
+      audio.src = audioUrl;
+      
+      audio.onended = () => {
+        setIsSpeaking(false);
+        if (backgroundAudioRef?.current) {
+          backgroundAudioRef.current.pause();
+        }
+        onPlaybackEnd?.();
+      };
+      
+      audio.onerror = () => {
+        setIsSpeaking(false);
+        setIsLoadingTTS(false);
+        toast.error("Audio playback failed");
+      };
+      
+      ttsAudioRef.current = audio;
+      audioUrlRef.current = audioUrl;
+      
+      // Play
+      await audio.play();
+      setIsSpeaking(true);
+      onPlaybackStart?.();
+      
+      // Start background music
+      if (backgroundAudioRef?.current) {
+        backgroundAudioRef.current.volume = backgroundVolume;
+        backgroundAudioRef.current.play().catch(() => {});
+      }
+      
+    } catch (error) {
+      const err = error as Error;
+      if (err.name !== 'AbortError') {
+        console.error("TTS error:", error);
+        toast.error("Could not generate audio");
+      }
+    } finally {
+      setIsLoadingTTS(false);
+    }
+  }, [
+    sparkId, 
+    textContent, 
+    isLoadingTTS, 
+    isSpeaking, 
+    stopTextToSpeech, 
+    cleanupTTS,
+    onPlaybackStart,
+    onPlaybackEnd,
+    backgroundAudioRef,
+    backgroundVolume,
+  ]);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return cleanupTTS;
+  }, [cleanupTTS]);
+
+  // Cleanup when spark changes
+  useEffect(() => {
+    if (sparkId !== currentSparkIdRef.current && currentSparkIdRef.current !== null) {
+      cleanupTTS();
+    }
+  }, [sparkId, cleanupTTS]);
+
+  return {
+    isSpeaking,
+    isLoadingTTS,
+    startTextToSpeech,
+    stopTextToSpeech,
+    cleanup: cleanupTTS,
+  };
+}
