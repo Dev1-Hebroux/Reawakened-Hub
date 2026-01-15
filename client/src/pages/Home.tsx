@@ -342,14 +342,14 @@ export default function Home() {
                 </p>
                 <div className="flex flex-wrap gap-4">
                   <Button 
-                    onClick={() => navigate('/mission/onboarding')}
+                    onClick={() => navigate('/outreach')}
                     className="bg-white hover:bg-gray-100 text-[#1a2744] font-bold px-8 py-6 rounded-full shadow-xl"
                     data-testid="button-start-mission"
                   >
                     Start Your Mission
                   </Button>
                   <Button 
-                    onClick={() => navigate('/mission')}
+                    onClick={() => navigate('/outreach')}
                     variant="outline"
                     className="border-2 border-white/30 text-white hover:bg-white/10 font-bold px-8 py-6 rounded-full"
                     data-testid="button-view-projects"

@@ -19,7 +19,7 @@ export function Navbar() {
   const { isAuthenticated } = useAuth();
 
   // Pages with genuinely dark hero backgrounds (navy overlays, dark gradients)
-  const isDarkHeroPage = ["/mission", "/missions", "/pray", "/give", "/movement", "/sparks", "/vision", "/journeys", "/group-labs", "/coaching-labs"].includes(location) || location.startsWith("/projects/");
+  const isDarkHeroPage = ["/outreach", "/mission", "/missions", "/pray", "/give", "/movement", "/sparks", "/vision", "/journeys", "/group-labs", "/coaching-labs"].includes(location) || location.startsWith("/projects/");
   
   // Pages with light hero backgrounds (cream, warm gradients) - use frosted glass
   const isLightHeroPage = ["/", "/about", "/blog", "/community"].includes(location);
@@ -77,7 +77,7 @@ export function Navbar() {
               )}
               <Link href="/sparks"><span className={`${textColor} ${hoverColor} px-3 py-1.5 rounded-full text-sm font-bold transition-all cursor-pointer`} data-testid="nav-sparks">Sparks</span></Link>
               <Link href="/community"><span className={`${textColor} ${hoverColor} px-3 py-1.5 rounded-full text-sm font-bold transition-all cursor-pointer`} data-testid="nav-community">Community Hub</span></Link>
-              <Link href="/mission"><span className={`${textColor} ${hoverColor} px-3 py-1.5 rounded-full text-sm font-bold transition-all cursor-pointer`} data-testid="nav-missions">Missions</span></Link>
+              <Link href="/outreach"><span className={`${textColor} ${hoverColor} px-3 py-1.5 rounded-full text-sm font-bold transition-all cursor-pointer`} data-testid="nav-outreach">Outreach</span></Link>
               <Link href="/blog"><span className={`${textColor} ${hoverColor} px-3 py-1.5 rounded-full text-sm font-bold transition-all cursor-pointer`} data-testid="nav-blog">Blog</span></Link>
               <Link href="/about"><span className={`${textColor} ${hoverColor} px-3 py-1.5 rounded-full text-sm font-bold transition-all cursor-pointer`} data-testid="nav-about">About</span></Link>
             </div>
@@ -106,7 +106,7 @@ export function Navbar() {
               </Button>
             )}
             <Button 
-              onClick={() => navigate(isAuthenticated ? '/missions' : '/mission/onboarding')}
+              onClick={() => navigate(isAuthenticated ? '/missions' : '/outreach')}
               className={`${useDarkTheme ? 'bg-white text-primary hover:bg-gray-100' : 'bg-primary text-white hover:bg-primary/90'} font-bold px-5 py-2 rounded-full shadow-lg transition-all hover:scale-105`}
               data-testid="nav-join"
             >
@@ -145,7 +145,7 @@ export function Navbar() {
               )}
               <Link href="/sparks"><span className="text-gray-800 hover:text-primary hover:bg-gray-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer" data-testid="mobile-nav-sparks">Sparks</span></Link>
               <Link href="/community"><span className="text-gray-800 hover:text-primary hover:bg-gray-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer" data-testid="mobile-nav-community">Community Hub</span></Link>
-              <Link href="/mission"><span className="text-gray-800 hover:text-primary hover:bg-gray-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer" data-testid="mobile-nav-missions">Missions</span></Link>
+              <Link href="/outreach"><span className="text-gray-800 hover:text-primary hover:bg-gray-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer" data-testid="mobile-nav-outreach">Outreach</span></Link>
               <Link href="/blog"><span className="text-gray-800 hover:text-primary hover:bg-gray-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer" data-testid="mobile-nav-blog">Blog</span></Link>
               <Link href="/about"><span className="text-gray-800 hover:text-primary hover:bg-gray-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer" data-testid="mobile-nav-about">About</span></Link>
               <div className="pt-4 space-y-2">
@@ -160,7 +160,7 @@ export function Navbar() {
                   </Button>
                 )}
                 <Button 
-                  onClick={() => { setIsOpen(false); navigate(isAuthenticated ? '/missions' : '/mission/onboarding'); }}
+                  onClick={() => { setIsOpen(false); navigate(isAuthenticated ? '/missions' : '/outreach'); }}
                   className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-6 rounded-xl" 
                   data-testid="mobile-nav-join"
                 >

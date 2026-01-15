@@ -28,6 +28,7 @@ import BlogPostPage from "@/pages/BlogPost";
 import { CommunityHub } from "@/pages/CommunityHub";
 import { SparksPage } from "@/pages/Sparks";
 import { MissionPage } from "@/pages/Mission";
+import { OutreachPage } from "@/pages/Outreach";
 import { PrayHub } from "@/pages/PrayHub";
 import { SchoolsLanding, UniversitiesLanding, EarlyCareerLanding, BuildersLanding, CouplesLanding } from "@/pages/AudienceLanding";
 
@@ -161,7 +162,8 @@ function Router() {
         <Route path="/dominion/9-5-reset" component={EarlyCareerLanding} />
         <Route path="/dominion/builders" component={BuildersLanding} />
         <Route path="/dominion/couples" component={CouplesLanding} />
-        <Route path="/mission" component={MissionPage} />
+        <Route path="/outreach" component={OutreachPage} />
+        {import.meta.env.DEV && <Route path="/mission" component={MissionPage} />}
         <Route path="/journeys" component={JourneyLibrary} />
         <Route path="/journeys/:slug" component={JourneyDetail} />
         <Route path="/journey/:userJourneyId/day/:dayNumber" component={JourneyDayPage} />

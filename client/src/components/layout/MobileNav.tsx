@@ -9,7 +9,7 @@ export function MobileNav() {
     { icon: Home, label: "Home", href: "/" },
     { icon: Flame, label: "Sparks", href: "/sparks" },
     { icon: Users, label: "Hub", href: "/community" },
-    { icon: Globe, label: "Missions", href: "/mission" },
+    { icon: Globe, label: "Outreach", href: "/outreach" },
     { icon: User, label: "Profile", href: "/profile" },
   ];
 

@@ -34,14 +34,14 @@ export function MissionEngine() {
               
               <div className="flex flex-wrap gap-4 pt-4">
                 <button 
-                  onClick={() => navigate("/mission#outpouring")}
+                  onClick={() => navigate("/outreach")}
                   className="bg-white text-primary font-bold px-8 py-4 rounded-full hover:bg-gray-100 transition-colors shadow-lg"
                   data-testid="button-start-mission"
                 >
                   Start Your Mission
                 </button>
                 <button 
-                  onClick={() => navigate("/mission")}
+                  onClick={() => navigate("/outreach")}
                   className="bg-transparent border-2 border-white text-white font-bold px-8 py-4 rounded-full hover:bg-white/10 transition-colors"
                   data-testid="button-view-projects"
                 >

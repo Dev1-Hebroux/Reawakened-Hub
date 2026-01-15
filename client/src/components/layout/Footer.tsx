@@ -86,16 +86,16 @@ export function Footer() {
               <li><a href="/vision" className="hover:text-primary transition-colors" data-testid="link-footer-vision">Vision & Goals</a></li>
               <li><a href="/journeys" className="hover:text-primary transition-colors" data-testid="link-footer-journeys">Spiritual Journeys</a></li>
               <li><a href="/blog" className="hover:text-primary transition-colors" data-testid="link-footer-blog">Blog</a></li>
-              <li><a href="/mission" className="hover:text-primary transition-colors" data-testid="link-footer-mission">Mission</a></li>
+              <li><a href="/outreach" className="hover:text-primary transition-colors" data-testid="link-footer-outreach">Outreach</a></li>
             </ul>
           </div>
 
           <div>
             <h4 className="font-bold text-gray-900 mb-6">Get Involved</h4>
             <ul className="space-y-4 text-sm text-gray-500 font-medium">
-              <li><a href="/mission#events" className="hover:text-primary transition-colors" data-testid="link-footer-events">Events</a></li>
-              <li><a href="/mission" className="hover:text-primary transition-colors" data-testid="link-footer-volunteer">Volunteer</a></li>
-              <li><a href="/mission" className="hover:text-primary transition-colors" data-testid="link-footer-missions">Join a Mission Trip</a></li>
+              <li><a href="/#events" className="hover:text-primary transition-colors" data-testid="link-footer-events">Events</a></li>
+              <li><a href="/outreach" className="hover:text-primary transition-colors" data-testid="link-footer-volunteer">Volunteer</a></li>
+              <li><a href="/outreach" className="hover:text-primary transition-colors" data-testid="link-footer-missions">Join a Mission Trip</a></li>
               <li>
                 <a 
                   href={COMMUNITY_LINKS.whatsapp}

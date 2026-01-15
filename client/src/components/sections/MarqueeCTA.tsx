@@ -49,10 +49,10 @@ export function MarqueeCTA() {
       setIsSuccess(true);
       toast.success("You're now following our journey!");
       
-      // Redirect to missions page after 2 seconds only on success
+      // Redirect to outreach page after 2 seconds only on success
       setTimeout(() => {
         setShowModal(false);
-        navigate("/mission");
+        navigate("/outreach");
       }, 2000);
     } catch (error) {
       setIsSubmitting(false);
