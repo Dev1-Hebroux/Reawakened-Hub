@@ -55,14 +55,28 @@ router.get('/sparks/:id/audio', async (req, res) => {
     
     const audioUrl = await sparkAudioService.getAudioUrl(sparkId);
     
-    if (!audioUrl) {
-      return res.status(404).json({ 
-        error: 'Audio not available',
-        message: 'Audio for this spark has not been generated yet.',
-      });
+    if (audioUrl) {
+      return res.json({ audioUrl, sparkId, cached: true });
     }
     
-    res.json({ audioUrl, sparkId });
+    // Fallback: check for legacy non-hashed audio file
+    const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
+    if (bucketId) {
+      const legacyFilename = `spark-${sparkId}.mp3`;
+      const bucket = objectStorageClient.bucket(bucketId);
+      const file = bucket.file(`public/audio/${legacyFilename}`);
+      const [exists] = await file.exists();
+      
+      if (exists) {
+        return res.json({ audioUrl: `/api/audio/${legacyFilename}`, sparkId, cached: true });
+      }
+    }
+    
+    // No audio available
+    return res.status(404).json({ 
+      error: 'Audio not available',
+      message: 'Audio for this spark has not been generated yet.',
+    });
   } catch (error) {
     logger.error({ error }, 'Error getting spark audio');
     res.status(500).json({ error: 'Failed to get audio' });

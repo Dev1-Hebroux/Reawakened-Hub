@@ -435,7 +435,7 @@ export default function Home() {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                onClick={() => navigate("/mission#events")}
+                onClick={() => navigate("/outreach#events")}
                 className="bg-white rounded-2xl p-5 shadow-lg border border-gray-100 cursor-pointer hover:shadow-xl transition-all group"
                 data-testid="event-highlight-1"
               >
@@ -463,7 +463,7 @@ export default function Home() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.1 }}
-                onClick={() => navigate("/mission#events")}
+                onClick={() => navigate("/outreach#events")}
                 className="bg-white rounded-2xl p-5 shadow-lg border border-gray-100 cursor-pointer hover:shadow-xl transition-all group"
                 data-testid="event-highlight-2"
               >
@@ -489,7 +489,7 @@ export default function Home() {
 
             <div className="text-center">
               <Button
-                onClick={() => navigate("/mission#events")}
+                onClick={() => navigate("/outreach#events")}
                 variant="outline"
                 className="border-[#4A7C7C] text-[#4A7C7C] hover:bg-[#4A7C7C] hover:text-white rounded-full px-6"
                 data-testid="button-view-all-events"
