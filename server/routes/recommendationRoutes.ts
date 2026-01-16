@@ -72,7 +72,7 @@ router.get('/user/streak', isAuthenticated, async (req: any, res) => {
     const userId = req.user.claims.sub;
     
     // Get streak data through storage
-    const streakData = await storage.getUserStreakData(userId);
+    const streakData = await storage.getReadingPlanStreakData(userId);
     res.json(streakData);
   } catch (error) {
     console.error('Error fetching streak data:', error);

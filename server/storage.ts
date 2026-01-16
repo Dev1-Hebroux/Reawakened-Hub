@@ -920,7 +920,7 @@ export interface IStorage {
   getUserCompletedPlanIds(userId: string): Promise<number[]>;
   getPublishedReadingPlans(limit: number): Promise<ReadingPlan[]>;
   getActiveEnrollmentWithPlan(userId: string): Promise<{ planId: number | null; currentDay: number; title: string; lastReadAt: Date | null } | null>;
-  getUserStreakData(userId: string): Promise<{ currentStreak: number; longestStreak: number; lastReadAt: Date | null }>;
+  getReadingPlanStreakData(userId: string): Promise<{ currentStreak: number; longestStreak: number; lastReadAt: Date | null }>;
 
   // ===== USER SETTINGS =====
   getUserSettings(userId: string): Promise<UserSettings | null>;
@@ -3860,7 +3860,7 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
-  async getUserStreakData(userId: string): Promise<{ currentStreak: number; longestStreak: number; lastReadAt: Date | null }> {
+  async getReadingPlanStreakData(userId: string): Promise<{ currentStreak: number; longestStreak: number; lastReadAt: Date | null }> {
     const [profile] = await db
       .select({ longestStreak: userSpiritualProfiles.longestStreak })
       .from(userSpiritualProfiles)
@@ -4274,7 +4274,7 @@ export class DatabaseStorage implements IStorage {
     const [result] = await db
       .select({ count: count() })
       .from(users)
-      .where(gte(users.lastActiveAt, cutoffDate));
+      .where(gte(users.updatedAt, cutoffDate));
     return Number(result?.count || 0);
   }
 
@@ -4289,10 +4289,6 @@ export class DatabaseStorage implements IStorage {
       .from(challengeParticipants)
       .where(eq(challengeParticipants.status, 'completed'));
     return Number(result?.count || 0);
-  }
-
-  async getAllUsers(): Promise<User[]> {
-    return db.select().from(users).orderBy(users.firstName);
   }
 
   // ===== ADMIN GOAL TEMPLATES =====
@@ -4340,7 +4336,8 @@ export class DatabaseStorage implements IStorage {
     const [usersWithGoalsResult] = await db
       .select({ count: count() })
       .from(visionGoals)
-      .innerJoin(users, eq(visionGoals.userId, users.id));
+      .innerJoin(pathwaySessions, eq(visionGoals.sessionId, pathwaySessions.id))
+      .innerJoin(users, eq(pathwaySessions.userId, users.id));
     const totalUsersWithGoals = Number(usersWithGoalsResult?.count || 0);
 
     const [activeJourneysResult] = await db
@@ -4367,15 +4364,16 @@ export class DatabaseStorage implements IStorage {
         profileImageUrl: users.profileImageUrl,
         goalsCount: sql<number>`count(distinct ${visionGoals.id})`,
         habitsTracked: sql<number>`count(distinct ${visionHabits.id})`,
-        lastActivity: sql<Date>`max(${habitLogs.loggedAt})`,
+        lastActivity: sql<Date>`max(${habitLogs.date}::timestamp)`,
       })
       .from(users)
-      .leftJoin(visionGoals, eq(users.id, visionGoals.userId))
-      .leftJoin(visionHabits, eq(users.id, visionHabits.userId))
+      .leftJoin(pathwaySessions, eq(users.id, pathwaySessions.userId))
+      .leftJoin(visionGoals, eq(pathwaySessions.id, visionGoals.sessionId))
+      .leftJoin(visionHabits, eq(pathwaySessions.id, visionHabits.sessionId))
       .leftJoin(habitLogs, eq(visionHabits.id, habitLogs.habitId))
       .groupBy(users.id, users.firstName, users.lastName, users.profileImageUrl)
       .having(sql`count(distinct ${visionGoals.id}) > 0 OR count(distinct ${visionHabits.id}) > 0`)
-      .orderBy(desc(sql`max(${habitLogs.loggedAt})`))
+      .orderBy(desc(sql`max(${habitLogs.date})`))
       .limit(50);
 
     return {
