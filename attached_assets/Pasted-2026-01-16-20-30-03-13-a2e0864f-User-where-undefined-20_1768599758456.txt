@@ -1,0 +1,124 @@
+2026-01-16 20:30:03.13
+a2e0864f
+User
+where: undefined,
+2026-01-16 20:30:03.13
+a2e0864f
+User
+database: 'neondb',
+2026-01-16 20:30:03.13
+a2e0864f
+User
+internalQuery: undefined,
+2026-01-16 20:30:03.13
+a2e0864f
+User
+binary: false,
+2026-01-16 20:30:03.13
+a2e0864f
+User
+node:events:502
+2026-01-16 20:30:03.13
+a2e0864f
+User
+position: undefined,
+2026-01-16 20:30:03.13
+a2e0864f
+User
+connect_timeout: 0
+2026-01-16 20:30:03.13
+a2e0864f
+User
+at Eg._handleErrorMessage (file:///home/runner/workspace/dist/index.mjs:98:8688)
+2026-01-16 20:30:03.13
+a2e0864f
+User
+authenticationSASL: [Function: bound _handleAuthSASL],
+2026-01-16 20:30:03.13
+a2e0864f
+User
+at addChunk (node:internal/streams/readable:561:12)
+2026-01-16 20:30:03.13
+a2e0864f
+User
+client: Eg {
+2026-01-16 20:30:03.13
+a2e0864f
+User
+client_encoding: '',
+2026-01-16 20:30:03.13
+a2e0864f
+User
+at MP.parse (file:///home/runner/workspace/dist/index.mjs:97:164476)
+2026-01-16 20:30:03.13
+a2e0864f
+User
+detail: undefined,
+2026-01-16 20:30:03.13
+a2e0864f
+User
+line: '3289',
+2026-01-16 20:30:03.13
+a2e0864f
+User
+^
+2026-01-16 20:30:03.13
+a2e0864f
+User
+error: terminating connection due to administrator command
+2026-01-16 20:30:03.13
+a2e0864f
+User
+authenticationSASLContinue: [Function: bound _handleAuthSASLContinue] AsyncFunction,
+2026-01-16 20:30:03.13
+a2e0864f
+User
+at TLSSocket. (file:///home/runner/workspace/dist/index.mjs:97:169865)
+2026-01-16 20:30:03.13
+a2e0864f
+User
+hint: undefined,
+2026-01-16 20:30:03.13
+a2e0864f
+User
+at TLSWrap.onStreamRead (node:internal/stream_base_commons:191:23)
+2026-01-16 20:30:03.13
+a2e0864f
+User
+Emitted 'error' event on instance at:
+2026-01-16 20:30:03.13
+a2e0864f
+User
+at file:///home/runner/workspace/dist/index.mjs:97:172482
+2026-01-16 20:30:03.13
+a2e0864f
+User
+at UP.emit (node:events:524:28)
+2026-01-16 20:30:03.13
+a2e0864f
+User
+at Readable.push (node:internal/streams/readable:392:5)
+2026-01-16 20:30:03.13
+a2e0864f
+User
+column: undefined,
+2026-01-16 20:30:06.63
+a2e0864f
+System
+command finished with error [npm run start]: exit status 1
+2026-01-16 20:30:35.13
+a2e0864f
+User
+> rest-express@1.0.0 start
+2026-01-16 20:30:35.13
+a2e0864f
+User
+> NODE_ENV=production node dist/index.mjs
+2026-01-16 20:33:01.43
+a2e0864f
+User
+8:32:56 PM [express] Server ready on port 5000
+2026-01-16 20:33:01.53
+a2e0864f
+User
+8:33:01 PM [background]
