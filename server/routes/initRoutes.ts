@@ -13,6 +13,7 @@ import { Router, Request, Response } from 'express';
 import { storage } from '../storage';
 import { db } from '../db';
 import { sql } from 'drizzle-orm';
+import { validateSession } from '../services/authService';
 
 const router = Router();
 
@@ -32,7 +33,17 @@ router.get('/init', async (req: Request, res: Response) => {
   
   try {
     const csrfToken = (res.locals.csrfToken as string) || req.cookies?.csrf_token || null;
-    const user = (req as any).user;
+    
+    // Check Replit auth first, then email auth session
+    let user = (req as any).user;
+    
+    // If no Replit user, check for email auth session
+    if (!user) {
+      const sessionToken = req.cookies?.auth_session;
+      if (sessionToken) {
+        user = await validateSession(sessionToken);
+      }
+    }
     
     if (!user) {
       const response: InitResponse = {

@@ -65,11 +65,13 @@ function getClientInfo(req: any) {
   return { ip, userAgent };
 }
 
+const isProduction = process.env.NODE_ENV === 'production';
+
 function setSessionCookie(res: any, token: string) {
   res.cookie('auth_session', token, {
     httpOnly: true,
-    secure: true,
-    sameSite: 'strict',
+    secure: isProduction,
+    sameSite: isProduction ? 'strict' : 'lax',
     maxAge: 7 * 24 * 60 * 60 * 1000,
     path: '/',
   });
@@ -78,8 +80,8 @@ function setSessionCookie(res: any, token: string) {
 function clearSessionCookie(res: any) {
   res.clearCookie('auth_session', {
     httpOnly: true,
-    secure: true,
-    sameSite: 'strict',
+    secure: isProduction,
+    sameSite: isProduction ? 'strict' : 'lax',
     path: '/',
   });
 }
