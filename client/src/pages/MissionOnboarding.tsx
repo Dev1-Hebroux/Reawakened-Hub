@@ -134,8 +134,7 @@ export function MissionOnboarding() {
 
   const createProfileMutation = useMutation({
     mutationFn: async (data: any) => {
-      const res = await apiRequest("POST", "/api/mission/profile", data);
-      return res.json();
+      return await apiRequest<any>("POST", "/api/mission/profile", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/mission/profile"] });
@@ -144,8 +143,7 @@ export function MissionOnboarding() {
 
   const createAdoptionMutation = useMutation({
     mutationFn: async (data: any) => {
-      const res = await apiRequest("POST", "/api/mission/adoptions", data);
-      return res.json();
+      return await apiRequest<any>("POST", "/api/mission/adoptions", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/mission/adoptions"] });
@@ -154,8 +152,7 @@ export function MissionOnboarding() {
 
   const createPlanMutation = useMutation({
     mutationFn: async (data: any) => {
-      const res = await apiRequest("POST", "/api/mission/plan", data);
-      return res.json();
+      return await apiRequest<any>("POST", "/api/mission/plan", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/mission/plan"] });
@@ -164,8 +161,7 @@ export function MissionOnboarding() {
 
   const sendWelcomeEmailMutation = useMutation({
     mutationFn: async (data: any) => {
-      const res = await apiRequest("POST", "/api/send-welcome-email", data);
-      return res.json();
+      return await apiRequest<any>("POST", "/api/send-welcome-email", data);
     },
   });
 

@@ -51,12 +51,11 @@ export function AdminEvents() {
 
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
-      const res = await apiRequest("POST", "/api/admin/events", {
+      return await apiRequest<any>("POST", "/api/admin/events", {
         ...data,
         startDate: new Date(data.startDate).toISOString(),
         endDate: data.endDate ? new Date(data.endDate).toISOString() : null,
       });
-      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/events"] });
@@ -69,12 +68,11 @@ export function AdminEvents() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: typeof formData }) => {
-      const res = await apiRequest("PUT", `/api/admin/events/${id}`, {
+      return await apiRequest<any>("PUT", `/api/admin/events/${id}`, {
         ...data,
         startDate: new Date(data.startDate).toISOString(),
         endDate: data.endDate ? new Date(data.endDate).toISOString() : null,
       });
-      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/events"] });

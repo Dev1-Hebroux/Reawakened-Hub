@@ -73,8 +73,7 @@ export function MissionTripsPublic() {
 
   const applyMutation = useMutation({
     mutationFn: async ({ tripId, whyApply }: { tripId: number; whyApply: string }) => {
-      const res = await apiRequest("POST", `/api/mission-trips/${tripId}/apply`, { whyApply });
-      return res.json();
+      return await apiRequest<any>("POST", `/api/mission-trips/${tripId}/apply`, { whyApply });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/mission-trips/public"] });

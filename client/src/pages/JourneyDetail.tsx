@@ -56,8 +56,7 @@ export function JourneyDetail() {
 
   const startMutation = useMutation({
     mutationFn: async (journeyId: number) => {
-      const res = await apiRequest("POST", `/api/journeys/${journeyId}/start`);
-      return res.json();
+      return await apiRequest<UserJourney>("POST", `/api/journeys/${journeyId}/start`);
     },
     onSuccess: (data: UserJourney) => {
       queryClient.invalidateQueries({ queryKey: ["/api/me/journeys"] });

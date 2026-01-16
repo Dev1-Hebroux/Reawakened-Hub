@@ -105,8 +105,7 @@ export function AdminSparks() {
 
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
-      const res = await apiRequest("POST", "/api/admin/sparks", prepareFormData(data));
-      return res.json();
+      return await apiRequest<any>("POST", "/api/admin/sparks", prepareFormData(data));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/sparks"] });
@@ -121,8 +120,7 @@ export function AdminSparks() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: typeof formData }) => {
-      const res = await apiRequest("PUT", `/api/admin/sparks/${id}`, prepareFormData(data));
-      return res.json();
+      return await apiRequest<any>("PUT", `/api/admin/sparks/${id}`, prepareFormData(data));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/sparks"] });

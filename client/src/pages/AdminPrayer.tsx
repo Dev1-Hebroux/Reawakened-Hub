@@ -86,8 +86,7 @@ export function AdminPrayer() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, status, prayerNote }: { id: number; status?: string; prayerNote?: string }) => {
-      const res = await apiRequest("PATCH", `/api/admin/prayer-requests/${id}`, { status, prayerNote });
-      return res.json();
+      return await apiRequest<any>("PATCH", `/api/admin/prayer-requests/${id}`, { status, prayerNote });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/prayer-requests"] });

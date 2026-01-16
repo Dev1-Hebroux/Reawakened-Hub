@@ -126,8 +126,7 @@ export function OutreachPage() {
 
   const registerMutation = useMutation({
     mutationFn: async (eventId: number) => {
-      const res = await apiRequest("POST", "/api/event-registrations", { eventId });
-      return res.json();
+      return await apiRequest<any>("POST", "/api/event-registrations", { eventId });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/my-registrations"] });

@@ -11,12 +11,11 @@ export function Footer() {
 
   const subscribeMutation = useMutation({
     mutationFn: async (email: string) => {
-      const res = await apiRequest("POST", "/api/subscribe", {
+      return await apiRequest<any>("POST", "/api/subscribe", {
         email,
         categories: ["devotional", "events"],
         whatsappOptIn: false,
       });
-      return res.json();
     },
     onSuccess: () => {
       setIsSuccess(true);

@@ -83,8 +83,7 @@ export function ChallengesPage() {
 
   const joinMutation = useMutation({
     mutationFn: async (challengeId: number) => {
-      const res = await apiRequest("POST", `/api/challenges/${challengeId}/join`);
-      return res.json();
+      return await apiRequest<any>("POST", `/api/challenges/${challengeId}/join`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/challenges/public"] });

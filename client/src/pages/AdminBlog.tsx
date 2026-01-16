@@ -35,8 +35,7 @@ export function AdminBlog() {
 
   const createMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
-      const res = await apiRequest("POST", "/api/admin/blog", data);
-      return res.json();
+      return await apiRequest<any>("POST", "/api/admin/blog", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/blog"] });
@@ -49,8 +48,7 @@ export function AdminBlog() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: typeof formData }) => {
-      const res = await apiRequest("PUT", `/api/admin/blog/${id}`, data);
-      return res.json();
+      return await apiRequest<any>("PUT", `/api/admin/blog/${id}`, data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/blog"] });

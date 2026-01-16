@@ -170,12 +170,11 @@ export function CampusPrayer() {
 
   const createAltarMutation = useMutation({
     mutationFn: async (data: { campusId: number; name: string; description?: string }) => {
-      const res = await apiRequest("POST", "/api/prayer/altars", {
+      return await apiRequest<any>("POST", "/api/prayer/altars", {
         ...data,
         prayerPoints: DEFAULT_PRAYER_POINTS,
         scriptures: DEFAULT_SCRIPTURES,
       });
-      return res.json();
     },
     onSuccess: (newAltar) => {
       queryClient.invalidateQueries({ queryKey: ["/api/prayer/altars"] });
@@ -190,12 +189,11 @@ export function CampusPrayer() {
 
   const joinAltarMutation = useMutation({
     mutationFn: async (data: { altarId: number }) => {
-      const res = await apiRequest("POST", `/api/prayer/altars/${data.altarId}/join`, {
+      return await apiRequest<any>("POST", `/api/prayer/altars/${data.altarId}/join`, {
         affiliation: selectedAffiliation,
         receiveReminders,
         reminderFrequency,
       });
-      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/prayer/altars"] });
@@ -209,8 +207,7 @@ export function CampusPrayer() {
 
   const submitPrayerMutation = useMutation({
     mutationFn: async (data: { altarId: number; type: string; content: string }) => {
-      const res = await apiRequest("POST", "/api/prayer/wall", data);
-      return res.json();
+      return await apiRequest<any>("POST", "/api/prayer/wall", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/prayer/wall"] });
@@ -225,8 +222,7 @@ export function CampusPrayer() {
 
   const prayForMutation = useMutation({
     mutationFn: async (entryId: number) => {
-      const res = await apiRequest("POST", `/api/prayer/wall/${entryId}/pray`, {});
-      return res.json();
+      return await apiRequest<any>("POST", `/api/prayer/wall/${entryId}/pray`, {});
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/prayer/wall"] });

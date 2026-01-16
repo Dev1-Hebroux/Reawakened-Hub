@@ -68,8 +68,7 @@ export function AiCoachDrawer({ entryPoint = "general" }: AiCoachDrawerProps) {
 
   const createSessionMutation = useMutation({
     mutationFn: async () => {
-      const res = await apiRequest("POST", "/api/ai-coach/sessions", { entryPoint });
-      return res.json();
+      return await apiRequest<Session>("POST", "/api/ai-coach/sessions", { entryPoint });
     },
     onSuccess: (session: Session) => {
       setActiveSessionId(session.id);
@@ -79,8 +78,7 @@ export function AiCoachDrawer({ entryPoint = "general" }: AiCoachDrawerProps) {
 
   const sendMessageMutation = useMutation({
     mutationFn: async (content: string) => {
-      const res = await apiRequest("POST", `/api/ai-coach/sessions/${activeSessionId}/messages`, { content });
-      return res.json();
+      return await apiRequest<Message>("POST", `/api/ai-coach/sessions/${activeSessionId}/messages`, { content });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/ai-coach/sessions/${activeSessionId}/messages`] });

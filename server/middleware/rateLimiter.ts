@@ -25,7 +25,8 @@ export function createRateLimiter(options: Partial<RateLimitOptions> = {}): Requ
   
   setInterval(() => {
     const now = Date.now();
-    for (const [key, entry] of store.entries()) {
+    const entries = Array.from(store.entries());
+    for (const [key, entry] of entries) {
       if (entry.resetTime <= now) {
         store.delete(key);
       }

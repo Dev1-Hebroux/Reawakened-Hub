@@ -97,12 +97,11 @@ export function JourneySession() {
   const createCommitment = useMutation({
     mutationFn: async () => {
       if (!currentUserJourney) throw new Error("Not enrolled in this journey");
-      const res = await apiRequest("POST", `/api/user-journeys/${currentUserJourney.id}/commitments`, {
+      return await apiRequest<any>("POST", `/api/user-journeys/${currentUserJourney.id}/commitments`, {
         weekNumber: weekNum,
         commitment: iWillCommitment,
         whoToEncourage: whoToEncourage || null,
       });
-      return res.json();
     },
     onSuccess: () => {
       toast({ title: "Commitment saved!" });

@@ -58,10 +58,9 @@ export function JourneyDayPage() {
 
   const completeMutation = useMutation({
     mutationFn: async () => {
-      const res = await apiRequest("POST", `/api/user-journeys/${userJourneyId}/day/${dayNumber}/complete`, {
+      return await apiRequest<any>("POST", `/api/user-journeys/${userJourneyId}/day/${dayNumber}/complete`, {
         reflectionResponse: reflectionText || undefined,
       });
-      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/me/journeys"] });

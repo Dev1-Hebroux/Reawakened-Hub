@@ -95,7 +95,7 @@ function calculatePercentile(arr: number[], p: number): number {
 export const metricsEndpoint: RequestHandler = (req, res) => {
   const pathMetrics: Record<string, any> = {};
   
-  for (const [path, count] of metrics.requestsByPath) {
+  for (const [path, count] of Array.from(metrics.requestsByPath)) {
     const latencies = metrics.latencyByPath.get(path) || [];
     pathMetrics[path] = {
       requests: count,

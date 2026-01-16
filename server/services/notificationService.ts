@@ -152,15 +152,12 @@ export async function savePushSubscription(
       .values({
         userId,
         endpoint: subscription.endpoint,
-        p256dh: subscription.keys.p256dh,
-        auth: subscription.keys.auth,
+        keys: subscription.keys,
       })
       .onConflictDoUpdate({
-        target: [pushSubscriptions.userId, pushSubscriptions.endpoint],
+        target: pushSubscriptions.endpoint,
         set: {
-          p256dh: subscription.keys.p256dh,
-          auth: subscription.keys.auth,
-          updatedAt: new Date(),
+          keys: subscription.keys,
         },
       });
 

@@ -545,6 +545,7 @@ export interface IStorage {
 
   // Spark Subscriptions
   getSubscriptions(userId: string): Promise<SparkSubscription[]>;
+  getAllSubscriptions(): Promise<SparkSubscription[]>;
   createSubscription(subscription: InsertSparkSubscription): Promise<SparkSubscription>;
   deleteSubscription(userId: string, category: string): Promise<void>;
 
@@ -1622,6 +1623,10 @@ export class DatabaseStorage implements IStorage {
   // Spark Subscriptions
   async getSubscriptions(userId: string): Promise<SparkSubscription[]> {
     return db.select().from(sparkSubscriptions).where(eq(sparkSubscriptions.userId, userId));
+  }
+
+  async getAllSubscriptions(): Promise<SparkSubscription[]> {
+    return db.select().from(sparkSubscriptions);
   }
 
   async createSubscription(subscriptionData: InsertSparkSubscription): Promise<SparkSubscription> {

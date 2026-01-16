@@ -102,8 +102,7 @@ export function CoachingPublic() {
 
   const bookSessionMutation = useMutation({
     mutationFn: async ({ coachId, topic, notes }: { coachId: number; topic: string; notes: string }) => {
-      const res = await apiRequest("POST", "/api/coaching-sessions/book", { coachId, topic, notes });
-      return res.json();
+      return await apiRequest<any>("POST", "/api/coaching-sessions/book", { coachId, topic, notes });
     },
     onSuccess: () => {
       toast.success("Session request submitted! The coach will confirm soon.");
@@ -119,8 +118,7 @@ export function CoachingPublic() {
 
   const joinCohortMutation = useMutation({
     mutationFn: async (cohortId: number) => {
-      const res = await apiRequest("POST", `/api/cohorts/${cohortId}/join`);
-      return res.json();
+      return await apiRequest<any>("POST", `/api/cohorts/${cohortId}/join`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/cohorts/public"] });

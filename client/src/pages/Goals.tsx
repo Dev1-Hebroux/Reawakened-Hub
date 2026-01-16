@@ -100,8 +100,7 @@ export function Goals() {
 
   const createGoalMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
-      const res = await apiRequest("POST", "/api/goals", data);
-      return res.json();
+      return await apiRequest<any>("POST", "/api/goals", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/goals"] });
@@ -116,11 +115,10 @@ export function Goals() {
 
   const toggleHabitMutation = useMutation({
     mutationFn: async ({ habitId, completed }: { habitId: number; completed: boolean }) => {
-      const res = await apiRequest("POST", `/api/habits/${habitId}/toggle`, { 
+      return await apiRequest<any>("POST", `/api/habits/${habitId}/toggle`, { 
         completed, 
         date: new Date().toISOString().split("T")[0] 
       });
-      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/goals"] });

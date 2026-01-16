@@ -40,8 +40,7 @@ export function SubscriptionCapture({
 
   const subscribeMutation = useMutation({
     mutationFn: async (data: { email: string; categories: string[]; whatsappOptIn: boolean }) => {
-      const res = await apiRequest("POST", "/api/subscribe", data);
-      return res.json();
+      return await apiRequest<any>("POST", "/api/subscribe", data);
     },
     onSuccess: () => {
       setIsSuccess(true);

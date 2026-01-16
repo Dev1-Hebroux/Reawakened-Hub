@@ -83,11 +83,7 @@ export function DigitalActions() {
 
   const logActionMutation = useMutation({
     mutationFn: async (data: { actionType: string; targetPlatform?: string; metadata?: any }) => {
-      const res = await apiRequest("POST", "/api/mission/digital-actions", data);
-      if (!res.ok) {
-        throw new Error("Failed to log action");
-      }
-      return res.json();
+      return await apiRequest<any>("POST", "/api/mission/digital-actions", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/mission/digital-actions"] });

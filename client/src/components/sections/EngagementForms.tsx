@@ -42,8 +42,7 @@ export function PrayerRequestModal({ open, onOpenChange }: FormModalProps) {
 
   const mutation = useMutation({
     mutationFn: async (data: { name: string; email: string; request: string; isPrivate: boolean; urgencyLevel: string; category: string; campusOrCity?: string }) => {
-      const res = await apiRequest("POST", "/api/prayer-requests", data);
-      return res.json();
+      return await apiRequest<any>("POST", "/api/prayer-requests", data);
     },
     onSuccess: () => {
       setIsSuccess(true);
@@ -224,8 +223,7 @@ export function TestimonyModal({ open, onOpenChange }: FormModalProps) {
 
   const mutation = useMutation({
     mutationFn: async (data: { name: string; email?: string; title: string; story: string; category: string; sharingPermission: string; displayNamePreference: string }) => {
-      const res = await apiRequest("POST", "/api/testimonies", data);
-      return res.json();
+      return await apiRequest<any>("POST", "/api/testimonies", data);
     },
     onSuccess: () => {
       setIsSuccess(true);
@@ -415,8 +413,7 @@ export function VolunteerModal({ open, onOpenChange }: FormModalProps) {
 
   const mutation = useMutation({
     mutationFn: async (data: { name: string; email: string; phone?: string; segment?: string; areas: string[] }) => {
-      const res = await apiRequest("POST", "/api/volunteer", data);
-      return res.json();
+      return await apiRequest<any>("POST", "/api/volunteer", data);
     },
     onSuccess: () => {
       setIsSuccess(true);
@@ -562,8 +559,7 @@ export function MissionTripModal({ open, onOpenChange }: FormModalProps) {
 
   const mutation = useMutation({
     mutationFn: async (data: { name: string; email: string; phone?: string; tripInterest: string; experience?: string }) => {
-      const res = await apiRequest("POST", "/api/mission-registration", data);
-      return res.json();
+      return await apiRequest<any>("POST", "/api/mission-registration", data);
     },
     onSuccess: () => {
       setIsSuccess(true);

@@ -162,8 +162,7 @@ export function PrayHub() {
   // Submit prayer request mutation
   const submitPrayerRequestMutation = useMutation({
     mutationFn: async (data: { name: string; request: string; isPrivate: string }) => {
-      const res = await apiRequest("POST", "/api/prayer-requests", data);
-      return res.json();
+      return await apiRequest<any>("POST", "/api/prayer-requests", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/prayer-requests"] });
@@ -193,12 +192,11 @@ export function PrayHub() {
   // Subscribe to a focus group / adopt a nation
   const adoptMutation = useMutation({
     mutationFn: async (data: { focusGroupId?: number; altarId?: number; type: "nation" | "campus" }) => {
-      const res = await apiRequest("POST", "/api/prayer/subscriptions", {
+      return await apiRequest<any>("POST", "/api/prayer/subscriptions", {
         ...data,
         receiveReminders: true,
         reminderFrequency: "daily",
       });
-      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/prayer/subscriptions"] });
@@ -225,8 +223,7 @@ export function PrayHub() {
   // Log prayer session
   const logPrayerMutation = useMutation({
     mutationFn: async (data: { focusGroupId?: number; durationMinutes: number }) => {
-      const res = await apiRequest("POST", "/api/prayer/logs", data);
-      return res.json();
+      return await apiRequest<any>("POST", "/api/prayer/logs", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/prayer/stats"] });

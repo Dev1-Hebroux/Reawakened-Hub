@@ -47,8 +47,8 @@ async function sendDailyDevotionalNotifications(): Promise<void> {
       return;
     }
     
-    const subscriptions = await storage.getSubscriptions();
-    const userIds: string[] = [...new Set(subscriptions.map((s: any) => s.userId).filter(Boolean))];
+    const subscriptions = await storage.getAllSubscriptions();
+    const userIds: string[] = Array.from(new Set(subscriptions.map((s: any) => s.userId).filter(Boolean)));
     
     let sent = 0;
     let skipped = 0;

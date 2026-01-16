@@ -68,11 +68,10 @@ export function LiveIntercession({ sparkId }: LiveIntercessionProps) {
       if (!selectedSession?.id) {
         throw new Error("Please join a prayer session first");
       }
-      const res = await apiRequest("POST", "/api/prayer-messages", {
+      return await apiRequest<any>("POST", "/api/prayer-messages", {
         sessionId: selectedSession.id,
         message,
       });
-      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/prayer-messages", selectedSession?.id] });
@@ -90,8 +89,7 @@ export function LiveIntercession({ sparkId }: LiveIntercessionProps) {
 
   const createSessionMutation = useMutation({
     mutationFn: async (data: { title: string; description: string; region: string; meetingLink?: string }) => {
-      const res = await apiRequest("POST", "/api/leader-prayer-sessions", data);
-      return res.json();
+      return await apiRequest<any>("POST", "/api/leader-prayer-sessions", data);
     },
     onSuccess: (session) => {
       queryClient.invalidateQueries({ queryKey: ["/api/leader-prayer-sessions"] });
@@ -116,8 +114,7 @@ export function LiveIntercession({ sparkId }: LiveIntercessionProps) {
 
   const endSessionMutation = useMutation({
     mutationFn: async (sessionId: number) => {
-      const res = await apiRequest("POST", `/api/leader-prayer-sessions/${sessionId}/end`, {});
-      return res.json();
+      return await apiRequest<any>("POST", `/api/leader-prayer-sessions/${sessionId}/end`, {});
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/leader-prayer-sessions"] });
@@ -132,8 +129,7 @@ export function LiveIntercession({ sparkId }: LiveIntercessionProps) {
 
   const joinSessionMutation = useMutation({
     mutationFn: async (sessionId: number) => {
-      const res = await apiRequest("POST", `/api/leader-prayer-sessions/${sessionId}/join`, {});
-      return res.json();
+      return await apiRequest<any>("POST", `/api/leader-prayer-sessions/${sessionId}/join`, {});
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/leader-prayer-sessions"] });
