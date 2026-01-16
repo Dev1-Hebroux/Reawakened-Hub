@@ -82,7 +82,7 @@ export function CommunityHub() {
   });
 
   // Fetch current user's stories
-  const { data: myStories = [] } = useQuery<UserStoryWithUser[]>({
+  const { data: myStories = [] } = useQuery<UserStory[]>({
     queryKey: ["/api/stories/me"],
     queryFn: async () => {
       const res = await fetch("/api/stories/me", { credentials: "include" });
