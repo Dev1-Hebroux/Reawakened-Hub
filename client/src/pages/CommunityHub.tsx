@@ -104,8 +104,7 @@ export function CommunityHub() {
   // Create story mutation
   const createStoryMutation = useMutation({
     mutationFn: async (data: { mediaUrl: string; mediaType: string; caption?: string }) => {
-      const res = await apiRequest("POST", "/api/stories", data);
-      return res.json();
+      return apiRequest<UserStory>("POST", "/api/stories", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/stories"] });
@@ -289,8 +288,7 @@ export function CommunityHub() {
   // Create post mutation
   const createPostMutation = useMutation({
     mutationFn: async (data: { content: string; type: string }) => {
-      const res = await apiRequest("POST", "/api/posts", data);
-      return res.json();
+      return apiRequest<Post>("POST", "/api/posts", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/posts"] });
@@ -310,8 +308,7 @@ export function CommunityHub() {
   // Add reaction mutation
   const addReactionMutation = useMutation({
     mutationFn: async (data: { postId: number; emoji: string }) => {
-      const res = await apiRequest("POST", "/api/reactions", data);
-      return res.json();
+      return apiRequest<{ id: number }>("POST", "/api/reactions", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/posts"] });
@@ -348,8 +345,7 @@ export function CommunityHub() {
   // Create comment mutation
   const createCommentMutation = useMutation({
     mutationFn: async (data: { postId: number; content: string }) => {
-      const res = await apiRequest("POST", `/api/posts/${data.postId}/comments`, { content: data.content });
-      return res.json();
+      return apiRequest<Comment>("POST", `/api/posts/${data.postId}/comments`, { content: data.content });
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["/api/posts/comments"] });
