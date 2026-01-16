@@ -31,6 +31,7 @@ import {
   sendPrayerPodNotificationEmail,
   sendDailyDevotionalEmail,
   sendEventReminderEmail,
+  sendPrayerAdoptionConfirmation,
 } from "./email";
 import { insertPostSchema, insertReactionSchema, insertSparkSchema, insertSparkReactionSchema, insertSparkSubscriptionSchema, insertEventSchema, insertEventRegistrationSchema, insertBlogPostSchema, insertEmailSubscriptionSchema, insertPrayerRequestSchema, insertTestimonySchema, insertVolunteerSignupSchema, insertMissionRegistrationSchema, insertJourneySchema, insertJourneyDaySchema, insertJourneyStepSchema, insertAlphaCohortSchema, insertAlphaCohortWeekSchema, insertAlphaCohortParticipantSchema, insertMissionProfileSchema, insertMissionPlanSchema, insertMissionAdoptionSchema, insertMissionPrayerSessionSchema, insertOpportunityInterestSchema, insertDigitalActionSchema, insertProjectFollowSchema, insertChallengeEnrollmentSchema, insertMissionTestimonySchema, insertChallengeSchema, insertUserSettingsSchema, insertCommentSchema, insertNotificationPreferencesSchema } from "@shared/schema";
 
@@ -5895,6 +5896,39 @@ export async function registerRoutes(
         ...data,
         emailConfirmed: true, // Auto-confirm for now
       });
+
+      // Send confirmation email
+      try {
+        const user = await storage.getUser(userId);
+        if (user?.email) {
+          let focusName = 'a prayer focus';
+          let prayerPoints: string[] = [];
+          let population: string | undefined;
+          let region: string | undefined;
+
+          if (data.focusGroupId) {
+            const focusGroup = await storage.getPrayerFocusGroup(data.focusGroupId);
+            if (focusGroup) {
+              focusName = focusGroup.name;
+              prayerPoints = (focusGroup.prayerPoints as string[]) || [];
+              population = focusGroup.population || undefined;
+              region = focusGroup.region || undefined;
+            }
+          }
+
+          sendPrayerAdoptionConfirmation(user.email, user.firstName || 'Friend', {
+            focusName,
+            focusType: data.type,
+            population,
+            region,
+            prayerPoints,
+            reminderFrequency: data.reminderFrequency || 'daily',
+          }).catch(err => console.error('Failed to send prayer adoption email:', err));
+        }
+      } catch (emailErr) {
+        console.error('Error sending prayer adoption email:', emailErr);
+      }
+
       res.status(201).json(subscription);
     } catch (error: any) {
       console.error("Error creating prayer subscription:", error);

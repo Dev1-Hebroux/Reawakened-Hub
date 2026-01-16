@@ -209,7 +209,16 @@ export function PrayHub() {
       setSelectedCampus(null);
     },
     onError: (err: any) => {
-      toast.error(err?.message || "Failed to join prayer group");
+      const message = err?.message || "Failed to join prayer group";
+      if (message.includes("Already subscribed")) {
+        toast.info("You're already committed to pray for this group!");
+        setShowAdoptModal(false);
+        setShowPrayerDetail(false);
+        setSelectedGroup(null);
+        setSelectedCampus(null);
+      } else {
+        toast.error(message);
+      }
     },
   });
 

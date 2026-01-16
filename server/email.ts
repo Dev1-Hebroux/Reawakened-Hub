@@ -352,6 +352,120 @@ export async function sendPrayerReminderEmail(to: string, name: string, data: {
   }
 }
 
+// Prayer Adoption Confirmation Email
+export async function sendPrayerAdoptionConfirmation(to: string, name: string, data: {
+  focusName: string;
+  focusType: 'nation' | 'campus';
+  population?: string;
+  region?: string;
+  prayerPoints: string[];
+  reminderFrequency: string;
+}) {
+  const focusIcon = data.focusType === 'campus' ? '🎓' : '🌍';
+  const typeLabel = data.focusType === 'campus' ? 'Campus' : 'Nation';
+  
+  const prayerPointsHtml = data.prayerPoints.slice(0, 4).map((point, i) => `
+    <div style="display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px;">
+      <div style="width: 24px; height: 24px; background: linear-gradient(135deg, #4A7C7C 0%, #3A6C6C 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+        <span style="color: white; font-size: 12px; font-weight: bold;">${i + 1}</span>
+      </div>
+      <p style="color: #1a2744; font-size: 14px; margin: 0; line-height: 1.6;">${point}</p>
+    </div>
+  `).join('');
+
+  const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to the Prayer Movement</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #FAF8F5;">
+  <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+    ${getEmailHeader(`${focusIcon} You've Adopted ${data.focusName}!`, `Welcome to the intercessory movement`, 'linear-gradient(135deg, #1a2744 0%, #2d3a52 100%)')}
+
+    <div style="background: #ffffff; border-radius: 16px; padding: 32px; margin-bottom: 24px; border: 1px solid #E8E4DE;">
+      <h2 style="color: #1a2744; font-size: 20px; margin: 0 0 16px 0; font-weight: 600;">
+        Hi ${name}, you're now standing in the gap!
+      </h2>
+      <p style="color: #6B7B6E; font-size: 15px; line-height: 1.6; margin: 0 0 20px 0;">
+        Thank you for committing to pray for <strong style="color: #1a2744;">${data.focusName}</strong>. Your intercession matters more than you know. Together, we're believing for breakthrough and transformation.
+      </p>
+      
+      <div style="background: #FAF8F5; border-radius: 12px; padding: 20px;">
+        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #E8E4DE; padding-bottom: 12px; margin-bottom: 12px;">
+          <span style="color: #6B7B6E; font-size: 14px;">Focus Type</span>
+          <span style="color: #1a2744; font-weight: 600; font-size: 14px;">${typeLabel}</span>
+        </div>
+        ${data.region ? `
+        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #E8E4DE; padding-bottom: 12px; margin-bottom: 12px;">
+          <span style="color: #6B7B6E; font-size: 14px;">Region</span>
+          <span style="color: #1a2744; font-weight: 600; font-size: 14px;">${data.region}</span>
+        </div>
+        ` : ''}
+        ${data.population ? `
+        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #E8E4DE; padding-bottom: 12px; margin-bottom: 12px;">
+          <span style="color: #6B7B6E; font-size: 14px;">Population</span>
+          <span style="color: #1a2744; font-weight: 600; font-size: 14px;">${data.population}</span>
+        </div>
+        ` : ''}
+        <div style="display: flex; justify-content: space-between;">
+          <span style="color: #6B7B6E; font-size: 14px;">Reminders</span>
+          <span style="color: #4A7C7C; font-weight: 600; font-size: 14px;">${data.reminderFrequency === 'daily' ? 'Daily' : 'Weekly'}</span>
+        </div>
+      </div>
+    </div>
+
+    ${data.prayerPoints.length > 0 ? `
+    <div style="background: #ffffff; border-radius: 16px; padding: 32px; margin-bottom: 24px; border: 1px solid #E8E4DE;">
+      <h2 style="color: #1a2744; font-size: 18px; margin: 0 0 20px 0; font-weight: 600;">
+        🔥 Prayer Points to Start
+      </h2>
+      ${prayerPointsHtml}
+    </div>
+    ` : ''}
+
+    <div style="background: linear-gradient(135deg, #E8F4F0 0%, #D4E8E4 100%); border-radius: 16px; padding: 24px; margin-bottom: 24px; text-align: center;">
+      <p style="color: #1a2744; font-size: 15px; font-style: italic; margin: 0 0 8px 0; line-height: 1.6;">
+        "Ask of me, and I will make the nations your inheritance, the ends of the earth your possession."
+      </p>
+      <p style="color: #4A7C7C; font-size: 13px; margin: 0; font-weight: 600;">— Psalm 2:8</p>
+    </div>
+
+    <div style="text-align: center; margin-bottom: 24px;">
+      <a href="https://reawakened.app/pray" style="display: inline-block; background: linear-gradient(135deg, #4A7C7C 0%, #3A6C6C 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 12px; font-weight: 600; font-size: 16px;">
+        🙏 Start Praying Now
+      </a>
+    </div>
+
+    ${getEmailFooter(to, 'The prayer of a righteous person is powerful and effective. — James 5:16')}
+  </div>
+</body>
+</html>
+  `;
+
+  if (!resend) {
+    console.warn('Resend not configured, skipping prayer adoption confirmation email');
+    return { success: false, error: 'Email service not configured' };
+  }
+
+  try {
+    const result = await resend.emails.send({
+      from: 'Reawakened Prayer <prayer@reawakened.app>',
+      to: [to],
+      subject: `🙏 You're now praying for ${data.focusName}!`,
+      html: htmlContent,
+    });
+
+    console.log('Prayer adoption confirmation email sent:', result);
+    return { success: true, data: result };
+  } catch (error) {
+    console.error('Failed to send prayer adoption confirmation email:', error);
+    return { success: false, error };
+  }
+}
+
 export async function sendAltarJoinConfirmation(to: string, name: string, data: {
   altarName: string;
   campusName: string;

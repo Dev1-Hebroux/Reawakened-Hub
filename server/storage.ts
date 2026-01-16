@@ -457,7 +457,7 @@ import {
   type InsertUserReadingProgress,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, sql, inArray, count, ilike, or, gte } from "drizzle-orm";
+import { eq, desc, and, sql, inArray, count, ilike, or, gte, isNull, lt } from "drizzle-orm";
 
 // Interface for storage operations
 export interface IStorage {
@@ -947,6 +947,8 @@ export interface IStorage {
   // Prayer Subscriptions
   getPrayerSubscriptions(userId: string): Promise<PrayerSubscription[]>;
   getPrayerSubscription(userId: string, focusGroupId?: number, altarId?: number): Promise<PrayerSubscription | undefined>;
+  getPrayerSubscriptionsDueForReminder(frequency: 'daily' | 'weekly'): Promise<Array<{ subscription: PrayerSubscription; user: User; focusGroup: PrayerFocusGroup | null }>>;
+  updateSubscriptionReminderSent(subscriptionId: number): Promise<void>;
   createPrayerSubscription(subscription: InsertPrayerSubscription): Promise<PrayerSubscription>;
   updatePrayerSubscription(id: number, updates: Partial<InsertPrayerSubscription>): Promise<PrayerSubscription>;
   deletePrayerSubscription(id: number): Promise<void>;
@@ -4580,6 +4582,47 @@ export class DatabaseStorage implements IStorage {
 
   async deletePrayerSubscription(id: number): Promise<void> {
     await db.delete(prayerSubscriptions).where(eq(prayerSubscriptions.id, id));
+  }
+
+  async getPrayerSubscriptionsDueForReminder(frequency: 'daily' | 'weekly'): Promise<Array<{ subscription: PrayerSubscription; user: User; focusGroup: PrayerFocusGroup | null }>> {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    
+    // For daily: check if not sent today
+    // For weekly: check if not sent in last 7 days
+    const cutoffDate = frequency === 'daily' 
+      ? today 
+      : new Date(today.getTime() - 6 * 24 * 60 * 60 * 1000);
+
+    // Use a single joined query for efficiency
+    const results = await db
+      .select({
+        subscription: prayerSubscriptions,
+        user: users,
+        focusGroup: prayerFocusGroups,
+      })
+      .from(prayerSubscriptions)
+      .innerJoin(users, eq(prayerSubscriptions.userId, users.id))
+      .leftJoin(prayerFocusGroups, eq(prayerSubscriptions.focusGroupId, prayerFocusGroups.id))
+      .where(and(
+        eq(prayerSubscriptions.receiveReminders, true),
+        eq(prayerSubscriptions.reminderFrequency, frequency),
+        eq(prayerSubscriptions.status, 'active'),
+        // Only include if never sent OR sent before cutoff date
+        or(
+          isNull(prayerSubscriptions.lastReminderSentAt),
+          lt(prayerSubscriptions.lastReminderSentAt, cutoffDate)
+        )
+      ));
+
+    // Filter out users without email
+    return results.filter(r => r.user?.email);
+  }
+
+  async updateSubscriptionReminderSent(subscriptionId: number): Promise<void> {
+    await db.update(prayerSubscriptions)
+      .set({ lastReminderSentAt: new Date() })
+      .where(eq(prayerSubscriptions.id, subscriptionId));
   }
 
   // Prayer Wall

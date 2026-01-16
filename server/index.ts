@@ -22,6 +22,8 @@ import {
 import { jobScheduler, CronPatterns } from "./lib/jobScheduler";
 import { notificationService } from "./services/notificationService";
 import { compressionMiddleware, serverTiming, slowRequestLogger } from "./middleware/performance";
+import { sendPrayerReminderEmail } from "./email";
+import { storage } from "./storage";
 import initRoutes from "./routes/initRoutes";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -146,6 +148,86 @@ async function initializeBackgroundServices(): Promise<void> {
         async () => {
           const result = await notificationService.processPending();
           log(`Processed ${result.processed} scheduled notifications`, 'jobs');
+        }
+      );
+
+      // Prayer reminder job - runs daily at 8 AM
+      jobScheduler.register(
+        'send-daily-prayer-reminders',
+        CronPatterns.DAILY_8AM,
+        async () => {
+          const subscriptions = await storage.getPrayerSubscriptionsDueForReminder('daily');
+          let sent = 0;
+          let failed = 0;
+
+          for (const { subscription, user, focusGroup } of subscriptions) {
+            try {
+              if (!user.email) continue;
+
+              const focusName = focusGroup?.name || 'your prayer focus';
+              const prayerPoints = (focusGroup?.prayerPoints as string[]) || [];
+              const scriptures = (focusGroup?.scriptures as string[]) || [];
+
+              // Calculate day number since subscription
+              const daysSinceStart = Math.floor(
+                (Date.now() - new Date(subscription.createdAt!).getTime()) / (1000 * 60 * 60 * 24)
+              ) + 1;
+
+              await sendPrayerReminderEmail(user.email, user.firstName || 'Friend', {
+                focusName,
+                focusType: subscription.type as 'nation' | 'campus',
+                prayerPoints,
+                scriptures,
+                dayNumber: daysSinceStart,
+              });
+
+              // Mark as sent to prevent duplicate sends
+              await storage.updateSubscriptionReminderSent(subscription.id);
+              sent++;
+            } catch (error) {
+              console.error(`Failed to send reminder to subscription ${subscription.id}:`, error);
+              failed++;
+            }
+          }
+
+          log(`Sent ${sent} daily prayer reminders (${failed} failed)`, 'jobs');
+        }
+      );
+
+      // Weekly prayer reminder job - runs every Sunday at 8 AM
+      jobScheduler.register(
+        'send-weekly-prayer-reminders',
+        CronPatterns.WEEKLY_SUNDAY,
+        async () => {
+          const subscriptions = await storage.getPrayerSubscriptionsDueForReminder('weekly');
+          let sent = 0;
+          let failed = 0;
+
+          for (const { subscription, user, focusGroup } of subscriptions) {
+            try {
+              if (!user.email) continue;
+
+              const focusName = focusGroup?.name || 'your prayer focus';
+              const prayerPoints = (focusGroup?.prayerPoints as string[]) || [];
+              const scriptures = (focusGroup?.scriptures as string[]) || [];
+
+              await sendPrayerReminderEmail(user.email, user.firstName || 'Friend', {
+                focusName,
+                focusType: subscription.type as 'nation' | 'campus',
+                prayerPoints,
+                scriptures,
+              });
+
+              // Mark as sent to prevent duplicate sends
+              await storage.updateSubscriptionReminderSent(subscription.id);
+              sent++;
+            } catch (error) {
+              console.error(`Failed to send weekly reminder to subscription ${subscription.id}:`, error);
+              failed++;
+            }
+          }
+
+          log(`Sent ${sent} weekly prayer reminders (${failed} failed)`, 'jobs');
         }
       );
       
