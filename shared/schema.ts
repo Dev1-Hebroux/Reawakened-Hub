@@ -2794,7 +2794,7 @@ export const prayerSubscriptions = pgTable("prayer_subscriptions", {
   lastPrayedAt: timestamp("last_prayed_at"),
   receiveReminders: boolean("receive_reminders").default(true),
   reminderFrequency: varchar("reminder_frequency").default("daily"), // 'daily', 'weekly', 'custom'
-  reminderTime: varchar("reminder_time").default("09:00"), // Preferred reminder time
+  reminderTime: varchar("reminder_time").default("00:01"), // Preferred reminder time (HH:MM format)
   lastReminderSentAt: timestamp("last_reminder_sent_at"), // Track when last reminder was sent
   emailConfirmed: boolean("email_confirmed").default(false),
   status: varchar("status").default("active"), // 'active', 'paused', 'completed'

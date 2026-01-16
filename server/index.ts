@@ -151,10 +151,10 @@ async function initializeBackgroundServices(): Promise<void> {
         }
       );
 
-      // Prayer reminder job - runs daily at 8 AM
+      // Prayer reminder job - runs daily at 00:01
       jobScheduler.register(
         'send-daily-prayer-reminders',
-        CronPatterns.DAILY_8AM,
+        CronPatterns.DAILY_0001,
         async () => {
           const subscriptions = await storage.getPrayerSubscriptionsDueForReminder('daily');
           let sent = 0;
@@ -194,10 +194,10 @@ async function initializeBackgroundServices(): Promise<void> {
         }
       );
 
-      // Weekly prayer reminder job - runs every Sunday at 8 AM
+      // Weekly prayer reminder job - runs every Sunday at 00:01
       jobScheduler.register(
         'send-weekly-prayer-reminders',
-        CronPatterns.WEEKLY_SUNDAY,
+        '1 0 * * 0', // Sunday at 00:01
         async () => {
           const subscriptions = await storage.getPrayerSubscriptionsDueForReminder('weekly');
           let sent = 0;

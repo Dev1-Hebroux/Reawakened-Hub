@@ -237,6 +237,7 @@ export const CronPatterns = {
   EVERY_HOUR: '0 * * * *',
   EVERY_6_HOURS: '0 */6 * * *',
   DAILY_MIDNIGHT: '0 0 * * *',
+  DAILY_0001: '1 0 * * *', // 00:01 daily
   DAILY_6AM: '0 6 * * *',
   DAILY_8AM: '0 8 * * *',
   DAILY_9PM: '0 21 * * *',
