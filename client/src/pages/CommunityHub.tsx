@@ -34,8 +34,8 @@ type CommentWithUser = Comment & { user: User };
 
 const stories = [
   { id: 1, name: "Your Story", img: userAvatar, isUser: true, route: null, action: "create" },
-  { id: 2, name: "Sarah J.", img: storyImg, hasUnseen: true, route: null, action: "view" },
-  { id: 3, name: "Mission Hub", img: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&q=80&w=200", hasUnseen: true, route: "/mission" },
+  { id: 2, name: "Sarah J.", img: storyImg, hasUnseen: true, route: "/outreach" },
+  { id: 3, name: "Mission Hub", img: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&q=80&w=200", hasUnseen: true, route: "/outreach" },
   { id: 4, name: "Prayer Team", img: "https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&q=80&w=200", hasUnseen: false, action: "prayer" },
   { id: 5, name: "Revival Now", img: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&q=80&w=200", hasUnseen: true, route: "/group-labs" },
 ];
@@ -51,6 +51,7 @@ export function CommunityHub() {
   const [postFilter, setPostFilter] = useState<"all" | "mission" | "prayer">("all");
   const [newPostContent, setNewPostContent] = useState("");
   const [newPostType, setNewPostType] = useState<"mission" | "prayer">("mission");
+  const [isSubmittingPost, setIsSubmittingPost] = useState(false);
   const [viewingStory, setViewingStory] = useState<typeof stories[0] | null>(null);
   const [storyIndex, setStoryIndex] = useState(0);
   const [isListening, setIsListening] = useState(false);
@@ -237,6 +238,9 @@ export function CommunityHub() {
   };
 
   const handleCreatePost = () => {
+    if (isSubmittingPost || createPostMutation.isPending) {
+      return;
+    }
     if (!newPostContent.trim()) {
       toast.error("Please enter some content");
       return;
@@ -246,7 +250,15 @@ export function CommunityHub() {
       setTimeout(() => window.location.href = "/api/login", 1000);
       return;
     }
-    createPostMutation.mutate({ content: newPostContent, type: newPostType });
+    setIsSubmittingPost(true);
+    createPostMutation.mutate(
+      { content: newPostContent, type: newPostType },
+      {
+        onSettled: () => {
+          setIsSubmittingPost(false);
+        },
+      }
+    );
   };
 
   const handleReaction = (postId: number) => {
@@ -498,10 +510,10 @@ export function CommunityHub() {
                 <button 
                   data-testid="button-submit-post"
                   onClick={handleCreatePost}
-                  disabled={createPostMutation.isPending || !newPostContent.trim()}
+                  disabled={isSubmittingPost || createPostMutation.isPending || !newPostContent.trim()}
                   className="bg-[#7C9A8E] text-white px-6 py-3 rounded-full hover:bg-[#6B8B7E] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm font-medium w-full sm:w-auto"
                 >
-                  {createPostMutation.isPending ? (
+                  {isSubmittingPost || createPostMutation.isPending ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />
                       Posting...
