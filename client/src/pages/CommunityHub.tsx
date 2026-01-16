@@ -4,16 +4,16 @@ import {
   Video, Image as ImageIcon, Send, Globe,
   Users, Flame, Bell, Search, MoreHorizontal,
   Phone, Video as VideoIcon, Mic, CheckCircle2, Loader2, X, ChevronLeft, ChevronRight,
-  Target
+  Target, Camera, Upload, Plus
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { toast } from "sonner";
-import type { Post, User, Comment } from "@shared/schema";
+import type { Post, User, Comment, UserStory } from "@shared/schema";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { GrowthToolsDiscovery } from "@/components/GrowthToolsDiscovery";
@@ -29,15 +29,16 @@ import userAvatar from "@assets/generated_images/diverse_group_taking_a_selfie.p
 import feedImg from "@assets/generated_images/hands_typing_on_a_phone_with_bible_in_background.png";
 import storyImg from "@assets/generated_images/young_woman_speaking_passionately_into_camera.png";
 
+type UserStoryWithUser = UserStory & { user: User };
+
 type PostWithUser = Post & { user: User; reactionCount?: number; commentCount?: number };
 type CommentWithUser = Comment & { user: User };
 
-const stories = [
-  { id: 1, name: "Your Story", img: userAvatar, isUser: true, route: null, action: "create" },
-  { id: 2, name: "Sarah J.", img: storyImg, hasUnseen: true, route: "/outreach" },
-  { id: 3, name: "Mission Hub", img: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&q=80&w=200", hasUnseen: true, route: "/outreach" },
-  { id: 4, name: "Prayer Team", img: "https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&q=80&w=200", hasUnseen: false, action: "prayer" },
-  { id: 5, name: "Revival Now", img: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&q=80&w=200", hasUnseen: true, route: "/group-labs" },
+const staticStories = [
+  { id: "sarah", name: "Sarah J.", img: storyImg, hasUnseen: true, route: "/outreach" },
+  { id: "mission", name: "Mission Hub", img: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&q=80&w=200", hasUnseen: true, route: "/outreach" },
+  { id: "prayer", name: "Prayer Team", img: "https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&q=80&w=200", hasUnseen: false, action: "prayer" },
+  { id: "revival", name: "Revival Now", img: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&q=80&w=200", hasUnseen: true, route: "/group-labs" },
 ];
 
 const groups = [
@@ -52,41 +53,194 @@ export function CommunityHub() {
   const [newPostContent, setNewPostContent] = useState("");
   const [newPostType, setNewPostType] = useState<"mission" | "prayer">("mission");
   const [isSubmittingPost, setIsSubmittingPost] = useState(false);
-  const [viewingStory, setViewingStory] = useState<typeof stories[0] | null>(null);
-  const [storyIndex, setStoryIndex] = useState(0);
+  const [viewingStory, setViewingStory] = useState<UserStoryWithUser | null>(null);
+  const [viewingStoryIndex, setViewingStoryIndex] = useState(0);
+  const [userStoriesForViewer, setUserStoriesForViewer] = useState<UserStoryWithUser[]>([]);
+  const [showStoryCreator, setShowStoryCreator] = useState(false);
+  const [storyCaption, setStoryCaption] = useState("");
+  const [selectedMediaPreview, setSelectedMediaPreview] = useState<string | null>(null);
+  const [selectedMediaFile, setSelectedMediaFile] = useState<File | null>(null);
+  const [isUploadingStory, setIsUploadingStory] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [expandedComments, setExpandedComments] = useState<number[]>([]);
   const [commentInputs, setCommentInputs] = useState<Record<number, string>>({});
   
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  
   const { user, isAuthenticated } = useAuth() as { user: User | null; isAuthenticated: boolean; isLoading: boolean };
   const queryClient = useQueryClient();
 
-  const handleStoryClick = (story: typeof stories[0]) => {
+  // Fetch user stories from API
+  const { data: apiStories = [] } = useQuery<UserStoryWithUser[]>({
+    queryKey: ["/api/stories"],
+    queryFn: async () => {
+      const res = await fetch("/api/stories");
+      if (!res.ok) throw new Error("Failed to fetch stories");
+      return res.json();
+    },
+  });
+
+  // Fetch current user's stories
+  const { data: myStories = [] } = useQuery<UserStoryWithUser[]>({
+    queryKey: ["/api/stories/me"],
+    queryFn: async () => {
+      const res = await fetch("/api/stories/me", { credentials: "include" });
+      if (!res.ok) return [];
+      return res.json();
+    },
+    enabled: isAuthenticated,
+  });
+
+  // Group stories by user
+  const storiesByUser = apiStories.reduce((acc, story) => {
+    if (!acc[story.userId]) {
+      acc[story.userId] = [];
+    }
+    acc[story.userId].push(story);
+    return acc;
+  }, {} as Record<string, UserStoryWithUser[]>);
+
+  // Create story mutation
+  const createStoryMutation = useMutation({
+    mutationFn: async (data: { mediaUrl: string; mediaType: string; caption?: string }) => {
+      const res = await apiRequest("POST", "/api/stories", data);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/stories"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/stories/me"] });
+      setShowStoryCreator(false);
+      setSelectedMediaPreview(null);
+      setSelectedMediaFile(null);
+      setStoryCaption("");
+      toast.success("Story posted!");
+    },
+    onError: (error: any) => {
+      toast.error(error.message || "Failed to create story");
+    },
+  });
+
+  // Handle clicking on a user's story circle
+  const handleUserStoryClick = (userId: string, userStories: UserStoryWithUser[]) => {
+    if (userStories.length > 0) {
+      setUserStoriesForViewer(userStories);
+      setViewingStoryIndex(0);
+      setViewingStory(userStories[0]);
+      // Record view
+      fetch(`/api/stories/${userStories[0].id}/view`, { 
+        method: "POST", 
+        credentials: "include" 
+      }).catch(() => {});
+    }
+  };
+
+  // Handle clicking "Your Story" to create
+  const handleCreateStoryClick = () => {
+    if (!isAuthenticated) {
+      toast.error("Please log in to create a story");
+      setTimeout(() => navigate("/auth"), 1000);
+      return;
+    }
+    setShowStoryCreator(true);
+  };
+
+  // Handle static story clicks (links to pages)
+  const handleStaticStoryClick = (story: typeof staticStories[0]) => {
     if (story.route) {
       navigate(story.route);
-    } else if (story.action === "create") {
-      toast.info("Story creation coming soon!");
-    } else if (story.action === "view") {
-      setViewingStory(story);
-      setStoryIndex(stories.findIndex(s => s.id === story.id));
     } else if (story.action === "prayer") {
       setPostFilter("prayer");
       toast.success("Showing prayer requests");
     }
   };
 
+  // Advance to next story in viewer
   const handleStoryAdvance = () => {
-    if (storyIndex < stories.length - 1) {
-      const nextStory = stories[storyIndex + 1];
-      if (nextStory.route) {
-        setViewingStory(null);
-        setTimeout(() => navigate(nextStory.route!), 100);
-      } else {
-        setStoryIndex(storyIndex + 1);
-        setViewingStory(nextStory);
-      }
+    if (viewingStoryIndex < userStoriesForViewer.length - 1) {
+      const nextIndex = viewingStoryIndex + 1;
+      setViewingStoryIndex(nextIndex);
+      setViewingStory(userStoriesForViewer[nextIndex]);
+      // Record view
+      fetch(`/api/stories/${userStoriesForViewer[nextIndex].id}/view`, { 
+        method: "POST", 
+        credentials: "include" 
+      }).catch(() => {});
     } else {
+      // Close viewer when done
       setViewingStory(null);
+      setUserStoriesForViewer([]);
+    }
+  };
+
+  // Handle file selection for story
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const isImage = file.type.startsWith("image/");
+    const isVideo = file.type.startsWith("video/");
+    if (!isImage && !isVideo) {
+      toast.error("Please select an image or video file");
+      return;
+    }
+
+    // Validate file size (max 50MB)
+    if (file.size > 50 * 1024 * 1024) {
+      toast.error("File is too large. Maximum size is 50MB");
+      return;
+    }
+
+    setSelectedMediaFile(file);
+    const preview = URL.createObjectURL(file);
+    setSelectedMediaPreview(preview);
+  };
+
+  // Upload and create story
+  const handlePublishStory = async () => {
+    if (!selectedMediaFile) {
+      toast.error("Please select an image or video");
+      return;
+    }
+
+    setIsUploadingStory(true);
+    try {
+      // Get presigned URL
+      const urlRes = await fetch("/api/uploads/request-url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          name: selectedMediaFile.name,
+          size: selectedMediaFile.size,
+          contentType: selectedMediaFile.type,
+        }),
+      });
+      
+      if (!urlRes.ok) throw new Error("Failed to get upload URL");
+      const { uploadURL, objectPath } = await urlRes.json();
+
+      // Upload file to object storage
+      const uploadRes = await fetch(uploadURL, {
+        method: "PUT",
+        body: selectedMediaFile,
+        headers: { "Content-Type": selectedMediaFile.type },
+      });
+      
+      if (!uploadRes.ok) throw new Error("Failed to upload file");
+
+      // Create story with the object path
+      const mediaType = selectedMediaFile.type.startsWith("video/") ? "video" : "image";
+      createStoryMutation.mutate({
+        mediaUrl: objectPath,
+        mediaType,
+        caption: storyCaption || undefined,
+      });
+    } catch (error: any) {
+      toast.error(error.message || "Failed to upload story");
+    } finally {
+      setIsUploadingStory(false);
     }
   };
 
@@ -287,62 +441,213 @@ export function CommunityHub() {
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-6">
 
-            {/* Story Viewing Modal */}
+            {/* Instagram-Style Story Viewing Modal */}
             <AnimatePresence>
               {viewingStory && (
                 <motion.div 
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center"
+                  className="fixed inset-0 z-50 bg-black flex items-center justify-center"
                   onClick={handleStoryAdvance}
                 >
                   <button 
-                    onClick={(e) => { e.stopPropagation(); setViewingStory(null); }}
+                    onClick={(e) => { e.stopPropagation(); setViewingStory(null); setUserStoriesForViewer([]); }}
                     className="absolute top-4 right-4 p-2 text-white hover:bg-white/20 rounded-full z-50"
                   >
                     <X className="h-6 w-6" />
                   </button>
                   
+                  {/* User info header */}
                   <div className="absolute top-4 left-4 flex items-center gap-3 z-50">
                     <div className="h-10 w-10 rounded-full overflow-hidden border-2 border-white">
-                      <img src={viewingStory.img} alt={viewingStory.name} className="w-full h-full object-cover" />
+                      <img 
+                        src={viewingStory.user?.profileImageUrl || userAvatar} 
+                        alt={viewingStory.user?.firstName || "User"} 
+                        className="w-full h-full object-cover" 
+                      />
                     </div>
-                    <span className="text-white font-medium">{viewingStory.name}</span>
+                    <div>
+                      <span className="text-white font-medium block">{viewingStory.user?.firstName || "User"}</span>
+                      <span className="text-white/60 text-xs">{formatTimeAgo(viewingStory.createdAt)}</span>
+                    </div>
                   </div>
 
+                  {/* Story progress bars */}
                   <div className="absolute top-16 left-4 right-4 flex gap-1 z-50">
-                    {stories.filter(s => !s.isUser).map((_, i) => (
+                    {userStoriesForViewer.map((_, i) => (
                       <div 
                         key={i}
-                        className={`h-0.5 flex-1 rounded-full ${i <= storyIndex - 1 ? 'bg-white' : i === storyIndex - 1 ? 'bg-white' : 'bg-white/30'}`}
+                        className={`h-0.5 flex-1 rounded-full transition-all ${i < viewingStoryIndex ? 'bg-white' : i === viewingStoryIndex ? 'bg-white' : 'bg-white/30'}`}
                       />
                     ))}
                   </div>
 
+                  {/* Story content - 9:16 aspect ratio */}
                   <motion.div
                     key={viewingStory.id}
                     initial={{ scale: 0.9, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
-                    className="max-w-md w-full mx-4"
+                    className="max-w-[400px] w-full mx-4"
                   >
-                    <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-[#7C9A8E] to-[#4A7C7C] aspect-[9/16] flex items-center justify-center">
-                      <img 
-                        src={viewingStory.img} 
-                        alt={viewingStory.name} 
-                        className="absolute inset-0 w-full h-full object-cover opacity-30"
-                      />
-                      <div className="relative z-10 text-center p-6">
-                        <h3 className="text-2xl font-bold text-white mb-2">{viewingStory.name}'s Story</h3>
-                        <p className="text-white/80 text-sm">Tap to continue to post details</p>
-                      </div>
+                    <div className="relative rounded-2xl overflow-hidden bg-black aspect-[9/16] flex items-center justify-center">
+                      {viewingStory.mediaType === "video" ? (
+                        <video 
+                          src={viewingStory.mediaUrl.startsWith("/objects/") ? viewingStory.mediaUrl : viewingStory.mediaUrl}
+                          className="w-full h-full object-cover"
+                          autoPlay
+                          muted
+                          playsInline
+                          loop
+                        />
+                      ) : (
+                        <img 
+                          src={viewingStory.mediaUrl.startsWith("/objects/") ? viewingStory.mediaUrl : viewingStory.mediaUrl}
+                          alt="Story"
+                          className="w-full h-full object-cover"
+                        />
+                      )}
+                      {viewingStory.caption && (
+                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 pt-12">
+                          <p className="text-white text-sm">{viewingStory.caption}</p>
+                        </div>
+                      )}
                     </div>
                   </motion.div>
 
+                  {/* Navigation hint */}
                   <div className="absolute bottom-8 left-1/2 -translate-x-1/2 text-white/60 text-xs flex items-center gap-2">
-                    <span>Tap to advance</span>
+                    <span>Tap to {viewingStoryIndex < userStoriesForViewer.length - 1 ? "advance" : "close"}</span>
                     <ChevronRight className="h-4 w-4" />
                   </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Story Creation Modal */}
+            <AnimatePresence>
+              {showStoryCreator && (
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="fixed inset-0 z-50 bg-black flex flex-col"
+                >
+                  {/* Header */}
+                  <div className="flex items-center justify-between p-4 bg-black/50">
+                    <button 
+                      onClick={() => {
+                        setShowStoryCreator(false);
+                        setSelectedMediaPreview(null);
+                        setSelectedMediaFile(null);
+                        setStoryCaption("");
+                      }}
+                      className="p-2 text-white hover:bg-white/20 rounded-full"
+                    >
+                      <X className="h-6 w-6" />
+                    </button>
+                    <h2 className="text-white font-semibold">Create Story</h2>
+                    <button
+                      onClick={handlePublishStory}
+                      disabled={!selectedMediaFile || isUploadingStory}
+                      className="px-4 py-2 bg-[#7C9A8E] text-white rounded-full text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    >
+                      {isUploadingStory ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Posting...
+                        </>
+                      ) : (
+                        "Share"
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Content area */}
+                  <div className="flex-1 flex items-center justify-center p-4">
+                    {selectedMediaPreview ? (
+                      <div className="max-w-[400px] w-full aspect-[9/16] relative rounded-2xl overflow-hidden bg-gray-900">
+                        {selectedMediaFile?.type.startsWith("video/") ? (
+                          <video 
+                            src={selectedMediaPreview}
+                            className="w-full h-full object-cover"
+                            autoPlay
+                            muted
+                            loop
+                            playsInline
+                          />
+                        ) : (
+                          <img 
+                            src={selectedMediaPreview}
+                            alt="Preview"
+                            className="w-full h-full object-cover"
+                          />
+                        )}
+                        {/* Caption input overlay */}
+                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 pt-16">
+                          <input
+                            type="text"
+                            value={storyCaption}
+                            onChange={(e) => setStoryCaption(e.target.value)}
+                            placeholder="Add a caption..."
+                            className="w-full bg-white/20 text-white placeholder-white/60 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-white/30"
+                            maxLength={200}
+                          />
+                        </div>
+                        {/* Remove button */}
+                        <button
+                          onClick={() => {
+                            setSelectedMediaPreview(null);
+                            setSelectedMediaFile(null);
+                          }}
+                          className="absolute top-2 right-2 p-2 bg-black/50 text-white rounded-full hover:bg-black/70"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="max-w-[400px] w-full aspect-[9/16] bg-gray-900 rounded-2xl flex flex-col items-center justify-center gap-6">
+                        <div className="flex gap-4">
+                          {/* Camera button */}
+                          <button
+                            onClick={() => cameraInputRef.current?.click()}
+                            className="flex flex-col items-center gap-2 p-6 bg-white/10 rounded-2xl hover:bg-white/20 transition-colors"
+                          >
+                            <Camera className="h-8 w-8 text-white" />
+                            <span className="text-white text-sm">Camera</span>
+                          </button>
+                          {/* Upload button */}
+                          <button
+                            onClick={() => fileInputRef.current?.click()}
+                            className="flex flex-col items-center gap-2 p-6 bg-white/10 rounded-2xl hover:bg-white/20 transition-colors"
+                          >
+                            <Upload className="h-8 w-8 text-white" />
+                            <span className="text-white text-sm">Upload</span>
+                          </button>
+                        </div>
+                        <p className="text-white/60 text-sm text-center px-8">
+                          Take a photo or upload an image/video for your story
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Hidden file inputs */}
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*,video/*"
+                    onChange={handleFileSelect}
+                    className="hidden"
+                  />
+                  <input
+                    ref={cameraInputRef}
+                    type="file"
+                    accept="image/*,video/*"
+                    capture="environment"
+                    onChange={handleFileSelect}
+                    className="hidden"
+                  />
                 </motion.div>
               )}
             </AnimatePresence>
@@ -412,23 +717,69 @@ export function CommunityHub() {
             {/* Stories / Status Bar */}
             <div className="bg-white rounded-2xl md:rounded-[30px] p-3 md:p-6 shadow-sm border border-gray-100 overflow-x-auto scrollbar-hide snap-x snap-mandatory">
               <div className="flex gap-3 md:gap-4">
-                {stories.map((story) => (
+                {/* Your Story - Create button */}
+                <button 
+                  onClick={handleCreateStoryClick}
+                  className="flex flex-col items-center gap-1.5 cursor-pointer group snap-start flex-shrink-0 bg-transparent border-0"
+                  data-testid="story-create"
+                >
+                  <div className="h-14 w-14 md:h-16 md:w-16 rounded-full p-[2px] transition-transform group-hover:scale-105 group-active:scale-95 border-2 border-dashed border-gray-300">
+                    <div className="h-full w-full rounded-full overflow-hidden border-2 border-white relative bg-gray-100">
+                      <img 
+                        src={user?.profileImageUrl || userAvatar} 
+                        alt="Your Story" 
+                        className="w-full h-full object-cover" 
+                      />
+                      <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                        <div className="bg-[#7C9A8E] rounded-full p-1">
+                          <Plus className="h-3 w-3 text-white" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <span className="text-[10px] md:text-xs font-medium text-gray-600 group-hover:text-[#7C9A8E] max-w-[60px] truncate text-center">
+                    {myStories.length > 0 ? "Your Story" : "Add Story"}
+                  </span>
+                </button>
+
+                {/* User stories from API */}
+                {Object.entries(storiesByUser).map(([userId, userStories]) => {
+                  const firstStory = userStories[0];
+                  if (!firstStory || userId === user?.id) return null;
+                  return (
+                    <button 
+                      key={userId}
+                      onClick={() => handleUserStoryClick(userId, userStories)}
+                      className="flex flex-col items-center gap-1.5 cursor-pointer group snap-start flex-shrink-0 bg-transparent border-0"
+                      data-testid={`story-user-${userId}`}
+                    >
+                      <div className="h-14 w-14 md:h-16 md:w-16 rounded-full p-[2px] transition-transform group-hover:scale-105 group-active:scale-95 bg-gradient-to-tr from-[#7C9A8E] to-[#D4A574]">
+                        <div className="h-full w-full rounded-full overflow-hidden border-2 border-white">
+                          <img 
+                            src={firstStory.user?.profileImageUrl || userAvatar} 
+                            alt={firstStory.user?.firstName || "User"} 
+                            className="w-full h-full object-cover" 
+                          />
+                        </div>
+                      </div>
+                      <span className="text-[10px] md:text-xs font-medium text-gray-600 group-hover:text-[#7C9A8E] max-w-[60px] truncate text-center">
+                        {firstStory.user?.firstName || "User"}
+                      </span>
+                    </button>
+                  );
+                })}
+
+                {/* Static story links */}
+                {staticStories.map((story) => (
                   <button 
                     key={story.id} 
-                    onClick={() => handleStoryClick(story)}
+                    onClick={() => handleStaticStoryClick(story)}
                     className="flex flex-col items-center gap-1.5 cursor-pointer group snap-start flex-shrink-0 bg-transparent border-0"
                     data-testid={`story-${story.id}`}
                   >
-                    <div className={`h-14 w-14 md:h-16 md:w-16 rounded-full p-[2px] transition-transform group-hover:scale-105 group-active:scale-95 ${story.isUser ? 'border-2 border-dashed border-gray-300' : story.hasUnseen ? 'bg-gradient-to-tr from-[#7C9A8E] to-[#D4A574]' : 'border-2 border-gray-200'}`}>
-                      <div className="h-full w-full rounded-full overflow-hidden border-2 border-white relative">
+                    <div className={`h-14 w-14 md:h-16 md:w-16 rounded-full p-[2px] transition-transform group-hover:scale-105 group-active:scale-95 ${story.hasUnseen ? 'bg-gradient-to-tr from-[#7C9A8E] to-[#D4A574]' : 'border-2 border-gray-200'}`}>
+                      <div className="h-full w-full rounded-full overflow-hidden border-2 border-white">
                         <img src={story.img} alt={story.name} className="w-full h-full object-cover" />
-                        {story.isUser && (
-                          <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                            <div className="bg-white rounded-full p-1">
-                              <MoreHorizontal className="h-3 w-3 text-[#7C9A8E]" />
-                            </div>
-                          </div>
-                        )}
                       </div>
                     </div>
                     <span className="text-[10px] md:text-xs font-medium text-gray-600 group-hover:text-[#7C9A8E] max-w-[60px] truncate text-center">{story.name}</span>

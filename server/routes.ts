@@ -84,6 +84,71 @@ export async function registerRoutes(
     }
   });
 
+  // ===== USER STORIES ROUTES =====
+
+  // Get all active stories (non-expired, grouped by user)
+  app.get('/api/stories', async (req, res) => {
+    try {
+      const stories = await storage.getActiveStories();
+      res.json(stories);
+    } catch (error) {
+      console.error("Error fetching stories:", error);
+      res.status(500).json({ message: "Failed to fetch stories" });
+    }
+  });
+
+  // Get current user's stories
+  app.get('/api/stories/me', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const stories = await storage.getUserStories(userId);
+      res.json(stories);
+    } catch (error) {
+      console.error("Error fetching user stories:", error);
+      res.status(500).json({ message: "Failed to fetch your stories" });
+    }
+  });
+
+  // Create a new story (protected)
+  app.post('/api/stories', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { mediaUrl, mediaType, caption } = req.body;
+      
+      if (!mediaUrl || !mediaType) {
+        return res.status(400).json({ message: "Media URL and type are required" });
+      }
+      
+      // Stories expire after 24 hours
+      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      
+      const story = await storage.createUserStory({
+        userId,
+        mediaUrl,
+        mediaType,
+        caption,
+        expiresAt,
+      });
+      res.status(201).json(story);
+    } catch (error: any) {
+      console.error("Error creating story:", error);
+      res.status(400).json({ message: error.message || "Failed to create story" });
+    }
+  });
+
+  // Record a story view
+  app.post('/api/stories/:id/view', isAuthenticated, async (req: any, res) => {
+    try {
+      const storyId = parseInt(req.params.id);
+      const viewerId = req.user.claims.sub;
+      await storage.recordStoryView(storyId, viewerId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error recording story view:", error);
+      res.status(500).json({ message: "Failed to record view" });
+    }
+  });
+
   // ===== COMMUNITY HUB ROUTES =====
   
   // Get all posts (with optional type filter)

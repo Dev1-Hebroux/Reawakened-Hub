@@ -114,6 +114,36 @@ export const authAuditLog = pgTable("auth_audit_log", {
 
 export type AuthAuditLog = typeof authAuditLog.$inferSelect;
 
+// User Stories (Instagram-style 24h stories)
+export const userStories = pgTable("user_stories", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  mediaUrl: text("media_url").notNull(),
+  mediaType: varchar("media_type", { length: 10 }).notNull(), // 'image' or 'video'
+  caption: text("caption"),
+  expiresAt: timestamp("expires_at").notNull(), // 24 hours from creation
+  viewCount: integer("view_count").default(0),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertUserStorySchema = createInsertSchema(userStories).omit({
+  id: true,
+  viewCount: true,
+  createdAt: true,
+});
+export type InsertUserStory = z.infer<typeof insertUserStorySchema>;
+export type UserStory = typeof userStories.$inferSelect;
+
+// Story Views (track who viewed which story)
+export const storyViews = pgTable("story_views", {
+  id: serial("id").primaryKey(),
+  storyId: integer("story_id").notNull().references(() => userStories.id, { onDelete: 'cascade' }),
+  viewerId: varchar("viewer_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  viewedAt: timestamp("viewed_at").defaultNow().notNull(),
+});
+
+export type StoryView = typeof storyViews.$inferSelect;
+
 // Community Hub Posts
 export const posts = pgTable("posts", {
   id: serial("id").primaryKey(),

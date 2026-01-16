@@ -440,6 +440,11 @@ import {
   type InsertPrayerPodMessage,
   type PrayerPodSession,
   type InsertPrayerPodSession,
+  userStories,
+  storyViews,
+  type UserStory,
+  type InsertUserStory,
+  type StoryView,
   readingPlans,
   readingPlanDays,
   userSpiritualProfiles,
@@ -467,6 +472,14 @@ export interface IStorage {
   upsertUser(user: UpsertUser): Promise<User>;
   getAllUsers(): Promise<User[]>;
   updateUserPreferences(userId: string, preferences: { contentMode?: string; audienceSegment?: string | null }): Promise<User>;
+
+  // User Stories
+  createUserStory(story: InsertUserStory): Promise<UserStory>;
+  getUserStories(userId: string): Promise<UserStory[]>;
+  getActiveStories(): Promise<(UserStory & { user: User })[]>;
+  recordStoryView(storyId: number, viewerId: string): Promise<void>;
+  getStoryViewers(storyId: number): Promise<StoryView[]>;
+  deleteExpiredStories(): Promise<void>;
 
   // Community Hub - Posts
   getPosts(type?: string): Promise<Post[]>;
@@ -1059,6 +1072,57 @@ export class DatabaseStorage implements IStorage {
     }
     const [user] = await db.update(users).set(updateData).where(eq(users.id, userId)).returning();
     return user;
+  }
+
+  // User Stories
+  async createUserStory(story: InsertUserStory): Promise<UserStory> {
+    const [created] = await db.insert(userStories).values(story).returning();
+    return created;
+  }
+
+  async getUserStories(userId: string): Promise<UserStory[]> {
+    const now = new Date();
+    return db.select().from(userStories)
+      .where(and(eq(userStories.userId, userId), gte(userStories.expiresAt, now)))
+      .orderBy(desc(userStories.createdAt));
+  }
+
+  async getActiveStories(): Promise<(UserStory & { user: User })[]> {
+    const now = new Date();
+    const results = await db.select({
+      story: userStories,
+      user: users,
+    })
+      .from(userStories)
+      .innerJoin(users, eq(userStories.userId, users.id))
+      .where(gte(userStories.expiresAt, now))
+      .orderBy(desc(userStories.createdAt));
+    
+    return results.map(r => ({ ...r.story, user: r.user }));
+  }
+
+  async recordStoryView(storyId: number, viewerId: string): Promise<void> {
+    const existing = await db.select().from(storyViews)
+      .where(and(eq(storyViews.storyId, storyId), eq(storyViews.viewerId, viewerId)))
+      .limit(1);
+    
+    if (existing.length === 0) {
+      await db.insert(storyViews).values({ storyId, viewerId });
+      await db.update(userStories)
+        .set({ viewCount: sql`${userStories.viewCount} + 1` })
+        .where(eq(userStories.id, storyId));
+    }
+  }
+
+  async getStoryViewers(storyId: number): Promise<StoryView[]> {
+    return db.select().from(storyViews)
+      .where(eq(storyViews.storyId, storyId))
+      .orderBy(desc(storyViews.viewedAt));
+  }
+
+  async deleteExpiredStories(): Promise<void> {
+    const now = new Date();
+    await db.delete(userStories).where(lt(userStories.expiresAt, now));
   }
 
   // Posts
