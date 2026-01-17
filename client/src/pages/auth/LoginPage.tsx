@@ -17,6 +17,7 @@ export function LoginPage() {
   
   const params = new URLSearchParams(searchString);
   const redirectTo = params.get('redirect') || '/';
+  const urlError = params.get('error');
   
   useEffect(() => {
     if (isAuthenticated && !authLoading) {
@@ -27,6 +28,14 @@ export function LoginPage() {
   useEffect(() => {
     if (authError) setError(authError);
   }, [authError]);
+  
+  useEffect(() => {
+    if (urlError === 'google_coming_soon') {
+      setError('Google sign-in is coming soon! Please use email/password for now.');
+    } else if (urlError === 'apple_coming_soon') {
+      setError('Apple sign-in is coming soon! Please use email/password for now.');
+    }
+  }, [urlError]);
   
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -361,4 +361,20 @@ router.post('/resend-verification', async (req, res) => {
   }
 });
 
+router.get('/google', (req, res) => {
+  res.redirect('/login?error=google_coming_soon');
+});
+
+router.get('/google/callback', (req, res) => {
+  res.redirect('/login?error=google_coming_soon');
+});
+
+router.get('/apple', (req, res) => {
+  res.redirect('/login?error=apple_coming_soon');
+});
+
+router.get('/apple/callback', (req, res) => {
+  res.redirect('/login?error=apple_coming_soon');
+});
+
 export default router;
