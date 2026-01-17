@@ -48,7 +48,7 @@ integrations = ["javascript_log_in_with_replit:1.0.0", "javascript_object_storag
 SUPER_ADMIN_EMAILS = "abraham.oni@hebrouxconsulting.org,hebroux101@gmail.com"
 
 [userenv.production]
-VITE_SHOW_REPLIT_LOGIN = "false"
+VITE_SHOW_REPLIT_LOGIN = "true"
 
 [userenv.development]
 VITE_SHOW_REPLIT_LOGIN = "true"
