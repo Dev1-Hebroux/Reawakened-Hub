@@ -9,6 +9,7 @@ import { AiCoachDrawer } from "@/components/AiCoachDrawer";
 import { OnboardingTour, useOnboardingTour } from "@/components/OnboardingTour";
 import { useAuth } from "@/hooks/useAuth";
 import { MobileNav } from "@/components/layout/MobileNav";
+import { Navbar } from "@/components/layout/Navbar";
 import { Suspense, lazy } from "react";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { AudioPreloader } from "@/hooks/useAudioPreloader";
@@ -266,6 +267,7 @@ function AppContent() {
       <ScrollToTop />
       <AudioPreloader />
       {isAuthenticated && <NotificationInitializer />}
+      <Navbar />
       <div className="dove-background min-h-screen relative pb-20 xl:pb-0">
         <Toaster />
         <Router />
