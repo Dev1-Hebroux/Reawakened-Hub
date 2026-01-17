@@ -98,7 +98,7 @@ export function Navbar() {
             {!isAuthenticated && (
               <Button 
                 variant="ghost"
-                onClick={() => window.location.href = '/api/login'}
+                onClick={() => navigate('/login')}
                 className={`${useDarkTheme ? 'text-white hover:bg-white/10' : 'text-gray-700 hover:bg-gray-100'} font-bold px-4 py-2 rounded-full transition-all`}
                 data-testid="nav-signin"
               >
@@ -152,7 +152,7 @@ export function Navbar() {
                 {!isAuthenticated && (
                   <Button 
                     variant="outline"
-                    onClick={() => { setIsOpen(false); window.location.href = '/api/login'; }}
+                    onClick={() => { setIsOpen(false); navigate('/login'); }}
                     className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 font-bold py-5 rounded-xl" 
                     data-testid="mobile-nav-signin"
                   >
