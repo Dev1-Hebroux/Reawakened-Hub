@@ -161,15 +161,35 @@ router.post('/login', csrfProtection, authRateLimiter, async (req, res) => {
 
 router.post('/logout', csrfProtection, async (req, res) => {
   try {
+    // Invalidate email/password session
     const token = req.cookies?.auth_session;
     if (token) {
       await invalidateSession(token);
     }
     clearSessionCookie(res);
-    res.json({ success: true });
+    
+    // Clear passport user if present
+    if (req.logout) {
+      req.logout(() => {});
+    }
+    
+    // Destroy session and clear cookies, then respond
+    if (req.session) {
+      req.session.destroy((err) => {
+        if (err) {
+          console.error('[Auth] Session destroy error:', err);
+        }
+        res.clearCookie('connect.sid', { path: '/' });
+        res.json({ success: true });
+      });
+    } else {
+      res.clearCookie('connect.sid', { path: '/' });
+      res.json({ success: true });
+    }
   } catch (error) {
     console.error('[Auth] Logout error:', error);
     clearSessionCookie(res);
+    res.clearCookie('connect.sid', { path: '/' });
     res.json({ success: true });
   }
 });

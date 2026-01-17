@@ -123,7 +123,46 @@ async function upsertUser(
 
 export async function setupAuth(app: Express) {
   app.set("trust proxy", 1);
+  
+  // Check if Replit auth should be enabled
+  // Disabled by default in production (when ENABLE_REPLIT_AUTH is not 'true')
+  const isReplitAuthEnabled = process.env.ENABLE_REPLIT_AUTH === 'true';
+  
+  // Always set up session middleware (needed for both auth types)
   app.use(getSession());
+  
+  // If Replit auth is disabled, skip passport and OIDC setup entirely
+  if (!isReplitAuthEnabled) {
+    console.log('[Auth] Replit OIDC authentication disabled');
+    
+    // Register routes that return 403 for blocked auth
+    app.get("/api/login", (req, res) => {
+      return res.status(403).json({ message: "Replit authentication is disabled. Please use email/password login." });
+    });
+    
+    app.get("/api/callback", (req, res) => {
+      return res.status(403).json({ message: "Replit authentication is disabled." });
+    });
+    
+    // Simple logout that just clears session and redirects home
+    app.get("/api/logout", (req, res) => {
+      if (req.session) {
+        req.session.destroy((err) => {
+          if (err) {
+            console.error('[Auth] Session destroy error:', err);
+          }
+        });
+      }
+      res.clearCookie('connect.sid', { path: '/' });
+      res.redirect('/');
+    });
+    
+    return; // Skip all Replit OIDC setup
+  }
+  
+  // === Replit OIDC Setup (only when enabled) ===
+  console.log('[Auth] Replit OIDC authentication enabled');
+  
   app.use(passport.initialize());
   app.use(passport.session());
 
@@ -180,13 +219,28 @@ export async function setupAuth(app: Express) {
   });
 
   app.get("/api/logout", (req, res) => {
+    // Fully destroy the session
     req.logout(() => {
-      res.redirect(
-        client.buildEndSessionUrl(config, {
-          client_id: process.env.REPL_ID!,
-          post_logout_redirect_uri: `${req.protocol}://${req.hostname}`,
-        }).href
-      );
+      if (req.session) {
+        req.session.destroy((err) => {
+          if (err) {
+            console.error('[Auth] Session destroy error:', err);
+          }
+          // Clear session cookie
+          res.clearCookie('connect.sid', { path: '/' });
+          
+          // Redirect to Replit's end session
+          res.redirect(
+            client.buildEndSessionUrl(config, {
+              client_id: process.env.REPL_ID!,
+              post_logout_redirect_uri: `${req.protocol}://${req.hostname}`,
+            }).href
+          );
+        });
+      } else {
+        res.clearCookie('connect.sid', { path: '/' });
+        res.redirect('/');
+      }
     });
   });
 }
