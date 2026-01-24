@@ -1,7 +1,8 @@
-import { motion } from "framer-motion";
-import { BookOpen, ArrowRight } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { BookOpen, ArrowRight, RefreshCw } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useRoute, useLocation } from "wouter";
+import { useQueryClient } from "@tanstack/react-query";
 import { Navbar } from "@/components/layout/Navbar";
 import { useAuth } from "@/hooks/useAuth";
 import { DominionOnboarding } from "@/components/DominionOnboarding";
@@ -19,6 +20,7 @@ import { SparkFilters } from "@/components/sparks/SparkFilters";
 import { SparkGrid } from "@/components/sparks/SparkGrid";
 import { SubscribeModal } from "@/components/sparks/SubscribeModal";
 import { IntercessionModal } from "@/components/sparks/IntercessionModal";
+import { usePullToRefresh } from "@/hooks/useGestures";
 
 const pillars = ["All", "daily-devotional", "worship", "testimony"];
 const pillarLabels: Record<string, string> = {
@@ -79,6 +81,20 @@ export function SparksPage() {
     handleEmailSubscribe,
   } = useEmailSubscription();
 
+  // Pull-to-refresh functionality
+  const queryClient = useQueryClient();
+  const { containerRef, pullDistance, isRefreshing, handlers } = usePullToRefresh(
+    async () => {
+      // Invalidate all dashboard queries to fetch fresh data
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["/api/dashboard"] }),
+        queryClient.invalidateQueries({ queryKey: ["/api/me/progress"] }),
+        queryClient.invalidateQueries({ queryKey: ["/api/daily-tasks/progress"] })
+      ]);
+    },
+    { threshold: 80, maxPull: 120 }
+  );
+
   // Sync audience segment to localStorage
   useEffect(() => {
     if (userAudienceSegment) {
@@ -113,8 +129,34 @@ export function SparksPage() {
   const featuredSpark = featuredSparks.length > 0 ? featuredSparks[0] : (sparks.length > 0 ? sparks[0] : null);
 
   return (
-    <div className="min-h-screen bg-black text-white overflow-x-hidden">
+    <div
+      ref={containerRef}
+      className="min-h-screen bg-black text-white overflow-x-hidden"
+      {...handlers}
+    >
       <Navbar />
+
+      {/* Pull-to-Refresh Indicator */}
+      <AnimatePresence>
+        {pullDistance > 0 && (
+          <motion.div
+            className="fixed top-16 left-1/2 -translate-x-1/2 z-40 flex items-center gap-2 bg-primary/20 backdrop-blur-md border border-primary/30 rounded-full px-4 py-2"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+          >
+            <motion.div
+              animate={{ rotate: isRefreshing ? 360 : 0 }}
+              transition={{ duration: 1, repeat: isRefreshing ? Infinity : 0, ease: "linear" }}
+            >
+              <RefreshCw className="h-4 w-4 text-primary" />
+            </motion.div>
+            <span className="text-sm font-medium text-primary">
+              {isRefreshing ? "Refreshing..." : pullDistance >= 80 ? "Release to refresh" : "Pull to refresh"}
+            </span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <DominionOnboarding
         isOpen={needsOnboarding}
