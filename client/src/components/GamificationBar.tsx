@@ -3,6 +3,8 @@ import { Flame, Trophy, Zap, Award, Crown, Sunrise, Share2, Brain, Target, Users
 import type { LucideIcon } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
+import { StreakFlame, MiniStreak } from "@/components/gamification/StreakFlame";
+import { LevelBadge } from "@/components/gamification/LevelProgressRing";
 
 interface UserProgress {
   streak: {
@@ -115,48 +117,13 @@ export function GamificationBar() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
             >
-              <div
-                className="h-10 w-10 rounded-lg flex items-center justify-center relative group"
-                style={{
-                  backgroundColor: currentStreak > 0 ? 'rgba(124, 154, 142, 0.15)' : 'rgba(250, 248, 245, 0.05)',
-                  border: currentStreak > 0 ? '1px solid rgba(124, 154, 142, 0.3)' : '1px solid rgba(250, 248, 245, 0.1)'
-                }}
-              >
-                <Flame
-                  className="h-5 w-5"
-                  style={{ color: currentStreak > 0 ? '#7C9A8E' : 'rgba(250, 248, 245, 0.3)' }}
-                />
-                {graceDaysUsed > 0 && (
-                  <div className="absolute -top-1 -right-1 h-4 w-4 rounded-full flex items-center justify-center text-xs font-bold"
-                    style={{ backgroundColor: '#D4A574', color: '#0F1A19' }}>
-                    {graceDaysUsed}
-                  </div>
-                )}
-                {graceDaysUsed > 0 && (
-                  <div
-                    className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 pointer-events-none"
-                    style={{ backgroundColor: '#1a2744', color: '#FAF8F5' }}>
-                    {graceDaysUsed} grace day{graceDaysUsed !== 1 ? 's' : ''} used this week
-                  </div>
-                )}
-              </div>
-              <div>
-                <div className="flex items-baseline gap-1.5">
-                  <span
-                    className="text-xl font-semibold"
-                    style={{ color: '#FAF8F5' }}
-                    data-testid="text-streak-count"
-                  >
-                    {currentStreak}
-                  </span>
-                  <span className="text-sm" style={{ color: 'rgba(74, 124, 124, 0.8)' }}>day streak</span>
-                </div>
-                {progress?.streak?.longestStreak && progress.streak.longestStreak > currentStreak && (
-                  <p className="text-xs" style={{ color: 'rgba(250, 248, 245, 0.3)' }}>
-                    Best: {progress.streak.longestStreak} days
-                  </p>
-                )}
-              </div>
+              <MiniStreak
+                streak={currentStreak}
+                longestStreak={progress?.streak?.longestStreak || 0}
+                graceDaysUsed={graceDaysUsed}
+                graceDaysAllowed={graceDaysAllowed}
+                className="flex-shrink-0"
+              />
             </motion.div>
 
             <div className="hidden md:block h-6 w-px" style={{ backgroundColor: 'rgba(250, 248, 245, 0.1)' }} />
@@ -168,32 +135,19 @@ export function GamificationBar() {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.1 }}
             >
-              <div
-                className="h-10 w-10 rounded-lg flex items-center justify-center"
-                style={{
-                  backgroundColor: 'rgba(212, 165, 116, 0.15)',
-                  border: '1px solid rgba(212, 165, 116, 0.3)'
-                }}
-              >
-                <Crown className="h-5 w-5" style={{ color: '#D4A574' }} />
-              </div>
-              <div>
-                <div className="flex items-baseline gap-1.5">
-                  <span className="text-sm font-semibold" style={{ color: '#D4A574' }}>
-                    Lv {level}
-                  </span>
-                  <span className="text-xs" style={{ color: 'rgba(212, 165, 116, 0.7)' }}>
-                    {getLevelName(level)}
-                  </span>
-                </div>
+              <LevelBadge level={level} size="md" />
+              <div className="flex flex-col">
+                <span className="text-xs font-medium" style={{ color: 'rgba(212, 165, 116, 0.9)' }}>
+                  {getLevelName(level)}
+                </span>
                 <div className="flex items-center gap-2 mt-0.5">
                   <div className="w-20 h-1 rounded-full" style={{ backgroundColor: 'rgba(212, 165, 116, 0.2)' }}>
-                    <div
-                      className="h-full rounded-full transition-all duration-500"
-                      style={{
-                        width: `${levelProgress}%`,
-                        backgroundColor: '#D4A574'
-                      }}
+                    <motion.div
+                      className="h-full rounded-full"
+                      style={{ backgroundColor: '#D4A574' }}
+                      initial={{ width: 0 }}
+                      animate={{ width: `${levelProgress}%` }}
+                      transition={{ duration: 0.8, ease: "easeOut" }}
                     />
                   </div>
                   <span className="text-xs" style={{ color: 'rgba(250, 248, 245, 0.4)' }}>

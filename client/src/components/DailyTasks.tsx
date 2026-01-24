@@ -20,6 +20,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
 import { toast } from "sonner";
 import { celebrate, celebrateTask, celebrateDailyGoal } from "@/lib/celebrations";
+import { CircularProgress } from "@/components/gamification/CircularProgress";
 
 type TaskTier = "essential" | "bonus" | "stretch";
 type AudienceSegment = "gen-z-student" | "young-professional" | "couple" | "parent" | "senior" | "general";
@@ -402,16 +403,17 @@ export function DailyTasks() {
             </h2>
             <p className="text-gray-400 text-sm">Your spiritual growth checklist</p>
           </div>
-          <div className="text-right">
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-bold text-white">{totalPoints}</span>
-              <span className="text-sm text-gray-400">/ {dailyGoal} pts</span>
-            </div>
-            <div className="w-32 h-2 bg-white/10 rounded-full mt-2 overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-primary to-green-400 transition-all duration-500"
-                style={{ width: `${Math.min(100, (totalPoints / dailyGoal) * 100)}%` }}
-              />
+          <div className="relative flex items-center justify-center">
+            <CircularProgress
+              progress={Math.min(100, (totalPoints / dailyGoal) * 100)}
+              size={90}
+              strokeWidth={8}
+              color="#7C9A8E"
+              glow={totalPoints >= dailyGoal}
+            />
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span className="text-2xl font-bold text-white">{totalPoints}</span>
+              <span className="text-xs text-gray-400">/ {dailyGoal}</span>
             </div>
           </div>
         </div>
@@ -422,6 +424,7 @@ export function DailyTasks() {
             const config = TIER_CONFIG[tier];
             const completed = completionByTier[tier];
             const total = tasksByTier[tier].length;
+            const progress = total > 0 ? (completed / total) * 100 : 0;
 
             return (
               <div
@@ -432,12 +435,28 @@ export function DailyTasks() {
                   borderColor: config.borderColor
                 }}
               >
-                <div className="flex items-center gap-2 mb-1">
-                  <config.icon className="h-4 w-4" style={{ color: config.color }} />
-                  <span className="text-xs font-medium text-white/70">{config.label}</span>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <config.icon className="h-4 w-4" style={{ color: config.color }} />
+                    <span className="text-xs font-medium text-white/70">{config.label}</span>
+                  </div>
+                  <div className="relative" style={{ width: 32, height: 32 }}>
+                    <CircularProgress
+                      progress={progress}
+                      size={32}
+                      strokeWidth={3}
+                      color={config.color}
+                      glow={completed === total && total > 0}
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-[10px] font-bold text-white">
+                        {completed}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <div className="text-lg font-bold text-white">
-                  {completed}/{total}
+                <div className="text-xs text-white/60">
+                  {completed === total && total > 0 ? "Complete!" : `${total - completed} left`}
                 </div>
               </div>
             );
