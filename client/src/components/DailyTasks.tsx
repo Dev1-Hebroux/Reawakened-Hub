@@ -21,6 +21,8 @@ import { apiRequest } from "@/lib/queryClient";
 import { toast } from "sonner";
 import { celebrate, celebrateTask, celebrateDailyGoal } from "@/lib/celebrations";
 import { CircularProgress } from "@/components/gamification/CircularProgress";
+import { useSwipe } from "@/hooks/useGestures";
+import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 
 type TaskTier = "essential" | "bonus" | "stretch";
 type AudienceSegment = "gen-z-student" | "young-professional" | "couple" | "parent" | "senior" | "general";
@@ -262,6 +264,114 @@ const TIER_CONFIG = {
   }
 };
 
+/**
+ * Swipeable Task Item Component
+ * Swipe left to complete (mobile-first interaction)
+ */
+interface SwipeableTaskItemProps {
+  task: DailyTask;
+  isCompleted: boolean;
+  isPending: boolean;
+  config: typeof TIER_CONFIG[keyof typeof TIER_CONFIG];
+  onComplete: () => void;
+}
+
+function SwipeableTaskItem({
+  task,
+  isCompleted,
+  isPending,
+  config,
+  onComplete
+}: SwipeableTaskItemProps) {
+  const [swipeProgress, setSwipeProgress] = useState(0);
+
+  const swipeHandlers = useSwipe(
+    (direction) => {
+      if (direction === "left" && !isCompleted && !isPending) {
+        onComplete();
+      }
+    },
+    { threshold: 80 }
+  );
+
+  return (
+    <motion.div
+      className="relative overflow-hidden rounded-xl"
+      drag="x"
+      dragConstraints={{ left: -100, right: 0 }}
+      dragElastic={0.1}
+      onDragEnd={(_, info) => {
+        if (info.offset.x < -80 && !isCompleted && !isPending) {
+          onComplete();
+        }
+      }}
+      onDrag={(_, info) => {
+        const progress = Math.max(0, Math.min(100, (-info.offset.x / 100) * 100));
+        setSwipeProgress(progress);
+      }}
+      {...swipeHandlers}
+    >
+      {/* Swipe Background Indicator */}
+      {swipeProgress > 0 && (
+        <motion.div
+          className="absolute inset-y-0 right-0 flex items-center justify-end px-6"
+          style={{
+            width: `${swipeProgress}%`,
+            backgroundColor: "rgba(34, 197, 94, 0.2)",
+            borderLeft: "2px solid rgba(34, 197, 94, 0.5)"
+          }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+        >
+          <CheckCircle2 className="h-6 w-6 text-green-400" />
+        </motion.div>
+      )}
+
+      <motion.button
+        onClick={onComplete}
+        disabled={isCompleted || isPending}
+        className={`relative w-full p-4 border text-left transition-all ${
+          isCompleted
+            ? "bg-green-500/10 border-green-500/30"
+            : "bg-white/5 border-white/10 hover:bg-white/10"
+        }`}
+        whileHover={{ scale: isCompleted ? 1 : 1.02 }}
+        whileTap={{ scale: isCompleted ? 1 : 0.98 }}
+        data-testid={`task-${task.id}`}
+      >
+        <div className="flex items-start gap-3">
+          <div className="mt-0.5">
+            {isCompleted ? (
+              <CheckCircle2 className="h-5 w-5 text-green-400" />
+            ) : (
+              <Circle className="h-5 w-5 text-gray-400" />
+            )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-lg">{task.icon}</span>
+              <h4 className={`font-semibold ${isCompleted ? "text-green-400" : "text-white"}`}>
+                {task.title}
+              </h4>
+            </div>
+            <p className="text-sm text-gray-400 mb-2">{task.description}</p>
+            <div className="flex items-center gap-4 text-xs">
+              <span className="flex items-center gap-1 text-gray-500">
+                <Clock className="h-3 w-3" />
+                {task.estimatedMinutes} min
+              </span>
+              <span className="flex items-center gap-1 font-medium" style={{ color: config.color }}>
+                <Award className="h-3 w-3" />
+                +{task.points} pts
+              </span>
+            </div>
+          </div>
+        </div>
+      </motion.button>
+    </motion.div>
+  );
+}
+
 export function DailyTasks() {
   const { user, isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
@@ -372,6 +482,24 @@ export function DailyTasks() {
 
   const totalPoints = progress?.totalPoints || 0;
   const dailyGoal = 50; // Essential tasks typically add up to ~35 points
+
+  // Keyboard shortcuts for power users
+  useKeyboardShortcuts([
+    {
+      key: "c",
+      action: () => {
+        // Complete first incomplete essential task
+        const firstIncomplete = availableTasks.find(
+          t => t.tier === "essential" && !completedTaskIds.has(t.id)
+        );
+        if (firstIncomplete) {
+          handleToggleTask(firstIncomplete.id);
+        }
+      },
+      description: "Complete next task",
+      ignoreInputs: true
+    }
+  ]);
 
   if (!isAuthenticated) {
     return (
@@ -517,48 +645,14 @@ export function DailyTasks() {
                       const isPending = completeTaskMutation.isPending && completeTaskMutation.variables === task.id;
 
                       return (
-                        <motion.button
+                        <SwipeableTaskItem
                           key={task.id}
-                          onClick={() => handleToggleTask(task.id)}
-                          disabled={isCompleted || isPending}
-                          className={`w-full p-4 rounded-xl border text-left transition-all ${
-                            isCompleted
-                              ? "bg-green-500/10 border-green-500/30"
-                              : "bg-white/5 border-white/10 hover:bg-white/10"
-                          }`}
-                          whileHover={{ scale: isCompleted ? 1 : 1.02 }}
-                          whileTap={{ scale: isCompleted ? 1 : 0.98 }}
-                          data-testid={`task-${task.id}`}
-                        >
-                          <div className="flex items-start gap-3">
-                            <div className="mt-0.5">
-                              {isCompleted ? (
-                                <CheckCircle2 className="h-5 w-5 text-green-400" />
-                              ) : (
-                                <Circle className="h-5 w-5 text-gray-400" />
-                              )}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 mb-1">
-                                <span className="text-lg">{task.icon}</span>
-                                <h4 className={`font-semibold ${isCompleted ? "text-green-400" : "text-white"}`}>
-                                  {task.title}
-                                </h4>
-                              </div>
-                              <p className="text-sm text-gray-400 mb-2">{task.description}</p>
-                              <div className="flex items-center gap-4 text-xs">
-                                <span className="flex items-center gap-1 text-gray-500">
-                                  <Clock className="h-3 w-3" />
-                                  {task.estimatedMinutes} min
-                                </span>
-                                <span className="flex items-center gap-1 font-medium" style={{ color: config.color }}>
-                                  <Award className="h-3 w-3" />
-                                  +{task.points} pts
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        </motion.button>
+                          task={task}
+                          isCompleted={isCompleted}
+                          isPending={isPending}
+                          config={config}
+                          onComplete={() => handleToggleTask(task.id)}
+                        />
                       );
                     })}
                   </motion.div>
