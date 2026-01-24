@@ -6,6 +6,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
+import { getApiUrl } from "../lib/api";
 
 export function useEmailSubscription() {
   const [emailInput, setEmailInput] = useState('');
@@ -22,7 +23,7 @@ export function useEmailSubscription() {
 
     setEmailSubmitting(true);
     try {
-      const response = await fetch('/api/subscribe', {
+      const response = await fetch(getApiUrl('/api/subscribe'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

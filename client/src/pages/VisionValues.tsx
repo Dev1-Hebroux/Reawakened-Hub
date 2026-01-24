@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, ArrowRight, Heart, X, Check, Compass } from "lucide-react";
 import { AICoachPanel, IntroGuide } from "@/components/AICoachPanel";
+import { getApiUrl } from "@/lib/api";
 
 const VALUE_OPTIONS = [
   "Family", "Faith", "Freedom", "Growth", "Adventure", "Creativity", "Service",
@@ -36,7 +37,7 @@ export function VisionValues() {
   const { data: session } = useQuery({
     queryKey: [`/api/vision/sessions/${sessionId}`],
     queryFn: async () => {
-      const res = await fetch(`/api/vision/sessions/current`, { credentials: "include" });
+      const res = await fetch(getApiUrl("/api/vision/sessions/current"), { credentials: "include" });
       if (!res.ok) return null;
       return (await res.json()).data;
     },
@@ -45,7 +46,7 @@ export function VisionValues() {
   const { data: valuesData } = useQuery({
     queryKey: [`/api/vision/sessions/${sessionId}/values`],
     queryFn: async () => {
-      const res = await fetch(`/api/vision/sessions/${sessionId}/values`, { credentials: "include" });
+      const res = await fetch(getApiUrl(`/api/vision/sessions/${sessionId}/values`), { credentials: "include" });
       if (!res.ok) return null;
       return (await res.json()).data;
     },
@@ -54,7 +55,7 @@ export function VisionValues() {
   const { data: purposeData } = useQuery({
     queryKey: [`/api/vision/sessions/${sessionId}/purpose`],
     queryFn: async () => {
-      const res = await fetch(`/api/vision/sessions/${sessionId}/purpose`, { credentials: "include" });
+      const res = await fetch(getApiUrl(`/api/vision/sessions/${sessionId}/purpose`), { credentials: "include" });
       if (!res.ok) return null;
       return (await res.json()).data;
     },
@@ -81,7 +82,7 @@ export function VisionValues() {
 
   const saveValues = useMutation({
     mutationFn: async () => {
-      const res = await fetch(`/api/vision/sessions/${sessionId}/values`, {
+      const res = await fetch(getApiUrl(`/api/vision/sessions/${sessionId}/values`), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -98,7 +99,7 @@ export function VisionValues() {
 
   const savePurpose = useMutation({
     mutationFn: async () => {
-      const res = await fetch(`/api/vision/sessions/${sessionId}/purpose`, {
+      const res = await fetch(getApiUrl(`/api/vision/sessions/${sessionId}/purpose`), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -135,16 +136,16 @@ export function VisionValues() {
       <Navbar />
       <main className="min-h-screen bg-[#FAF8F5] py-8 px-4">
         <div className="max-w-4xl mx-auto">
-          <Button 
-            variant="ghost" 
-            onClick={() => navigate(`/vision`)} 
-            className="mb-4 text-[#5A5A5A] hover:bg-[#E8E4DE]" 
+          <Button
+            variant="ghost"
+            onClick={() => navigate(`/vision`)}
+            className="mb-4 text-[#5A5A5A] hover:bg-[#E8E4DE]"
             data-testid="button-back-dashboard"
           >
             <ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard
           </Button>
 
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-6"
@@ -210,11 +211,10 @@ export function VisionValues() {
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
                           onClick={() => toggleValue(value)}
-                          className={`px-4 py-2.5 rounded-xl border-2 transition-all font-medium ${
-                            isSelected
-                              ? "border-[#7C9A8E] bg-[#7C9A8E] text-white"
-                              : "border-[#E8E4DE] bg-white text-[#5A5A5A] hover:border-[#7C9A8E]/50"
-                          }`}
+                          className={`px-4 py-2.5 rounded-xl border-2 transition-all font-medium ${isSelected
+                            ? "border-[#7C9A8E] bg-[#7C9A8E] text-white"
+                            : "border-[#E8E4DE] bg-white text-[#5A5A5A] hover:border-[#7C9A8E]/50"
+                            }`}
                           data-testid={`value-${value.toLowerCase()}`}
                         >
                           {isSelected && <span className="mr-1.5 bg-white/20 px-1.5 py-0.5 rounded text-xs">#{index + 1}</span>}
@@ -234,8 +234,8 @@ export function VisionValues() {
                             className="inline-flex items-center gap-2 bg-[#7C9A8E] text-white px-4 py-2 rounded-xl text-sm font-medium"
                           >
                             #{i + 1} {value}
-                            <button 
-                              onClick={() => toggleValue(value)} 
+                            <button
+                              onClick={() => toggleValue(value)}
                               className="hover:bg-white/20 rounded-full p-0.5"
                             >
                               <X className="w-3 h-3" />
@@ -266,8 +266,8 @@ export function VisionValues() {
               </Card>
 
               <div className="flex justify-between">
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   onClick={() => navigate(`/vision/${sessionId}/wheel`)}
                   className="text-[#5A5A5A] hover:bg-[#E8E4DE]"
                 >
@@ -295,12 +295,12 @@ export function VisionValues() {
 
               <div className="grid md:grid-cols-2 gap-4 mb-8">
                 {purposeQuadrants.map((quadrant) => (
-                  <Card 
-                    key={quadrant.key} 
+                  <Card
+                    key={quadrant.key}
                     className="border-2 rounded-2xl overflow-hidden"
                     style={{ borderColor: `${quadrant.color}30` }}
                   >
-                    <CardHeader 
+                    <CardHeader
                       className="pb-2"
                       style={{ backgroundColor: `${quadrant.color}10` }}
                     >
@@ -348,8 +348,8 @@ export function VisionValues() {
               </Card>
 
               <div className="flex justify-between">
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   onClick={() => setStep("values")}
                   className="text-[#5A5A5A] hover:bg-[#E8E4DE]"
                 >

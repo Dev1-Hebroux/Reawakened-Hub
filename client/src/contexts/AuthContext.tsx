@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import { getApiUrl } from '../lib/api';
 
 interface User {
   id: string;
@@ -49,10 +50,10 @@ let csrfPromise: Promise<string | null> | null = null;
 async function ensureCsrfToken(): Promise<string | null> {
   let token = getCsrfToken();
   if (token) return token;
-  
+
   if (csrfPromise) return csrfPromise;
-  
-  csrfPromise = fetch('/api/auth/csrf', { credentials: 'include' })
+
+  csrfPromise = fetch(getApiUrl('/api/auth/csrf'), { credentials: 'include' })
     .then(response => {
       if (response.ok) {
         return getCsrfToken();
@@ -66,7 +67,7 @@ async function ensureCsrfToken(): Promise<string | null> {
     .finally(() => {
       csrfPromise = null;
     });
-  
+
   return csrfPromise;
 }
 
@@ -83,7 +84,7 @@ async function authFetch(url: string, options: RequestInit = {}): Promise<Respon
     }
   }
 
-  return fetch(url, {
+  return fetch(getApiUrl(url), {
     ...options,
     headers,
     credentials: 'include',
@@ -98,7 +99,7 @@ const defaultBootstrap: BootstrapData = {
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const loadingRef = useRef(false);
-  
+
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -107,9 +108,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const refreshUser = useCallback(async () => {
     if (loadingRef.current) return;
     loadingRef.current = true;
-    
+
     try {
-      const response = await fetch('/api/init', { credentials: 'include' });
+      const response = await fetch(getApiUrl('/api/init'), { credentials: 'include' });
       if (response.ok) {
         const data = await response.json();
         if (data.authenticated && data.user) {
@@ -203,7 +204,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const loginWithReplit = () => {
-    window.location.href = '/api/login';
+    window.location.href = getApiUrl('/api/login');
   };
 
   const requestPasswordReset = async (email: string) => {

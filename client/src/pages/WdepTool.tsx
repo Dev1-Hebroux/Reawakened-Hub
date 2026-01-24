@@ -10,11 +10,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
 import { Progress } from "@/components/ui/progress";
 import {
-  ChevronLeft, ChevronRight, Target, Eye, Activity, 
+  ChevronLeft, ChevronRight, Target, Eye, Activity,
   Scale, Map, Rocket, CheckCircle2, Calendar,
   Lightbulb, ArrowRight, BookOpen, Clock, Star, Zap, Compass
 } from "lucide-react";
 import { AICoachPanel } from "@/components/AICoachPanel";
+import { getApiUrl } from "@/lib/api";
 
 const STEPS = [
   { key: "intro", label: "Introduction", icon: Compass, color: "from-[#7C9A8E] to-[#6B8B7E]" },
@@ -70,7 +71,7 @@ export function WdepTool() {
   const { data: session } = useQuery({
     queryKey: ["/api/vision/sessions/current"],
     queryFn: async () => {
-      const res = await fetch("/api/vision/sessions/current", { credentials: "include" });
+      const res = await fetch(getApiUrl("/api/vision/sessions/current"), { credentials: "include" });
       if (!res.ok) return null;
       const json = await res.json();
       return json.data;
@@ -79,7 +80,7 @@ export function WdepTool() {
 
   const createEntry = useMutation({
     mutationFn: async () => {
-      const res = await fetch(`/api/vision/sessions/${sessionId}/wdep`, {
+      const res = await fetch(getApiUrl(`/api/vision/sessions/${sessionId}/wdep`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -96,7 +97,7 @@ export function WdepTool() {
   const saveWants = useMutation({
     mutationFn: async () => {
       if (!wdepEntryId) return;
-      const res = await fetch(`/api/wdep/${wdepEntryId}/wants`, {
+      const res = await fetch(getApiUrl(`/api/wdep/${wdepEntryId}/wants`), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -110,7 +111,7 @@ export function WdepTool() {
   const saveDoing = useMutation({
     mutationFn: async () => {
       if (!wdepEntryId) return;
-      const res = await fetch(`/api/wdep/${wdepEntryId}/doing`, {
+      const res = await fetch(getApiUrl(`/api/wdep/${wdepEntryId}/doing`), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -124,7 +125,7 @@ export function WdepTool() {
   const saveEvaluation = useMutation({
     mutationFn: async () => {
       if (!wdepEntryId) return;
-      const res = await fetch(`/api/wdep/${wdepEntryId}/evaluation`, {
+      const res = await fetch(getApiUrl(`/api/wdep/${wdepEntryId}/evaluation`), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -138,7 +139,7 @@ export function WdepTool() {
   const savePlan = useMutation({
     mutationFn: async () => {
       if (!wdepEntryId) return;
-      const res = await fetch(`/api/wdep/${wdepEntryId}/plan`, {
+      const res = await fetch(getApiUrl(`/api/wdep/${wdepEntryId}/plan`), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -205,7 +206,7 @@ export function WdepTool() {
       <p className="text-[#6B7B6E] mb-6 text-lg">
         Get unstuck using Reality Therapy principles
       </p>
-      
+
       <Card className="bg-white border-[#E8E4DE] text-left mb-6">
         <CardContent className="p-5">
           <h3 className="font-semibold text-[#2C3E2D] mb-4 flex items-center gap-2">
@@ -232,7 +233,7 @@ export function WdepTool() {
           </div>
         </CardContent>
       </Card>
-      
+
       <div className="bg-[#4A7C7C]/10 rounded-2xl p-4 border border-[#4A7C7C]/20 mb-6">
         <div className="flex items-center gap-2 mb-2">
           <Clock className="w-4 h-4 text-[#4A7C7C]" />
@@ -327,7 +328,7 @@ export function WdepTool() {
         <CardContent className="p-4">
           <h3 className="font-semibold text-[#2C3E2D] mb-3">Total Behavior (TFAP)</h3>
           <p className="text-sm text-[#6B7B6E] mb-4">All behavior has four components:</p>
-          
+
           <div className="space-y-3">
             {[
               { key: "thinking", label: "Thinking", placeholder: "What thoughts occupy your mind?" },
@@ -583,22 +584,20 @@ export function WdepTool() {
             </span>
           </div>
           <Progress value={progress} className="h-2" />
-          
+
           <div className="flex justify-between mt-3">
             {STEPS.map((step, i) => {
               const Icon = step.icon;
               const isActive = i === currentStep;
               const isComplete = i < currentStep;
               return (
-                <div 
+                <div
                   key={step.key}
-                  className={`flex flex-col items-center ${
-                    isActive ? "opacity-100" : isComplete ? "opacity-60" : "opacity-30"
-                  }`}
+                  className={`flex flex-col items-center ${isActive ? "opacity-100" : isComplete ? "opacity-60" : "opacity-30"
+                    }`}
                 >
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                    isComplete ? "bg-[#7C9A8E]" : isActive ? `bg-gradient-to-br ${step.color}` : "bg-[#E8E4DE]"
-                  }`}>
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isComplete ? "bg-[#7C9A8E]" : isActive ? `bg-gradient-to-br ${step.color}` : "bg-[#E8E4DE]"
+                    }`}>
                     {isComplete ? (
                       <CheckCircle2 className="w-4 h-4 text-white" />
                     ) : (

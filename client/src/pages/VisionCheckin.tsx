@@ -13,6 +13,7 @@ import { Slider } from "@/components/ui/slider";
 import { ArrowLeft, Sun, Calendar, Check, Lightbulb, ArrowRight } from "lucide-react";
 import { AICoachPanel, IntroGuide } from "@/components/AICoachPanel";
 import { ToolLinkCompact } from "@/components/ToolLink";
+import { getApiUrl } from "@/lib/api";
 
 const getToday = () => new Date().toISOString().split("T")[0];
 const getWeekStart = () => {
@@ -32,7 +33,7 @@ export function VisionCheckin() {
   const { data: session } = useQuery({
     queryKey: [`/api/vision/sessions/${sessionId}`],
     queryFn: async () => {
-      const res = await fetch(`/api/vision/sessions/current`, { credentials: "include" });
+      const res = await fetch(getApiUrl("/api/vision/sessions/current"), { credentials: "include" });
       if (!res.ok) return null;
       return (await res.json()).data;
     },
@@ -41,7 +42,7 @@ export function VisionCheckin() {
   const { data: dailyCheckin } = useQuery({
     queryKey: [`/api/vision/sessions/${sessionId}/checkin/daily/${today}`],
     queryFn: async () => {
-      const res = await fetch(`/api/vision/sessions/${sessionId}/checkin/daily/${today}`, {
+      const res = await fetch(getApiUrl(`/api/vision/sessions/${sessionId}/checkin/daily/${today}`), {
         credentials: "include",
       });
       if (!res.ok) return null;
@@ -52,7 +53,7 @@ export function VisionCheckin() {
   const { data: weeklyReview } = useQuery({
     queryKey: [`/api/vision/sessions/${sessionId}/review/weekly/${weekStart}`],
     queryFn: async () => {
-      const res = await fetch(`/api/vision/sessions/${sessionId}/review/weekly/${weekStart}`, {
+      const res = await fetch(getApiUrl(`/api/vision/sessions/${sessionId}/review/weekly/${weekStart}`), {
         credentials: "include",
       });
       if (!res.ok) return null;
@@ -73,16 +74,16 @@ export function VisionCheckin() {
       <Navbar />
       <main className="min-h-screen bg-[#FAF8F5] py-8 px-4">
         <div className="max-w-4xl mx-auto">
-          <Button 
-            variant="ghost" 
-            onClick={() => navigate(`/vision`)} 
-            className="mb-4 text-[#5A5A5A] hover:bg-[#E8E4DE]" 
+          <Button
+            variant="ghost"
+            onClick={() => navigate(`/vision`)}
+            className="mb-4 text-[#5A5A5A] hover:bg-[#E8E4DE]"
             data-testid="button-back-dashboard"
           >
             <ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard
           </Button>
 
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-6"
@@ -128,16 +129,16 @@ export function VisionCheckin() {
 
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="grid w-full grid-cols-2 mb-8 bg-white p-1.5 rounded-2xl shadow-sm border border-[#E8E4DE]">
-              <TabsTrigger 
-                value="daily" 
-                className="flex items-center gap-2 rounded-xl data-[state=active]:bg-[#D4A574] data-[state=active]:text-white data-[state=active]:shadow-sm" 
+              <TabsTrigger
+                value="daily"
+                className="flex items-center gap-2 rounded-xl data-[state=active]:bg-[#D4A574] data-[state=active]:text-white data-[state=active]:shadow-sm"
                 data-testid="tab-daily"
               >
                 <Sun className="w-4 h-4" /> Daily Check-in
               </TabsTrigger>
-              <TabsTrigger 
-                value="weekly" 
-                className="flex items-center gap-2 rounded-xl data-[state=active]:bg-[#C17767] data-[state=active]:text-white data-[state=active]:shadow-sm" 
+              <TabsTrigger
+                value="weekly"
+                className="flex items-center gap-2 rounded-xl data-[state=active]:bg-[#C17767] data-[state=active]:text-white data-[state=active]:shadow-sm"
                 data-testid="tab-weekly"
               >
                 <Calendar className="w-4 h-4" /> Weekly Review
@@ -172,7 +173,7 @@ function DailyCheckin({ sessionId, isFaithMode }: { sessionId: string; isFaithMo
   const { data: checkinData } = useQuery({
     queryKey: [`/api/vision/sessions/${sessionId}/checkin/daily/${today}`],
     queryFn: async () => {
-      const res = await fetch(`/api/vision/sessions/${sessionId}/checkin/daily/${today}`, {
+      const res = await fetch(getApiUrl(`/api/vision/sessions/${sessionId}/checkin/daily/${today}`), {
         credentials: "include",
       });
       if (!res.ok) return null;
@@ -192,7 +193,7 @@ function DailyCheckin({ sessionId, isFaithMode }: { sessionId: string; isFaithMo
 
   const saveCheckin = useMutation({
     mutationFn: async () => {
-      const res = await fetch(`/api/vision/sessions/${sessionId}/checkin/daily`, {
+      const res = await fetch(getApiUrl(`/api/vision/sessions/${sessionId}/checkin/daily`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -239,7 +240,7 @@ function DailyCheckin({ sessionId, isFaithMode }: { sessionId: string; isFaithMo
             </div>
             <div className="text-center mt-4 flex items-center justify-center gap-2">
               <span className="text-2xl">{energyEmojis[energy - 1]}</span>
-              <span 
+              <span
                 className="font-bold text-lg"
                 style={{ color: energyColors[energy - 1] }}
               >
@@ -295,11 +296,10 @@ function DailyCheckin({ sessionId, isFaithMode }: { sessionId: string; isFaithMo
           <Button
             onClick={() => saveCheckin.mutate()}
             disabled={saveCheckin.isPending}
-            className={`w-full rounded-xl py-6 ${
-              saved 
-                ? "bg-[#5B8C5A] hover:bg-[#5B8C5A]" 
-                : "bg-[#D4A574] hover:bg-[#C49464]"
-            } text-white`}
+            className={`w-full rounded-xl py-6 ${saved
+              ? "bg-[#5B8C5A] hover:bg-[#5B8C5A]"
+              : "bg-[#D4A574] hover:bg-[#C49464]"
+              } text-white`}
             data-testid="button-save-daily"
           >
             {saveCheckin.isPending ? "Saving..." : saved ? (
@@ -330,7 +330,7 @@ function WeeklyReview({ sessionId, isFaithMode }: { sessionId: string; isFaithMo
   const { data: reviewData } = useQuery({
     queryKey: [`/api/vision/sessions/${sessionId}/checkin/weekly/${weekStart}`],
     queryFn: async () => {
-      const res = await fetch(`/api/vision/sessions/${sessionId}/checkin/weekly/${weekStart}`, {
+      const res = await fetch(getApiUrl(`/api/vision/sessions/${sessionId}/checkin/weekly/${weekStart}`), {
         credentials: "include",
       });
       if (!res.ok) return null;
@@ -353,7 +353,7 @@ function WeeklyReview({ sessionId, isFaithMode }: { sessionId: string; isFaithMo
 
   const saveReview = useMutation({
     mutationFn: async () => {
-      const res = await fetch(`/api/vision/sessions/${sessionId}/checkin/weekly`, {
+      const res = await fetch(getApiUrl(`/api/vision/sessions/${sessionId}/checkin/weekly`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -416,8 +416,8 @@ function WeeklyReview({ sessionId, isFaithMode }: { sessionId: string; isFaithMo
                 id={q.key}
                 value={
                   q.key === "win" ? win :
-                  q.key === "lesson" ? lesson :
-                  q.key === "obstacle" ? obstacle : adjustment
+                    q.key === "lesson" ? lesson :
+                      q.key === "obstacle" ? obstacle : adjustment
                 }
                 onChange={(e) => {
                   if (q.key === "win") setWin(e.target.value);
@@ -497,11 +497,10 @@ function WeeklyReview({ sessionId, isFaithMode }: { sessionId: string; isFaithMo
           <Button
             onClick={() => saveReview.mutate()}
             disabled={saveReview.isPending}
-            className={`w-full rounded-xl py-6 ${
-              saved 
-                ? "bg-[#5B8C5A] hover:bg-[#5B8C5A]" 
-                : "bg-[#C17767] hover:bg-[#B06657]"
-            } text-white`}
+            className={`w-full rounded-xl py-6 ${saved
+              ? "bg-[#5B8C5A] hover:bg-[#5B8C5A]"
+              : "bg-[#C17767] hover:bg-[#B06657]"
+              } text-white`}
             data-testid="button-save-weekly"
           >
             {saveReview.isPending ? "Saving..." : saved ? (

@@ -5,6 +5,8 @@
  * sync queue management, and network status tracking.
  */
 
+import { getApiUrl } from '../lib/api';
+
 // ============================================================================
 // Types
 // ============================================================================
@@ -82,7 +84,7 @@ function openDatabase(): Promise<IDBDatabase> {
 
 async function addToSyncQueue(item: Omit<SyncQueueItem, 'id' | 'timestamp' | 'retryCount' | 'maxRetries'>): Promise<string> {
   const db = await openDatabase();
-  
+
   const queueItem: SyncQueueItem = {
     id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     timestamp: Date.now(),
@@ -180,7 +182,7 @@ async function getCache<T>(key: string): Promise<T | null> {
 
     request.onsuccess = () => {
       const entry = request.result as CacheEntry<T> | undefined;
-      
+
       if (!entry) {
         resolve(null);
         return;
@@ -291,7 +293,7 @@ async function processSyncQueue(): Promise<void> {
       if (!isOnline) break;
 
       try {
-        const response = await fetch(item.endpoint, {
+        const response = await fetch(getApiUrl(item.endpoint), {
           method: item.method,
           headers: {
             'Content-Type': 'application/json',
@@ -354,7 +356,7 @@ export const offlineService = {
   // Status
   getStatus,
   isOnline: () => isOnline,
-  
+
   subscribe(listener: (status: OfflineSyncStatus) => void): () => void {
     statusListeners.add(listener);
     return () => statusListeners.delete(listener);

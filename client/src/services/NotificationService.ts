@@ -45,7 +45,7 @@ export interface NotificationPreferences {
   timezone: string;
 }
 
-type NotificationType = 
+type NotificationType =
   | 'daily-spark'
   | 'streak-reminder'
   | 'streak-milestone'
@@ -53,6 +53,8 @@ type NotificationType =
   | 'community-update'
   | 'journey-progress'
   | 'welcome';
+
+import { getApiUrl } from '../lib/api';
 
 class NotificationService {
   private vapidPublicKey: string | null = null;
@@ -273,10 +275,10 @@ class NotificationService {
 
   async loadPreferences(): Promise<NotificationPreferences | null> {
     try {
-      const response = await fetch('/api/push/preferences', {
+      const response = await fetch(getApiUrl('/api/push/preferences'), {
         credentials: 'include',
       });
-      
+
       if (!response.ok) {
         return null;
       }
@@ -291,7 +293,7 @@ class NotificationService {
 
   async updatePreferences(prefs: Partial<NotificationPreferences>): Promise<boolean> {
     try {
-      const response = await fetch('/api/push/preferences', {
+      const response = await fetch(getApiUrl('/api/push/preferences'), {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -315,7 +317,7 @@ class NotificationService {
   }
 
   private async sendSubscriptionToServer(subscription: PushSubscription): Promise<void> {
-    await fetch('/api/push/subscribe', {
+    await fetch(getApiUrl('/api/push/subscribe'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -327,7 +329,7 @@ class NotificationService {
   }
 
   private async removeSubscriptionFromServer(): Promise<void> {
-    await fetch('/api/push/unsubscribe', {
+    await fetch(getApiUrl('/api/push/unsubscribe'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -339,7 +341,7 @@ class NotificationService {
 
   async sendTestNotification(): Promise<boolean> {
     try {
-      const response = await fetch('/api/push/test', {
+      const response = await fetch(getApiUrl('/api/push/test'), {
         method: 'POST',
         credentials: 'include',
       });
@@ -385,7 +387,7 @@ export function useNotifications() {
   useEffect(() => {
     const init = async () => {
       try {
-        const { publicKey } = await fetch('/api/push/vapid-public-key').then(r => r.json());
+        const { publicKey } = await fetch(getApiUrl('/api/push/vapid-public-key')).then(r => r.json());
         if (publicKey) {
           await notificationService.initialize(publicKey);
           setPermission(notificationService.getPermissionStatus());

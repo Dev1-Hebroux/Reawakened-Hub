@@ -8,11 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import {
-  Brain, Users, Crown, Lock, CheckCircle2, Play, 
-  ChevronRight, Star, Target, Zap, 
-  Heart, MessageCircle, Shield, Eye, Lightbulb, 
+  Brain, Users, Crown, Lock, CheckCircle2, Play,
+  ChevronRight, Star, Target, Zap,
+  Heart, MessageCircle, Shield, Eye, Lightbulb,
   TrendingUp, Compass, ArrowRight, Calendar, BarChart3
 } from "lucide-react";
+import { getApiUrl } from "@/lib/api";
 
 const TRACK_ICONS: Record<string, any> = {
   personal_mastery: Brain,
@@ -114,7 +115,7 @@ function TrackCard({ track, progress, onSelect }: TrackCardProps) {
       whileTap={{ scale: 0.98 }}
       className="touch-manipulation"
     >
-      <Card 
+      <Card
         className="bg-white border-[#E8E4DE] shadow-sm hover:shadow-md transition-all cursor-pointer overflow-hidden"
         onClick={onSelect}
         data-testid={`card-track-${track.key}`}
@@ -137,7 +138,7 @@ function TrackCard({ track, progress, onSelect }: TrackCardProps) {
               </div>
               <ChevronRight className="w-5 h-5 text-[#B8C4B8] flex-shrink-0 mt-1" />
             </div>
-            
+
             {progress > 0 && (
               <div className="mt-4 pt-3 border-t border-[#E8E4DE]">
                 <div className="flex items-center justify-between text-xs mb-2">
@@ -175,7 +176,7 @@ function ModuleCard({ module, trackKey, index, onStart }: ModuleCardProps) {
       transition={{ delay: index * 0.1 }}
       className="touch-manipulation"
     >
-      <Card 
+      <Card
         className={`bg-white border-[#E8E4DE] ${isLocked || isComingSoon ? "opacity-60" : ""} overflow-hidden`}
         data-testid={`card-module-${module.key}`}
       >
@@ -203,7 +204,7 @@ function ModuleCard({ module, trackKey, index, onStart }: ModuleCardProps) {
               </div>
             </div>
           </div>
-          
+
           {!isLocked && !isComingSoon && !isCompleted && (
             <Button
               onClick={(e) => {
@@ -217,7 +218,7 @@ function ModuleCard({ module, trackKey, index, onStart }: ModuleCardProps) {
               Start Module
             </Button>
           )}
-          
+
           {isCompleted && (
             <Button
               variant="outline"
@@ -244,7 +245,7 @@ export function TrackHub() {
   const { data: session } = useQuery({
     queryKey: ["/api/vision/sessions/current"],
     queryFn: async () => {
-      const res = await fetch("/api/vision/sessions/current", { credentials: "include" });
+      const res = await fetch(getApiUrl("/api/vision/sessions/current"), { credentials: "include" });
       if (!res.ok) return null;
       const json = await res.json();
       return json.data;
@@ -280,11 +281,11 @@ export function TrackHub() {
   if (selectedTrack) {
     const colors = TRACK_COLORS[selectedTrack.key] || TRACK_COLORS.personal_mastery;
     const Icon = TRACK_ICONS[selectedTrack.key] || Brain;
-    
+
     return (
       <div className="min-h-screen bg-[#FAF8F5] font-sans">
         <Navbar />
-        
+
         <main className="pt-20 pb-32 px-4">
           <div className="max-w-lg mx-auto">
             <button
@@ -295,7 +296,7 @@ export function TrackHub() {
               <ChevronRight className="w-4 h-4 rotate-180" />
               Back to Tracks
             </button>
-            
+
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -307,7 +308,7 @@ export function TrackHub() {
               <h1 className="text-2xl font-bold text-[#2C3E2D] mb-2">{selectedTrack.title}</h1>
               <p className="text-[#6B7B6E]">{selectedTrack.description}</p>
             </motion.div>
-            
+
             <div className="space-y-4">
               {selectedTrack.modules.map((module, index) => (
                 <ModuleCard
@@ -321,7 +322,7 @@ export function TrackHub() {
             </div>
           </div>
         </main>
-        
+
         <Footer />
       </div>
     );
@@ -330,10 +331,10 @@ export function TrackHub() {
   return (
     <div className="min-h-screen bg-[#FAF8F5] font-sans">
       <Navbar />
-      
+
       <main className="pt-20 pb-32 px-4">
         <div className="max-w-lg mx-auto">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-8"
@@ -370,7 +371,7 @@ export function TrackHub() {
             <Compass className="w-5 h-5 text-[#7C9A8E]" />
             Growth Tracks
           </h2>
-          
+
           <div className="space-y-4">
             {DEMO_TRACKS.map((track, index) => (
               <motion.div
@@ -408,7 +409,7 @@ export function TrackHub() {
           </motion.div>
         </div>
       </main>
-      
+
       <Footer />
     </div>
   );

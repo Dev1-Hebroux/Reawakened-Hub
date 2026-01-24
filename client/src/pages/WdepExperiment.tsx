@@ -7,10 +7,11 @@ import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { 
-  CheckCircle2, Circle, ArrowLeft, Calendar, Target, Rocket, 
+import {
+  CheckCircle2, Circle, ArrowLeft, Calendar, Target, Rocket,
   PartyPopper, Flame, Star, Trophy, ChevronRight
 } from "lucide-react";
+import { getApiUrl } from "@/lib/api";
 
 export function WdepExperiment() {
   const { sessionId, wdepId } = useParams<{ sessionId: string; wdepId: string }>();
@@ -21,7 +22,7 @@ export function WdepExperiment() {
   const { data: wdepData, isLoading } = useQuery({
     queryKey: [`/api/wdep/${wdepId}`],
     queryFn: async () => {
-      const res = await fetch(`/api/wdep/${wdepId}`, { credentials: "include" });
+      const res = await fetch(getApiUrl(`/api/wdep/${wdepId}`), { credentials: "include" });
       if (!res.ok) return null;
       return res.json();
     },
@@ -32,8 +33,8 @@ export function WdepExperiment() {
       const today = new Date();
       const startDate = today.toISOString().split('T')[0];
       const endDate = new Date(today.getTime() + 6 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-      
-      const res = await fetch(`/api/wdep/${wdepId}/experiment`, {
+
+      const res = await fetch(getApiUrl(`/api/wdep/${wdepId}/experiment`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -54,7 +55,7 @@ export function WdepExperiment() {
 
   const logDay = useMutation({
     mutationFn: async ({ date, completed, note }: { date: string; completed: boolean; note?: string }) => {
-      const res = await fetch(`/api/wdep/experiments/${wdepData?.data?.experiment?.id}/log`, {
+      const res = await fetch(getApiUrl(`/api/wdep/experiments/${wdepData?.data?.experiment?.id}/log`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -70,7 +71,7 @@ export function WdepExperiment() {
 
   const saveReflection = useMutation({
     mutationFn: async () => {
-      const res = await fetch(`/api/wdep/experiments/${wdepData?.data?.experiment?.id}/reflection`, {
+      const res = await fetch(getApiUrl(`/api/wdep/experiments/${wdepData?.data?.experiment?.id}/reflection`), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -93,7 +94,7 @@ export function WdepExperiment() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#FAF8F5]">
-        <motion.div 
+        <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
           className="w-12 h-12 rounded-full border-4 border-[#E8E4DE] border-t-[#7C9A8E]"
@@ -241,15 +242,14 @@ export function WdepExperiment() {
                     }
                   }}
                   disabled={day.isFuture || logDay.isPending}
-                  className={`w-full flex items-center justify-between p-4 rounded-xl border-2 transition-all ${
-                    day.completed
-                      ? "bg-[#7C9A8E]/10 border-[#7C9A8E]"
-                      : day.isToday
+                  className={`w-full flex items-center justify-between p-4 rounded-xl border-2 transition-all ${day.completed
+                    ? "bg-[#7C9A8E]/10 border-[#7C9A8E]"
+                    : day.isToday
                       ? "bg-[#D4A574]/10 border-[#D4A574] hover:bg-[#D4A574]/20"
                       : day.isFuture
-                      ? "bg-[#E8E4DE]/30 border-[#E8E4DE] opacity-50 cursor-not-allowed"
-                      : "bg-white border-[#E8E4DE] hover:border-[#7C9A8E] hover:bg-[#7C9A8E]/5"
-                  }`}
+                        ? "bg-[#E8E4DE]/30 border-[#E8E4DE] opacity-50 cursor-not-allowed"
+                        : "bg-white border-[#E8E4DE] hover:border-[#7C9A8E] hover:bg-[#7C9A8E]/5"
+                    }`}
                   data-testid={`day-${day.day}-button`}
                 >
                   <div className="flex items-center gap-3">
@@ -299,7 +299,7 @@ export function WdepExperiment() {
                   {isDay7Complete ? "Congratulations!" : "Almost There!"}
                 </CardTitle>
                 <p className="text-[#6B7B6E] text-sm mt-1">
-                  {isDay7Complete 
+                  {isDay7Complete
                     ? "You completed the 7-day experiment! Reflect on what you learned."
                     : "You're doing great! Complete Day 7 to unlock your reflection."}
                 </p>

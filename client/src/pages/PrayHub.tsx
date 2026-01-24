@@ -7,12 +7,12 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
 import { toast } from "sonner";
-import { 
-  Heart, 
-  Timer, 
-  Globe2, 
-  Users, 
-  Play, 
+import {
+  Heart,
+  Timer,
+  Globe2,
+  Users,
+  Play,
   ChevronRight,
   Flame,
   BookOpen,
@@ -33,6 +33,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { MissionFocus, LiveRoom, MissionAdoption } from "@shared/schema";
+import { getApiUrl } from "@/lib/api";
 
 interface PrayerFocusGroup {
   id: number;
@@ -90,7 +91,7 @@ export function PrayHub() {
   const { data: focusGroups = [], isLoading: focusesLoading } = useQuery<PrayerFocusGroup[]>({
     queryKey: ["/api/prayer/focus-groups"],
     queryFn: async () => {
-      const res = await fetch("/api/prayer/focus-groups");
+      const res = await fetch(getApiUrl("/api/prayer/focus-groups"));
       if (!res.ok) return [];
       return res.json();
     },
@@ -100,10 +101,10 @@ export function PrayHub() {
   const { data: ukCampuses = [], isLoading: campusesLoading } = useQuery<UkCampus[]>({
     queryKey: ["/api/prayer/uk-campuses", campusSearch],
     queryFn: async () => {
-      const url = campusSearch 
+      const url = campusSearch
         ? `/api/prayer/uk-campuses/search?q=${encodeURIComponent(campusSearch)}`
         : "/api/prayer/uk-campuses";
-      const res = await fetch(url);
+      const res = await fetch(getApiUrl(url));
       if (!res.ok) return [];
       return res.json();
     },
@@ -113,7 +114,7 @@ export function PrayHub() {
   const { data: subscriptions = [] } = useQuery<PrayerSubscription[]>({
     queryKey: ["/api/prayer/subscriptions"],
     queryFn: async () => {
-      const res = await fetch("/api/prayer/subscriptions", { credentials: "include" });
+      const res = await fetch(getApiUrl("/api/prayer/subscriptions"), { credentials: "include" });
       if (!res.ok) return [];
       return res.json();
     },
@@ -124,7 +125,7 @@ export function PrayHub() {
   const { data: prayerStats } = useQuery<PrayerStats>({
     queryKey: ["/api/prayer/stats"],
     queryFn: async () => {
-      const res = await fetch("/api/prayer/stats");
+      const res = await fetch(getApiUrl("/api/prayer/stats"));
       if (!res.ok) return { totalHours: 0, totalIntercessors: 0, campusesCovered: 0 };
       return res.json();
     },
@@ -133,7 +134,7 @@ export function PrayHub() {
   const { data: liveRooms = [], isLoading: roomsLoading } = useQuery<LiveRoom[]>({
     queryKey: ["/api/mission/live-rooms"],
     queryFn: async () => {
-      const res = await fetch("/api/mission/live-rooms");
+      const res = await fetch(getApiUrl("/api/mission/live-rooms"));
       if (!res.ok) return [];
       return res.json();
     },
@@ -142,7 +143,7 @@ export function PrayHub() {
   const { data: streakData } = useQuery<{ streak: number }>({
     queryKey: ["/api/mission/prayer-streak"],
     queryFn: async () => {
-      const res = await fetch("/api/mission/prayer-streak", { credentials: "include" });
+      const res = await fetch(getApiUrl("/api/mission/prayer-streak"), { credentials: "include" });
       if (!res.ok) return { streak: 0 };
       return res.json();
     },
@@ -153,7 +154,7 @@ export function PrayHub() {
   const { data: prayerRequests = [], isLoading: prayerRequestsLoading } = useQuery<any[]>({
     queryKey: ["/api/prayer-requests"],
     queryFn: async () => {
-      const res = await fetch("/api/prayer-requests");
+      const res = await fetch(getApiUrl("/api/prayer-requests"));
       if (!res.ok) return [];
       return res.json();
     },
@@ -301,10 +302,10 @@ export function PrayHub() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#1a2744] via-[#1a2744]/95 to-[#1a2744]/90">
       <Navbar />
-      
+
       <main className="pt-28 pb-32 px-4">
         <div className="max-w-lg mx-auto">
-          
+
           {/* Hero Section - Clean & Minimal */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -366,7 +367,7 @@ export function PrayHub() {
                 <p className="text-sm text-white/60">Choose a nation or campus to pray for</p>
               </div>
             </div>
-            
+
             {focusesLoading ? (
               <div className="flex justify-center py-8">
                 <Loader2 className="h-6 w-6 text-white/50 animate-spin" />
@@ -394,9 +395,9 @@ export function PrayHub() {
                 ))}
               </div>
             )}
-            
+
             <div className="grid grid-cols-2 gap-3 mt-4">
-              <Button 
+              <Button
                 className="bg-primary hover:bg-primary/90 text-white font-semibold py-4 rounded-xl"
                 onClick={() => { setAdoptType("nation"); setShowAdoptModal(true); }}
                 data-testid="button-adopt-nation"
@@ -404,7 +405,7 @@ export function PrayHub() {
                 <Globe2 className="h-4 w-4 mr-2" />
                 Nations
               </Button>
-              <Button 
+              <Button
                 className="bg-primary hover:bg-primary/90 text-white font-semibold py-4 rounded-xl"
                 onClick={() => { setAdoptType("campus"); setShowAdoptModal(true); }}
                 data-testid="button-adopt-campus"
@@ -431,7 +432,7 @@ export function PrayHub() {
                 <p className="text-sm text-white/60">Set your focus time</p>
               </div>
             </div>
-            
+
             {timerActive ? (
               <div className="text-center py-6">
                 <div className="text-5xl font-display font-bold text-white mb-3">
@@ -456,19 +457,18 @@ export function PrayHub() {
                     <button
                       key={mins}
                       onClick={() => setSelectedTimer(mins)}
-                      className={`flex-1 py-3 rounded-xl font-semibold text-sm transition-colors ${
-                        selectedTimer === mins 
-                          ? 'bg-primary text-white' 
-                          : 'bg-white/5 text-white/60 hover:bg-white/10'
-                      }`}
+                      className={`flex-1 py-3 rounded-xl font-semibold text-sm transition-colors ${selectedTimer === mins
+                        ? 'bg-primary text-white'
+                        : 'bg-white/5 text-white/60 hover:bg-white/10'
+                        }`}
                       data-testid={`timer-${mins}`}
                     >
                       {mins} min
                     </button>
                   ))}
                 </div>
-                
-                <Button 
+
+                <Button
                   className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-5 rounded-xl"
                   onClick={startTimer}
                   data-testid="button-start-timer"
@@ -498,7 +498,7 @@ export function PrayHub() {
                 </div>
               </div>
             </div>
-            
+
             {roomsLoading ? (
               <div className="flex justify-center py-6">
                 <Loader2 className="h-6 w-6 text-white/50 animate-spin" />
@@ -522,16 +522,16 @@ export function PrayHub() {
                           <h4 className="font-bold text-white text-sm">{room.title}</h4>
                           <p className="text-xs text-white/50">
                             {room.status === "live" || room.scheduleType === "always_on"
-                              ? `${room.maxParticipants || 0} praying now` 
+                              ? `${room.maxParticipants || 0} praying now`
                               : `Scheduled`
                             }
                           </p>
                         </div>
                       </div>
-                      <Button 
-                        size="sm" 
+                      <Button
+                        size="sm"
                         className={room.status === "live" || room.scheduleType === "always_on"
-                          ? "bg-red-500 hover:bg-red-600 text-white" 
+                          ? "bg-red-500 hover:bg-red-600 text-white"
                           : "bg-white/10 hover:bg-white/20 text-white"
                         }
                         onClick={() => {
@@ -569,16 +569,16 @@ export function PrayHub() {
                 <p className="text-sm text-white/60">Listen & respond</p>
               </div>
             </div>
-            
+
             <div className="bg-white/5 rounded-2xl p-4 mb-4">
               <p className="text-sm text-white/90 font-medium">
                 "Ask the Holy Spirit: Who should I encourage today?"
               </p>
             </div>
-            
+
             <div className="flex gap-2">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="flex-1 border-white/20 text-white hover:bg-white/10 font-bold py-5 rounded-2xl"
                 onClick={() => navigate("/reflection")}
                 data-testid="button-journal"
@@ -586,7 +586,7 @@ export function PrayHub() {
                 <BookOpen className="h-4 w-4 mr-2" />
                 Journal
               </Button>
-              <Button 
+              <Button
                 className="flex-1 bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-xl"
                 onClick={() => {
                   if (!isAuthenticated) {
@@ -635,8 +635,8 @@ export function PrayHub() {
               />
               <div className="flex items-center justify-between mt-2">
                 <label className="flex items-center gap-2 text-xs text-white/50">
-                  <input 
-                    type="checkbox" 
+                  <input
+                    type="checkbox"
                     checked={prayerRequestPrivate}
                     onChange={(e) => setPrayerRequestPrivate(e.target.checked)}
                     className="rounded bg-white/10 border-white/20"
@@ -704,7 +704,7 @@ export function PrayHub() {
               )}
             </div>
           </motion.div>
-          
+
         </div>
       </main>
 
@@ -840,16 +840,14 @@ export function PrayHub() {
                       key={campus.id}
                       whileHover={{ scale: 1.01 }}
                       whileTap={{ scale: 0.99 }}
-                      className={`bg-white/5 hover:bg-white/10 rounded-xl p-3 cursor-pointer border border-white/5 ${
-                        selectedCampus?.id === campus.id ? 'ring-2 ring-primary' : ''
-                      }`}
+                      className={`bg-white/5 hover:bg-white/10 rounded-xl p-3 cursor-pointer border border-white/5 ${selectedCampus?.id === campus.id ? 'ring-2 ring-primary' : ''
+                        }`}
                       onClick={() => setSelectedCampus(campus)}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <div className={`h-10 w-10 rounded-full flex items-center justify-center ${
-                            campus.type === 'university' ? 'bg-primary/20' : 'bg-primary/10'
-                          }`}>
+                          <div className={`h-10 w-10 rounded-full flex items-center justify-center ${campus.type === 'university' ? 'bg-primary/20' : 'bg-primary/10'
+                            }`}>
                             {campus.type === 'university' ? (
                               <Building className="h-5 w-5 text-primary" />
                             ) : (

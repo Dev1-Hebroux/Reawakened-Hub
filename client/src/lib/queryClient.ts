@@ -1,5 +1,6 @@
 import { QueryClient, QueryFunction, QueryCache, MutationCache } from "@tanstack/react-query";
 import { toast } from 'sonner';
+import { getApiUrl } from "@/lib/api";
 
 function getCsrfToken(): string | null {
   const match = document.cookie.match(/csrf_token=([^;]+)/);
@@ -34,17 +35,17 @@ export async function apiRequest<T = unknown>(
   data?: unknown | undefined,
 ): Promise<T> {
   const headers: Record<string, string> = {};
-  
+
   if (data) {
     headers['Content-Type'] = 'application/json';
   }
-  
+
   const csrfToken = getCsrfToken();
   if (csrfToken && method !== 'GET') {
     headers['X-CSRF-Token'] = csrfToken;
   }
-  
-  const res = await fetch(url, {
+
+  const res = await fetch(getApiUrl(url), {
     method,
     headers,
     body: data ? JSON.stringify(data) : undefined,
@@ -52,11 +53,11 @@ export async function apiRequest<T = unknown>(
   });
 
   await throwIfResNotOk(res);
-  
+
   if (res.status === 204) {
     return undefined as T;
   }
-  
+
   return res.json();
 }
 
@@ -65,18 +66,18 @@ export const getQueryFn: <T>(options: {
   on401: UnauthorizedBehavior;
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
-  async ({ queryKey }) => {
-    const res = await fetch(queryKey.join("/") as string, {
-      credentials: "include",
-    });
+    async ({ queryKey }) => {
+      const res = await fetch(getApiUrl(queryKey.join("/") as string), {
+        credentials: "include",
+      });
 
-    if (unauthorizedBehavior === "returnNull" && res.status === 401) {
-      return null;
-    }
+      if (unauthorizedBehavior === "returnNull" && res.status === 401) {
+        return null;
+      }
 
-    await throwIfResNotOk(res);
-    return await res.json();
-  };
+      await throwIfResNotOk(res);
+      return await res.json();
+    };
 
 export function isUnauthorizedError(error: unknown): boolean {
   return (error as any)?.status === 401;

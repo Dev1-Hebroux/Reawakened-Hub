@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useParams, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Printer, Download, Target, Activity, Scale, Map } from "lucide-react";
+import { getApiUrl } from "@/lib/api";
 
 export function WdepPdf() {
   const { sessionId, wdepId } = useParams<{ sessionId: string; wdepId: string }>();
@@ -10,7 +11,7 @@ export function WdepPdf() {
   const { data: wdepData, isLoading } = useQuery({
     queryKey: [`/api/wdep/${wdepId}`],
     queryFn: async () => {
-      const res = await fetch(`/api/wdep/${wdepId}`, { credentials: "include" });
+      const res = await fetch(getApiUrl(`/api/wdep/${wdepId}`), { credentials: "include" });
       if (!res.ok) return null;
       const json = await res.json();
       return json.data;
@@ -21,7 +22,7 @@ export function WdepPdf() {
   const { data: session } = useQuery({
     queryKey: ["/api/vision/sessions/current"],
     queryFn: async () => {
-      const res = await fetch("/api/vision/sessions/current", { credentials: "include" });
+      const res = await fetch(getApiUrl("/api/vision/sessions/current"), { credentials: "include" });
       if (!res.ok) return null;
       const json = await res.json();
       return json.data;

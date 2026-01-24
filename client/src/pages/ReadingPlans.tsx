@@ -4,14 +4,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { Navbar } from "@/components/layout/Navbar";
-import { 
-  BookOpen, Clock, Users, ChevronRight, Flame, Filter, 
+import {
+  BookOpen, Clock, Users, ChevronRight, Flame, Filter,
   Heart, Sparkles, Target, Award, TrendingUp, Check,
   Play, Bookmark, Star, ArrowRight, Search, X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { getApiUrl } from "@/lib/api";
 
 import peaceImage from "@assets/stock_images/peaceful_nature_scen_fe6f1282.jpg";
 import prayerImage from "@assets/stock_images/person_praying_hands_2c083135.jpg";
@@ -91,7 +92,7 @@ export function ReadingPlansPage() {
   const { toast } = useToast();
   const [, navigate] = useLocation();
   const queryClient = useQueryClient();
-  
+
   const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
   const [selectedMaturity, setSelectedMaturity] = useState<string | null>(null);
   const [selectedDuration, setSelectedDuration] = useState<number | null>(null);
@@ -108,7 +109,7 @@ export function ReadingPlansPage() {
       if (selectedTopic) params.set("topic", selectedTopic);
       if (selectedMaturity) params.set("maturityLevel", selectedMaturity);
       if (selectedDuration) params.set("durationDays", String(selectedDuration));
-      const res = await fetch(`/api/reading-plans?${params}`);
+      const res = await fetch(getApiUrl(`/api/reading-plans?${params}`));
       return res.json();
     },
   });
@@ -135,7 +136,7 @@ export function ReadingPlansPage() {
 
   const saveProfileMutation = useMutation({
     mutationFn: async (data: { maturityLevel: string; interests: string[] }) => {
-      const res = await fetch("/api/user/spiritual-profile", {
+      const res = await fetch(getApiUrl("/api/user/spiritual-profile"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -153,7 +154,7 @@ export function ReadingPlansPage() {
 
   const enrollMutation = useMutation({
     mutationFn: async (planId: number) => {
-      const res = await fetch(`/api/reading-plans/${planId}/enroll`, {
+      const res = await fetch(getApiUrl(`/api/reading-plans/${planId}/enroll`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });
@@ -215,7 +216,7 @@ export function ReadingPlansPage() {
   return (
     <div className="min-h-screen bg-[#1a2744]">
       <Navbar />
-      
+
       {/* Hero Section - Clean & Minimal */}
       <div className="pt-24 pb-12">
         <div className="container mx-auto px-4">
@@ -228,13 +229,13 @@ export function ReadingPlansPage() {
               <BookOpen className="h-4 w-4 text-primary" />
               <span className="text-sm font-bold text-white uppercase tracking-wider">Bible Reading Plans</span>
             </div>
-            
+
             <h1 className="text-4xl md:text-5xl font-display font-bold text-white mb-4 leading-tight">
               Grow Deeper in God's Word
             </h1>
-            
+
             <p className="text-lg text-white/70 mb-8 max-w-xl mx-auto">
-              Discover personalized reading plans designed for your spiritual journey. 
+              Discover personalized reading plans designed for your spiritual journey.
               Build consistent habits and transform your faith.
             </p>
 
@@ -245,7 +246,7 @@ export function ReadingPlansPage() {
               </p>
               <p className="text-white/80 text-xs mt-2 font-medium">— Psalm 119:105</p>
             </div>
-            
+
             {/* Streak Badge */}
             {user && streak && streak.streak > 0 && (
               <div className="inline-flex items-center gap-3 bg-orange-500/20 rounded-full px-5 py-3 border border-orange-500/40">
@@ -293,7 +294,7 @@ export function ReadingPlansPage() {
               </div>
             </div>
             <div className="mt-4 bg-white/20 rounded-full h-2 overflow-hidden">
-              <div 
+              <div
                 className="bg-white rounded-full h-2 transition-all"
                 style={{ width: `${(activeEnrollment.progress.filter(p => p.completed).length / activeEnrollment.plan.durationDays) * 100}%` }}
               />
@@ -347,8 +348,8 @@ export function ReadingPlansPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.1 }}
                 >
-                  <PlanCard 
-                    plan={plan} 
+                  <PlanCard
+                    plan={plan}
                     enrolled={enrolledPlanIds.has(plan.id)}
                     onEnroll={() => enrollMutation.mutate(plan.id)}
                     enrolling={enrollMutation.isPending}
@@ -381,8 +382,8 @@ export function ReadingPlansPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.1 }}
                 >
-                  <PlanCard 
-                    plan={plan} 
+                  <PlanCard
+                    plan={plan}
                     enrolled={enrolledPlanIds.has(plan.id)}
                     onEnroll={() => enrollMutation.mutate(plan.id)}
                     enrolling={enrollMutation.isPending}
@@ -413,10 +414,10 @@ export function ReadingPlansPage() {
               </Button>
             )}
           </div>
-          
+
           {/* Topics */}
           <div className="flex flex-wrap gap-2 mb-4">
-            <Badge 
+            <Badge
               variant={selectedTopic === null ? "default" : "outline"}
               className={`cursor-pointer transition-all ${selectedTopic === null ? "bg-primary" : "bg-white/5 border-white/20 text-white/70 hover:bg-white/10"}`}
               onClick={() => setSelectedTopic(null)}
@@ -439,7 +440,7 @@ export function ReadingPlansPage() {
 
           {/* Maturity Levels */}
           <div className="flex flex-wrap gap-2 mb-4">
-            <Badge 
+            <Badge
               variant={selectedMaturity === null ? "default" : "outline"}
               className={`cursor-pointer transition-all ${selectedMaturity === null ? "bg-primary" : "bg-white/5 border-white/20 text-white/70 hover:bg-white/10"}`}
               onClick={() => setSelectedMaturity(null)}
@@ -461,7 +462,7 @@ export function ReadingPlansPage() {
 
           {/* Durations */}
           <div className="flex flex-wrap gap-2">
-            <Badge 
+            <Badge
               variant={selectedDuration === null ? "default" : "outline"}
               className={`cursor-pointer transition-all ${selectedDuration === null ? "bg-primary" : "bg-white/5 border-white/20 text-white/70 hover:bg-white/10"}`}
               onClick={() => setSelectedDuration(null)}
@@ -507,7 +508,7 @@ export function ReadingPlansPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05 }}
               >
-                <PlanCard 
+                <PlanCard
                   plan={plan}
                   enrolled={enrolledPlanIds.has(plan.id)}
                   onEnroll={() => enrollMutation.mutate(plan.id)}
@@ -545,11 +546,10 @@ export function ReadingPlansPage() {
                       <button
                         key={level.id}
                         onClick={() => setSelectedMaturityLevel(level.id)}
-                        className={`w-full p-4 rounded-xl border-2 text-left transition-all cursor-pointer ${
-                          selectedMaturityLevel === level.id 
-                            ? "border-primary bg-primary/20 ring-2 ring-primary/50" 
-                            : "border-white/20 hover:border-white/40 bg-white/5"
-                        }`}
+                        className={`w-full p-4 rounded-xl border-2 text-left transition-all cursor-pointer ${selectedMaturityLevel === level.id
+                          ? "border-primary bg-primary/20 ring-2 ring-primary/50"
+                          : "border-white/20 hover:border-white/40 bg-white/5"
+                          }`}
                         data-testid={`onboarding-maturity-${level.id}`}
                       >
                         <p className="font-bold text-white">{level.label}</p>
@@ -572,11 +572,10 @@ export function ReadingPlansPage() {
                       <button
                         key={topic.id}
                         onClick={() => toggleInterest(topic.id)}
-                        className={`p-4 rounded-xl border-2 text-left transition-all ${
-                          selectedInterests.includes(topic.id)
-                            ? "border-primary bg-primary/10"
-                            : "border-white/10 hover:border-white/30 bg-white/5"
-                        }`}
+                        className={`p-4 rounded-xl border-2 text-left transition-all ${selectedInterests.includes(topic.id)
+                          ? "border-primary bg-primary/10"
+                          : "border-white/10 hover:border-white/30 bg-white/5"
+                          }`}
                         data-testid={`onboarding-topic-${topic.id}`}
                       >
                         <span className="text-2xl mb-1 block">{topic.icon}</span>
@@ -588,8 +587,8 @@ export function ReadingPlansPage() {
                     <Button variant="outline" onClick={() => setOnboardingStep(0)} className="border-white/20 text-white hover:bg-white/10">
                       Back
                     </Button>
-                    <Button 
-                      className="flex-1" 
+                    <Button
+                      className="flex-1"
                       onClick={handleSaveProfile}
                       disabled={saveProfileMutation.isPending}
                     >
@@ -606,14 +605,14 @@ export function ReadingPlansPage() {
   );
 }
 
-function PlanCard({ 
-  plan, 
-  enrolled, 
+function PlanCard({
+  plan,
+  enrolled,
   onEnroll,
   enrolling,
   variant = "default"
-}: { 
-  plan: ReadingPlan; 
+}: {
+  plan: ReadingPlan;
   enrolled: boolean;
   onEnroll: () => void;
   enrolling: boolean;
@@ -622,13 +621,13 @@ function PlanCard({
   const maturityLabel = MATURITY_LEVELS.find(m => m.id === plan.maturityLevel)?.label || plan.maturityLevel;
   const primaryTopic = plan.topics?.[0] || "faith";
   const topicImage = TOPIC_IMAGES[primaryTopic] || peaceImage;
-  
+
   return (
     <div className="bg-[#19233b] rounded-2xl border border-white/10 overflow-hidden">
       {/* Cover Image */}
-      <div 
+      <div
         className="h-40 relative overflow-hidden"
-        style={{ 
+        style={{
           backgroundImage: `linear-gradient(to bottom, transparent 30%, rgba(25,35,59,0.95) 100%), url(${plan.coverImageUrl || topicImage})`,
           backgroundSize: "cover",
           backgroundPosition: "center"
@@ -648,7 +647,7 @@ function PlanCard({
           </Badge>
         )}
       </div>
-      
+
       <div className="p-5">
         {/* Tags */}
         <div className="flex items-center gap-2 mb-3">
@@ -660,10 +659,10 @@ function PlanCard({
             {plan.durationDays} Days
           </Badge>
         </div>
-        
+
         <h3 className="text-lg font-bold text-white mb-2 line-clamp-1">{plan.title}</h3>
         <p className="text-white/50 text-sm line-clamp-2 mb-4">{plan.description}</p>
-        
+
         {/* Topics */}
         {plan.topics && plan.topics.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mb-4">
@@ -677,14 +676,14 @@ function PlanCard({
             })}
           </div>
         )}
-        
+
         {/* Footer */}
         <div className="flex items-center justify-between pt-4 border-t border-white/10">
           <div className="flex items-center gap-1.5 text-sm text-white/40">
             <Users className="h-4 w-4" />
             <span>{plan.enrollmentCount?.toLocaleString() || 0} enrolled</span>
           </div>
-          
+
           {enrolled ? (
             <Link href={`/reading-plans/${plan.id}`}>
               <Button size="sm" className="gap-1 bg-white text-[#1a2744] hover:bg-white/90 font-bold" data-testid={`button-continue-plan-${plan.id}`}>
@@ -692,8 +691,8 @@ function PlanCard({
               </Button>
             </Link>
           ) : (
-            <Button 
-              size="sm" 
+            <Button
+              size="sm"
               className="gap-1 bg-primary hover:bg-primary/90 font-bold"
               onClick={(e) => {
                 e.stopPropagation();

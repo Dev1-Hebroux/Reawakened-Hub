@@ -9,13 +9,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { 
-  Compass, Target, Calendar, CheckCircle2, 
+import {
+  Compass, Target, Calendar, CheckCircle2,
   ArrowRight, Mountain, Heart, Flame, Star, ChevronRight,
   Zap, TrendingUp, Award, Play, Users, Trophy, Clock, X,
   BookOpen, Lightbulb, Route, Quote, LogIn
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { getApiUrl } from "@/lib/api";
 
 
 const STAGE_COLORS = {
@@ -50,7 +51,7 @@ export function VisionPage() {
   const { data: session, isLoading } = useQuery({
     queryKey: ["/api/vision/sessions/current"],
     queryFn: async () => {
-      const res = await fetch("/api/vision/sessions/current", { credentials: "include" });
+      const res = await fetch(getApiUrl("/api/vision/sessions/current"), { credentials: "include" });
       if (!res.ok) return null;
       const json = await res.json();
       return json.data;
@@ -59,7 +60,7 @@ export function VisionPage() {
 
   const createSession = useMutation({
     mutationFn: async () => {
-      const res = await fetch("/api/vision/sessions", {
+      const res = await fetch(getApiUrl("/api/vision/sessions"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -77,7 +78,7 @@ export function VisionPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#FAF8F5]">
-        <motion.div 
+        <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
           className="w-12 h-12 rounded-full border-4 border-[#E8E4DE] border-t-[#7C9A8E]"
@@ -115,7 +116,7 @@ export function VisionPage() {
           onComplete={handleBeginJourney}
           isSubmitting={createSession.isPending}
         />
-        
+
         {/* Login Prompt Dialog */}
         <Dialog open={showLoginPrompt} onOpenChange={setShowLoginPrompt}>
           <DialogContent className="max-w-md bg-white border-[#E8E4DE]">
@@ -133,7 +134,7 @@ export function VisionPage() {
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-3 mt-6">
-              <Button 
+              <Button
                 onClick={() => window.location.href = "/api/login"}
                 className="w-full bg-[#7C9A8E] hover:bg-[#6B8B7E] text-white py-6 rounded-xl font-semibold"
                 data-testid="button-login-vision"
@@ -158,47 +159,47 @@ export function VisionPage() {
   ];
 
   const whyCards = [
-    { 
-      icon: Compass, 
-      title: "Discover Your Purpose", 
+    {
+      icon: Compass,
+      title: "Discover Your Purpose",
       desc: "Use the Wheel of Life and Ikigai frameworks to find clarity on what matters most.",
       gradient: "from-[#7C9A8E] to-[#6B8B7E]"
     },
-    { 
-      icon: Target, 
-      title: "Set Meaningful Goals", 
+    {
+      icon: Target,
+      title: "Set Meaningful Goals",
       desc: "Create SMART goals with real deadlines and measurable outcomes.",
       gradient: "from-[#4A7C7C] to-[#3A6C6C]"
     },
-    { 
-      icon: Flame, 
-      title: "Build Lasting Habits", 
+    {
+      icon: Flame,
+      title: "Build Lasting Habits",
       desc: "Track daily habits and build consistency with streak tracking and accountability.",
       gradient: "from-[#D4A574] to-[#C49464]"
     },
   ];
 
   const demoFrameworks = [
-    { 
-      title: "Wheel of Life", 
+    {
+      title: "Wheel of Life",
       desc: "Assess 8 key life areas to discover where you need the most growth",
       icon: Compass,
       biblical: "Proverbs 4:26 - Give careful thought to the paths for your feet"
     },
-    { 
-      title: "Purpose Discovery (Ikigai)", 
+    {
+      title: "Purpose Discovery (Ikigai)",
       desc: "Find the intersection of your passions, skills, and what the world needs",
       icon: Lightbulb,
       biblical: "Jeremiah 29:11 - For I know the plans I have for you"
     },
-    { 
-      title: "SMART Goals", 
+    {
+      title: "SMART Goals",
       desc: "Set Specific, Measurable, Achievable, Relevant, and Time-bound goals",
       icon: Target,
       biblical: "Habakkuk 2:2 - Write down the vision and make it plain"
     },
-    { 
-      title: "90-Day Action Plans", 
+    {
+      title: "90-Day Action Plans",
       desc: "Break big dreams into quarterly sprints with clear milestones",
       icon: Calendar,
       biblical: "Proverbs 16:3 - Commit to the Lord whatever you do"
@@ -208,7 +209,7 @@ export function VisionPage() {
   return (
     <div className="min-h-screen bg-[#FAF8F5] font-sans">
       <Navbar />
-      
+
       {/* Demo Modal */}
       <Dialog open={showDemoModal} onOpenChange={setShowDemoModal}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-[#FAF8F5] border-[#E8E4DE] text-[#2C3E2D]">
@@ -225,7 +226,7 @@ export function VisionPage() {
               Discover proven frameworks for designing your best season, with biblical principles woven throughout.
             </p>
             {demoFrameworks.map((framework, i) => (
-              <motion.div 
+              <motion.div
                 key={i}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -247,7 +248,7 @@ export function VisionPage() {
                 </div>
               </motion.div>
             ))}
-            <Button 
+            <Button
               onClick={() => {
                 setShowDemoModal(false);
                 setShowOnboarding(true);
@@ -259,7 +260,7 @@ export function VisionPage() {
           </div>
         </DialogContent>
       </Dialog>
-      
+
       {/* Warm Hero Section */}
       <section className="relative min-h-[70vh] flex items-center justify-center overflow-hidden pt-20 pb-12">
         <div className="absolute inset-0 z-0">
@@ -267,14 +268,14 @@ export function VisionPage() {
           <div className="absolute top-0 left-1/4 w-[300px] md:w-[500px] h-[300px] md:h-[500px] bg-[#7C9A8E]/10 rounded-full blur-[100px]" />
           <div className="absolute bottom-0 right-1/4 w-[200px] md:w-[400px] h-[200px] md:h-[400px] bg-[#D4A574]/10 rounded-full blur-[100px]" />
         </div>
-        
+
         <div className="relative z-10 max-w-3xl mx-auto px-4 text-center">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <motion.div 
+            <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.1 }}
@@ -283,32 +284,32 @@ export function VisionPage() {
               <Compass className="w-4 h-4 text-[#7C9A8E]" />
               <span className="text-sm font-medium">Life Vision & Goals Pathway</span>
             </motion.div>
-            
+
             <h1 className="text-3xl md:text-5xl lg:text-6xl font-display font-bold mb-4 tracking-tight leading-tight text-[#2C3E2D]" data-testid="text-vision-title">
               Design Your
               <span className="text-[#7C9A8E]"> Best Season</span>
             </h1>
-            
+
             <p className="text-base md:text-lg text-[#6B7B6E] mb-8 max-w-xl mx-auto leading-relaxed">
-              An interactive journey to discover your purpose, set meaningful goals, 
+              An interactive journey to discover your purpose, set meaningful goals,
               and build habits that transform your life.
             </p>
-            
+
             <div className="flex flex-col gap-3 justify-center">
               <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                <Button 
-                  size="lg" 
+                <Button
+                  size="lg"
                   onClick={() => setShowOnboarding(true)}
                   className="w-full sm:w-auto bg-[#7C9A8E] hover:bg-[#6B8B7E] text-white px-8 py-6 text-base rounded-full shadow-lg gap-2"
                   data-testid="button-start-vision"
                 >
-                  Start Your Vision Journey 
+                  Start Your Vision Journey
                   <ArrowRight className="w-5 h-5" />
                 </Button>
               </motion.div>
               <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   size="lg"
                   onClick={() => setShowDemoModal(true)}
                   className="w-full sm:w-auto border-[#7C9A8E] text-[#7C9A8E] hover:bg-[#7C9A8E]/10 px-8 py-6 rounded-full text-base"
@@ -327,7 +328,7 @@ export function VisionPage() {
         <div className="max-w-2xl mx-auto">
           <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-3">
             {trustBadges.map((badge, i) => (
-              <motion.div 
+              <motion.div
                 key={i}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -353,10 +354,10 @@ export function VisionPage() {
               Transform dreams into daily action with proven frameworks
             </p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {whyCards.map((card, i) => (
-              <motion.div 
+              <motion.div
                 key={i}
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -388,11 +389,11 @@ export function VisionPage() {
               A proven framework for intentional living
             </p>
           </div>
-          
+
           {/* Vertical Timeline */}
           <div className="relative">
             <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-gradient-to-b from-[#7C9A8E] via-[#9B8AA6] via-[#4A7C7C] via-[#D4A574] to-[#C17767]" />
-            
+
             <div className="space-y-4">
               {STAGES.map((stage, i) => {
                 const colors = STAGE_COLORS[stage.key as keyof typeof STAGE_COLORS];
@@ -431,7 +432,7 @@ export function VisionPage() {
               Two powerful modes to suit your journey
             </p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Classic Mode */}
             <div className="bg-[#FAF8F5] border border-[#E8E4DE] rounded-2xl p-5 hover:shadow-md transition-all">
@@ -456,7 +457,7 @@ export function VisionPage() {
                 ))}
               </ul>
             </div>
-            
+
             {/* Faith Mode */}
             <div className="bg-[#FAF8F5] border-2 border-[#D4A574]/30 rounded-2xl p-5 hover:shadow-md transition-all">
               <div className="flex items-center gap-3 mb-4">
@@ -487,14 +488,14 @@ export function VisionPage() {
       {/* Testimonial */}
       <section className="py-12 px-4 bg-[#FAF8F5]">
         <div className="max-w-2xl mx-auto">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="bg-white border border-[#E8E4DE] rounded-2xl p-6 md:p-8 text-center"
           >
             <Quote className="w-10 h-10 text-[#7C9A8E] mx-auto mb-4 opacity-50" />
             <p className="text-base md:text-lg text-[#2C3E2D] italic mb-6">
-              "This pathway helped me finally get clarity on my purpose and set goals that actually stick. 
+              "This pathway helped me finally get clarity on my purpose and set goals that actually stick.
               The faith integration made it feel like more than just another planning tool."
             </p>
             <div className="flex items-center justify-center gap-3">
@@ -519,8 +520,8 @@ export function VisionPage() {
           <p className="text-[#6B7B6E] mb-8">
             Start your vision journey today and transform your dreams into reality.
           </p>
-          <Button 
-            size="lg" 
+          <Button
+            size="lg"
             onClick={() => setShowOnboarding(true)}
             className="w-full bg-[#7C9A8E] hover:bg-[#6B8B7E] text-white px-8 py-6 text-base rounded-full shadow-lg"
             data-testid="button-start-vision-bottom"
@@ -564,7 +565,7 @@ function OnboardingFlow({
 }) {
   const themeColors = ["from-[#7C9A8E] to-[#6B8B7E]", "from-[#4A7C7C] to-[#3A6C6C]", "from-[#9B8AA6] to-[#8A7995]", "from-[#D4A574] to-[#C49464]", "from-[#C17767] to-[#B16657]", "from-[#6B8E8E] to-[#5A7D7D]", "from-[#8A9B7E] to-[#798A6D]", "from-[#B07E6E] to-[#9F6D5D]"];
   const themeWords = ["Focus", "Growth", "Courage", "Peace", "Purpose", "Joy", "Discipline", "Freedom"];
-  
+
   const steps = [
     {
       title: "Choose Your Mode",
@@ -575,17 +576,15 @@ function OnboardingFlow({
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => setMode("classic")}
-            className={`w-full p-5 rounded-2xl border-2 text-left transition-all ${
-              mode === "classic" 
-                ? "border-[#7C9A8E] bg-[#7C9A8E]/10 shadow-lg" 
-                : "border-[#E8E4DE] hover:border-[#7C9A8E]/50 bg-white"
-            }`}
+            className={`w-full p-5 rounded-2xl border-2 text-left transition-all ${mode === "classic"
+              ? "border-[#7C9A8E] bg-[#7C9A8E]/10 shadow-lg"
+              : "border-[#E8E4DE] hover:border-[#7C9A8E]/50 bg-white"
+              }`}
             data-testid="button-mode-classic"
           >
             <div className="flex items-center gap-4">
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                mode === "classic" ? "bg-gradient-to-br from-[#7C9A8E] to-[#6B8B7E] shadow-md" : "bg-[#E8E4DE]"
-              }`}>
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${mode === "classic" ? "bg-gradient-to-br from-[#7C9A8E] to-[#6B8B7E] shadow-md" : "bg-[#E8E4DE]"
+                }`}>
                 <Compass className={`w-6 h-6 ${mode === "classic" ? "text-white" : "text-[#6B7B6E]"}`} />
               </div>
               <div>
@@ -596,22 +595,20 @@ function OnboardingFlow({
               </div>
             </div>
           </motion.button>
-          
+
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => setMode("faith")}
-            className={`w-full p-5 rounded-2xl border-2 text-left transition-all ${
-              mode === "faith" 
-                ? "border-[#D4A574] bg-[#D4A574]/10 shadow-lg" 
-                : "border-[#E8E4DE] hover:border-[#D4A574]/50 bg-white"
-            }`}
+            className={`w-full p-5 rounded-2xl border-2 text-left transition-all ${mode === "faith"
+              ? "border-[#D4A574] bg-[#D4A574]/10 shadow-lg"
+              : "border-[#E8E4DE] hover:border-[#D4A574]/50 bg-white"
+              }`}
             data-testid="button-mode-faith"
           >
             <div className="flex items-center gap-4">
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                mode === "faith" ? "bg-gradient-to-br from-[#D4A574] to-[#C49464] shadow-md" : "bg-[#E8E4DE]"
-              }`}>
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${mode === "faith" ? "bg-gradient-to-br from-[#D4A574] to-[#C49464] shadow-md" : "bg-[#E8E4DE]"
+                }`}>
                 <Heart className={`w-6 h-6 ${mode === "faith" ? "text-white" : "text-[#6B7B6E]"}`} />
               </div>
               <div>
@@ -638,17 +635,15 @@ function OnboardingFlow({
                 setSeasonType("new_year");
                 setSeasonLabel("2025 Reset");
               }}
-              className={`p-4 rounded-xl border-2 text-left transition-all ${
-                seasonType === "new_year" 
-                  ? "border-[#7C9A8E] bg-[#7C9A8E]/10 shadow-md" 
-                  : "border-[#E8E4DE] hover:border-[#7C9A8E]/50 bg-white"
-              }`}
+              className={`p-4 rounded-xl border-2 text-left transition-all ${seasonType === "new_year"
+                ? "border-[#7C9A8E] bg-[#7C9A8E]/10 shadow-md"
+                : "border-[#E8E4DE] hover:border-[#7C9A8E]/50 bg-white"
+                }`}
               data-testid="button-season-newyear"
             >
               <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                  seasonType === "new_year" ? "bg-gradient-to-br from-[#7C9A8E] to-[#6B8B7E]" : "bg-[#E8E4DE]"
-                }`}>
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${seasonType === "new_year" ? "bg-gradient-to-br from-[#7C9A8E] to-[#6B8B7E]" : "bg-[#E8E4DE]"
+                  }`}>
                   <Star className={`w-5 h-5 ${seasonType === "new_year" ? "text-white" : "text-[#6B7B6E]"}`} />
                 </div>
                 <span className={`font-semibold ${seasonType === "new_year" ? "text-[#7C9A8E]" : "text-[#2C3E2D]"}`}>
@@ -656,7 +651,7 @@ function OnboardingFlow({
                 </span>
               </div>
             </motion.button>
-            
+
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
@@ -664,17 +659,15 @@ function OnboardingFlow({
                 setSeasonType("new_season");
                 setSeasonLabel("Spring Reset");
               }}
-              className={`p-4 rounded-xl border-2 text-left transition-all ${
-                seasonType === "new_season" 
-                  ? "border-[#4A7C7C] bg-[#4A7C7C]/10 shadow-md" 
-                  : "border-[#E8E4DE] hover:border-[#4A7C7C]/50 bg-white"
-              }`}
+              className={`p-4 rounded-xl border-2 text-left transition-all ${seasonType === "new_season"
+                ? "border-[#4A7C7C] bg-[#4A7C7C]/10 shadow-md"
+                : "border-[#E8E4DE] hover:border-[#4A7C7C]/50 bg-white"
+                }`}
               data-testid="button-season-new"
             >
               <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-                  seasonType === "new_season" ? "bg-gradient-to-br from-[#4A7C7C] to-[#3A6C6C]" : "bg-[#E8E4DE]"
-                }`}>
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${seasonType === "new_season" ? "bg-gradient-to-br from-[#4A7C7C] to-[#3A6C6C]" : "bg-[#E8E4DE]"
+                  }`}>
                   <TrendingUp className={`w-5 h-5 ${seasonType === "new_season" ? "text-white" : "text-[#6B7B6E]"}`} />
                 </div>
                 <span className={`font-semibold ${seasonType === "new_season" ? "text-[#4A7C7C]" : "text-[#2C3E2D]"}`}>
@@ -683,7 +676,7 @@ function OnboardingFlow({
               </div>
             </motion.button>
           </div>
-          
+
           <div>
             <Label htmlFor="seasonLabel" className="text-[#6B7B6E] font-medium">Season Name</Label>
             <Input
@@ -710,11 +703,10 @@ function OnboardingFlow({
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setThemeWord(word)}
-                className={`px-4 py-2.5 rounded-xl font-semibold text-sm transition-all ${
-                  themeWord === word 
-                    ? `bg-gradient-to-r ${themeColors[i]} text-white shadow-md` 
-                    : "bg-[#E8E4DE] text-[#2C3E2D] hover:bg-[#D4D0CA]"
-                }`}
+                className={`px-4 py-2.5 rounded-xl font-semibold text-sm transition-all ${themeWord === word
+                  ? `bg-gradient-to-r ${themeColors[i]} text-white shadow-md`
+                  : "bg-[#E8E4DE] text-[#2C3E2D] hover:bg-[#D4D0CA]"
+                  }`}
                 data-testid={`button-theme-${word.toLowerCase()}`}
               >
                 {word}
@@ -743,7 +735,7 @@ function OnboardingFlow({
         <div className="absolute top-20 left-10 md:left-20 w-48 md:w-72 h-48 md:h-72 bg-[#7C9A8E]/10 rounded-full blur-3xl" />
         <div className="absolute bottom-20 right-10 md:right-20 w-48 md:w-72 h-48 md:h-72 bg-[#D4A574]/10 rounded-full blur-3xl" />
       </div>
-      
+
       <motion.div
         className="max-w-md w-full relative z-10"
         initial={{ opacity: 0, y: 20 }}
@@ -756,13 +748,12 @@ function OnboardingFlow({
               {steps.map((_, i) => (
                 <motion.div
                   key={i}
-                  className={`w-10 h-1.5 rounded-full mx-1 transition-all duration-300 ${
-                    i === step 
-                      ? "bg-[#7C9A8E]" 
-                      : i < step 
-                        ? "bg-[#7C9A8E]/50" 
-                        : "bg-[#E8E4DE]"
-                  }`}
+                  className={`w-10 h-1.5 rounded-full mx-1 transition-all duration-300 ${i === step
+                    ? "bg-[#7C9A8E]"
+                    : i < step
+                      ? "bg-[#7C9A8E]/50"
+                      : "bg-[#E8E4DE]"
+                    }`}
                   animate={{ scale: i === step ? 1.1 : 1 }}
                 />
               ))}
@@ -794,16 +785,16 @@ function OnboardingFlow({
                 Back
               </Button>
               {step < steps.length - 1 ? (
-                <Button 
-                  onClick={() => setStep(step + 1)} 
+                <Button
+                  onClick={() => setStep(step + 1)}
                   className="bg-[#7C9A8E] hover:bg-[#6B8B7E] rounded-xl px-6 py-5"
                   data-testid="button-next-step"
                 >
                   Next <ChevronRight className="w-4 h-4 ml-1" />
                 </Button>
               ) : (
-                <Button 
-                  onClick={onComplete} 
+                <Button
+                  onClick={onComplete}
                   disabled={isSubmitting}
                   className="bg-[#7C9A8E] hover:bg-[#6B8B7E] rounded-xl px-6 py-5 shadow-md"
                   data-testid="button-begin-journey"
@@ -825,7 +816,7 @@ function VisionDashboard({ session }: { session: any }) {
   const { data: wheelData } = useQuery({
     queryKey: [`/api/vision/sessions/${session.id}/wheel`],
     queryFn: async () => {
-      const res = await fetch(`/api/vision/sessions/${session.id}/wheel`, { credentials: "include" });
+      const res = await fetch(getApiUrl(`/api/vision/sessions/${session.id}/wheel`), { credentials: "include" });
       if (!res.ok) return null;
       const json = await res.json();
       return json.data;
@@ -835,7 +826,7 @@ function VisionDashboard({ session }: { session: any }) {
   const { data: goals } = useQuery({
     queryKey: [`/api/vision/sessions/${session.id}/goals`],
     queryFn: async () => {
-      const res = await fetch(`/api/vision/sessions/${session.id}/goals`, { credentials: "include" });
+      const res = await fetch(getApiUrl(`/api/vision/sessions/${session.id}/goals`), { credentials: "include" });
       if (!res.ok) return [];
       const json = await res.json();
       return json.data || [];
@@ -845,7 +836,7 @@ function VisionDashboard({ session }: { session: any }) {
   const { data: habits } = useQuery({
     queryKey: [`/api/vision/sessions/${session.id}/habits`],
     queryFn: async () => {
-      const res = await fetch(`/api/vision/sessions/${session.id}/habits`, { credentials: "include" });
+      const res = await fetch(getApiUrl(`/api/vision/sessions/${session.id}/habits`), { credentials: "include" });
       if (!res.ok) return [];
       const json = await res.json();
       return json.data || [];
@@ -935,14 +926,14 @@ function VisionDashboard({ session }: { session: any }) {
   const completedSteps = trackedSteps.filter(s => s.completed).length;
   const totalTrackedSteps = trackedSteps.length;
   const progressPercent = Math.round((completedSteps / totalTrackedSteps) * 100);
-  
+
   // Find the next uncompleted step
   const nextStep = trackedSteps.find(s => !s.completed);
 
   return (
     <div className="min-h-screen bg-[#FAF8F5] font-sans">
       <Navbar />
-      
+
       {/* Dashboard Hero */}
       <section className="relative pt-20 pb-8 overflow-hidden">
         <div className="absolute inset-0 z-0">
@@ -950,9 +941,9 @@ function VisionDashboard({ session }: { session: any }) {
           <div className="absolute top-0 left-1/4 w-[200px] md:w-[400px] h-[200px] md:h-[400px] bg-[#7C9A8E]/10 rounded-full blur-[100px]" />
           <div className="absolute bottom-0 right-1/4 w-[150px] md:w-[300px] h-[150px] md:h-[300px] bg-[#D4A574]/10 rounded-full blur-[100px]" />
         </div>
-        
+
         <div className="max-w-lg mx-auto px-4 relative z-10">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-center"
@@ -972,15 +963,15 @@ function VisionDashboard({ session }: { session: any }) {
               {session.seasonLabel || "My Vision Journey"}
             </h1>
             <p className="text-[#6B7B6E] text-sm mb-1">
-              {progressPercent === 0 
+              {progressPercent === 0
                 ? "Let's get started - your journey begins now!"
-                : progressPercent === 100 
-                ? "Amazing! You've completed all core steps."
-                : progressPercent >= 66 
-                ? "You're making great progress - almost there!"
-                : progressPercent >= 33 
-                ? "Good momentum - keep building your vision!"
-                : "Nice start - let's continue your journey."
+                : progressPercent === 100
+                  ? "Amazing! You've completed all core steps."
+                  : progressPercent >= 66
+                    ? "You're making great progress - almost there!"
+                    : progressPercent >= 33
+                      ? "Good momentum - keep building your vision!"
+                      : "Nice start - let's continue your journey."
               }
             </p>
             {session.themeWord && (
@@ -991,9 +982,9 @@ function VisionDashboard({ session }: { session: any }) {
                 </span>
               </div>
             )}
-            
+
             {/* Progress Ring */}
-            <motion.div 
+            <motion.div
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               className="flex justify-center mt-4"
@@ -1034,7 +1025,7 @@ function VisionDashboard({ session }: { session: any }) {
                 </div>
               </div>
             </motion.div>
-            
+
             {/* Next Step CTA */}
             {nextStep && (
               <motion.div
@@ -1060,7 +1051,7 @@ function VisionDashboard({ session }: { session: any }) {
       {/* Quick Stats Bar with Dynamic Widgets */}
       <section className="bg-white relative z-20 max-w-lg mx-4 md:mx-auto rounded-2xl shadow-lg border border-[#E8E4DE] p-4 mt-4">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <motion.div 
+          <motion.div
             className="text-center p-2"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -1074,8 +1065,8 @@ function VisionDashboard({ session }: { session: any }) {
             <div className="text-xl font-bold text-[#4A7C7C]">{goals?.length || 0}</div>
             <div className="text-[10px] text-[#6B7B6E] font-medium">Goals</div>
           </motion.div>
-          
-          <motion.div 
+
+          <motion.div
             className="text-center p-2"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -1089,8 +1080,8 @@ function VisionDashboard({ session }: { session: any }) {
             <div className="text-xl font-bold text-[#D4A574]">{habits?.length || 0}</div>
             <div className="text-[10px] text-[#6B7B6E] font-medium">Habits</div>
           </motion.div>
-          
-          <motion.div 
+
+          <motion.div
             className="text-center p-2"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -1104,8 +1095,8 @@ function VisionDashboard({ session }: { session: any }) {
             <div className="text-xl font-bold text-[#7C9A8E]">{progressPercent}%</div>
             <div className="text-[10px] text-[#6B7B6E] font-medium">Progress</div>
           </motion.div>
-          
-          <motion.div 
+
+          <motion.div
             className="text-center p-2"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -1130,11 +1121,10 @@ function VisionDashboard({ session }: { session: any }) {
             <div className="space-y-3">
               {trackedSteps.map((step, i) => (
                 <div key={step.name} className="flex items-center gap-3">
-                  <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
-                    step.completed 
-                      ? 'bg-[#7C9A8E]' 
-                      : 'bg-[#E8E4DE]'
-                  }`}>
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center ${step.completed
+                    ? 'bg-[#7C9A8E]'
+                    : 'bg-[#E8E4DE]'
+                    }`}>
                     {step.completed ? (
                       <CheckCircle2 className="w-4 h-4 text-white" />
                     ) : (
@@ -1145,7 +1135,7 @@ function VisionDashboard({ session }: { session: any }) {
                     {step.name}
                   </span>
                   <div className="w-20 h-1.5 bg-[#E8E4DE] rounded-full overflow-hidden">
-                    <motion.div 
+                    <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: step.completed ? '100%' : '0%' }}
                       transition={{ delay: i * 0.2, duration: 0.5 }}
@@ -1166,7 +1156,7 @@ function VisionDashboard({ session }: { session: any }) {
       {/* Journey Cards */}
       <section className="py-6 px-4 bg-[#FAF8F5]">
         <div className="max-w-lg mx-auto">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="mb-4"
@@ -1186,9 +1176,8 @@ function VisionDashboard({ session }: { session: any }) {
                 onClick={() => navigate(`/vision/${session.id}/${card.route}`)}
                 data-testid={`card-${card.id}`}
               >
-                <div className={`bg-white rounded-xl overflow-hidden shadow-sm border border-[#E8E4DE] active:scale-[0.99] transition-transform ${
-                  card.completed ? "border-l-4 border-l-[#7C9A8E]" : ""
-                }`}>
+                <div className={`bg-white rounded-xl overflow-hidden shadow-sm border border-[#E8E4DE] active:scale-[0.99] transition-transform ${card.completed ? "border-l-4 border-l-[#7C9A8E]" : ""
+                  }`}>
                   <div className="p-4 flex items-center gap-4">
                     <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${card.gradient} flex items-center justify-center shadow-sm`}>
                       <card.icon className="w-5 h-5 text-white" />

@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AdminLayout } from "@/components/admin/AdminLayout";
-import { 
-  GraduationCap, Search, Plus, MoreVertical, 
+import {
+  GraduationCap, Search, Plus, MoreVertical,
   Loader2, Calendar, Star, Edit, Eye, Users,
   Clock, User as UserIcon, CheckCircle, XCircle, Video
 } from "lucide-react";
@@ -38,6 +38,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import type { Coach, CoachingSession, CoachingCohort, CohortParticipant, User } from "@shared/schema";
+import { getApiUrl } from "@/lib/api";
 
 const SPECIALTIES = ['career', 'faith', 'relationships', 'leadership', 'vision', 'habits'] as const;
 const SESSION_STATUSES = ['scheduled', 'confirmed', 'in_progress', 'completed', 'cancelled', 'no_show'] as const;
@@ -47,8 +48,8 @@ const TOPICS = ['leadership', 'vision', 'faith', 'career', 'relationships'] as c
 const getStatusBadgeStyles = (status: string) => {
   switch (status) {
     case 'completed': return 'bg-green-100 text-green-700 border-green-200';
-    case 'confirmed': 
-    case 'in_progress': 
+    case 'confirmed':
+    case 'in_progress':
     case 'open': return 'bg-blue-100 text-blue-700 border-blue-200';
     case 'scheduled': return 'bg-amber-100 text-amber-700 border-amber-200';
     case 'cancelled':
@@ -110,25 +111,25 @@ export function AdminCoaching() {
   const [activeTab, setActiveTab] = useState("coaches");
   const [searchQuery, setSearchQuery] = useState("");
   const [sessionStatusFilter, setSessionStatusFilter] = useState<string>("all");
-  
+
   const [coachModalOpen, setCoachModalOpen] = useState(false);
   const [editingCoach, setEditingCoach] = useState<Coach | null>(null);
   const [coachForm, setCoachForm] = useState<CoachFormData>(defaultCoachForm);
-  
+
   const [cohortModalOpen, setCohortModalOpen] = useState(false);
   const [editingCohort, setEditingCohort] = useState<CoachingCohort | null>(null);
   const [cohortForm, setCohortForm] = useState<CohortFormData>(defaultCohortForm);
-  
+
   const [sessionDetailsModal, setSessionDetailsModal] = useState<CoachingSession | null>(null);
   const [participantsModal, setParticipantsModal] = useState<number | null>(null);
-  
+
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const { data: coaches = [], isLoading: loadingCoaches } = useQuery<Coach[]>({
     queryKey: ["/api/admin/coaches"],
     queryFn: async () => {
-      const res = await fetch('/api/admin/coaches');
+      const res = await fetch(getApiUrl('/api/admin/coaches'));
       if (!res.ok) throw new Error('Failed to fetch coaches');
       return res.json();
     },
@@ -137,7 +138,7 @@ export function AdminCoaching() {
   const { data: users = [] } = useQuery<User[]>({
     queryKey: ["/api/admin/users-list"],
     queryFn: async () => {
-      const res = await fetch('/api/admin/users?pageSize=100');
+      const res = await fetch(getApiUrl('/api/admin/users?pageSize=100'));
       if (!res.ok) throw new Error('Failed to fetch users');
       const data = await res.json();
       return data.users || [];
@@ -149,7 +150,7 @@ export function AdminCoaching() {
     queryFn: async () => {
       const params = new URLSearchParams();
       if (sessionStatusFilter !== 'all') params.set('status', sessionStatusFilter);
-      const res = await fetch(`/api/admin/coaching-sessions?${params}`);
+      const res = await fetch(getApiUrl(`/api/admin/coaching-sessions?${params}`));
       if (!res.ok) throw new Error('Failed to fetch sessions');
       return res.json();
     },
@@ -158,7 +159,7 @@ export function AdminCoaching() {
   const { data: cohorts = [], isLoading: loadingCohorts } = useQuery<CoachingCohort[]>({
     queryKey: ["/api/admin/cohorts"],
     queryFn: async () => {
-      const res = await fetch('/api/admin/cohorts');
+      const res = await fetch(getApiUrl('/api/admin/cohorts'));
       if (!res.ok) throw new Error('Failed to fetch cohorts');
       return res.json();
     },
@@ -168,7 +169,7 @@ export function AdminCoaching() {
     queryKey: ["/api/admin/cohorts", participantsModal, "participants"],
     queryFn: async () => {
       if (!participantsModal) return [];
-      const res = await fetch(`/api/admin/cohorts/${participantsModal}/participants`);
+      const res = await fetch(getApiUrl(`/api/admin/cohorts/${participantsModal}/participants`));
       if (!res.ok) throw new Error('Failed to fetch participants');
       return res.json();
     },
@@ -177,7 +178,7 @@ export function AdminCoaching() {
 
   const createCoachMutation = useMutation({
     mutationFn: async (data: CoachFormData) => {
-      const res = await fetch('/api/admin/coaches', {
+      const res = await fetch(getApiUrl('/api/admin/coaches'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
@@ -378,11 +379,11 @@ export function AdminCoaching() {
   });
 
   const isPending = createCoachMutation.isPending || updateCoachMutation.isPending ||
-                    createCohortMutation.isPending || updateCohortMutation.isPending;
+    createCohortMutation.isPending || updateCohortMutation.isPending;
 
   return (
-    <AdminLayout 
-      title="Coaching Hub" 
+    <AdminLayout
+      title="Coaching Hub"
       subtitle="Manage coaches, sessions, and group cohorts"
       breadcrumbs={[{ label: "Coaching" }]}
     >
@@ -405,7 +406,7 @@ export function AdminCoaching() {
                 data-testid="input-search-coaches"
               />
             </div>
-            <Button 
+            <Button
               onClick={() => openCoachModal()}
               className="bg-[#1a2744] hover:bg-[#1a2744]/90"
               data-testid="button-create-coach"
@@ -458,10 +459,10 @@ export function AdminCoaching() {
                           <td className="px-4 py-3">
                             <div className="flex items-center gap-3">
                               {coach.photoUrl || user?.profileImageUrl ? (
-                                <img 
-                                  src={coach.photoUrl || user?.profileImageUrl || undefined} 
-                                  alt="" 
-                                  className="h-10 w-10 rounded-full object-cover" 
+                                <img
+                                  src={coach.photoUrl || user?.profileImageUrl || undefined}
+                                  alt=""
+                                  className="h-10 w-10 rounded-full object-cover"
                                 />
                               ) : (
                                 <div className="h-10 w-10 rounded-full bg-[#1a2744]/10 flex items-center justify-center">
@@ -498,8 +499,8 @@ export function AdminCoaching() {
                             <span className="text-sm text-gray-600">{coach.totalSessions || 0}</span>
                           </td>
                           <td className="px-4 py-3">
-                            <Badge 
-                              variant="outline" 
+                            <Badge
+                              variant="outline"
                               className={coach.isActive ? 'bg-green-100 text-green-700 border-green-200' : 'bg-gray-100 text-gray-700 border-gray-200'}
                               data-testid={`badge-coach-status-${coach.id}`}
                             >
@@ -517,7 +518,7 @@ export function AdminCoaching() {
                                 <DropdownMenuItem onClick={() => openCoachModal(coach)} data-testid={`button-edit-coach-${coach.id}`}>
                                   <Edit className="h-4 w-4 mr-2" /> Edit
                                 </DropdownMenuItem>
-                                <DropdownMenuItem 
+                                <DropdownMenuItem
                                   onClick={() => updateCoachMutation.mutate({ id: coach.id, data: { isActive: !coach.isActive } })}
                                   data-testid={`button-toggle-coach-${coach.id}`}
                                 >
@@ -611,7 +612,7 @@ export function AdminCoaching() {
                           </div>
                         </td>
                         <td className="px-4 py-3">
-                          <Badge 
+                          <Badge
                             variant="outline"
                             className={getStatusBadgeStyles(session.status || 'scheduled')}
                             data-testid={`badge-session-status-${session.id}`}
@@ -623,9 +624,9 @@ export function AdminCoaching() {
                           <span className="text-sm text-gray-600">{session.topic || '—'}</span>
                         </td>
                         <td className="px-4 py-3 text-right">
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             className="h-8 w-8"
                             onClick={() => setSessionDetailsModal(session)}
                             data-testid={`button-view-session-${session.id}`}
@@ -644,7 +645,7 @@ export function AdminCoaching() {
 
         <TabsContent value="cohorts" className="space-y-4">
           <div className="flex justify-end">
-            <Button 
+            <Button
               onClick={() => openCohortModal()}
               className="bg-[#1a2744] hover:bg-[#1a2744]/90"
               data-testid="button-create-cohort"
@@ -714,7 +715,7 @@ export function AdminCoaching() {
                           </div>
                         </td>
                         <td className="px-4 py-3">
-                          <Badge 
+                          <Badge
                             variant="outline"
                             className={getStatusBadgeStyles(cohort.status || 'draft')}
                             data-testid={`badge-cohort-status-${cohort.id}`}
@@ -757,12 +758,12 @@ export function AdminCoaching() {
               {editingCoach ? 'Update the coach details below.' : 'Select a user and configure their coaching profile.'}
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
               <Label htmlFor="userId">User *</Label>
-              <Select 
-                value={coachForm.userId} 
+              <Select
+                value={coachForm.userId}
                 onValueChange={(v) => setCoachForm(prev => ({ ...prev, userId: v }))}
                 disabled={!!editingCoach}
               >
@@ -858,8 +859,8 @@ export function AdminCoaching() {
 
           <DialogFooter>
             <Button variant="outline" onClick={closeCoachModal} data-testid="button-cancel-coach">Cancel</Button>
-            <Button 
-              onClick={handleCoachSubmit} 
+            <Button
+              onClick={handleCoachSubmit}
               disabled={isPending || !coachForm.userId}
               className="bg-[#1a2744] hover:bg-[#1a2744]/90"
               data-testid="button-save-coach"
@@ -879,7 +880,7 @@ export function AdminCoaching() {
               {editingCohort ? 'Update the cohort details below.' : 'Set up a new group coaching cohort.'}
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
               <Label htmlFor="cohortTitle">Title *</Label>
@@ -907,8 +908,8 @@ export function AdminCoaching() {
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="cohortCoach">Coach *</Label>
-                <Select 
-                  value={cohortForm.coachId ? String(cohortForm.coachId) : ''} 
+                <Select
+                  value={cohortForm.coachId ? String(cohortForm.coachId) : ''}
                   onValueChange={(v) => setCohortForm(prev => ({ ...prev, coachId: parseInt(v) }))}
                 >
                   <SelectTrigger data-testid="select-cohort-coach">
@@ -925,8 +926,8 @@ export function AdminCoaching() {
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="topic">Topic *</Label>
-                <Select 
-                  value={cohortForm.topic} 
+                <Select
+                  value={cohortForm.topic}
                   onValueChange={(v) => setCohortForm(prev => ({ ...prev, topic: v }))}
                 >
                   <SelectTrigger data-testid="select-cohort-topic">
@@ -1001,8 +1002,8 @@ export function AdminCoaching() {
 
             <div className="grid gap-2">
               <Label htmlFor="status">Status</Label>
-              <Select 
-                value={cohortForm.status} 
+              <Select
+                value={cohortForm.status}
                 onValueChange={(v) => setCohortForm(prev => ({ ...prev, status: v }))}
               >
                 <SelectTrigger data-testid="select-cohort-status">
@@ -1019,8 +1020,8 @@ export function AdminCoaching() {
 
           <DialogFooter>
             <Button variant="outline" onClick={closeCohortModal} data-testid="button-cancel-cohort">Cancel</Button>
-            <Button 
-              onClick={handleCohortSubmit} 
+            <Button
+              onClick={handleCohortSubmit}
               disabled={isPending || !cohortForm.title || !cohortForm.coachId || !cohortForm.startDate}
               className="bg-[#1a2744] hover:bg-[#1a2744]/90"
               data-testid="button-save-cohort"
@@ -1061,7 +1062,7 @@ export function AdminCoaching() {
               </div>
               <div>
                 <Label className="text-gray-500">Status</Label>
-                <Badge 
+                <Badge
                   variant="outline"
                   className={`mt-1 ${getStatusBadgeStyles(sessionDetailsModal.status || 'scheduled')}`}
                 >
@@ -1123,8 +1124,8 @@ export function AdminCoaching() {
                       <p className="text-xs text-gray-500">Progress: {p.progress || 0} sessions</p>
                     </div>
                   </div>
-                  <Badge 
-                    variant="outline" 
+                  <Badge
+                    variant="outline"
                     className={getStatusBadgeStyles(p.status || 'enrolled')}
                   >
                     {p.status || 'enrolled'}

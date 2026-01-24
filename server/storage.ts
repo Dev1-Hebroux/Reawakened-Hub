@@ -5055,41 +5055,123 @@ export class DatabaseStorage implements IStorage {
     const profile = await this.getUserSpiritualProfile(userId);
     const enrollments = await this.getUserPlanEnrollments(userId);
     const enrolledPlanIds = enrollments.map(e => e.planId);
-    
+
     // Get all published plans
     let plans = await db.select().from(readingPlans)
       .where(eq(readingPlans.status, 'published'))
       .orderBy(desc(readingPlans.featured), desc(readingPlans.enrollmentCount));
-    
+
     // Filter out already enrolled plans
     plans = plans.filter(p => !enrolledPlanIds.includes(p.id));
-    
+
     if (!profile) {
       return plans.slice(0, 6);
     }
-    
+
     // Score plans based on user profile
     const scoredPlans = plans.map(plan => {
       let score = 0;
-      
+
       // Match maturity level
       if (plan.maturityLevel === profile.maturityLevel) score += 10;
-      
+
       // Match interests
       if (profile.interests && plan.topics) {
         const matchingTopics = plan.topics.filter(t => profile.interests!.includes(t));
         score += matchingTopics.length * 5;
       }
-      
+
       // Boost featured plans
       if (plan.featured) score += 3;
-      
+
       return { plan, score };
     });
-    
+
     // Sort by score and return top recommendations
     scoredPlans.sort((a, b) => b.score - a.score);
     return scoredPlans.slice(0, 6).map(sp => sp.plan);
+  }
+
+  // ===== DAILY TASKS & GAMIFICATION =====
+
+  async getUserDailyTasks(userId: string, date: string): Promise<any[]> {
+    // Placeholder: query daily_tasks table for user's tasks on date
+    // TODO: Implement actual database query when migration is applied
+    return [];
+  }
+
+  async createDailyTask(data: { userId: number; taskId: string; date: string; completedAt: Date; points: number }): Promise<any> {
+    // Placeholder: insert into daily_tasks table
+    // TODO: Implement actual database insert when migration is applied
+    return data;
+  }
+
+  async getUserProgression(userId: string): Promise<{ level: number; totalPoints: number; currentStreak: number; longestStreak: number }> {
+    // Placeholder: query user_progression table
+    // TODO: Implement actual database query when migration is applied
+    return { level: 1, totalPoints: 0, currentStreak: 0, longestStreak: 0 };
+  }
+
+  async getUserGracePeriod(userId: string): Promise<{ graceDaysUsed: number; graceDaysAllowed: number; lastGraceReset: string }> {
+    // Placeholder: query streak_grace_periods table
+    // TODO: Implement actual database query when migration is applied
+    const now = new Date().toISOString();
+    return { graceDaysUsed: 0, graceDaysAllowed: 1, lastGraceReset: now };
+  }
+
+  async addUserPoints(userId: string, points: number): Promise<void> {
+    // Placeholder: update user_progression table, check for level up
+    // TODO: Implement actual database update when migration is applied
+    // Should increment totalPoints and check if level should increase
+  }
+
+  async checkAndAwardBadges(userId: string): Promise<void> {
+    // Placeholder: check user's activity and award badges
+    // TODO: Implement badge awarding logic when migration is applied
+    // Check for various achievements (streaks, completions, etc.)
+  }
+
+  async getLeaderboard(type: string, limit: number): Promise<any[]> {
+    // Placeholder: query user_progression table for top users
+    // TODO: Implement actual database query when migration is applied
+    return [];
+  }
+
+  // ===== COLLABORATOR SUBMISSIONS =====
+
+  async getCollaboratorSubmissions(userId: string): Promise<any[]> {
+    // Placeholder: query collaborator_submissions table for user's submissions
+    // TODO: Implement actual database query
+    return [];
+  }
+
+  async createCollaboratorSubmission(data: any): Promise<any> {
+    // Placeholder: insert into collaborator_submissions table
+    // TODO: Implement actual database insert
+    return data;
+  }
+
+  async getCollaboratorSubmission(id: number): Promise<any> {
+    // Placeholder: query collaborator_submissions table by id
+    // TODO: Implement actual database query
+    return null;
+  }
+
+  async updateCollaboratorSubmission(id: number, data: any): Promise<any> {
+    // Placeholder: update collaborator_submissions table
+    // TODO: Implement actual database update
+    return { ...data, id };
+  }
+
+  async deleteCollaboratorSubmission(id: number): Promise<void> {
+    // Placeholder: delete from collaborator_submissions table
+    // TODO: Implement actual database delete
+  }
+
+  async getAllCollaboratorSubmissions(filters: { status?: string; contentType?: string }): Promise<any[]> {
+    // Placeholder: query all collaborator_submissions with filters
+    // TODO: Implement actual database query with filters
+    return [];
   }
 }
 

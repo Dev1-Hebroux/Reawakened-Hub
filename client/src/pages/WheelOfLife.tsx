@@ -10,6 +10,7 @@ import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, ArrowRight, Check, Target, CircleDot } from "lucide-react";
 import { AICoachPanel, IntroGuide } from "@/components/AICoachPanel";
+import { getApiUrl } from "@/lib/api";
 
 const WHEEL_CATEGORIES = [
   { key: "health_energy", label: "Health & Energy", emoji: "💪", color: "#5B8C5A" },
@@ -39,7 +40,7 @@ export function WheelOfLife() {
   const { data: wheelData, isLoading } = useQuery({
     queryKey: [`/api/vision/sessions/${sessionId}/wheel`],
     queryFn: async () => {
-      const res = await fetch(`/api/vision/sessions/${sessionId}/wheel`, { credentials: "include" });
+      const res = await fetch(getApiUrl(`/api/vision/sessions/${sessionId}/wheel`), { credentials: "include" });
       if (!res.ok) return null;
       const json = await res.json();
       return json.data;
@@ -69,7 +70,7 @@ export function WheelOfLife() {
         score: scores[cat.key] || 5,
         notes: notes[cat.key] || null,
       }));
-      const res = await fetch(`/api/vision/sessions/${sessionId}/wheel`, {
+      const res = await fetch(getApiUrl(`/api/vision/sessions/${sessionId}/wheel`), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -99,7 +100,7 @@ export function WheelOfLife() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#FAF8F5]">
-        <motion.div 
+        <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
           className="w-12 h-12 rounded-full border-4 border-[#E8E4DE] border-t-[#7C9A8E]"
@@ -113,16 +114,16 @@ export function WheelOfLife() {
       <Navbar />
       <main className="min-h-screen bg-[#FAF8F5] py-8 px-4">
         <div className="max-w-4xl mx-auto">
-          <Button 
-            variant="ghost" 
-            onClick={() => navigate(`/vision`)} 
-            className="mb-4 text-[#5A5A5A] hover:bg-[#E8E4DE] hover:text-[#3A3A3A]" 
+          <Button
+            variant="ghost"
+            onClick={() => navigate(`/vision`)}
+            className="mb-4 text-[#5A5A5A] hover:bg-[#E8E4DE] hover:text-[#3A3A3A]"
             data-testid="button-back-dashboard"
           >
             <ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard
           </Button>
 
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-6"
@@ -179,7 +180,7 @@ export function WheelOfLife() {
                     <Card className="border border-[#E8E4DE] shadow-sm bg-white rounded-2xl overflow-hidden hover:shadow-md transition-shadow">
                       <CardHeader className="pb-2 bg-[#FDFCFA]">
                         <CardTitle className="text-lg flex items-center gap-3">
-                          <div 
+                          <div
                             className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
                             style={{ backgroundColor: `${cat.color}15` }}
                           >
@@ -188,19 +189,19 @@ export function WheelOfLife() {
                           <div className="flex-1">
                             <span className="text-[#2C3E2D] font-semibold">{cat.label}</span>
                             <div className="flex items-center gap-2 mt-1">
-                              <div 
+                              <div
                                 className="h-2 rounded-full flex-1 bg-[#E8E4DE]"
                                 style={{ maxWidth: "120px" }}
                               >
-                                <div 
+                                <div
                                   className="h-full rounded-full transition-all duration-300"
-                                  style={{ 
+                                  style={{
                                     width: `${(scores[cat.key] || 5) * 10}%`,
-                                    backgroundColor: cat.color 
+                                    backgroundColor: cat.color
                                   }}
                                 />
                               </div>
-                              <span 
+                              <span
                                 className="text-lg font-bold w-8 text-center"
                                 style={{ color: cat.color }}
                               >
@@ -238,7 +239,7 @@ export function WheelOfLife() {
                 ))}
               </div>
 
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.5 }}
@@ -254,9 +255,9 @@ export function WheelOfLife() {
 
               <div className="flex justify-end mt-10">
                 <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <Button 
-                    onClick={() => setStep("focus")} 
-                    disabled={!allScored} 
+                  <Button
+                    onClick={() => setStep("focus")}
+                    disabled={!allScored}
                     className="bg-[#7C9A8E] hover:bg-[#6B8B7E] text-white shadow-sm rounded-xl px-6"
                     data-testid="button-next-focus"
                   >
@@ -275,7 +276,7 @@ export function WheelOfLife() {
                     Choose Your Focus Areas
                   </CardTitle>
                   <p className="text-[#6B7B6E] mt-1">
-                    Select up to 3 areas to prioritize this season. 
+                    Select up to 3 areas to prioritize this season.
                     <span className="text-[#C17767] font-medium"> Your lowest-scoring areas are highlighted.</span>
                   </p>
                 </CardHeader>
@@ -290,16 +291,15 @@ export function WheelOfLife() {
                           whileHover={{ scale: 1.01 }}
                           whileTap={{ scale: 0.99 }}
                           onClick={() => toggleFocus(cat.key)}
-                          className={`p-4 rounded-xl border-2 text-left transition-all flex items-center gap-3 ${
-                            isSelected
-                              ? "border-[#7C9A8E] bg-[#7C9A8E]/10"
-                              : isLow
-                                ? "border-[#C17767]/50 bg-[#C17767]/5"
-                                : "border-[#E8E4DE] bg-white hover:border-[#7C9A8E]/50"
-                          }`}
+                          className={`p-4 rounded-xl border-2 text-left transition-all flex items-center gap-3 ${isSelected
+                            ? "border-[#7C9A8E] bg-[#7C9A8E]/10"
+                            : isLow
+                              ? "border-[#C17767]/50 bg-[#C17767]/5"
+                              : "border-[#E8E4DE] bg-white hover:border-[#7C9A8E]/50"
+                            }`}
                           data-testid={`focus-${cat.key}`}
                         >
-                          <div 
+                          <div
                             className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
                             style={{ backgroundColor: isSelected ? `${cat.color}20` : `${cat.color}10` }}
                           >
@@ -334,8 +334,8 @@ export function WheelOfLife() {
               </Card>
 
               <div className="flex justify-between">
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   onClick={() => setStep("assess")}
                   className="text-[#5A5A5A] hover:bg-[#E8E4DE]"
                 >
@@ -388,7 +388,7 @@ function RadarChart({ scores, categories }: { scores: Record<string, number>; ca
           <stop offset="100%" stopColor="#4A7C7C" stopOpacity="0.3" />
         </linearGradient>
       </defs>
-      
+
       {gridLevels.map((level) => {
         const points = categories.map((_, i) => getPoint(i, level));
         const d = points.map((p, i) => (i === 0 ? `M ${p.x} ${p.y}` : `L ${p.x} ${p.y}`)).join(" ") + " Z";

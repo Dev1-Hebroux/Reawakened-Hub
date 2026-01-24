@@ -5,8 +5,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { 
-  Zap, 
+import {
+  Zap,
   Flame,
   Trophy,
   Users,
@@ -23,6 +23,7 @@ import {
   Loader2
 } from "lucide-react";
 import type { MissionChallenge } from "@shared/schema";
+import { getApiUrl } from "@/lib/api";
 
 const challenges = [
   {
@@ -120,7 +121,7 @@ export function MovementHub() {
   const { data: apiChallenges = [], isLoading: challengesLoading } = useQuery<MissionChallenge[]>({
     queryKey: ["/api/mission/challenges"],
     queryFn: async () => {
-      const res = await fetch("/api/mission/challenges?active=true");
+      const res = await fetch(getApiUrl("/api/mission/challenges?active=true"));
       if (!res.ok) return [];
       return res.json();
     },
@@ -129,7 +130,7 @@ export function MovementHub() {
   const { data: dashboard } = useQuery({
     queryKey: ["/api/mission/dashboard"],
     queryFn: async () => {
-      const res = await fetch("/api/mission/dashboard", { credentials: "include" });
+      const res = await fetch(getApiUrl("/api/mission/dashboard"), { credentials: "include" });
       if (!res.ok) return null;
       return res.json();
     },
@@ -140,7 +141,7 @@ export function MovementHub() {
   const { data: events = [], isLoading: eventsLoading } = useQuery<any[]>({
     queryKey: ["/api/events"],
     queryFn: async () => {
-      const res = await fetch("/api/events");
+      const res = await fetch(getApiUrl("/api/events"));
       if (!res.ok) return [];
       return res.json();
     },
@@ -173,10 +174,10 @@ export function MovementHub() {
   return (
     <div className="min-h-screen bg-[#1a2744]">
       <Navbar />
-      
+
       <main className="pt-28 pb-32 px-4">
         <div className="max-w-lg mx-auto">
-          
+
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -219,11 +220,10 @@ export function MovementHub() {
               {badges.map((badge) => (
                 <div
                   key={badge.id}
-                  className={`flex-shrink-0 w-16 h-16 rounded-2xl flex flex-col items-center justify-center transition-all shadow-md ${
-                    badge.earned 
-                      ? "bg-[#1a2744] border-2 border-[#D4A574]" 
-                      : "bg-[#1a2744]/50 border border-[#4A7C7C]/20 opacity-50"
-                  }`}
+                  className={`flex-shrink-0 w-16 h-16 rounded-2xl flex flex-col items-center justify-center transition-all shadow-md ${badge.earned
+                    ? "bg-[#1a2744] border-2 border-[#D4A574]"
+                    : "bg-[#1a2744]/50 border border-[#4A7C7C]/20 opacity-50"
+                    }`}
                   title={badge.description}
                   data-testid={`badge-${badge.id}`}
                 >
@@ -237,9 +237,9 @@ export function MovementHub() {
 
             <div className="mt-4 pt-4 border-t border-[#4A7C7C]/30 flex items-center justify-between">
               <span className="text-sm text-[#E8E4DE]">{earnedBadges}/{badges.length} badges earned</span>
-              <Button 
-                size="sm" 
-                variant="ghost" 
+              <Button
+                size="sm"
+                variant="ghost"
                 className="text-primary text-xs"
                 onClick={() => navigate("/profile/badges")}
               >
@@ -263,18 +263,16 @@ export function MovementHub() {
             </div>
             <div className="space-y-3">
               {leaderboardPreview.map((user, i) => (
-                <div 
+                <div
                   key={user.rank}
-                  className={`flex items-center justify-between p-3 rounded-xl shadow-md ${
-                    i === 0 ? "bg-[#D4A574]/20 border-2 border-[#D4A574]" : "bg-[#1a2744] border border-[#4A7C7C]/20"
-                  }`}
+                  className={`flex items-center justify-between p-3 rounded-xl shadow-md ${i === 0 ? "bg-[#D4A574]/20 border-2 border-[#D4A574]" : "bg-[#1a2744] border border-[#4A7C7C]/20"
+                    }`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`h-9 w-9 rounded-full flex items-center justify-center text-sm font-bold shadow-lg ${
-                      i === 0 ? "bg-[#D4A574] text-white" : 
-                      i === 1 ? "bg-[#7C9A8E] text-white" : 
-                      "bg-[#4A7C7C] text-white"
-                    }`}>
+                    <div className={`h-9 w-9 rounded-full flex items-center justify-center text-sm font-bold shadow-lg ${i === 0 ? "bg-[#D4A574] text-white" :
+                      i === 1 ? "bg-[#7C9A8E] text-white" :
+                        "bg-[#4A7C7C] text-white"
+                      }`}>
                       {user.rank}
                     </div>
                     <div>
@@ -304,14 +302,13 @@ export function MovementHub() {
               </div>
               <span className="text-sm text-[#7C9A8E] font-medium">{upcomingRooms.filter(r => r.isLive).length} rooms active</span>
             </div>
-            
+
             <div className="space-y-3">
               {upcomingRooms.map((room) => (
-                <div 
+                <div
                   key={room.id}
-                  className={`flex items-center justify-between p-3 rounded-xl transition-all cursor-pointer ${
-                    room.isLive ? 'bg-red-500/20 border-2 border-red-500 hover:bg-red-500/30' : 'bg-[#1a2744] border border-[#4A7C7C]/20 hover:bg-[#2a3a5a]'
-                  }`}
+                  className={`flex items-center justify-between p-3 rounded-xl transition-all cursor-pointer ${room.isLive ? 'bg-red-500/20 border-2 border-red-500 hover:bg-red-500/30' : 'bg-[#1a2744] border border-[#4A7C7C]/20 hover:bg-[#2a3a5a]'
+                    }`}
                   data-testid={`room-${room.id}`}
                 >
                   <div className="flex items-center gap-3">
@@ -323,8 +320,8 @@ export function MovementHub() {
                       </p>
                     </div>
                   </div>
-                  <Button 
-                    size="sm" 
+                  <Button
+                    size="sm"
                     className={room.isLive ? "bg-red-500 hover:bg-red-600 shadow-lg" : "bg-[#4A7C7C] hover:bg-[#4A7C7C]/80 text-white"}
                   >
                     {room.isLive ? <Play className="h-4 w-4" /> : <Clock className="h-4 w-4" />}
@@ -343,11 +340,10 @@ export function MovementHub() {
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key as typeof activeTab)}
-                className={`flex-1 py-3 px-2 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-1.5 ${
-                  activeTab === tab.key 
-                    ? 'bg-[#D4A574] text-white shadow-lg' 
-                    : 'text-[#E8E4DE] hover:text-white hover:bg-[#1a2744]'
-                }`}
+                className={`flex-1 py-3 px-2 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-1.5 ${activeTab === tab.key
+                  ? 'bg-[#D4A574] text-white shadow-lg'
+                  : 'text-[#E8E4DE] hover:text-white hover:bg-[#1a2744]'
+                  }`}
                 data-testid={`tab-${tab.key}`}
               >
                 <tab.icon className="h-4 w-4" />
@@ -389,10 +385,10 @@ export function MovementHub() {
                         </div>
                       )}
                     </div>
-                    
+
                     <h3 className="font-bold text-white text-lg mb-2">{challenge.title}</h3>
                     <p className="text-sm text-[#E8E4DE] mb-4">{challenge.description}</p>
-                    
+
                     {challenge.isJoined && (
                       <div className="mb-4">
                         <div className="flex justify-between text-xs text-[#7C9A8E] mb-1">
@@ -400,7 +396,7 @@ export function MovementHub() {
                           <span>{challenge.currentDay}/{challenge.daysTotal} days</span>
                         </div>
                         <div className="bg-[#1a2744] rounded-full h-2 border border-[#4A7C7C]/30">
-                          <motion.div 
+                          <motion.div
                             className="bg-[#D4A574] h-2 rounded-full"
                             initial={{ width: 0 }}
                             animate={{ width: `${(challenge.currentDay / challenge.daysTotal) * 100}%` }}
@@ -408,16 +404,16 @@ export function MovementHub() {
                         </div>
                       </div>
                     )}
-                    
+
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 text-[#7C9A8E]">
                         <Users className="h-4 w-4" />
                         <span className="text-xs font-medium">{challenge.participants.toLocaleString()} joined</span>
                       </div>
-                      <Button 
+                      <Button
                         size="sm"
-                        className={challenge.isJoined 
-                          ? "bg-white text-[#1a2744] hover:bg-[#E8E4DE] font-bold shadow-lg" 
+                        className={challenge.isJoined
+                          ? "bg-white text-[#1a2744] hover:bg-[#E8E4DE] font-bold shadow-lg"
                           : "bg-[#D4A574] hover:bg-[#C49464] text-white font-bold shadow-lg"
                         }
                         onClick={() => navigate("/challenges")}
@@ -440,14 +436,14 @@ export function MovementHub() {
                 exit={{ opacity: 0, x: -20 }}
                 className="space-y-4"
               >
-                <Button 
+                <Button
                   className="w-full bg-gradient-to-r from-primary to-[#D4A574] hover:opacity-90 text-white font-bold py-6 rounded-2xl mb-2"
                   data-testid="button-share-testimony"
                 >
                   <MessageCircle className="h-5 w-5 mr-2" />
                   Share Your Story
                 </Button>
-                
+
                 {testimonies.map((testimony, i) => (
                   <motion.div
                     key={testimony.id}
@@ -465,9 +461,9 @@ export function MovementHub() {
                         <p className="text-xs text-white/50">{testimony.timeAgo}</p>
                       </div>
                     </div>
-                    
+
                     <p className="text-white/80 mb-4">{testimony.content}</p>
-                    
+
                     <div className="flex items-center gap-4">
                       <button className="flex items-center gap-1 text-white/60 hover:text-primary transition-colors">
                         <Flame className="h-4 w-4" />
@@ -491,14 +487,14 @@ export function MovementHub() {
                 exit={{ opacity: 0, x: -20 }}
                 className="space-y-4"
               >
-                <Button 
+                <Button
                   className="w-full bg-[#7C9A8E] hover:bg-[#7C9A8E]/90 text-white font-bold py-6 rounded-2xl mb-2"
                   data-testid="button-post-prayer"
                 >
                   <Heart className="h-5 w-5 mr-2" />
                   Post a Prayer Request
                 </Button>
-                
+
                 {prayerWall.map((prayer, i) => (
                   <motion.div
                     key={prayer.id}
@@ -508,12 +504,12 @@ export function MovementHub() {
                     className="bg-white/10 backdrop-blur-md rounded-3xl p-5 border border-white/10"
                   >
                     <p className="text-white/80 mb-3">{prayer.content}</p>
-                    
+
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-white/50">— {prayer.author}</span>
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
+                      <Button
+                        size="sm"
+                        variant="outline"
                         className="border-white/20 text-white hover:bg-white/10"
                       >
                         <Heart className="h-4 w-4 mr-1" />
@@ -543,9 +539,9 @@ export function MovementHub() {
                   <p className="text-sm text-white/60">Worship, seminars & gatherings</p>
                 </div>
               </div>
-              <Button 
-                size="sm" 
-                variant="ghost" 
+              <Button
+                size="sm"
+                variant="ghost"
                 className="text-primary text-xs"
                 onClick={() => navigate("/movement")}
               >
@@ -613,7 +609,7 @@ export function MovementHub() {
               )}
             </div>
           </motion.div>
-          
+
         </div>
       </main>
     </div>

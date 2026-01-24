@@ -16,6 +16,9 @@ import sparkAudioRoutes from "./routes/sparkAudioRoutes";
 import authRoutes from "./routes/authRoutes";
 import initRoutes from "./routes/initRoutes";
 import pushRoutes from "./routes/pushRoutes";
+import dailyTaskRoutes from "./routes/dailyTaskRoutes";
+import collaboratorRoutes from "./routes/collaboratorRoutes";
+import progressRoutes from "./routes/progressRoutes";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 import { 
@@ -49,6 +52,9 @@ export async function registerRoutes(
   app.use('/api', sparkAudioRoutes);
   app.use('/api', pushRoutes);
   app.use('/api/auth', authRoutes);
+  app.use('/api', dailyTaskRoutes);
+  app.use('/api', collaboratorRoutes);
+  app.use('/api', progressRoutes);
 
   // Twilio domain verification
   app.get('/6fb6008290b49155dde41016be0276b0.html', (req, res) => {

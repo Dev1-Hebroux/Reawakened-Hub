@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, ArrowRight, Calendar, Target, Plus, X, Clock, Users } from "lucide-react";
 import { AICoachPanel, IntroGuide } from "@/components/AICoachPanel";
+import { getApiUrl } from "@/lib/api";
 
 export function VisionPlan() {
   const { sessionId } = useParams();
@@ -28,7 +29,7 @@ export function VisionPlan() {
   const { data: planData, isLoading } = useQuery({
     queryKey: [`/api/vision/sessions/${sessionId}/plan`],
     queryFn: async () => {
-      const res = await fetch(`/api/vision/sessions/${sessionId}/plan`, { credentials: "include" });
+      const res = await fetch(getApiUrl(`/api/vision/sessions/${sessionId}/plan`), { credentials: "include" });
       if (!res.ok) return null;
       return (await res.json()).data;
     },
@@ -49,7 +50,7 @@ export function VisionPlan() {
 
   const savePlan = useMutation({
     mutationFn: async () => {
-      const res = await fetch(`/api/vision/sessions/${sessionId}/plan`, {
+      const res = await fetch(getApiUrl(`/api/vision/sessions/${sessionId}/plan`), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -87,7 +88,7 @@ export function VisionPlan() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#FAF8F5]">
-        <motion.div 
+        <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
           className="w-12 h-12 rounded-full border-4 border-[#E8E4DE] border-t-[#6B8E8E]"
@@ -101,16 +102,16 @@ export function VisionPlan() {
       <Navbar />
       <main className="min-h-screen bg-[#FAF8F5] py-8 px-4">
         <div className="max-w-4xl mx-auto">
-          <Button 
-            variant="ghost" 
-            onClick={() => navigate(`/vision`)} 
-            className="mb-4 text-[#5A5A5A] hover:bg-[#E8E4DE]" 
+          <Button
+            variant="ghost"
+            onClick={() => navigate(`/vision`)}
+            className="mb-4 text-[#5A5A5A] hover:bg-[#E8E4DE]"
             data-testid="button-back-dashboard"
           >
             <ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard
           </Button>
 
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-6"
@@ -226,9 +227,9 @@ export function VisionPlan() {
                         data-testid={`input-weekly-anchor-${i}`}
                       />
                       {plan.weeklyAnchors.length > 1 && (
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           onClick={() => removeWeeklyAnchor(i)}
                           className="text-[#8B9B8E] hover:text-[#C17767] hover:bg-[#C17767]/10"
                         >
@@ -237,9 +238,9 @@ export function VisionPlan() {
                       )}
                     </div>
                   ))}
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={addWeeklyAnchor}
                     className="border-[#D4A574] text-[#D4A574] hover:bg-[#D4A574]/10"
                   >
@@ -346,8 +347,8 @@ export function VisionPlan() {
             </Card>
 
             <div className="flex justify-between">
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 onClick={() => navigate(`/vision/${sessionId}/goals`)}
                 className="text-[#5A5A5A] hover:bg-[#E8E4DE]"
               >
@@ -363,8 +364,8 @@ export function VisionPlan() {
                 >
                   {savePlan.isPending ? "Saving..." : "Save Plan"}
                 </Button>
-                <Button 
-                  onClick={() => navigate(`/vision/${sessionId}/habits`)} 
+                <Button
+                  onClick={() => navigate(`/vision/${sessionId}/habits`)}
                   className="bg-[#7C9A8E] hover:bg-[#6B8B7E] text-white rounded-xl"
                   data-testid="button-to-habits"
                 >

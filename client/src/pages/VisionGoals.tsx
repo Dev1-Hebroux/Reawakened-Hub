@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { ArrowLeft, ArrowRight, Plus, Target, CheckCircle2, Edit2, Trash2, Calendar, TrendingUp, Lightbulb } from "lucide-react";
 import { AICoachPanel, IntroGuide } from "@/components/AICoachPanel";
 import { ToolLink } from "@/components/ToolLink";
+import { getApiUrl } from "@/lib/api";
 
 const SMART_LETTERS = [
   { letter: "S", label: "Specific", placeholder: "What exactly will you achieve? Be precise.", color: "#7C9A8E" },
@@ -45,7 +46,7 @@ export function VisionGoals() {
   const { data: goals, isLoading } = useQuery({
     queryKey: [`/api/vision/sessions/${sessionId}/goals`],
     queryFn: async () => {
-      const res = await fetch(`/api/vision/sessions/${sessionId}/goals`, { credentials: "include" });
+      const res = await fetch(getApiUrl(`/api/vision/sessions/${sessionId}/goals`), { credentials: "include" });
       if (!res.ok) return [];
       return (await res.json()).data || [];
     },
@@ -53,7 +54,7 @@ export function VisionGoals() {
 
   const createGoal = useMutation({
     mutationFn: async () => {
-      const res = await fetch(`/api/vision/goals`, {
+      const res = await fetch(getApiUrl(`/api/vision/goals`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -75,7 +76,7 @@ export function VisionGoals() {
 
   const updateGoal = useMutation({
     mutationFn: async () => {
-      const res = await fetch(`/api/vision/goals/${editingGoal.id}`, {
+      const res = await fetch(getApiUrl(`/api/vision/goals/${editingGoal.id}`), {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -97,7 +98,7 @@ export function VisionGoals() {
 
   const completeGoal = useMutation({
     mutationFn: async (goalId: number) => {
-      const res = await fetch(`/api/vision/goals/${goalId}`, {
+      const res = await fetch(getApiUrl(`/api/vision/goals/${goalId}`), {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -156,7 +157,7 @@ export function VisionGoals() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#FAF8F5]">
-        <motion.div 
+        <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
           className="w-12 h-12 rounded-full border-4 border-[#E8E4DE] border-t-[#7C9A8E]"
@@ -173,16 +174,16 @@ export function VisionGoals() {
       <Navbar />
       <main className="min-h-screen bg-[#FAF8F5] py-8 px-4">
         <div className="max-w-4xl mx-auto">
-          <Button 
-            variant="ghost" 
-            onClick={() => navigate(`/vision`)} 
-            className="mb-4 text-[#5A5A5A] hover:bg-[#E8E4DE]" 
+          <Button
+            variant="ghost"
+            onClick={() => navigate(`/vision`)}
+            className="mb-4 text-[#5A5A5A] hover:bg-[#E8E4DE]"
             data-testid="button-back-dashboard"
           >
             <ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard
           </Button>
 
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-6"
@@ -258,8 +259,8 @@ export function VisionGoals() {
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <Button 
-                    onClick={() => { setEditingGoal(null); resetForm(); }} 
+                  <Button
+                    onClick={() => { setEditingGoal(null); resetForm(); }}
                     className="bg-[#7C9A8E] hover:bg-[#6B8B7E] text-white rounded-xl"
                     data-testid="button-add-goal"
                   >
@@ -300,15 +301,15 @@ export function VisionGoals() {
                   </div>
 
                   {SMART_LETTERS.map((item) => (
-                    <div 
-                      key={item.letter} 
+                    <div
+                      key={item.letter}
                       className="bg-white rounded-xl overflow-hidden border border-[#E8E4DE]"
                     >
-                      <div 
+                      <div
                         className="flex items-center gap-3 px-4 py-3"
                         style={{ backgroundColor: `${item.color}15` }}
                       >
-                        <div 
+                        <div
                           className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold text-xl"
                           style={{ backgroundColor: item.color }}
                         >
@@ -367,12 +368,12 @@ export function VisionGoals() {
                           <Textarea
                             value={
                               item.letter === "S" ? goalForm.specific :
-                              item.letter === "A" ? goalForm.achievable :
-                              goalForm.relevant
+                                item.letter === "A" ? goalForm.achievable :
+                                  goalForm.relevant
                             }
-                            onChange={(e) => setGoalForm({ 
-                              ...goalForm, 
-                              [item.letter === "S" ? "specific" : item.letter === "A" ? "achievable" : "relevant"]: e.target.value 
+                            onChange={(e) => setGoalForm({
+                              ...goalForm,
+                              [item.letter === "S" ? "specific" : item.letter === "A" ? "achievable" : "relevant"]: e.target.value
                             })}
                             placeholder={item.placeholder}
                             rows={2}
@@ -432,7 +433,7 @@ export function VisionGoals() {
                 <p className="text-[#6B7B6E] mb-6 max-w-sm mx-auto">
                   Set your first SMART goal to start making progress toward your vision
                 </p>
-                <Button 
+                <Button
                   onClick={() => setIsDialogOpen(true)}
                   className="bg-[#7C9A8E] hover:bg-[#6B8B7E] text-white rounded-xl"
                 >
@@ -450,17 +451,17 @@ export function VisionGoals() {
 
           <AnimatePresence>
             {activeGoals.length > 0 && (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 className="space-y-4 mb-8"
               >
                 <h2 className="text-xl font-semibold text-[#2C3E2D]">Active Goals</h2>
                 {activeGoals.map((goal: any, i: number) => (
-                  <motion.div 
-                    key={goal.id} 
-                    layout 
-                    initial={{ opacity: 0, y: 20 }} 
+                  <motion.div
+                    key={goal.id}
+                    layout
+                    initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.05 }}
                   >
@@ -537,7 +538,7 @@ export function VisionGoals() {
             )}
 
             {completedGoals.length > 0 && (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 className="space-y-4"
@@ -558,15 +559,15 @@ export function VisionGoals() {
           </AnimatePresence>
 
           <div className="flex justify-between mt-10">
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               onClick={() => navigate(`/vision/${sessionId}/values`)}
               className="text-[#5A5A5A] hover:bg-[#E8E4DE]"
             >
               <ArrowLeft className="w-4 h-4 mr-2" /> Values & Purpose
             </Button>
-            <Button 
-              onClick={() => navigate(`/vision/${sessionId}/plan`)} 
+            <Button
+              onClick={() => navigate(`/vision/${sessionId}/plan`)}
               className="bg-[#7C9A8E] hover:bg-[#6B8B7E] text-white rounded-xl"
               data-testid="button-to-plan"
             >

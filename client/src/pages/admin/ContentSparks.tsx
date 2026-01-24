@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AdminLayout } from "@/components/admin/AdminLayout";
-import { 
-  Flame, Search, Filter, Plus, MoreVertical, 
-  Loader2, Calendar, Star, Edit, Trash2, Check, 
+import {
+  Flame, Search, Filter, Plus, MoreVertical,
+  Loader2, Calendar, Star, Edit, Trash2, Check,
   Archive, Eye, ChevronLeft, ChevronRight, X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -48,6 +48,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import type { Spark } from "@shared/schema";
+import { getApiUrl } from "@/lib/api";
 
 const STATUSES = ['draft', 'scheduled', 'published', 'archived'] as const;
 const CATEGORIES = ['daily-devotional', 'worship', 'testimony', 'teaching', 'prayer', 'inspiration'] as const;
@@ -107,7 +108,7 @@ export function ContentSparks() {
   const [editingSpark, setEditingSpark] = useState<Spark | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<Spark | null>(null);
   const [formData, setFormData] = useState<SparkFormData>(defaultFormData);
-  
+
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -118,8 +119,8 @@ export function ContentSparks() {
       if (statusFilter !== 'all') params.set('status', statusFilter);
       if (categoryFilter !== 'all') params.set('category', categoryFilter);
       if (audienceFilter !== 'all') params.set('audience', audienceFilter);
-      
-      const res = await fetch(`/api/admin/sparks?${params}`);
+
+      const res = await fetch(getApiUrl(`/api/admin/sparks?${params}`));
       if (!res.ok) throw new Error('Failed to fetch sparks');
       return res.json();
     },
@@ -127,7 +128,7 @@ export function ContentSparks() {
 
   const createMutation = useMutation({
     mutationFn: async (data: SparkFormData) => {
-      const res = await fetch('/api/admin/sparks', {
+      const res = await fetch(getApiUrl('/api/admin/sparks'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
@@ -150,7 +151,7 @@ export function ContentSparks() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: Partial<SparkFormData> }) => {
-      const res = await fetch(`/api/admin/sparks/${id}`, {
+      const res = await fetch(getApiUrl(`/api/admin/sparks/${id}`), {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
@@ -173,7 +174,7 @@ export function ContentSparks() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await fetch(`/api/admin/sparks/${id}`, { method: 'DELETE' });
+      const res = await fetch(getApiUrl(`/api/admin/sparks/${id}`), { method: 'DELETE' });
       if (!res.ok) throw new Error('Failed to delete spark');
     },
     onSuccess: () => {
@@ -188,7 +189,7 @@ export function ContentSparks() {
 
   const bulkMutation = useMutation({
     mutationFn: async ({ ids, action }: { ids: number[]; action: string }) => {
-      const res = await fetch('/api/admin/sparks/bulk', {
+      const res = await fetch(getApiUrl('/api/admin/sparks/bulk'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ids, action }),
@@ -212,8 +213,8 @@ export function ContentSparks() {
   const filteredSparks = sparks.filter(spark => {
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      return spark.title.toLowerCase().includes(query) || 
-             spark.description.toLowerCase().includes(query);
+      return spark.title.toLowerCase().includes(query) ||
+        spark.description.toLowerCase().includes(query);
     }
     return true;
   });
@@ -256,7 +257,7 @@ export function ContentSparks() {
       dailyDate: formData.dailyDate || undefined,
       audienceSegment: formData.audienceSegment || undefined,
     };
-    
+
     if (editingSpark) {
       updateMutation.mutate({ id: editingSpark.id, data });
     } else {
@@ -265,7 +266,7 @@ export function ContentSparks() {
   };
 
   const toggleSparkSelection = (id: number) => {
-    setSelectedSparks(prev => 
+    setSelectedSparks(prev =>
       prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]
     );
   };
@@ -290,12 +291,12 @@ export function ContentSparks() {
   const isPending = createMutation.isPending || updateMutation.isPending;
 
   return (
-    <AdminLayout 
-      title="Sparks Management" 
+    <AdminLayout
+      title="Sparks Management"
       subtitle={`${sparks.length} total sparks`}
       breadcrumbs={[{ label: "Content" }, { label: "Sparks" }]}
       actions={
-        <Button 
+        <Button
           onClick={() => openModal()}
           className="bg-[#1a2744] hover:bg-[#1a2744]/90"
           data-testid="button-create-spark"
@@ -359,8 +360,8 @@ export function ContentSparks() {
           <CardContent className="p-4 flex items-center justify-between">
             <span className="text-white font-medium">{selectedSparks.length} spark(s) selected</span>
             <div className="flex gap-2">
-              <Button 
-                variant="secondary" 
+              <Button
+                variant="secondary"
                 size="sm"
                 onClick={() => bulkMutation.mutate({ ids: selectedSparks, action: 'publish' })}
                 disabled={bulkMutation.isPending}
@@ -368,8 +369,8 @@ export function ContentSparks() {
               >
                 <Check className="h-4 w-4 mr-1" /> Publish
               </Button>
-              <Button 
-                variant="secondary" 
+              <Button
+                variant="secondary"
                 size="sm"
                 onClick={() => bulkMutation.mutate({ ids: selectedSparks, action: 'archive' })}
                 disabled={bulkMutation.isPending}
@@ -377,8 +378,8 @@ export function ContentSparks() {
               >
                 <Archive className="h-4 w-4 mr-1" /> Archive
               </Button>
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 size="sm"
                 onClick={() => setSelectedSparks([])}
                 className="text-white hover:bg-white/10"
@@ -401,8 +402,8 @@ export function ContentSparks() {
             <Flame className="h-12 w-12 text-gray-300 mx-auto mb-4" />
             <h3 className="text-lg font-bold text-gray-900 mb-2">No sparks found</h3>
             <p className="text-gray-500 mb-4">
-              {searchQuery || statusFilter !== 'all' || categoryFilter !== 'all' 
-                ? "Try adjusting your filters." 
+              {searchQuery || statusFilter !== 'all' || categoryFilter !== 'all'
+                ? "Try adjusting your filters."
                 : "Create your first spark to get started."}
             </p>
             <Button onClick={() => openModal()} data-testid="button-create-first-spark">
@@ -417,7 +418,7 @@ export function ContentSparks() {
               <thead className="bg-gray-50 border-b border-gray-100">
                 <tr>
                   <th className="text-left px-4 py-3 w-10">
-                    <Checkbox 
+                    <Checkbox
                       checked={selectedSparks.length === filteredSparks.length && filteredSparks.length > 0}
                       onCheckedChange={toggleSelectAll}
                       data-testid="checkbox-select-all"
@@ -443,7 +444,7 @@ export function ContentSparks() {
                     data-testid={`row-spark-${spark.id}`}
                   >
                     <td className="px-4 py-3">
-                      <Checkbox 
+                      <Checkbox
                         checked={selectedSparks.includes(spark.id)}
                         onCheckedChange={() => toggleSparkSelection(spark.id)}
                         data-testid={`checkbox-spark-${spark.id}`}
@@ -468,7 +469,7 @@ export function ContentSparks() {
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <Badge 
+                      <Badge
                         variant="outline"
                         className={getStatusBadgeStyles(spark.status)}
                         data-testid={`badge-spark-status-${spark.id}`}
@@ -497,9 +498,9 @@ export function ContentSparks() {
                     <td className="px-4 py-3 text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             className="h-8 w-8"
                             data-testid={`button-spark-actions-${spark.id}`}
                           >
@@ -510,7 +511,7 @@ export function ContentSparks() {
                           <DropdownMenuItem onClick={() => openModal(spark)} data-testid={`button-edit-spark-${spark.id}`}>
                             <Edit className="h-4 w-4 mr-2" /> Edit
                           </DropdownMenuItem>
-                          <DropdownMenuItem 
+                          <DropdownMenuItem
                             onClick={() => setDeleteConfirm(spark)}
                             className="text-red-600"
                             data-testid={`button-delete-spark-${spark.id}`}
@@ -536,7 +537,7 @@ export function ContentSparks() {
               {editingSpark ? 'Update the spark details below.' : 'Fill in the details to create a new spark.'}
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
               <Label htmlFor="title">Title *</Label>
@@ -564,8 +565,8 @@ export function ContentSparks() {
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="category">Category *</Label>
-                <Select 
-                  value={formData.category} 
+                <Select
+                  value={formData.category}
                   onValueChange={(v) => setFormData(prev => ({ ...prev, category: v }))}
                 >
                   <SelectTrigger data-testid="select-spark-category">
@@ -583,8 +584,8 @@ export function ContentSparks() {
 
               <div className="grid gap-2">
                 <Label htmlFor="mediaType">Media Type *</Label>
-                <Select 
-                  value={formData.mediaType} 
+                <Select
+                  value={formData.mediaType}
                   onValueChange={(v) => setFormData(prev => ({ ...prev, mediaType: v }))}
                 >
                   <SelectTrigger data-testid="select-spark-media-type">
@@ -659,8 +660,8 @@ export function ContentSparks() {
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="audienceSegment">Audience Segment</Label>
-                <Select 
-                  value={formData.audienceSegment || 'none'} 
+                <Select
+                  value={formData.audienceSegment || 'none'}
                   onValueChange={(v) => setFormData(prev => ({ ...prev, audienceSegment: v === 'none' ? '' : v }))}
                 >
                   <SelectTrigger data-testid="select-spark-audience">
@@ -679,8 +680,8 @@ export function ContentSparks() {
 
               <div className="grid gap-2">
                 <Label htmlFor="status">Status *</Label>
-                <Select 
-                  value={formData.status} 
+                <Select
+                  value={formData.status}
                   onValueChange={(v) => setFormData(prev => ({ ...prev, status: v }))}
                 >
                   <SelectTrigger data-testid="select-spark-status">
@@ -735,7 +736,7 @@ export function ContentSparks() {
             <Button variant="outline" onClick={closeModal} data-testid="button-cancel-spark">
               Cancel
             </Button>
-            <Button 
+            <Button
               onClick={handleSubmit}
               disabled={!formData.title || !formData.description || isPending}
               className="bg-[#1a2744] hover:bg-[#1a2744]/90"

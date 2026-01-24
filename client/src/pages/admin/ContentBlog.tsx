@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AdminLayout } from "@/components/admin/AdminLayout";
-import { 
-  BookOpen, Search, Plus, MoreVertical, 
+import {
+  BookOpen, Search, Plus, MoreVertical,
   Loader2, Calendar, Edit, Trash2, Eye, User
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -38,6 +38,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import type { BlogPost } from "@shared/schema";
+import { getApiUrl } from "@/lib/api";
 
 interface BlogFormData {
   title: string;
@@ -64,14 +65,14 @@ export function ContentBlog() {
   const [deleteConfirm, setDeleteConfirm] = useState<BlogPost | null>(null);
   const [previewPost, setPreviewPost] = useState<BlogPost | null>(null);
   const [formData, setFormData] = useState<BlogFormData>(defaultFormData);
-  
+
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const { data: posts = [], isLoading } = useQuery<BlogPost[]>({
     queryKey: ["/api/admin/blog-posts"],
     queryFn: async () => {
-      const res = await fetch(`/api/admin/blog-posts`);
+      const res = await fetch(getApiUrl(`/api/admin/blog-posts`));
       if (!res.ok) throw new Error('Failed to fetch blog posts');
       return res.json();
     },
@@ -79,7 +80,7 @@ export function ContentBlog() {
 
   const createMutation = useMutation({
     mutationFn: async (data: BlogFormData) => {
-      const res = await fetch('/api/admin/blog-posts', {
+      const res = await fetch(getApiUrl('/api/admin/blog-posts'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
@@ -102,7 +103,7 @@ export function ContentBlog() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: Partial<BlogFormData> }) => {
-      const res = await fetch(`/api/admin/blog-posts/${id}`, {
+      const res = await fetch(getApiUrl(`/api/admin/blog-posts/${id}`), {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
@@ -125,7 +126,7 @@ export function ContentBlog() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await fetch(`/api/admin/blog-posts/${id}`, { method: 'DELETE' });
+      const res = await fetch(getApiUrl(`/api/admin/blog-posts/${id}`), { method: 'DELETE' });
       if (!res.ok) throw new Error('Failed to delete blog post');
     },
     onSuccess: () => {
@@ -141,8 +142,8 @@ export function ContentBlog() {
   const filteredPosts = posts.filter(post => {
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      return post.title.toLowerCase().includes(query) || 
-             post.excerpt?.toLowerCase().includes(query);
+      return post.title.toLowerCase().includes(query) ||
+        post.excerpt?.toLowerCase().includes(query);
     }
     return true;
   });
@@ -198,12 +199,12 @@ export function ContentBlog() {
   const isPending = createMutation.isPending || updateMutation.isPending;
 
   return (
-    <AdminLayout 
-      title="Blog Posts" 
+    <AdminLayout
+      title="Blog Posts"
       subtitle={`${posts.length} total posts`}
       breadcrumbs={[{ label: "Content" }, { label: "Blog Posts" }]}
       actions={
-        <Button 
+        <Button
           onClick={() => openModal()}
           className="bg-[#1a2744] hover:bg-[#1a2744]/90"
           data-testid="button-create-post"
@@ -240,7 +241,7 @@ export function ContentBlog() {
             <h3 className="text-lg font-bold text-gray-900 mb-2">No blog posts found</h3>
             <p className="text-gray-500 mb-4">
               {searchQuery
-                ? "Try adjusting your search." 
+                ? "Try adjusting your search."
                 : "Create your first blog post to get started."}
             </p>
             <Button onClick={() => openModal()} data-testid="button-create-first-post">
@@ -274,10 +275,10 @@ export function ContentBlog() {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         {post.coverImageUrl ? (
-                          <img 
-                            src={post.coverImageUrl} 
-                            alt="" 
-                            className="w-12 h-12 rounded-lg object-cover flex-shrink-0" 
+                          <img
+                            src={post.coverImageUrl}
+                            alt=""
+                            className="w-12 h-12 rounded-lg object-cover flex-shrink-0"
                           />
                         ) : (
                           <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -299,7 +300,7 @@ export function ContentBlog() {
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <Badge 
+                      <Badge
                         variant="outline"
                         className={post.publishedAt ? 'bg-green-100 text-green-700 border-green-200' : 'bg-amber-100 text-amber-700 border-amber-200'}
                         data-testid={`badge-post-status-${post.id}`}
@@ -316,9 +317,9 @@ export function ContentBlog() {
                     <td className="px-4 py-3 text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             className="h-8 w-8"
                             data-testid={`button-post-actions-${post.id}`}
                           >
@@ -332,7 +333,7 @@ export function ContentBlog() {
                           <DropdownMenuItem onClick={() => openModal(post)} data-testid={`button-edit-post-${post.id}`}>
                             <Edit className="h-4 w-4 mr-2" /> Edit
                           </DropdownMenuItem>
-                          <DropdownMenuItem 
+                          <DropdownMenuItem
                             onClick={() => setDeleteConfirm(post)}
                             className="text-red-600"
                             data-testid={`button-delete-post-${post.id}`}
@@ -358,7 +359,7 @@ export function ContentBlog() {
               {editingPost ? 'Update the blog post details below.' : 'Fill in the details to create a new blog post.'}
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
               <Label htmlFor="title">Title *</Label>
@@ -367,8 +368,8 @@ export function ContentBlog() {
                 value={formData.title}
                 onChange={(e) => {
                   const title = e.target.value;
-                  setFormData(prev => ({ 
-                    ...prev, 
+                  setFormData(prev => ({
+                    ...prev,
                     title,
                     slug: prev.slug || generateSlug(title)
                   }));
@@ -443,7 +444,7 @@ export function ContentBlog() {
             <Button variant="outline" onClick={closeModal} data-testid="button-cancel-post">
               Cancel
             </Button>
-            <Button 
+            <Button
               onClick={handleSubmit}
               disabled={!formData.title || !formData.slug || !formData.content || !formData.excerpt || !formData.category || isPending}
               className="bg-[#1a2744] hover:bg-[#1a2744]/90"
@@ -461,27 +462,27 @@ export function ContentBlog() {
           <DialogHeader>
             <DialogTitle>Preview: {previewPost?.title}</DialogTitle>
           </DialogHeader>
-          
+
           <div className="py-4">
             {previewPost?.coverImageUrl && (
-              <img 
-                src={previewPost.coverImageUrl} 
+              <img
+                src={previewPost.coverImageUrl}
                 alt={previewPost.title}
                 className="w-full h-48 object-cover rounded-lg mb-4"
               />
             )}
-            
+
             <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
               {previewPost?.category && (
                 <Badge variant="outline">{previewPost.category}</Badge>
               )}
               <span>{formatDate(previewPost?.publishedAt)}</span>
             </div>
-            
+
             {previewPost?.excerpt && (
               <p className="text-lg text-gray-600 mb-4 italic">{previewPost.excerpt}</p>
             )}
-            
+
             <div className="prose prose-sm max-w-none">
               <p className="whitespace-pre-wrap">{previewPost?.content}</p>
             </div>

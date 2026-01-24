@@ -13,6 +13,7 @@ import {
   Flame, TrendingUp, Clock, Activity, GripVertical
 } from "lucide-react";
 import { AICoachPanel } from "@/components/AICoachPanel";
+import { getApiUrl } from "@/lib/api";
 
 interface FocusItem {
   id: string;
@@ -43,7 +44,7 @@ export function ScaTool() {
   const { data: session } = useQuery({
     queryKey: ["/api/vision/sessions/current"],
     queryFn: async () => {
-      const res = await fetch("/api/vision/sessions/current", { credentials: "include" });
+      const res = await fetch(getApiUrl("/api/vision/sessions/current"), { credentials: "include" });
       if (!res.ok) return null;
       const json = await res.json();
       return json.data;
@@ -52,7 +53,7 @@ export function ScaTool() {
 
   const saveExercise = useMutation({
     mutationFn: async () => {
-      const res = await fetch(`/api/vision/sessions/${sessionId}/sca`, {
+      const res = await fetch(getApiUrl(`/api/vision/sessions/${sessionId}/sca`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -63,9 +64,9 @@ export function ScaTool() {
       });
       if (!res.ok) throw new Error("Failed to save exercise");
       const result = await res.json();
-      
+
       for (const item of focusItems) {
-        await fetch(`/api/sca/${result.data.id}/focus-items`, {
+        await fetch(getApiUrl(`/api/sca/${result.data.id}/focus-items`), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
@@ -76,7 +77,7 @@ export function ScaTool() {
           }),
         });
       }
-      
+
       return result;
     },
     onSuccess: () => {
@@ -101,11 +102,11 @@ export function ScaTool() {
       if (exists) {
         return prev.filter(f => f.title !== activity);
       } else if (prev.length < 10) {
-        return [...prev, { 
-          id: crypto.randomUUID(), 
-          title: activity, 
+        return [...prev, {
+          id: crypto.randomUUID(),
+          title: activity,
           startMotivation: 5,
-          isComplete: false 
+          isComplete: false
         }];
       }
       return prev;
@@ -113,7 +114,7 @@ export function ScaTool() {
   };
 
   const updateMotivation = (id: string, value: number) => {
-    setFocusItems(prev => 
+    setFocusItems(prev =>
       prev.map(f => f.id === id ? { ...f, startMotivation: value } : f)
     );
   };
@@ -149,11 +150,11 @@ export function ScaTool() {
     }
   };
 
-  const progress = step === "rate" 
-    ? ((currentRating + 1) / focusItems.length) * 100 
-    : step === "brainstorm" ? 33 
-    : step === "select" ? 66 
-    : 100;
+  const progress = step === "rate"
+    ? ((currentRating + 1) / focusItems.length) * 100
+    : step === "brainstorm" ? 33
+      : step === "select" ? 66
+        : 100;
 
   const renderIntro = () => (
     <motion.div
@@ -176,7 +177,7 @@ export function ScaTool() {
             What is Self-Concordance?
           </h3>
           <p className="text-sm text-[#6B7B6E] mb-4">
-            Self-concordant goals align with your true interests and values. When you pursue them, 
+            Self-concordant goals align with your true interests and values. When you pursue them,
             motivation stays high from start to finish - unlike goals you "should" do.
           </p>
           <div className="space-y-2">
@@ -381,25 +382,23 @@ export function ScaTool() {
           <div className="space-y-2 mb-6">
             {activities.map((activity, i) => {
               const isSelected = focusItems.some(f => f.title === activity);
-              
+
               return (
                 <button
                   key={i}
                   onClick={() => toggleFocusItem(activity)}
                   disabled={!isSelected && focusItems.length >= 10}
-                  className={`w-full p-4 rounded-xl border-2 text-left transition-all touch-manipulation ${
-                    isSelected
-                      ? "border-[#7C9A8E] bg-[#7C9A8E]/10"
-                      : focusItems.length >= 10
+                  className={`w-full p-4 rounded-xl border-2 text-left transition-all touch-manipulation ${isSelected
+                    ? "border-[#7C9A8E] bg-[#7C9A8E]/10"
+                    : focusItems.length >= 10
                       ? "border-[#E8E4DE] bg-white opacity-50"
                       : "border-[#E8E4DE] bg-white hover:border-[#7C9A8E]/50"
-                  }`}
+                    }`}
                   data-testid={`select-${i}`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                      isSelected ? "border-[#7C9A8E] bg-[#7C9A8E]" : "border-[#D4D0C8]"
-                    }`}>
+                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${isSelected ? "border-[#7C9A8E] bg-[#7C9A8E]" : "border-[#D4D0C8]"
+                      }`}>
                       {isSelected && <CheckCircle2 className="w-4 h-4 text-white" />}
                     </div>
                     <span className="font-medium text-[#2C3E2D]">{activity}</span>
@@ -428,7 +427,7 @@ export function ScaTool() {
 
   const renderRate = () => {
     const currentItem = focusItems[currentRating];
-    
+
     return (
       <div className="min-h-screen bg-[#FAF8F5]">
         <div className="sticky top-0 z-10 bg-[#FAF8F5] border-b border-[#E8E4DE] px-4 py-3">
@@ -526,7 +525,7 @@ export function ScaTool() {
 
   const renderResults = () => {
     const avgMotivation = focusItems.reduce((sum, f) => sum + f.startMotivation, 0) / focusItems.length;
-    
+
     return (
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}

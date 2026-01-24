@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { ArrowLeft, Plus, Flame, Check, Trash2, Zap, TrendingUp, Calendar, Lightbulb, ArrowRight as ArrowRightIcon } from "lucide-react";
 import { AICoachPanel, IntroGuide } from "@/components/AICoachPanel";
 import { ToolLink } from "@/components/ToolLink";
+import { getApiUrl } from "@/lib/api";
 
 const getLast7Days = () => {
   const days = [];
@@ -29,7 +30,7 @@ const getDayLabel = (dateStr: string) => {
   const today = new Date();
   const yesterday = new Date(today);
   yesterday.setDate(yesterday.getDate() - 1);
-  
+
   if (dateStr === today.toISOString().split("T")[0]) return "Today";
   if (dateStr === yesterday.toISOString().split("T")[0]) return "Yest";
   return date.toLocaleDateString("en-US", { weekday: "short" }).slice(0, 3);
@@ -51,7 +52,7 @@ export function VisionHabits() {
   const { data: habits, isLoading } = useQuery({
     queryKey: [`/api/vision/sessions/${sessionId}/habits`],
     queryFn: async () => {
-      const res = await fetch(`/api/vision/sessions/${sessionId}/habits`, { credentials: "include" });
+      const res = await fetch(getApiUrl(`/api/vision/sessions/${sessionId}/habits`), { credentials: "include" });
       if (!res.ok) return [];
       return (await res.json()).data || [];
     },
@@ -59,7 +60,7 @@ export function VisionHabits() {
 
   const createHabit = useMutation({
     mutationFn: async () => {
-      const res = await fetch(`/api/vision/habits`, {
+      const res = await fetch(getApiUrl(`/api/vision/habits`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -80,7 +81,7 @@ export function VisionHabits() {
 
   const deleteHabit = useMutation({
     mutationFn: async (habitId: number) => {
-      const res = await fetch(`/api/vision/habits/${habitId}`, {
+      const res = await fetch(getApiUrl(`/api/vision/habits/${habitId}`), {
         method: "DELETE",
         credentials: "include",
       });
@@ -94,7 +95,7 @@ export function VisionHabits() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#FAF8F5]">
-        <motion.div 
+        <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
           className="w-12 h-12 rounded-full border-4 border-[#E8E4DE] border-t-[#D4A574]"
@@ -108,16 +109,16 @@ export function VisionHabits() {
       <Navbar />
       <main className="min-h-screen bg-[#FAF8F5] py-8 px-4">
         <div className="max-w-4xl mx-auto">
-          <Button 
-            variant="ghost" 
-            onClick={() => navigate(`/vision`)} 
-            className="mb-4 text-[#5A5A5A] hover:bg-[#E8E4DE]" 
+          <Button
+            variant="ghost"
+            onClick={() => navigate(`/vision`)}
+            className="mb-4 text-[#5A5A5A] hover:bg-[#E8E4DE]"
             data-testid="button-back-dashboard"
           >
             <ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard
           </Button>
 
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-6"
@@ -168,7 +169,7 @@ export function VisionHabits() {
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <Button 
+                  <Button
                     className="bg-[#D4A574] hover:bg-[#C49464] text-white rounded-xl"
                     data-testid="button-add-habit"
                   >
@@ -252,7 +253,7 @@ export function VisionHabits() {
                     Add habits to track your daily progress and build momentum
                   </p>
                   <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                    <Button 
+                    <Button
                       onClick={() => setIsDialogOpen(true)}
                       className="bg-[#D4A574] hover:bg-[#C49464] text-white rounded-xl"
                     >
@@ -267,10 +268,10 @@ export function VisionHabits() {
           <AnimatePresence>
             <div className="space-y-4">
               {habits?.map((habit: any, i: number) => (
-                <HabitCard 
-                  key={habit.id} 
-                  habit={habit} 
-                  last7Days={last7Days} 
+                <HabitCard
+                  key={habit.id}
+                  habit={habit}
+                  last7Days={last7Days}
                   sessionId={sessionId!}
                   onDelete={() => deleteHabit.mutate(habit.id)}
                   index={i}
@@ -289,15 +290,15 @@ export function VisionHabits() {
   );
 }
 
-function HabitCard({ 
-  habit, 
-  last7Days, 
-  sessionId, 
+function HabitCard({
+  habit,
+  last7Days,
+  sessionId,
   onDelete,
-  index 
-}: { 
-  habit: any; 
-  last7Days: string[]; 
+  index
+}: {
+  habit: any;
+  last7Days: string[];
   sessionId: string;
   onDelete: () => void;
   index: number;
@@ -307,7 +308,7 @@ function HabitCard({
   const { data: logs } = useQuery({
     queryKey: [`/api/vision/habits/${habit.id}/logs`],
     queryFn: async () => {
-      const res = await fetch(`/api/vision/habits/${habit.id}/logs`, { credentials: "include" });
+      const res = await fetch(getApiUrl(`/api/vision/habits/${habit.id}/logs`), { credentials: "include" });
       if (!res.ok) return [];
       return (await res.json()).data || [];
     },
@@ -315,7 +316,7 @@ function HabitCard({
 
   const toggleLog = useMutation({
     mutationFn: async ({ date, completed }: { date: string; completed: boolean }) => {
-      const res = await fetch(`/api/vision/habits/${habit.id}/log`, {
+      const res = await fetch(getApiUrl(`/api/vision/habits/${habit.id}/log`), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -354,7 +355,7 @@ function HabitCard({
             </div>
             <div className="flex items-center gap-3">
               {streak > 0 && (
-                <motion.div 
+                <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
                   className="flex items-center gap-1.5 bg-[#D4A574] text-white px-3 py-1.5 rounded-full text-sm"
@@ -363,9 +364,9 @@ function HabitCard({
                   <span className="font-bold">{streak} day streak</span>
                 </motion.div>
               )}
-              <Button 
-                variant="ghost" 
-                size="sm" 
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={onDelete}
                 className="text-[#8B9B8E] hover:text-[#C17767] hover:bg-[#C17767]/10 rounded-lg"
                 data-testid={`button-delete-habit-${habit.id}`}
@@ -393,13 +394,12 @@ function HabitCard({
                       {getDayLabel(date)}
                     </span>
                     <div
-                      className={`w-10 h-10 rounded-xl flex items-center justify-center font-medium transition-all ${
-                        isCompleted
-                          ? "bg-[#5B8C5A] text-white"
-                          : isToday
-                            ? "bg-[#D4A574]/10 text-[#D4A574] border-2 border-[#D4A574]"
-                            : "bg-[#F5F3EF] text-[#8B9B8E] border border-[#E8E4DE]"
-                      }`}
+                      className={`w-10 h-10 rounded-xl flex items-center justify-center font-medium transition-all ${isCompleted
+                        ? "bg-[#5B8C5A] text-white"
+                        : isToday
+                          ? "bg-[#D4A574]/10 text-[#D4A574] border-2 border-[#D4A574]"
+                          : "bg-[#F5F3EF] text-[#8B9B8E] border border-[#E8E4DE]"
+                        }`}
                     >
                       {isCompleted ? (
                         <Check className="w-5 h-5" />
@@ -418,7 +418,7 @@ function HabitCard({
                 <span>{completedCount}/7 this week</span>
               </div>
               <div className="w-32 h-2 bg-[#E8E4DE] rounded-full overflow-hidden">
-                <motion.div 
+                <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${(completedCount / 7) * 100}%` }}
                   className="h-full bg-[#5B8C5A] rounded-full"
@@ -435,7 +435,7 @@ function HabitCard({
 function calculateStreak(logs: any[], last7Days: string[]): number {
   let streak = 0;
   const logMap = new Map(logs.map((l: any) => [l.date, l.completed]));
-  
+
   for (let i = last7Days.length - 1; i >= 0; i--) {
     if (logMap.get(last7Days[i])) {
       streak++;
@@ -460,7 +460,7 @@ function StreakBreakMotivation({ habits, sessionId }: { habits: any[]; sessionId
     queryKey: ["/api/vision/habits/logs/recent", dailyHabits.map((h: any) => h.id).join(",")],
     queryFn: async () => {
       const logsPromises = dailyHabits.map(async (habit: any) => {
-        const res = await fetch(`/api/vision/habits/${habit.id}/logs`, { credentials: "include" });
+        const res = await fetch(getApiUrl(`/api/vision/habits/${habit.id}/logs`), { credentials: "include" });
         if (!res.ok) return { habitId: habit.id, logs: [] };
         const data = await res.json();
         return { habitId: habit.id, logs: data.data || [] };
@@ -473,10 +473,10 @@ function StreakBreakMotivation({ habits, sessionId }: { habits: any[]; sessionId
   const hasStreakBreak = allLogs?.some((habitData: any) => {
     const completedLogs = habitData.logs.filter((l: any) => l.completed);
     if (completedLogs.length === 0) return false;
-    
+
     const twoDaysAgoLog = habitData.logs.find((l: any) => l.date === twoDaysAgoStr);
     const yesterdayLog = habitData.logs.find((l: any) => l.date === yesterdayStr);
-    
+
     return twoDaysAgoLog?.completed && !yesterdayLog?.completed;
   });
 
