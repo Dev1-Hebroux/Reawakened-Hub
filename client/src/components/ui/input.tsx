@@ -1,9 +1,59 @@
 import * as React from "react"
+import { motion } from "framer-motion"
 
 import { cn } from "@/lib/utils"
+import { spring } from "@/lib/animations"
 
-const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
-  ({ className, type, ...props }, ref) => {
+export interface InputProps extends React.ComponentProps<"input"> {
+  /** Enable premium focus glow animations */
+  animated?: boolean
+}
+
+const Input = React.forwardRef<HTMLInputElement, InputProps>(
+  ({ className, type, animated = false, ...props }, ref) => {
+    const [isFocused, setIsFocused] = React.useState(false)
+
+    if (animated) {
+      return (
+        <motion.div className="relative">
+          <motion.input
+            type={type}
+            className={cn(
+              "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-all file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+              isFocused && "ring-2 ring-primary/20 border-primary shadow-lg",
+              className
+            )}
+            ref={ref as any}
+            animate={{
+              scale: isFocused ? 1.01 : 1,
+            }}
+            transition={spring.gentle}
+            onFocus={(e) => {
+              setIsFocused(true)
+              props.onFocus?.(e as any)
+            }}
+            onBlur={(e) => {
+              setIsFocused(false)
+              props.onBlur?.(e as any)
+            }}
+            {...props}
+          />
+          {isFocused && (
+            <motion.div
+              className="absolute inset-0 rounded-md pointer-events-none"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={spring.gentle}
+              style={{
+                boxShadow: "0 0 20px var(--theme-glow-color, rgba(124, 154, 142, 0.3))",
+              }}
+            />
+          )}
+        </motion.div>
+      )
+    }
+
     return (
       <input
         type={type}
