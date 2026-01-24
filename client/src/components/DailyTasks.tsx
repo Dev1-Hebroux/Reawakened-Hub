@@ -8,7 +8,7 @@
  * - Progress tracking
  */
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   CheckCircle2, Circle, Star, Gift, Rocket,
@@ -19,7 +19,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
 import { toast } from "sonner";
-import confetti from "canvas-confetti";
+import { celebrate, celebrateTask, celebrateDailyGoal } from "@/lib/celebrations";
 
 type TaskTier = "essential" | "bonus" | "stretch";
 type AudienceSegment = "gen-z-student" | "young-professional" | "couple" | "parent" | "senior" | "general";
@@ -295,26 +295,45 @@ export function DailyTasks() {
         date: new Date().toISOString().split('T')[0]
       });
     },
-    onSuccess: (_, taskId) => {
+    onSuccess: (_: unknown, taskId: string) => {
       queryClient.invalidateQueries({ queryKey: ["/api/daily-tasks/progress"] });
       queryClient.invalidateQueries({ queryKey: ["/api/me/progress"] });
 
       const task = availableTasks.find(t => t.id === taskId);
+
+      // Single task celebration
+      celebrateTask();
       toast.success(`${task?.icon || "✅"} Task completed! +${task?.points} points`);
 
-      // Celebrate all essential tasks completion
+      // Check for tier completion milestones
       const essentialTasks = availableTasks.filter(t => t.tier === "essential");
+      const bonusTasks = availableTasks.filter(t => t.tier === "bonus");
+      const stretchTasks = availableTasks.filter(t => t.tier === "stretch");
+
       const completedEssential = essentialTasks.filter(t =>
         completedTaskIds.has(t.id) || t.id === taskId
       );
+      const completedBonus = bonusTasks.filter(t =>
+        completedTaskIds.has(t.id) || t.id === taskId
+      );
+      const completedStretch = stretchTasks.filter(t =>
+        completedTaskIds.has(t.id) || t.id === taskId
+      );
 
+      // Essential tasks complete
       if (completedEssential.length === essentialTasks.length) {
-        confetti({
-          particleCount: 100,
-          spread: 70,
-          origin: { y: 0.6 }
-        });
+        celebrateDailyGoal();
         toast.success("🎉 All essential tasks complete! You're on fire!");
+      }
+
+      // All tasks in day complete (50 point goal reached)
+      const totalCompleted = completedEssential.length + completedBonus.length + completedStretch.length;
+      const totalTasks = essentialTasks.length + bonusTasks.length + stretchTasks.length;
+      const estimatedPoints = (progress?.totalPoints || 0) + (task?.points || 0);
+
+      if (estimatedPoints >= 50) {
+        celebrate("daily-goal");
+        toast.success("🔥 Daily goal achieved! 50+ points!");
       }
     },
     onError: () => {
