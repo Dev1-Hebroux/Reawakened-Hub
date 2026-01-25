@@ -246,9 +246,23 @@ export async function setupAuth(app: Express) {
 }
 
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
+  // Check if Passport is initialized (req.isAuthenticated exists)
+  const isPassportAuth = typeof req.isAuthenticated === 'function';
+
+  if (!isPassportAuth) {
+    // Passport not initialized - check session-based auth instead
+    const sessionUser = (req.session as any)?.user;
+    if (!sessionUser) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    (req as any).user = sessionUser;
+    return next();
+  }
+
+  // Passport-based authentication
   const user = req.user as any;
 
-  if (!req.isAuthenticated() || !user.expires_at) {
+  if (!req.isAuthenticated() || !user?.expires_at) {
     return res.status(401).json({ message: "Unauthorized" });
   }
 
@@ -277,14 +291,27 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
 };
 
 export const isSuperAdmin: RequestHandler = async (req, res, next) => {
-  const user = req.user as any;
-  
-  if (!req.isAuthenticated() || !user?.claims?.sub) {
-    return res.status(401).json({ message: "Unauthorized" });
+  const isPassportAuth = typeof req.isAuthenticated === 'function';
+
+  let userId: string | undefined;
+
+  if (!isPassportAuth) {
+    const sessionUser = (req.session as any)?.user;
+    if (!sessionUser?.id) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    userId = sessionUser.id;
+    (req as any).user = sessionUser;
+  } else {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || !user?.claims?.sub) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    userId = user.claims.sub;
   }
-  
+
   try {
-    const dbUser = await storage.getUser(user.claims.sub);
+    const dbUser = await storage.getUser(userId!);
     if (!dbUser || dbUser.role !== 'super_admin') {
       return res.status(403).json({ message: "Super admin access required" });
     }
@@ -296,14 +323,27 @@ export const isSuperAdmin: RequestHandler = async (req, res, next) => {
 };
 
 export const isAdmin: RequestHandler = async (req, res, next) => {
-  const user = req.user as any;
-  
-  if (!req.isAuthenticated() || !user?.claims?.sub) {
-    return res.status(401).json({ message: "Unauthorized" });
+  const isPassportAuth = typeof req.isAuthenticated === 'function';
+
+  let userId: string | undefined;
+
+  if (!isPassportAuth) {
+    const sessionUser = (req.session as any)?.user;
+    if (!sessionUser?.id) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    userId = sessionUser.id;
+    (req as any).user = sessionUser;
+  } else {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || !user?.claims?.sub) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    userId = user.claims.sub;
   }
-  
+
   try {
-    const dbUser = await storage.getUser(user.claims.sub);
+    const dbUser = await storage.getUser(userId!);
     if (!dbUser || !['admin', 'super_admin'].includes(dbUser.role || '')) {
       return res.status(403).json({ message: "Admin access required" });
     }
@@ -315,14 +355,27 @@ export const isAdmin: RequestHandler = async (req, res, next) => {
 };
 
 export const isLeaderOrAbove: RequestHandler = async (req, res, next) => {
-  const user = req.user as any;
-  
-  if (!req.isAuthenticated() || !user?.claims?.sub) {
-    return res.status(401).json({ message: "Unauthorized" });
+  const isPassportAuth = typeof req.isAuthenticated === 'function';
+
+  let userId: string | undefined;
+
+  if (!isPassportAuth) {
+    const sessionUser = (req.session as any)?.user;
+    if (!sessionUser?.id) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    userId = sessionUser.id;
+    (req as any).user = sessionUser;
+  } else {
+    const user = req.user as any;
+    if (!req.isAuthenticated() || !user?.claims?.sub) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    userId = user.claims.sub;
   }
-  
+
   try {
-    const dbUser = await storage.getUser(user.claims.sub);
+    const dbUser = await storage.getUser(userId!);
     if (!dbUser || !['leader', 'admin', 'super_admin'].includes(dbUser.role || '')) {
       return res.status(403).json({ message: "Leader access required" });
     }
