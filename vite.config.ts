@@ -28,6 +28,22 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Core React libraries
+          'react-vendor': ['react', 'react-dom'],
+          // UI framework
+          'ui-vendor': ['framer-motion', '@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-tooltip'],
+          // Data fetching
+          'query-vendor': ['@tanstack/react-query'],
+          // Charts (large dependency)
+          'charts-vendor': ['recharts'],
+          // Date utilities
+          'date-vendor': ['date-fns'],
+        },
+      },
+    },
   },
   server: {
     host: "0.0.0.0",

@@ -17,21 +17,27 @@ import { PWAProvider, InstallBanner, UpdateBanner, OfflineIndicator, IOSInstallI
 import { useNotifications } from "@/services/NotificationService";
 
 import NotFound from "@/pages/not-found";
-import Home from "@/pages/Home";
 import { LoginPage } from "@/pages/auth/LoginPage";
 import { RegisterPage } from "@/pages/auth/RegisterPage";
 import { ForgotPasswordPage, ResetPasswordPage } from "@/pages/auth/PasswordRecoveryPages";
 import { useAuth as useEmailAuth } from "@/contexts/AuthContext";
 import { Redirect } from "wouter";
-import AboutPage from "@/pages/About";
-import Blog from "@/pages/Blog";
-import BlogPostPage from "@/pages/BlogPost";
-import { CommunityHub } from "@/pages/CommunityHub";
-import { SparksPage } from "@/pages/Sparks";
-import { MissionPage } from "@/pages/Mission";
-import { OutreachPage } from "@/pages/Outreach";
-import { PrayHub } from "@/pages/PrayHub";
-import { SchoolsLanding, UniversitiesLanding, EarlyCareerLanding, BuildersLanding, CouplesLanding } from "@/pages/AudienceLanding";
+
+// Lazy load all pages for better initial bundle size
+const Home = lazy(() => import("@/pages/Home"));
+const AboutPage = lazy(() => import("@/pages/About"));
+const Blog = lazy(() => import("@/pages/Blog"));
+const BlogPostPage = lazy(() => import("@/pages/BlogPost"));
+const CommunityHub = lazy(() => import("@/pages/CommunityHub").then(m => ({ default: m.CommunityHub })));
+const SparksPage = lazy(() => import("@/pages/Sparks").then(m => ({ default: m.SparksPage })));
+const MissionPage = lazy(() => import("@/pages/Mission").then(m => ({ default: m.MissionPage })));
+const OutreachPage = lazy(() => import("@/pages/Outreach").then(m => ({ default: m.OutreachPage })));
+const PrayHub = lazy(() => import("@/pages/PrayHub").then(m => ({ default: m.PrayHub })));
+const SchoolsLanding = lazy(() => import("@/pages/AudienceLanding").then(m => ({ default: m.SchoolsLanding })));
+const UniversitiesLanding = lazy(() => import("@/pages/AudienceLanding").then(m => ({ default: m.UniversitiesLanding })));
+const EarlyCareerLanding = lazy(() => import("@/pages/AudienceLanding").then(m => ({ default: m.EarlyCareerLanding })));
+const BuildersLanding = lazy(() => import("@/pages/AudienceLanding").then(m => ({ default: m.BuildersLanding })));
+const CouplesLanding = lazy(() => import("@/pages/AudienceLanding").then(m => ({ default: m.CouplesLanding })));
 
 const JourneyLibrary = lazy(() => import("@/pages/JourneyLibrary").then(m => ({ default: m.JourneyLibrary })));
 const JourneyDetail = lazy(() => import("@/pages/JourneyDetail").then(m => ({ default: m.JourneyDetail })));
