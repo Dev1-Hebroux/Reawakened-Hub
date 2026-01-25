@@ -129,7 +129,11 @@ export function StreakFlame({
               <motion.div
                 key={i}
                 className="absolute w-1 h-1 rounded-full"
-                style={{ backgroundColor: flameColor }}
+                style={{
+                  backgroundColor: flameColor,
+                  left: "50%",
+                  top: "50%",
+                }}
                 initial={{
                   opacity: 0,
                   x: 0,
@@ -146,10 +150,6 @@ export function StreakFlame({
                   repeat: Infinity,
                   delay: i * 0.7,
                   ease: "easeOut",
-                }}
-                style={{
-                  left: "50%",
-                  top: "50%",
                 }}
               />
             ))}

@@ -45,10 +45,12 @@ export default function Notifications() {
   const { isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
 
-  const { data: notifications = [], isLoading } = useQuery<Notification[]>({
+  const { data: notificationsData, isLoading } = useQuery<{ items: Notification[]; total: number }>({
     queryKey: ["/api/notifications"],
     enabled: isAuthenticated,
   });
+
+  const notifications = notificationsData?.items || [];
 
   const markReadMutation = useMutation({
     mutationFn: async (id: number) => {

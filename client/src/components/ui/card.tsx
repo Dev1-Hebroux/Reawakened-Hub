@@ -26,6 +26,12 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
       : "bg-card border"
 
     if (animated) {
+      // Omit HTML event props that conflict with Framer Motion props
+      const {
+        onDrag, onDragEnd, onDragStart, onDragEnter, onDragLeave, onDragOver, onDrop,
+        onAnimationStart, onAnimationEnd, onAnimationIteration,
+        ...motionProps
+      } = props
       return (
         <motion.div
           ref={ref as any}
@@ -37,7 +43,7 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
           )}
           whileHover={cardHover}
           transition={spring.gentle}
-          {...props}
+          {...motionProps}
         />
       )
     }

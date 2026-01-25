@@ -59,6 +59,12 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     // If animations are enabled, wrap with motion
     if (animated && !asChild) {
       const MotionComp = motion.button
+      // Omit HTML event props that conflict with Framer Motion props
+      const {
+        onDrag, onDragEnd, onDragStart, onDragEnter, onDragLeave, onDragOver, onDrop,
+        onAnimationStart, onAnimationEnd, onAnimationIteration,
+        ...motionProps
+      } = props
       return (
         <MotionComp
           className={cn(buttonVariants({ variant, size, className }))}
@@ -66,7 +72,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           whileHover={buttonHover}
           whileTap={buttonPress}
           transition={spring.snappy}
-          {...props}
+          {...motionProps}
         />
       )
     }

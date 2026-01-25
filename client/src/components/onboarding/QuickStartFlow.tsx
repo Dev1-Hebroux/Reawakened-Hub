@@ -229,7 +229,7 @@ export function QuickStartFlow({ onComplete, onSkip }: QuickStartFlowProps) {
               key="first-task"
               initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, scale: 1.5, opacity: 0 }}
+              exit={{ opacity: 0, scale: 1.5 }}
               transition={spring.gentle}
             >
               <div className="text-center mb-8">

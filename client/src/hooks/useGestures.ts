@@ -117,7 +117,7 @@ export function useLongPress(
     moveThreshold = 10
   } = config;
 
-  const timerRef = useRef<NodeJS.Timeout>();
+  const timerRef = useRef<NodeJS.Timeout | undefined>(undefined);
   const startPos = useRef<{ x: number; y: number } | null>(null);
   const [isPressed, setIsPressed] = useState(false);
 

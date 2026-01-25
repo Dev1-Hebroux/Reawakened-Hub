@@ -6,7 +6,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { getApiUrl } from "../lib/api";
+import { apiRequest } from "@/lib/queryClient";
 
 export function useEmailSubscription() {
   const [emailInput, setEmailInput] = useState('');
@@ -23,23 +23,14 @@ export function useEmailSubscription() {
 
     setEmailSubmitting(true);
     try {
-      const response = await fetch(getApiUrl('/api/subscribe'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: emailInput,
-          categories: ['daily-devotional', 'worship', 'testimony'],
-        }),
+      await apiRequest('POST', '/api/subscribe', {
+        email: emailInput,
+        categories: ['daily-devotional', 'worship', 'testimony'],
       });
 
-      if (response.ok) {
-        setEmailSuccess(true);
-        toast.success("You're subscribed! Check your email for confirmation.");
-        setEmailInput('');
-      } else {
-        const data = await response.json();
-        toast.error(data.message || "Failed to subscribe");
-      }
+      setEmailSuccess(true);
+      toast.success("You're subscribed! Check your email for confirmation.");
+      setEmailInput('');
     } catch (error) {
       toast.error("Something went wrong. Please try again.");
     } finally {

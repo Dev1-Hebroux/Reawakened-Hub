@@ -113,6 +113,23 @@ export function AiCoachDrawer({ entryPoint = "general" }: AiCoachDrawerProps) {
 
   return (
     <>
+      {/* Floating AI Bot Button */}
+      {!isOpen && (
+        <motion.button
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0, opacity: 0 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => setIsOpen(true)}
+          className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-r from-[#1a2744] to-[#243656] text-white rounded-full shadow-2xl flex items-center justify-center z-50 hover:shadow-xl transition-shadow"
+          data-testid="button-open-ai-coach"
+          aria-label="Open AI Coach"
+        >
+          <Bot className="h-6 w-6" />
+          <span className="absolute inset-0 rounded-full bg-[#4A7C7C] animate-ping opacity-20" />
+        </motion.button>
+      )}
       <AnimatePresence>
         {isOpen && (
           <>

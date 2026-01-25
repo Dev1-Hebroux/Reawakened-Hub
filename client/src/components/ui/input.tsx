@@ -14,6 +14,12 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     const [isFocused, setIsFocused] = React.useState(false)
 
     if (animated) {
+      // Omit HTML event props that conflict with Framer Motion props
+      const {
+        onDrag, onDragEnd, onDragStart, onDragEnter, onDragLeave, onDragOver, onDrop,
+        onAnimationStart, onAnimationEnd, onAnimationIteration,
+        ...motionProps
+      } = props
       return (
         <motion.div className="relative">
           <motion.input
@@ -30,13 +36,13 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             transition={spring.gentle}
             onFocus={(e) => {
               setIsFocused(true)
-              props.onFocus?.(e as any)
+              motionProps.onFocus?.(e as any)
             }}
             onBlur={(e) => {
               setIsFocused(false)
-              props.onBlur?.(e as any)
+              motionProps.onBlur?.(e as any)
             }}
-            {...props}
+            {...motionProps}
           />
           {isFocused && (
             <motion.div

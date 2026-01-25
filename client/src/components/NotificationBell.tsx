@@ -51,15 +51,17 @@ export function NotificationBell({ isDark = false }: NotificationBellProps) {
     refetchInterval: 30000,
   });
 
-  const { data: notifications = [] } = useQuery<Notification[]>({
+  const { data: notificationsData } = useQuery<{ items: Notification[]; total: number }>({
     queryKey: ["/api/notifications"],
     queryFn: async () => {
       const res = await fetch("/api/notifications?limit=20");
-      if (!res.ok) return [];
+      if (!res.ok) return { items: [], total: 0 };
       return res.json();
     },
     enabled: isAuthenticated && isOpen,
   });
+
+  const notifications = notificationsData?.items || [];
 
   const markReadMutation = useMutation({
     mutationFn: async (id: number) => {

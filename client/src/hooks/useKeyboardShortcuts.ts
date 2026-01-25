@@ -4,7 +4,7 @@
  * Inspired by Gmail, Notion, and Linear shortcuts
  */
 
-import { useEffect, useCallback, useRef } from "react";
+import { useEffect, useCallback, useRef, useState } from "react";
 
 export interface ShortcutConfig {
   /** Keyboard key or combination */
@@ -208,14 +208,14 @@ export function useSearchShortcut(
   useKeyboardShortcuts(
     enabled
       ? [
-          {
-            key: "/",
-            action: handleFocus,
-            description: "Focus search",
-            preventDefault: true,
-            ignoreInputs: true
-          }
-        ]
+        {
+          key: "/",
+          action: handleFocus,
+          description: "Focus search",
+          preventDefault: true,
+          ignoreInputs: true
+        }
+      ]
       : []
   );
 }
@@ -233,14 +233,14 @@ export function useToggleShortcut(
   useKeyboardShortcuts(
     enabled
       ? [
-          {
-            key,
-            action: onToggle,
-            description,
-            ctrl,
-            ignoreInputs: true
-          }
-        ]
+        {
+          key,
+          action: onToggle,
+          description,
+          ctrl,
+          ignoreInputs: true
+        }
+      ]
       : []
   );
 }
@@ -273,7 +273,7 @@ export function useShortcutHelp() {
 }
 
 // Fix missing import
-import { useState } from "react";
+// Removed duplicate import
 
 /**
  * Hook for sequential shortcuts (Gmail-style)
@@ -284,7 +284,7 @@ export function useSequentialShortcuts(
   timeout: number = 1000
 ) {
   const currentSequence = useRef<string[]>([]);
-  const timeoutRef = useRef<NodeJS.Timeout>();
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const resetSequence = useCallback(() => {
     currentSequence.current = [];

@@ -119,10 +119,6 @@ export function GamificationBar() {
             >
               <MiniStreak
                 streak={currentStreak}
-                longestStreak={progress?.streak?.longestStreak || 0}
-                graceDaysUsed={graceDaysUsed}
-                graceDaysAllowed={graceDaysAllowed}
-                className="flex-shrink-0"
               />
             </motion.div>
 
