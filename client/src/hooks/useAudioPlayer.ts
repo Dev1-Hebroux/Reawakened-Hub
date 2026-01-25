@@ -26,6 +26,8 @@ interface UseAudioPlayerReturn {
   isBackgroundPlaying: boolean;
   toggleBackgroundPlayback: () => Promise<void>;
   cleanup: () => void;
+  /** Prefetch audio for a track to enable instant playback on user action (e.g., on hover). */
+  prefetchAudio: (url: string) => void;
 }
 
 export function useAudioPlayer(options: UseAudioPlayerOptions = {}): UseAudioPlayerReturn {
@@ -87,6 +89,21 @@ export function useAudioPlayer(options: UseAudioPlayerOptions = {}): UseAudioPla
     setIsBackgroundPlaying(false);
   }, []);
 
+  /**
+   * Prefetch audio for instant playback.
+   * Creates a hidden Audio element that preloads the content.
+   * Call this on hover or anticipation of user action.
+   */
+  const prefetchAudio = useCallback((url: string) => {
+    if (typeof window === 'undefined') return;
+    // Create a temporary audio element to preload
+    const audio = new Audio();
+    audio.preload = 'auto';
+    audio.src = url;
+    // The browser will start downloading the audio in the background
+    // We don't need to keep a reference; the browser's internal cache handles it.
+  }, []);
+
   useEffect(() => {
     return cleanup;
   }, [cleanup]);
@@ -98,5 +115,6 @@ export function useAudioPlayer(options: UseAudioPlayerOptions = {}): UseAudioPla
     isBackgroundPlaying,
     toggleBackgroundPlayback,
     cleanup,
+    prefetchAudio,
   };
 }

@@ -26,36 +26,48 @@ interface UseJournalingReturn {
   hasVoiceSupport: boolean;
 }
 
+// Helper for localStorage key
+const getStorageKey = (id: number | null) => id ? `journal_draft_${id}` : null;
+
 export function useJournaling(options: UseJournalingOptions): UseJournalingReturn {
   const { sparkId, reflectionId, onSuccess } = options;
   const queryClient = useQueryClient();
-  
-  const [journalText, setJournalTextState] = useState('');
+  const storageKey = getStorageKey(sparkId);
+
+  // Initialize from localStorage
+  const [journalText, setJournalTextState] = useState(() => {
+    if (typeof window === 'undefined' || !storageKey) return '';
+    try {
+      return localStorage.getItem(storageKey) || '';
+    } catch {
+      return '';
+    }
+  });
   const [isRecording, setIsRecording] = useState(false);
   const [showJournal, setShowJournal] = useState(false);
-  
+
   const recognitionRef = useRef<any>(null);
-  
+
   const maxCharacters = VALIDATION.MAX_JOURNAL_LENGTH;
   const characterCount = journalText.length;
   const isOverLimit = characterCount > maxCharacters;
-  
-  const hasVoiceSupport = typeof window !== 'undefined' && 
+
+  const hasVoiceSupport = typeof window !== 'undefined' &&
     ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window);
 
   const journalMutation = useMutation({
     mutationFn: async (content: string) => {
       if (!sparkId) throw new Error('No spark selected');
-      
+
       if (content.length > maxCharacters) {
         throw new Error(`Reflection too long. Maximum ${maxCharacters.toLocaleString()} characters.`);
       }
-      
+
       if (content.trim().length === 0) {
         throw new Error('Reflection cannot be empty');
       }
-      
-      await apiRequest("POST", `/api/sparks/${sparkId}/journal`, { 
+
+      await apiRequest("POST", `/api/sparks/${sparkId}/journal`, {
         textContent: content,
         reflectionId: reflectionId || undefined,
       });
@@ -63,6 +75,10 @@ export function useJournaling(options: UseJournalingOptions): UseJournalingRetur
     onSuccess: () => {
       setShowJournal(false);
       setJournalTextState('');
+      // Clear localStorage draft on successful save
+      if (storageKey) {
+        try { localStorage.removeItem(storageKey); } catch { /* ignore */ }
+      }
       queryClient.invalidateQueries({ queryKey: ["/api/sparks", sparkId, "journal"] });
       toast.success("Reflection saved");
       onSuccess?.();
@@ -78,7 +94,11 @@ export function useJournaling(options: UseJournalingOptions): UseJournalingRetur
 
   const setJournalText = useCallback((text: string) => {
     setJournalTextState(text);
-  }, []);
+    // Persist to localStorage on every change
+    if (storageKey) {
+      try { localStorage.setItem(storageKey, text); } catch { /* storage full or unavailable */ }
+    }
+  }, [storageKey]);
 
   const saveJournal = useCallback(() => {
     if (isOverLimit) {
@@ -111,11 +131,11 @@ export function useJournaling(options: UseJournalingOptions): UseJournalingRetur
     try {
       const SpeechRecognition = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
       const recognition = new SpeechRecognition();
-      
+
       recognition.continuous = true;
       recognition.interimResults = true;
       recognition.lang = 'en-GB';
-      
+
       recognition.onresult = (event: any) => {
         let transcript = '';
         for (let i = 0; i < event.results.length; i++) {
@@ -123,7 +143,7 @@ export function useJournaling(options: UseJournalingOptions): UseJournalingRetur
         }
         setJournalTextState(transcript);
       };
-      
+
       recognition.onerror = (event: any) => {
         setIsRecording(false);
         if (event.error === 'not-allowed') {
@@ -134,11 +154,11 @@ export function useJournaling(options: UseJournalingOptions): UseJournalingRetur
           toast.error("Voice recording error. Please try again or type your reflection.");
         }
       };
-      
+
       recognition.onend = () => {
         setIsRecording(false);
       };
-      
+
       recognitionRef.current = recognition;
       recognition.start();
       setIsRecording(true);
