@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useLocation } from "wouter";
@@ -7,7 +7,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import {
   BookOpen, Clock, Users, ChevronRight, Flame, Filter,
   Heart, Sparkles, Target, Award, TrendingUp, Check,
-  Play, Bookmark, Star, ArrowRight, Search, X
+  Play, Bookmark, Star, ArrowRight, Search, X, XCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -101,6 +101,7 @@ export function ReadingPlansPage() {
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [selectedMaturityLevel, setSelectedMaturityLevel] = useState<string>("growing");
   const [showFilters, setShowFilters] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const { data: plans = [], isLoading: plansLoading } = useQuery<ReadingPlan[]>({
     queryKey: ["/api/reading-plans", selectedTopic, selectedMaturity, selectedDuration],
@@ -166,11 +167,52 @@ export function ReadingPlansPage() {
       toast({ title: "Enrolled!", description: "Start reading to build your streak!" });
       navigate(`/reading-plans/${planId}`);
     },
+    onError: (error: Error) => {
+      toast({
+        title: "Enrollment failed",
+        description: error.message || "Please check your connection and try again.",
+        variant: "destructive"
+      });
+    },
   });
 
   const activeEnrollment = enrollments.find(e => e.status === "active");
   const enrolledPlanIds = new Set(enrollments.map(e => e.planId));
-  const featuredPlans = plans.filter(p => p.featured);
+
+  // Search and filter logic
+  const filteredPlans = useMemo(() => {
+    let filtered = plans;
+
+    // Apply topic filter
+    if (selectedTopic) {
+      filtered = filtered.filter(p => p.topics?.includes(selectedTopic));
+    }
+
+    // Apply maturity filter
+    if (selectedMaturity) {
+      filtered = filtered.filter(p => p.maturityLevel === selectedMaturity);
+    }
+
+    // Apply duration filter
+    if (selectedDuration) {
+      filtered = filtered.filter(p => p.durationDays === selectedDuration);
+    }
+
+    // Apply search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(p => {
+        const titleMatch = p.title.toLowerCase().includes(query);
+        const descMatch = p.description.toLowerCase().includes(query);
+        const topicMatch = p.topics?.some(t => t.toLowerCase().includes(query));
+        return titleMatch || descMatch || topicMatch;
+      });
+    }
+
+    return filtered;
+  }, [plans, selectedTopic, selectedMaturity, selectedDuration, searchQuery]);
+
+  const featuredPlans = filteredPlans.filter(p => p.featured);
 
   const handleStartOnboarding = () => {
     if (!user) {
@@ -198,9 +240,10 @@ export function ReadingPlansPage() {
     setSelectedTopic(null);
     setSelectedMaturity(null);
     setSelectedDuration(null);
+    setSearchQuery("");
   };
 
-  const hasActiveFilters = selectedTopic || selectedMaturity || selectedDuration;
+  const hasActiveFilters = selectedTopic || selectedMaturity || selectedDuration || searchQuery.trim();
 
   if (authLoading || plansLoading) {
     return (
@@ -400,6 +443,36 @@ export function ReadingPlansPage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
+          {/* Search Input */}
+          <div className="mb-6" role="search" aria-label="Search reading plans">
+            <div className="relative max-w-md">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-white/40" aria-hidden="true" />
+              <input
+                type="text"
+                placeholder="Search plans by title, description, or topic..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-[#19233b] border border-white/10 rounded-xl pl-10 pr-10 py-3 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                data-testid="input-search-plans"
+                aria-label="Search reading plans"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition-colors"
+                  aria-label="Clear search"
+                >
+                  <XCircle className="h-5 w-5" />
+                </button>
+              )}
+            </div>
+            {searchQuery && (
+              <p className="text-sm text-white/50 mt-2" role="status" aria-live="polite">
+                Found {filteredPlans.length} plan{filteredPlans.length !== 1 ? 's' : ''}
+              </p>
+            )}
+          </div>
+
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-xl bg-white/10 flex items-center justify-center">
@@ -416,12 +489,16 @@ export function ReadingPlansPage() {
           </div>
 
           {/* Topics */}
-          <div className="flex flex-wrap gap-2 mb-4">
+          <div className="flex flex-wrap gap-2 mb-4" role="group" aria-label="Filter by topic">
             <Badge
               variant={selectedTopic === null ? "default" : "outline"}
               className={`cursor-pointer transition-all ${selectedTopic === null ? "bg-primary" : "bg-white/5 border-white/20 text-white/70 hover:bg-white/10"}`}
               onClick={() => setSelectedTopic(null)}
               data-testid="filter-topic-all"
+              aria-pressed={selectedTopic === null}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => e.key === 'Enter' && setSelectedTopic(null)}
             >
               All Topics
             </Badge>
@@ -432,6 +509,10 @@ export function ReadingPlansPage() {
                 className={`cursor-pointer transition-all ${selectedTopic === topic.id ? "bg-primary" : "bg-white/5 border-white/20 text-white/70 hover:bg-white/10"}`}
                 onClick={() => setSelectedTopic(topic.id)}
                 data-testid={`filter-topic-${topic.id}`}
+                aria-pressed={selectedTopic === topic.id}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => e.key === 'Enter' && setSelectedTopic(topic.id)}
               >
                 {topic.icon} {topic.label}
               </Badge>
@@ -488,20 +569,20 @@ export function ReadingPlansPage() {
           <h2 className="text-2xl font-display font-bold text-white">
             {hasActiveFilters ? "Filtered Plans" : "All Reading Plans"}
           </h2>
-          <p className="text-white/50 text-sm mt-1">{plans.length} plans available</p>
+          <p className="text-white/50 text-sm mt-1">{filteredPlans.length} plans available</p>
         </div>
 
-        {plans.length === 0 ? (
+        {filteredPlans.length === 0 ? (
           <div className="text-center py-16 bg-white/5 rounded-3xl border border-white/10">
             <BookOpen className="h-16 w-16 text-white/20 mx-auto mb-4" />
-            <p className="text-white/50 mb-4">No plans match your filters</p>
+            <p className="text-white/50 mb-4">No plans match your {searchQuery ? 'search' : 'filters'}</p>
             <Button variant="outline" onClick={clearFilters} className="border-white/20 text-white hover:bg-white/10">
-              Clear Filters
+              Clear {searchQuery ? 'Search & ' : ''}Filters
             </Button>
           </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {plans.map((plan, i) => (
+            {filteredPlans.map((plan, i) => (
               <motion.div
                 key={plan.id}
                 initial={{ opacity: 0, y: 20 }}

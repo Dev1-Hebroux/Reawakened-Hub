@@ -8,8 +8,8 @@
 
 import { db } from '../db';
 import { storage } from '../storage';
-import { 
-  scheduledNotifications, 
+import {
+  scheduledNotifications,
   pushSubscriptions,
   userPreferences,
 } from '@shared/schema';
@@ -48,7 +48,7 @@ export async function createNotification(
   try {
     // Serialize data to string for text column storage
     const dataString = input.data ? JSON.stringify(input.data) : null;
-    
+
     const notification = await storage.createNotification({
       userId: input.userId,
       type: input.type,
@@ -231,9 +231,9 @@ export async function processPendingNotifications(): Promise<{ processed: number
         // Mark as failed
         await db
           .update(scheduledNotifications)
-          .set({ 
-            status: 'failed', 
-            error: (error as Error).message 
+          .set({
+            status: 'failed',
+            error: (error as Error).message
           })
           .where(eq(scheduledNotifications.id, scheduled.id));
 
@@ -262,7 +262,10 @@ export async function sendStreakReminder(userId: string, currentStreak: number):
     type: 'streak_reminder',
     title: 'Keep your streak going!',
     body: `You're on a ${currentStreak}-day streak. Don't forget to read today!`,
-    data: { streak: currentStreak },
+    data: {
+      streak: currentStreak,
+      link: '/reading-plans'
+    },
   });
 }
 
@@ -272,7 +275,10 @@ export async function sendStreakAtRisk(userId: string, currentStreak: number): P
     type: 'streak_at_risk',
     title: 'Your streak is at risk!',
     body: `You haven't read today. Your ${currentStreak}-day streak will reset at midnight.`,
-    data: { streak: currentStreak },
+    data: {
+      streak: currentStreak,
+      link: '/reading-plans'
+    },
   });
 }
 
@@ -282,17 +288,24 @@ export async function sendStreakMilestone(userId: string, milestone: number): Pr
     type: 'streak_milestone',
     title: `${milestone}-Day Streak! 🎉`,
     body: `Congratulations! You've maintained a ${milestone}-day reading streak.`,
-    data: { milestone },
+    data: {
+      milestone,
+      link: '/profile'
+    },
   });
 }
 
-export async function sendDailyReadingReminder(userId: string, planTitle: string): Promise<void> {
+export async function sendDailyReadingReminder(userId: string, planTitle: string, planId: number): Promise<void> {
   await createNotification({
     userId,
     type: 'daily_reading',
     title: 'Your daily reading is ready',
     body: `Continue your journey with "${planTitle}"`,
-    data: { planTitle },
+    data: {
+      planTitle,
+      planId,
+      link: `/reading-plans/${planId}`
+    },
   });
 }
 

@@ -3,10 +3,11 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useParams, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
+import { useOfflineContent } from "@/hooks/useOfflineContent";
 import {
   BookOpen, Clock, Users, ChevronLeft, ChevronRight, Flame, Check,
   Play, Target, MessageSquare, ArrowRight, Lock, Calendar, ChevronDown,
-  Volume2, Pause
+  Volume2, Pause, WifiOff
 } from "lucide-react";
 
 // Background images for reading plans based on topics
@@ -91,7 +92,7 @@ export function ReadingPlanDetail() {
   const { toast } = useToast();
   const [, navigate] = useLocation();
   const queryClient = useQueryClient();
-  
+
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [journalEntry, setJournalEntry] = useState("");
   const [showJournal, setShowJournal] = useState(false);
@@ -99,29 +100,34 @@ export function ReadingPlanDetail() {
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [audioProgress, setAudioProgress] = useState(0);
   const contentRef = useRef<HTMLDivElement>(null);
-  
+
   // Reset revealed paragraphs when changing days
   useEffect(() => {
     setRevealedParagraphs(1);
     setIsAudioPlaying(false);
     setAudioProgress(0);
   }, [selectedDay]);
-  
-  // Derived state for current day content - defined early for use in effects
-  const { data: plan, isLoading } = useQuery<ReadingPlan>({
-    queryKey: [`/api/reading-plans/${planId}`],
+
+  // Use offline content hook instead of direct useQuery
+  const { data: plan, isLoading, isOffline } = useOfflineContent<ReadingPlan>({
+    key: `/api/reading-plans/${planId}`,
+    fetchFn: async () => {
+      const res = await fetch(`/api/reading-plans/${planId}`);
+      if (!res.ok) throw new Error("Failed to fetch plan");
+      return res.json();
+    },
     enabled: planId > 0,
   });
-  
+
   const currentDayContent = selectedDay ? plan?.days?.find(d => d.dayNumber === selectedDay) : null;
-  
+
   // Auto-reveal paragraphs when audio is playing (simulated audio progress)
   useEffect(() => {
     if (!isAudioPlaying || !currentDayContent) return;
-    
+
     const paragraphs = currentDayContent.devotionalContent.split('\n\n').filter(p => p.trim());
     const totalParagraphs = paragraphs.length;
-    
+
     // Simulate audio reading - reveal one paragraph every 8 seconds
     const interval = setInterval(() => {
       setRevealedParagraphs(prev => {
@@ -133,14 +139,14 @@ export function ReadingPlanDetail() {
         return next;
       });
     }, 8000);
-    
+
     return () => clearInterval(interval);
   }, [isAudioPlaying, currentDayContent]);
-  
+
   // Scroll to content when day is selected - wait for AnimatePresence to mount new content
   useEffect(() => {
     if (!selectedDay) return;
-    
+
     // Poll for content ref since AnimatePresence mode="wait" delays mounting
     let attempts = 0;
     const maxAttempts = 10;
@@ -153,7 +159,7 @@ export function ReadingPlanDetail() {
         clearInterval(pollInterval);
       }
     }, 50);
-    
+
     return () => clearInterval(pollInterval);
   }, [selectedDay]);
 
@@ -175,7 +181,7 @@ export function ReadingPlanDetail() {
       const csrfToken = getCsrfToken();
       const headers: Record<string, string> = { "Content-Type": "application/json" };
       if (csrfToken) headers["X-CSRF-Token"] = csrfToken;
-      
+
       const res = await fetch(`/api/reading-plans/${planId}/enroll`, {
         method: "POST",
         headers,
@@ -196,12 +202,12 @@ export function ReadingPlanDetail() {
       const csrfToken = getCsrfToken();
       const headers: Record<string, string> = { "Content-Type": "application/json" };
       if (csrfToken) headers["X-CSRF-Token"] = csrfToken;
-      
+
       const res = await fetch(`/api/reading-plans/${planId}/days/${dayNumber}/complete`, {
         method: "POST",
         headers,
         credentials: "include",
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           journalEntry: journal,
           idempotencyKey: `${planId}-${dayNumber}-${new Date().toISOString().split('T')[0]}`
         }),
@@ -214,7 +220,7 @@ export function ReadingPlanDetail() {
       toast({ title: "Day Complete!", description: "Great progress! Keep building your streak." });
       setShowJournal(false);
       setJournalEntry("");
-      
+
       if (selectedDay && plan && selectedDay < plan.durationDays) {
         setSelectedDay(selectedDay + 1);
       } else {
@@ -264,8 +270,8 @@ export function ReadingPlanDetail() {
       <div className="relative">
         {/* Background Image */}
         <div className="absolute inset-0 h-[400px] md:h-[450px]">
-          <img 
-            src={getBackgroundImage()} 
+          <img
+            src={getBackgroundImage()}
             alt={plan.title}
             className="w-full h-full object-cover opacity-40"
           />
@@ -280,8 +286,8 @@ export function ReadingPlanDetail() {
               All Plans
             </Button>
           </Link>
-          
-          <motion.div 
+
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="max-w-3xl"
@@ -302,21 +308,21 @@ export function ReadingPlanDetail() {
                 </Badge>
               )}
             </div>
-            
+
             {/* Title */}
             <h1 className="text-3xl md:text-5xl font-display font-bold text-white mb-4 leading-tight">
               {plan.title}
             </h1>
-            
+
             {/* Description */}
             <p className="text-lg md:text-xl text-white/70 mb-8 leading-relaxed max-w-2xl">
               {plan.description}
             </p>
-            
+
             {/* CTA or Progress */}
             {!enrollment ? (
-              <Button 
-                size="lg" 
+              <Button
+                size="lg"
                 className="gap-2 bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/25"
                 onClick={() => {
                   if (!user) {
@@ -352,11 +358,29 @@ export function ReadingPlanDetail() {
 
       {/* Daily Readings Section */}
       <div className="container mx-auto px-4 py-8">
+
+        {/* Offline Indicator */}
+        {isOffline && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 mb-6 flex items-center gap-3"
+          >
+            <WifiOff className="h-5 w-5 text-amber-400" />
+            <div>
+              <p className="font-semibold text-amber-400">You're offline</p>
+              <p className="text-sm text-amber-400/70">
+                Browsing cached version. Progress will sync when you reconnect.
+              </p>
+            </div>
+          </motion.div>
+        )}
+
         <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
           <Calendar className="h-5 w-5 text-primary" />
           Daily Readings
         </h2>
-        
+
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
           {plan.days?.map((day) => {
             const isCompleted = completedDays.has(day.dayNumber);
@@ -367,24 +391,23 @@ export function ReadingPlanDetail() {
             };
             const isUnlocked = enrollment && isDayUnlocked(day.dayNumber);
             const isCurrent = enrollment && day.dayNumber === enrollment.currentDay && !isCompleted;
-            
+
             return (
               <motion.button
                 key={day.id}
                 whileHover={isUnlocked ? { scale: 1.02 } : {}}
                 onClick={() => isUnlocked && setSelectedDay(day.dayNumber)}
                 disabled={!isUnlocked}
-                className={`text-left p-4 rounded-xl border transition-all ${
-                  selectedDay === day.dayNumber
-                    ? "border-primary bg-primary/10"
-                    : isCompleted
-                      ? "border-green-500/30 bg-green-500/10"
-                      : isCurrent
-                        ? "border-primary/50 bg-primary/10"
-                        : isUnlocked
-                          ? "border-white/10 hover:border-white/20 bg-white/5"
-                          : "border-white/5 bg-white/5 opacity-50"
-                }`}
+                className={`text-left p-4 rounded-xl border transition-all ${selectedDay === day.dayNumber
+                  ? "border-primary bg-primary/10"
+                  : isCompleted
+                    ? "border-green-500/30 bg-green-500/10"
+                    : isCurrent
+                      ? "border-primary/50 bg-primary/10"
+                      : isUnlocked
+                        ? "border-white/10 hover:border-white/20 bg-white/5"
+                        : "border-white/5 bg-white/5 opacity-50"
+                  }`}
                 data-testid={`day-card-${day.dayNumber}`}
               >
                 <div className="flex items-start justify-between mb-2">
@@ -431,8 +454,8 @@ export function ReadingPlanDetail() {
                   <Badge className="mb-2 bg-primary/20 text-primary border-primary/30">Day {currentDayContent.dayNumber}</Badge>
                   <h2 className="text-2xl font-display font-bold text-white">{currentDayContent.title}</h2>
                 </div>
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   size="icon"
                   className="text-white/60 hover:text-white hover:bg-white/10"
                   onClick={() => setSelectedDay(null)}
@@ -472,7 +495,7 @@ export function ReadingPlanDetail() {
                     "{currentDayContent.scriptureText}"
                   </p>
                 </blockquote>
-                
+
                 {isAudioPlaying && (
                   <motion.div
                     initial={{ opacity: 0, height: 0 }}
@@ -498,15 +521,15 @@ export function ReadingPlanDetail() {
                   const paragraphs = currentDayContent.devotionalContent.split('\n\n').filter(p => p.trim());
                   const totalParagraphs = paragraphs.length;
                   const allRevealed = revealedParagraphs >= totalParagraphs;
-                  
+
                   return (
                     <>
                       {paragraphs.map((paragraph, i) => {
                         const isRevealed = i < revealedParagraphs;
                         const isNext = i === revealedParagraphs;
-                        
+
                         if (!isRevealed && !isNext) return null;
-                        
+
                         return (
                           <motion.div
                             key={i}
@@ -527,7 +550,7 @@ export function ReadingPlanDetail() {
                           </motion.div>
                         );
                       })}
-                      
+
                       {!allRevealed && (
                         <motion.div
                           initial={{ opacity: 0 }}
@@ -544,7 +567,7 @@ export function ReadingPlanDetail() {
                           </Button>
                         </motion.div>
                       )}
-                      
+
                       {allRevealed && (
                         <motion.div
                           initial={{ opacity: 0, scale: 0.95 }}
@@ -594,7 +617,7 @@ export function ReadingPlanDetail() {
                 const paragraphs = currentDayContent.devotionalContent.split('\n\n').filter(p => p.trim());
                 const totalParagraphs = paragraphs.length;
                 const allRevealed = revealedParagraphs >= totalParagraphs;
-                
+
                 return (
                   <div className="border-t border-white/10 pt-6">
                     {!allRevealed && (
@@ -605,7 +628,7 @@ export function ReadingPlanDetail() {
                         </p>
                       </div>
                     )}
-                    
+
                     {showJournal ? (
                       <div className="space-y-4">
                         <Textarea
@@ -619,7 +642,7 @@ export function ReadingPlanDetail() {
                           <Button variant="outline" className="border-white/20 text-white/70 hover:bg-white/10" onClick={() => setShowJournal(false)}>
                             Cancel
                           </Button>
-                          <Button 
+                          <Button
                             className="flex-1 gap-2 bg-primary hover:bg-primary/90"
                             onClick={() => completeDayMutation.mutate({ dayNumber: selectedDay, journal: journalEntry })}
                             disabled={completeDayMutation.isPending || !allRevealed}
@@ -632,8 +655,8 @@ export function ReadingPlanDetail() {
                       </div>
                     ) : (
                       <div className="flex gap-3">
-                        <Button 
-                          variant="outline" 
+                        <Button
+                          variant="outline"
                           className="flex-1 gap-2 border-white/20 text-white/70 hover:bg-white/10"
                           onClick={() => setShowJournal(true)}
                           disabled={!allRevealed}
@@ -642,7 +665,7 @@ export function ReadingPlanDetail() {
                           <MessageSquare className="h-4 w-4" />
                           Add Journal Entry
                         </Button>
-                        <Button 
+                        <Button
                           className="flex-1 gap-2 bg-primary hover:bg-primary/90"
                           onClick={() => completeDayMutation.mutate({ dayNumber: selectedDay })}
                           disabled={completeDayMutation.isPending || !allRevealed}
@@ -679,7 +702,7 @@ export function ReadingPlanDetail() {
               )}
 
               {selectedDay < plan.durationDays && completedDays.has(selectedDay) && (
-                <Button 
+                <Button
                   className="w-full mt-4 gap-2 bg-primary hover:bg-primary/90"
                   onClick={() => setSelectedDay(selectedDay + 1)}
                   data-testid="button-next-day"
