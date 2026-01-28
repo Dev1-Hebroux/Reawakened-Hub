@@ -61,6 +61,29 @@ export async function registerRoutes(
     res.type('text/html').send('twilio-domain-verification=6fb6008290b49155dde41016be0276b0');
   });
 
+  // Health check endpoint for Fly.io
+  app.get('/api/health', async (req, res) => {
+    try {
+      // Basic health check - verify database connection
+      const { pool } = await import('./db');
+      const client = await pool.connect();
+      await client.query('SELECT 1');
+      client.release();
+
+      res.status(200).json({
+        status: 'healthy',
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+      });
+    } catch (error) {
+      res.status(503).json({
+        status: 'unhealthy',
+        timestamp: new Date().toISOString(),
+        error: 'Database connection failed',
+      });
+    }
+  });
+
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {

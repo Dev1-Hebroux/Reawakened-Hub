@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useLocation } from "wouter";
+import { useLocation, useSearch } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/button";
@@ -73,6 +73,7 @@ interface PrayerStats {
 
 export function PrayHub() {
   const [, navigate] = useLocation();
+  const searchString = useSearch();
   const [selectedTimer, setSelectedTimer] = useState(5);
   const [timerActive, setTimerActive] = useState(false);
   const [timerSeconds, setTimerSeconds] = useState(0);
@@ -86,6 +87,23 @@ export function PrayHub() {
   const [prayerRequestPrivate, setPrayerRequestPrivate] = useState(false);
   const queryClient = useQueryClient();
   const { user, isAuthenticated } = useAuth();
+
+  useEffect(() => {
+    const params = new URLSearchParams(searchString);
+    const durationBtn = params.get("duration");
+
+    if (durationBtn && !timerActive) {
+      const mins = parseInt(durationBtn);
+      if (!isNaN(mins) && mins > 0) {
+        setSelectedTimer(mins);
+        setTimerSeconds(mins * 60);
+        setTimerActive(true);
+        // Clean up URL to prevent restart on refresh
+        navigate("/pray", { replace: true });
+        toast.success(`Prayer timer started for ${mins} minutes`);
+      }
+    }
+  }, [searchString, navigate]);
 
   // Fetch prayer focus groups from new API
   const { data: focusGroups = [], isLoading: focusesLoading } = useQuery<PrayerFocusGroup[]>({
