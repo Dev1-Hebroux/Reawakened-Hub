@@ -26,6 +26,7 @@ import outreachImg from "@assets/generated_images/group_wearing_reawakened.one_b
 import capImg from "@assets/generated_images/cap_with_reawakened_embroidery.png";
 import hoodieImg from "@assets/generated_images/hoodies_with_reawakened_logo.png";
 import { useQuery } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
 
 const formatDate = (date: string | Date) => {
   return new Date(date).toLocaleDateString("en-US", {
@@ -39,6 +40,7 @@ export default function Home() {
   const [, navigate] = useLocation();
   const [selectedCommitment, setSelectedCommitment] = useState<string | null>(null);
   const { isAuthenticated } = useAuth();
+  const { toast } = useToast();
 
   const { data: events = [], isLoading: eventsLoading } = useQuery<Event[]>({
     queryKey: ["/api/events"],
@@ -264,7 +266,11 @@ export default function Home() {
                 <div className="absolute inset-0 bg-gradient-to-t from-[#1a2744]/80 via-transparent to-transparent" />
                 <div className="absolute bottom-0 left-0 p-8">
                   <h3 className="text-2xl font-bold text-white mb-2">Community Gear</h3>
-                  <button className="flex items-center gap-2 text-white/80 hover:text-white font-medium group-hover:gap-3 transition-all" data-testid="button-merch-community">
+                  <button
+                    onClick={() => toast({ title: "Coming Soon", description: "Our shop is launching soon! Stay tuned." })}
+                    className="flex items-center gap-2 text-white/80 hover:text-white font-medium group-hover:gap-3 transition-all"
+                    data-testid="button-merch-community"
+                  >
                     View Collection <ArrowRight className="h-4 w-4" />
                   </button>
                 </div>
@@ -276,7 +282,11 @@ export default function Home() {
                 <div className="absolute bottom-0 left-0 p-8">
                   <span className="bg-primary text-white text-xs font-bold px-3 py-1 rounded-full mb-3 inline-block">BESTSELLER</span>
                   <h3 className="text-2xl font-bold text-white mb-2">Signature Caps</h3>
-                  <button className="flex items-center gap-2 text-white/80 hover:text-white font-medium group-hover:gap-3 transition-all" data-testid="button-merch-caps">
+                  <button
+                    onClick={() => toast({ title: "Coming Soon", description: "Our shop is launching soon! Stay tuned." })}
+                    className="flex items-center gap-2 text-white/80 hover:text-white font-medium group-hover:gap-3 transition-all"
+                    data-testid="button-merch-caps"
+                  >
                     Shop Accessories <ArrowRight className="h-4 w-4" />
                   </button>
                 </div>
@@ -287,7 +297,11 @@ export default function Home() {
                 <div className="absolute inset-0 bg-gradient-to-t from-[#1a2744]/80 via-transparent to-transparent" />
                 <div className="absolute bottom-0 left-0 p-8">
                   <h3 className="text-2xl font-bold text-white mb-2">Revival Hoodies</h3>
-                  <button className="flex items-center gap-2 text-white/80 hover:text-white font-medium group-hover:gap-3 transition-all" data-testid="button-merch-hoodies">
+                  <button
+                    onClick={() => toast({ title: "Coming Soon", description: "Our shop is launching soon! Stay tuned." })}
+                    className="flex items-center gap-2 text-white/80 hover:text-white font-medium group-hover:gap-3 transition-all"
+                    data-testid="button-merch-hoodies"
+                  >
                     Get Yours <ArrowRight className="h-4 w-4" />
                   </button>
                 </div>

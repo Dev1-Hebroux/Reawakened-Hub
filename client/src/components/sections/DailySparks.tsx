@@ -43,7 +43,7 @@ export function DailySparks({ compact = false }: DailySparksProps) {
             className="group cursor-pointer w-full"
             data-testid={`card-spark-featured-${displaySparks[0].id}`}
           >
-            <Link href={`/sparks/${displaySparks[0].id}`}>
+            <Link href="/sparks">
               <div className="relative rounded-[20px] overflow-hidden aspect-[3/4] max-w-sm shadow-lg group-hover:shadow-xl transition-all duration-300">
                 <img 
                   src={displaySparks[0].thumbnailUrl || displaySparks[0].imageUrl || fallbackImages[0]} 
