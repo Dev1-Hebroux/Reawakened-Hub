@@ -135,7 +135,7 @@ export function VisionPage() {
             </DialogHeader>
             <div className="space-y-3 mt-6">
               <Button
-                onClick={() => window.location.href = "/api/login"}
+                onClick={() => window.location.href = "/login"}
                 className="w-full bg-[#7C9A8E] hover:bg-[#6B8B7E] text-white py-6 rounded-xl font-semibold"
                 data-testid="button-login-vision"
               >

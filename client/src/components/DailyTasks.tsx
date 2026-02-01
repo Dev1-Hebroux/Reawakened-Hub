@@ -509,7 +509,7 @@ export function DailyTasks() {
           <h3 className="text-xl font-bold text-white mb-2">Daily Tasks</h3>
           <p className="text-gray-400 mb-4">Track your daily spiritual practices and earn rewards</p>
           <button
-            onClick={() => window.location.href = "/api/login"}
+            onClick={() => window.location.href = "/login"}
             className="bg-primary hover:bg-primary/90 text-white font-bold px-6 py-3 rounded-xl"
           >
             Sign In to Start

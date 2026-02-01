@@ -298,7 +298,7 @@ export function CommunityHub() {
     onError: (error: Error) => {
       if (isUnauthorizedError(error)) {
         toast.error("Please log in to create a post");
-        setTimeout(() => window.location.href = "/api/login", 1000);
+        setTimeout(() => window.location.href = "/login", 1000);
       } else {
         toast.error("Failed to create post");
       }
@@ -316,7 +316,7 @@ export function CommunityHub() {
     onError: (error: Error) => {
       if (isUnauthorizedError(error)) {
         toast.error("Please log in to react to posts");
-        setTimeout(() => window.location.href = "/api/login", 1000);
+        setTimeout(() => window.location.href = "/login", 1000);
       } else {
         toast.error("Failed to add reaction");
       }
@@ -356,7 +356,7 @@ export function CommunityHub() {
     onError: (error: Error) => {
       if (isUnauthorizedError(error)) {
         toast.error("Please log in to comment");
-        setTimeout(() => window.location.href = "/api/login", 1000);
+        setTimeout(() => window.location.href = "/login", 1000);
       } else {
         toast.error("Failed to post comment");
       }
@@ -381,7 +381,7 @@ export function CommunityHub() {
     }
     if (!isAuthenticated) {
       toast.error("Please log in to comment");
-      setTimeout(() => window.location.href = "/api/login", 1000);
+      setTimeout(() => window.location.href = "/login", 1000);
       return;
     }
     createCommentMutation.mutate({ postId, content });
@@ -397,7 +397,7 @@ export function CommunityHub() {
     }
     if (!isAuthenticated) {
       toast.error("Please log in to create a post");
-      setTimeout(() => window.location.href = "/api/login", 1000);
+      setTimeout(() => window.location.href = "/login", 1000);
       return;
     }
     setIsSubmittingPost(true);
@@ -414,7 +414,7 @@ export function CommunityHub() {
   const handleReaction = (postId: number) => {
     if (!isAuthenticated) {
       toast.error("Please log in to react to posts");
-      setTimeout(() => window.location.href = "/api/login", 1000);
+      setTimeout(() => window.location.href = "/login", 1000);
       return;
     }
     addReactionMutation.mutate({ postId, emoji: "❤️" });
@@ -664,7 +664,7 @@ export function CommunityHub() {
                     {isAuthenticated ? `Welcome, ${user?.firstName}!` : "Welcome!"}
                   </h3>
                   <p className="text-xs text-gray-500">
-                    {isAuthenticated ? "Global Watchman" : <button onClick={() => window.location.href = "/api/login"} className="text-primary hover:underline">Log in</button>}
+                    {isAuthenticated ? "Global Watchman" : <button onClick={() => window.location.href = "/login"} className="text-primary hover:underline">Log in</button>}
                   </p>
                 </div>
               </div>
@@ -885,7 +885,7 @@ export function CommunityHub() {
                 <p className="text-gray-500 mb-4">No posts yet. Be the first to share!</p>
                 {!isAuthenticated && (
                   <button
-                    onClick={() => window.location.href = "/api/login"}
+                    onClick={() => window.location.href = "/login"}
                     className="text-primary font-medium hover:underline"
                   >
                     Log in to create a post
@@ -1063,7 +1063,7 @@ export function CommunityHub() {
                             ) : (
                               <div className="text-center py-2" data-testid={`comment-login-prompt-${post.id}`}>
                                 <button
-                                  onClick={() => window.location.href = "/api/login"}
+                                  onClick={() => window.location.href = "/login"}
                                   className="text-primary font-medium text-sm hover:underline"
                                 >
                                   Log in to comment

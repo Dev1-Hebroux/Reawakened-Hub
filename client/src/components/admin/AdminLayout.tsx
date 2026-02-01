@@ -137,7 +137,7 @@ export function AdminLayout({ children, title, subtitle, actions, breadcrumbs }:
           <h1 className="text-2xl font-display font-bold text-gray-900 mb-2">Admin Portal</h1>
           <p className="text-gray-600 mb-6">Please sign in to access the admin dashboard.</p>
           <Button 
-            onClick={() => window.location.href = "/api/login"}
+            onClick={() => window.location.href = "/login"}
             className="w-full bg-[#1a2744] hover:bg-[#1a2744]/90"
             data-testid="button-admin-login"
           >

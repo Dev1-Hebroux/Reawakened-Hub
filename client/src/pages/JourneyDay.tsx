@@ -78,7 +78,7 @@ export function JourneyDayPage() {
     onError: (error: Error) => {
       if (isUnauthorizedError(error)) {
         toast.error("Please log in");
-        setTimeout(() => window.location.href = "/api/login", 1000);
+        setTimeout(() => window.location.href = "/login", 1000);
       } else {
         toast.error("Failed to complete day");
       }
@@ -90,7 +90,7 @@ export function JourneyDayPage() {
       <div className="min-h-screen bg-gradient-to-b from-[#0a1628] to-[#0d1e36] flex items-center justify-center text-white">
         <div className="text-center">
           <p className="mb-4">Please log in to view your journey</p>
-          <a href="/api/login" className="text-primary hover:underline">Log In</a>
+          <a href="/login" className="text-primary hover:underline">Log In</a>
         </div>
       </div>
     );

@@ -118,7 +118,7 @@ export function JournalingPrompt({ prompt, reflectionId }: JournalingPromptProps
               ) : (
                 <div className="text-center py-4">
                   <p className="text-white/60 text-sm mb-3">Sign in to save your journal entries</p>
-                  <a href="/api/login" className="text-[#D4A574] hover:underline text-sm font-medium">
+                  <a href="/login" className="text-[#D4A574] hover:underline text-sm font-medium">
                     Sign In
                   </a>
                 </div>

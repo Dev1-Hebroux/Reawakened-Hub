@@ -66,7 +66,7 @@ export function JourneyDetail() {
     onError: (error: Error) => {
       if (isUnauthorizedError(error)) {
         toast.error("Please log in to start a journey");
-        setTimeout(() => window.location.href = "/api/login", 1000);
+        setTimeout(() => window.location.href = "/login", 1000);
       } else {
         toast.error("Failed to start journey");
       }
@@ -76,7 +76,7 @@ export function JourneyDetail() {
   const handleStart = () => {
     if (!isAuthenticated) {
       toast.error("Please log in to start a journey");
-      setTimeout(() => window.location.href = "/api/login", 1000);
+      setTimeout(() => window.location.href = "/login", 1000);
       return;
     }
     if (journey) {

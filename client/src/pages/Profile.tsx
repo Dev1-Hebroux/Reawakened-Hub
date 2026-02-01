@@ -12,7 +12,7 @@ export default function Profile() {
   const isAdmin = user?.role === 'admin' || user?.role === 'super_admin';
 
   const handleSignIn = () => {
-    window.location.href = "/api/login";
+    navigate("/login");
   };
 
   const handleSignOut = () => {
@@ -123,13 +123,13 @@ export default function Profile() {
             transition={{ delay: 0.2 }}
           >
             {!isAuthenticated ? (
-              <Button 
+              <Button
                 onClick={handleSignIn}
                 className="w-full bg-[#D4A574] hover:bg-[#C49464] text-white font-bold py-6 rounded-2xl shadow-lg"
                 data-testid="button-sign-in"
               >
                 <LogIn className="h-5 w-5 mr-2" />
-                Sign In with Replit
+                Sign In
               </Button>
             ) : (
               <button 

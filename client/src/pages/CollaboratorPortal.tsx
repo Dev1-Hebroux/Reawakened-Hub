@@ -247,7 +247,7 @@ export function CollaboratorPortal() {
             <BookOpen className="h-16 w-16 text-gray-400 mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Collaborator Portal</h2>
             <p className="text-gray-600 mb-6">Sign in to submit content</p>
-            <Button onClick={() => window.location.href = "/api/login"}>
+            <Button onClick={() => window.location.href = "/login"}>
               Sign In
             </Button>
           </div>

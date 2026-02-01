@@ -87,7 +87,7 @@ export function SubscribeModal({
                 <div className="text-center py-6">
                   <p className="text-gray-400 mb-4">Log in to manage your subscriptions</p>
                   <button
-                    onClick={() => window.location.href = "/api/login"}
+                    onClick={() => window.location.href = "/login"}
                     className="bg-primary hover:bg-primary/90 text-white font-bold py-3 px-6 rounded-xl"
                     data-testid="button-login-to-subscribe"
                   >

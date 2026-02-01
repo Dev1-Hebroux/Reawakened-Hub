@@ -150,7 +150,7 @@ export function AdminReview() {
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Please Log In</h1>
-          <Button onClick={() => (window.location.href = "/api/login")}>Log In</Button>
+          <Button onClick={() => (window.location.href = "/login")}>Log In</Button>
         </div>
       </div>
     );

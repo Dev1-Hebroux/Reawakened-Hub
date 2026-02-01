@@ -344,7 +344,7 @@ export function JourneySession() {
               )}
               {!user && (
                 <p className="text-sm text-gray-500">
-                  <a href="/api/login" className="text-primary hover:underline">Log in</a> to save your commitment
+                  <a href="/login" className="text-primary hover:underline">Log in</a> to save your commitment
                 </p>
               )}
             </div>

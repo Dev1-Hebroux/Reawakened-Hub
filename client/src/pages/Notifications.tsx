@@ -94,7 +94,7 @@ export default function Notifications() {
             <Bell className="h-16 w-16 text-gray-300 mx-auto mb-4" />
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Sign in to view notifications</h1>
             <p className="text-gray-500 dark:text-gray-400 mb-6">Stay updated on your community activity</p>
-            <Button onClick={() => window.location.href = "/api/login"} className="bg-primary text-white">
+            <Button onClick={() => window.location.href = "/login"} className="bg-primary text-white">
               Sign In
             </Button>
           </div>

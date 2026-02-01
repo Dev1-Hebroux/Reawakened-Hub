@@ -53,7 +53,7 @@ export default function MyActivity() {
           <div className="max-w-md mx-auto text-center">
             <h1 className="text-2xl font-bold text-[#1a2744] dark:text-white mb-4">Sign In Required</h1>
             <p className="text-gray-600 dark:text-gray-300 mb-6">Sign in to view your activity and track your journey.</p>
-            <Button onClick={() => window.location.href = "/api/login"} data-testid="button-sign-in">
+            <Button onClick={() => window.location.href = "/login"} data-testid="button-sign-in">
               Sign In
             </Button>
           </div>

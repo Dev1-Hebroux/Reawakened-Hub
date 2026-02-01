@@ -61,7 +61,7 @@ export function useSparkReactions(isAuthenticated: boolean) {
 
       if (isUnauthorizedError(error)) {
         toast.error("Please log in to react");
-        setTimeout(() => window.location.href = "/api/login", 1000);
+        setTimeout(() => window.location.href = "/login", 1000);
       } else {
         toast.error("Failed to add reaction");
       }
@@ -75,7 +75,7 @@ export function useSparkReactions(isAuthenticated: boolean) {
   const handleSparkReaction = (sparkId: number, reactionType: string) => {
     if (!isAuthenticated) {
       toast.error("Please log in to react");
-      setTimeout(() => window.location.href = "/api/login", 1000);
+      setTimeout(() => window.location.href = "/login", 1000);
       return;
     }
 

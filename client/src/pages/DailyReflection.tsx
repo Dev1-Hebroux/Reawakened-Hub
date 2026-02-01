@@ -415,7 +415,7 @@ export function DailyReflection() {
                   Sign in to save your reflections, build a streak, and see your growth over time.
                 </p>
                 <Button
-                  onClick={() => window.location.href = "/api/login"}
+                  onClick={() => window.location.href = "/login"}
                   className="bg-[#D4A574] hover:bg-[#C49464] text-white"
                   data-testid="button-signin"
                 >

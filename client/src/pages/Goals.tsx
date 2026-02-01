@@ -292,7 +292,7 @@ export function Goals() {
             className="text-center"
           >
             <Button 
-              onClick={() => window.location.href = "/api/login"}
+              onClick={() => window.location.href = "/login"}
               className="w-full bg-[#D4A574] hover:bg-[#C49464] text-white py-6 rounded-xl shadow-lg mb-3"
               data-testid="button-goals-signin"
             >

@@ -80,7 +80,7 @@ export function LiveIntercession({ sparkId }: LiveIntercessionProps) {
     onError: (error: Error) => {
       if (isUnauthorizedError(error)) {
         toast.error("Please log in to share your prayer");
-        setTimeout(() => window.location.href = "/api/login", 1000);
+        setTimeout(() => window.location.href = "/login", 1000);
       } else {
         toast.error("Failed to send prayer");
       }
@@ -105,7 +105,7 @@ export function LiveIntercession({ sparkId }: LiveIntercessionProps) {
     onError: (error: Error) => {
       if (isUnauthorizedError(error)) {
         toast.error("Please log in");
-        setTimeout(() => window.location.href = "/api/login", 1000);
+        setTimeout(() => window.location.href = "/login", 1000);
       } else {
         toast.error(error.message || "Failed to start session");
       }
@@ -140,7 +140,7 @@ export function LiveIntercession({ sparkId }: LiveIntercessionProps) {
     if (!newMessage.trim()) return;
     if (!isAuthenticated) {
       toast.error("Please log in to share your prayer");
-      setTimeout(() => window.location.href = "/api/login", 1000);
+      setTimeout(() => window.location.href = "/login", 1000);
       return;
     }
     sendMessageMutation.mutate(newMessage.trim());

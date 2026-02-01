@@ -444,7 +444,7 @@ export function AudienceLanding({ segment }: Props) {
 
   const handleGetStarted = () => {
     localStorage.setItem('user_audience_segment', segment);
-    window.location.href = '/api/login';
+    window.location.href = '/login';
   };
 
   return (

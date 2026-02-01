@@ -135,7 +135,7 @@ export function OutreachPage() {
     onError: (error: Error) => {
       if (isUnauthorizedError(error)) {
         toast.error("Please log in to register");
-        setTimeout(() => window.location.href = "/api/login", 1000);
+        setTimeout(() => window.location.href = "/login", 1000);
       } else {
         toast.error("Failed to register for event");
       }
@@ -149,7 +149,7 @@ export function OutreachPage() {
   const handleRegister = (eventId: number) => {
     if (!isAuthenticated) {
       toast.error("Please log in to register");
-      setTimeout(() => window.location.href = "/api/login", 1000);
+      setTimeout(() => window.location.href = "/login", 1000);
       return;
     }
     registerMutation.mutate(eventId);

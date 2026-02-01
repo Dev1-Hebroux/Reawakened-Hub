@@ -35,7 +35,7 @@ export function useSparkSubscriptions(isAuthenticated: boolean) {
     onError: (error: Error) => {
       if (isUnauthorizedError(error)) {
         toast.error("Please log in to subscribe");
-        setTimeout(() => window.location.href = "/api/login", 1000);
+        setTimeout(() => window.location.href = "/login", 1000);
       } else {
         toast.error("Failed to subscribe");
       }
@@ -54,7 +54,7 @@ export function useSparkSubscriptions(isAuthenticated: boolean) {
     onError: (error: Error) => {
       if (isUnauthorizedError(error)) {
         toast.error("Please log in");
-        setTimeout(() => window.location.href = "/api/login", 1000);
+        setTimeout(() => window.location.href = "/login", 1000);
       } else {
         toast.error("Failed to unsubscribe");
       }
@@ -70,7 +70,7 @@ export function useSparkSubscriptions(isAuthenticated: boolean) {
   const handleSubscriptionToggle = (category: string) => {
     if (!isAuthenticated) {
       toast.error("Please log in to subscribe");
-      setTimeout(() => window.location.href = "/api/login", 1000);
+      setTimeout(() => window.location.href = "/login", 1000);
       return;
     }
 

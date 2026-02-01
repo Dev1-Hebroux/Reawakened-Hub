@@ -317,7 +317,7 @@ export function MissionOnboarding() {
           </DialogHeader>
           <div className="space-y-3 mt-6">
             <Button 
-              onClick={() => window.location.href = "/api/login"}
+              onClick={() => window.location.href = "/login"}
               className="w-full bg-primary hover:bg-primary/90 text-white py-6 rounded-xl font-semibold"
               data-testid="button-login-onboarding"
             >

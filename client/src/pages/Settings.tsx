@@ -224,7 +224,7 @@ export default function Settings() {
           <div className="max-w-lg mx-auto text-center">
             <SettingsIcon className="h-16 w-16 text-gray-300 mx-auto mb-4" />
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Sign in to access settings</h1>
-            <Button onClick={() => window.location.href = "/api/login"} className="bg-primary text-white">
+            <Button onClick={() => window.location.href = "/login"} className="bg-primary text-white">
               Sign In
             </Button>
           </div>
