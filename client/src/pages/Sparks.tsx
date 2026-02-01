@@ -163,11 +163,11 @@ export function SparksPage() {
         onComplete={() => setShowOnboarding(false)}
       />
 
-      {/* Hero Section */}
+      {/* Hero Section - Shows today's spark */}
       <HeroSection
-        featuredSpark={featuredSpark}
+        featuredSpark={todaySpark || featuredSpark}
         totalSparks={sparks.length}
-        onWatchClick={() => featuredSpark && navigate(`/spark/${featuredSpark.id}`)}
+        onWatchClick={() => (todaySpark || featuredSpark) && navigate(`/spark/${(todaySpark || featuredSpark)!.id}`)}
         onSubscribeClick={() => setShowSubscribe(true)}
       />
 

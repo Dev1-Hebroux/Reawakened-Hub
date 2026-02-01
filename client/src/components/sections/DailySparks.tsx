@@ -11,17 +11,29 @@ import boldnessImg from "@assets/generated_images/boldness_at_work_abstract.png"
 
 const fallbackImages = [identityImg, believeImg, hearingImg, boldnessImg];
 
+interface DashboardResponse {
+  todaySpark?: Spark;
+  featured?: Spark[];
+  sparks?: Spark[];
+}
+
 interface DailySparksProps {
   compact?: boolean;
 }
 
 export function DailySparks({ compact = false }: DailySparksProps) {
-  const { data: sparks, isLoading, error } = useQuery<Spark[]>({
-    queryKey: ["/api/sparks/featured"],
+  // Fetch from dashboard to get today's spark
+  const { data: dashboard, isLoading, error } = useQuery<DashboardResponse>({
+    queryKey: ["/api/sparks/dashboard"],
     staleTime: 1000 * 60 * 5,
   });
 
-  const displaySparks = sparks?.slice(0, compact ? 1 : 4) || [];
+  // In compact mode, show today's spark; otherwise show featured sparks
+  const todaySpark = dashboard?.todaySpark;
+  const featuredSparks = dashboard?.featured || [];
+  const displaySparks = compact 
+    ? (todaySpark ? [todaySpark] : []) 
+    : featuredSparks.slice(0, 4);
 
   if (compact) {
     return (
@@ -119,7 +131,7 @@ export function DailySparks({ compact = false }: DailySparksProps) {
                 className="group cursor-pointer"
                 data-testid={`card-spark-${spark.id}`}
               >
-                <Link href={`/sparks/${spark.id}`}>
+                <Link href="/sparks">
                   <div className="relative rounded-[24px] overflow-hidden aspect-[3/4] mb-4 shadow-md group-hover:shadow-xl transition-all duration-300">
                     <img 
                       src={spark.thumbnailUrl || spark.imageUrl || fallbackImages[i % fallbackImages.length]} 
