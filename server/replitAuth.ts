@@ -7,6 +7,7 @@ import type { Express, RequestHandler } from "express";
 import memoize from "memoizee";
 import connectPg from "connect-pg-simple";
 import { storage } from "./storage";
+import { invalidateSession } from "./services/authService";
 
 const getOidcConfig = memoize(
   async () => {
@@ -144,17 +145,41 @@ export async function setupAuth(app: Express) {
       return res.status(403).json({ message: "Replit authentication is disabled." });
     });
     
-    // Simple logout that just clears session and redirects home
-    app.get("/api/logout", (req, res) => {
-      if (req.session) {
-        req.session.destroy((err) => {
-          if (err) {
-            console.error('[Auth] Session destroy error:', err);
-          }
+    // Complete logout that clears all auth state
+    app.get("/api/logout", async (req, res) => {
+      try {
+        // Invalidate email/password session token
+        const token = req.cookies?.auth_session;
+        if (token) {
+          await invalidateSession(token);
+        }
+
+        // Clear auth_session cookie
+        res.clearCookie('auth_session', {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'strict',
+          path: '/',
         });
+
+        // Destroy express session
+        if (req.session) {
+          req.session.destroy((err) => {
+            if (err) {
+              console.error('[Auth] Session destroy error:', err);
+            }
+          });
+        }
+
+        // Clear session cookie
+        res.clearCookie('connect.sid', { path: '/' });
+        res.redirect('/');
+      } catch (error) {
+        console.error('[Auth] Logout error:', error);
+        res.clearCookie('auth_session', { path: '/' });
+        res.clearCookie('connect.sid', { path: '/' });
+        res.redirect('/');
       }
-      res.clearCookie('connect.sid', { path: '/' });
-      res.redirect('/');
     });
     
     return; // Skip all Replit OIDC setup
