@@ -17,7 +17,7 @@ const completeTaskSchema = z.object({
  */
 router.get("/daily-tasks/progress", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = req.user.claims?.sub || req.user.id;
     const date = req.query.date as string || new Date().toISOString().split('T')[0];
 
     const completedTasks = await storage.getUserDailyTasks(userId, date);
@@ -44,7 +44,7 @@ router.get("/daily-tasks/progress", isAuthenticated, async (req: any, res) => {
  */
 router.post("/daily-tasks/complete", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = req.user.claims?.sub || req.user.id;
     const { taskId, date } = completeTaskSchema.parse(req.body);
     const taskDate = date || new Date().toISOString().split('T')[0];
 
@@ -112,7 +112,7 @@ router.post("/daily-tasks/complete", isAuthenticated, async (req: any, res) => {
  */
 router.get("/daily-tasks/streak", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = req.user.claims?.sub || req.user.id;
     const streakData = await storage.getUserStreak(userId);
     res.json(streakData);
   } catch (error) {

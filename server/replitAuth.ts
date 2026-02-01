@@ -7,7 +7,7 @@ import type { Express, RequestHandler } from "express";
 import memoize from "memoizee";
 import connectPg from "connect-pg-simple";
 import { storage } from "./storage";
-import { invalidateSession } from "./services/authService";
+import { invalidateSession, validateSession } from "./services/authService";
 
 const getOidcConfig = memoize(
   async () => {
@@ -271,11 +271,41 @@ export async function setupAuth(app: Express) {
 }
 
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
-  // Check if Passport is initialized (req.isAuthenticated exists)
+  // PRIORITY 1: Check email/password auth session (auth_session cookie)
+  // This works regardless of whether Replit auth is enabled
+  const authSessionToken = req.cookies?.auth_session;
+  if (authSessionToken) {
+    try {
+      const emailUser = await validateSession(authSessionToken);
+      if (emailUser) {
+        // Set user in format compatible with rest of app
+        (req as any).user = {
+          id: emailUser.id,
+          claims: {
+            sub: emailUser.id,
+            email: emailUser.email,
+            first_name: emailUser.firstName,
+            last_name: emailUser.lastName,
+          },
+          email: emailUser.email,
+          firstName: emailUser.firstName,
+          lastName: emailUser.lastName,
+          role: emailUser.role,
+          profileImageUrl: emailUser.profileImageUrl,
+          authProvider: emailUser.authProvider,
+        };
+        return next();
+      }
+    } catch (error) {
+      console.error("[Auth] Email session validation failed:", error);
+    }
+  }
+
+  // PRIORITY 2: Check if Passport is initialized (req.isAuthenticated exists)
   const isPassportAuth = typeof req.isAuthenticated === 'function';
 
   if (!isPassportAuth) {
-    // Passport not initialized - check session-based auth instead
+    // No Passport and no valid email session - check legacy session-based auth
     const sessionUser = (req.session as any)?.user;
     if (!sessionUser) {
       return res.status(401).json({ message: "Unauthorized" });
@@ -284,7 +314,7 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
     return next();
   }
 
-  // Passport-based authentication
+  // PRIORITY 3: Passport-based authentication (Replit OIDC)
   const user = req.user as any;
 
   if (!req.isAuthenticated() || !user?.expires_at) {
@@ -316,23 +346,47 @@ export const isAuthenticated: RequestHandler = async (req, res, next) => {
 };
 
 export const isSuperAdmin: RequestHandler = async (req, res, next) => {
-  const isPassportAuth = typeof req.isAuthenticated === 'function';
-
   let userId: string | undefined;
 
-  if (!isPassportAuth) {
-    const sessionUser = (req.session as any)?.user;
-    if (!sessionUser?.id) {
-      return res.status(401).json({ message: "Unauthorized" });
+  // PRIORITY 1: Check email/password auth session
+  const authSessionToken = req.cookies?.auth_session;
+  if (authSessionToken) {
+    try {
+      const emailUser = await validateSession(authSessionToken);
+      if (emailUser) {
+        userId = emailUser.id;
+        (req as any).user = {
+          id: emailUser.id,
+          claims: { sub: emailUser.id, email: emailUser.email },
+          email: emailUser.email,
+          firstName: emailUser.firstName,
+          lastName: emailUser.lastName,
+          role: emailUser.role,
+        };
+      }
+    } catch (error) {
+      console.error("[Auth] Email session validation failed:", error);
     }
-    userId = sessionUser.id;
-    (req as any).user = sessionUser;
-  } else {
-    const user = req.user as any;
-    if (!req.isAuthenticated() || !user?.claims?.sub) {
-      return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  // PRIORITY 2: Check Passport auth if no email session
+  if (!userId) {
+    const isPassportAuth = typeof req.isAuthenticated === 'function';
+
+    if (!isPassportAuth) {
+      const sessionUser = (req.session as any)?.user;
+      if (!sessionUser?.id) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      userId = sessionUser.id;
+      (req as any).user = sessionUser;
+    } else {
+      const user = req.user as any;
+      if (!req.isAuthenticated() || !user?.claims?.sub) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      userId = user.claims.sub;
     }
-    userId = user.claims.sub;
   }
 
   try {
@@ -348,23 +402,47 @@ export const isSuperAdmin: RequestHandler = async (req, res, next) => {
 };
 
 export const isAdmin: RequestHandler = async (req, res, next) => {
-  const isPassportAuth = typeof req.isAuthenticated === 'function';
-
   let userId: string | undefined;
 
-  if (!isPassportAuth) {
-    const sessionUser = (req.session as any)?.user;
-    if (!sessionUser?.id) {
-      return res.status(401).json({ message: "Unauthorized" });
+  // PRIORITY 1: Check email/password auth session
+  const authSessionToken = req.cookies?.auth_session;
+  if (authSessionToken) {
+    try {
+      const emailUser = await validateSession(authSessionToken);
+      if (emailUser) {
+        userId = emailUser.id;
+        (req as any).user = {
+          id: emailUser.id,
+          claims: { sub: emailUser.id, email: emailUser.email },
+          email: emailUser.email,
+          firstName: emailUser.firstName,
+          lastName: emailUser.lastName,
+          role: emailUser.role,
+        };
+      }
+    } catch (error) {
+      console.error("[Auth] Email session validation failed:", error);
     }
-    userId = sessionUser.id;
-    (req as any).user = sessionUser;
-  } else {
-    const user = req.user as any;
-    if (!req.isAuthenticated() || !user?.claims?.sub) {
-      return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  // PRIORITY 2: Check Passport auth if no email session
+  if (!userId) {
+    const isPassportAuth = typeof req.isAuthenticated === 'function';
+
+    if (!isPassportAuth) {
+      const sessionUser = (req.session as any)?.user;
+      if (!sessionUser?.id) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      userId = sessionUser.id;
+      (req as any).user = sessionUser;
+    } else {
+      const user = req.user as any;
+      if (!req.isAuthenticated() || !user?.claims?.sub) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      userId = user.claims.sub;
     }
-    userId = user.claims.sub;
   }
 
   try {
@@ -380,23 +458,47 @@ export const isAdmin: RequestHandler = async (req, res, next) => {
 };
 
 export const isLeaderOrAbove: RequestHandler = async (req, res, next) => {
-  const isPassportAuth = typeof req.isAuthenticated === 'function';
-
   let userId: string | undefined;
 
-  if (!isPassportAuth) {
-    const sessionUser = (req.session as any)?.user;
-    if (!sessionUser?.id) {
-      return res.status(401).json({ message: "Unauthorized" });
+  // PRIORITY 1: Check email/password auth session
+  const authSessionToken = req.cookies?.auth_session;
+  if (authSessionToken) {
+    try {
+      const emailUser = await validateSession(authSessionToken);
+      if (emailUser) {
+        userId = emailUser.id;
+        (req as any).user = {
+          id: emailUser.id,
+          claims: { sub: emailUser.id, email: emailUser.email },
+          email: emailUser.email,
+          firstName: emailUser.firstName,
+          lastName: emailUser.lastName,
+          role: emailUser.role,
+        };
+      }
+    } catch (error) {
+      console.error("[Auth] Email session validation failed:", error);
     }
-    userId = sessionUser.id;
-    (req as any).user = sessionUser;
-  } else {
-    const user = req.user as any;
-    if (!req.isAuthenticated() || !user?.claims?.sub) {
-      return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  // PRIORITY 2: Check Passport auth if no email session
+  if (!userId) {
+    const isPassportAuth = typeof req.isAuthenticated === 'function';
+
+    if (!isPassportAuth) {
+      const sessionUser = (req.session as any)?.user;
+      if (!sessionUser?.id) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      userId = sessionUser.id;
+      (req as any).user = sessionUser;
+    } else {
+      const user = req.user as any;
+      if (!req.isAuthenticated() || !user?.claims?.sub) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      userId = user.claims.sub;
     }
-    userId = user.claims.sub;
   }
 
   try {

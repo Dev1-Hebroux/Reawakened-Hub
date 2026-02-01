@@ -1,11 +1,22 @@
-import { useQuery } from '@tanstack/react-query';
-import { apiRequest } from '@/lib/queryClient';
+/**
+ * Current User Hook
+ *
+ * Returns the current user data from the unified AuthContext.
+ * This replaces the previous implementation that used React Query
+ * to fetch /api/auth/user which only worked with Replit OIDC.
+ */
+
+import { useAuth } from '@/contexts/AuthContext';
 
 export function useCurrentUser() {
-    return useQuery({
-        queryKey: ['currentUser'],
-        queryFn: () => apiRequest<{ id: string; email: string | null; firstName: string | null; lastName: string | null; profileImageUrl: string | null }>('GET', '/api/auth/user'),
-        staleTime: 5 * 60 * 1000, // 5 minutes
-        retry: false,
-    });
+  const { user, isLoading, isAuthenticated } = useAuth();
+
+  return {
+    data: user,
+    isLoading,
+    isAuthenticated,
+    // Compatibility with React Query interface
+    isError: false,
+    error: null,
+  };
 }

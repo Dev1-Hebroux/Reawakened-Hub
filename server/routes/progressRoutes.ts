@@ -11,7 +11,7 @@ const router = Router();
  */
 router.get("/me/progress", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = req.user.claims?.sub || req.user.id;
 
     // Get streak data
     const streakData = await storage.getUserStreak(userId);

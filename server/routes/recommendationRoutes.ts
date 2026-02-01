@@ -13,7 +13,7 @@ const router = Router();
 // Get personalized reading plan recommendations
 router.get('/recommendations', isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = req.user.claims?.sub || req.user.id;
     const limit = parseInt(req.query.limit as string) || 5;
     
     // Get user's completed plans through storage
@@ -46,7 +46,7 @@ router.get('/recommendations', isAuthenticated, async (req: any, res) => {
 // Get continue reading suggestion
 router.get('/recommendations/continue', isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = req.user.claims?.sub || req.user.id;
     
     // Get active enrollment through storage
     const enrollment = await storage.getActiveEnrollmentWithPlan(userId);
@@ -69,7 +69,7 @@ router.get('/recommendations/continue', isAuthenticated, async (req: any, res) =
 // Get user streak data
 router.get('/user/streak', isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = req.user.claims?.sub || req.user.id;
     
     // Get streak data through storage
     const streakData = await storage.getReadingPlanStreakData(userId);

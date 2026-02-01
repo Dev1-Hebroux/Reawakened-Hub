@@ -30,7 +30,7 @@ const reviewSchema = z.object({
  */
 router.get("/collaborator/submissions", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = req.user.claims?.sub || req.user.id;
     const user = await storage.getUser(userId);
 
     // Check if user exists and has collaborator role
@@ -52,7 +52,7 @@ router.get("/collaborator/submissions", isAuthenticated, async (req: any, res) =
  */
 router.post("/collaborator/submissions", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = req.user.claims?.sub || req.user.id;
     const user = await storage.getUser(userId);
 
     // Check if user exists and has collaborator role
@@ -82,7 +82,7 @@ router.post("/collaborator/submissions", isAuthenticated, async (req: any, res) 
  */
 router.get("/collaborator/submissions/:id", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = req.user.claims?.sub || req.user.id;
     const submissionId = parseInt(req.params.id, 10);
 
     const submission = await storage.getCollaboratorSubmission(submissionId);
@@ -110,7 +110,7 @@ router.get("/collaborator/submissions/:id", isAuthenticated, async (req: any, re
  */
 router.patch("/collaborator/submissions/:id", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = req.user.claims?.sub || req.user.id;
     const submissionId = parseInt(req.params.id, 10);
 
     const submission = await storage.getCollaboratorSubmission(submissionId);
@@ -149,7 +149,7 @@ router.patch("/collaborator/submissions/:id", isAuthenticated, async (req: any, 
  */
 router.delete("/collaborator/submissions/:id", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = req.user.claims?.sub || req.user.id;
     const submissionId = parseInt(req.params.id, 10);
 
     const submission = await storage.getCollaboratorSubmission(submissionId);
@@ -184,7 +184,7 @@ router.delete("/collaborator/submissions/:id", isAuthenticated, async (req: any,
  */
 router.get("/admin/submissions", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = req.user.claims?.sub || req.user.id;
     const user = await storage.getUser(userId);
 
     // Check if user exists and is admin or leader
@@ -214,7 +214,7 @@ router.get("/admin/submissions", isAuthenticated, async (req: any, res) => {
  */
 router.post("/admin/submissions/:id/approve", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = req.user.claims?.sub || req.user.id;
     const user = await storage.getUser(userId);
 
     // Check if user exists and is admin or leader
@@ -256,7 +256,7 @@ router.post("/admin/submissions/:id/approve", isAuthenticated, async (req: any, 
  */
 router.post("/admin/submissions/:id/reject", isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = req.user.claims?.sub || req.user.id;
     const user = await storage.getUser(userId);
 
     // Check if user exists and is admin or leader

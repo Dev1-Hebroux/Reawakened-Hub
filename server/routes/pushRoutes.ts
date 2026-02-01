@@ -44,7 +44,7 @@ router.get('/push/vapid-public-key', (req, res) => {
 router.post('/push/subscribe', isAuthenticated, async (req: any, res) => {
   try {
     const { subscription, preferences } = req.body;
-    const userId = req.user.claims.sub;
+    const userId = req.user.claims?.sub || req.user.id;
 
     if (!subscription?.endpoint || !subscription?.keys) {
       return res.status(400).json({ error: 'Invalid subscription' });
@@ -118,7 +118,7 @@ router.post('/push/subscribe', isAuthenticated, async (req: any, res) => {
 router.post('/push/unsubscribe', isAuthenticated, async (req: any, res) => {
   try {
     const { endpoint } = req.body;
-    const userId = req.user.claims.sub;
+    const userId = req.user.claims?.sub || req.user.id;
 
     if (endpoint) {
       await db.execute(sql`
@@ -141,7 +141,7 @@ router.post('/push/unsubscribe', isAuthenticated, async (req: any, res) => {
 
 router.get('/push/preferences', isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = req.user.claims?.sub || req.user.id;
     
     const result = await db.execute(sql`
       SELECT * FROM user_notification_preferences
@@ -190,7 +190,7 @@ router.get('/push/preferences', isAuthenticated, async (req: any, res) => {
 
 router.put('/push/preferences', isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = req.user.claims?.sub || req.user.id;
     const prefs = req.body;
 
     await db.execute(sql`
@@ -253,7 +253,7 @@ router.put('/push/preferences', isAuthenticated, async (req: any, res) => {
 
 router.post('/push/test', isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = req.user.claims?.sub || req.user.id;
     
     const sent = await sendNotificationToUser(userId, {
       title: 'Test Notification',

@@ -15,7 +15,7 @@ const router = Router();
 // Get all notifications for the current user
 router.get('/notifications', isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = req.user.claims?.sub || req.user.id;
     const limit = parseInt(req.query.limit as string) || 50;
     
     const items = await storage.getNotifications(userId, limit);
@@ -31,7 +31,7 @@ router.get('/notifications', isAuthenticated, async (req: any, res) => {
 // Get unread notification count
 router.get('/notifications/unread-count', isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = req.user.claims?.sub || req.user.id;
     const count = await storage.getUnreadNotificationsCount(userId);
     res.json({ count });
   } catch (error) {
@@ -43,7 +43,7 @@ router.get('/notifications/unread-count', isAuthenticated, async (req: any, res)
 // Mark a notification as read
 router.post('/notifications/:id/read', isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = req.user.claims?.sub || req.user.id;
     const notificationId = parseInt(req.params.id);
     
     if (isNaN(notificationId)) {
@@ -61,7 +61,7 @@ router.post('/notifications/:id/read', isAuthenticated, async (req: any, res) =>
 // Mark all notifications as read
 router.post('/notifications/read-all', isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = req.user.claims?.sub || req.user.id;
     await storage.markAllNotificationsRead(userId);
     res.json({ success: true });
   } catch (error) {
@@ -73,7 +73,7 @@ router.post('/notifications/read-all', isAuthenticated, async (req: any, res) =>
 // Get notification preferences
 router.get('/notifications/preferences', isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = req.user.claims?.sub || req.user.id;
     const prefs = await storage.getNotificationPreferences(userId);
     res.json(prefs || {});
   } catch (error) {
@@ -85,7 +85,7 @@ router.get('/notifications/preferences', isAuthenticated, async (req: any, res) 
 // Update notification preferences
 router.patch('/notifications/preferences', isAuthenticated, async (req: any, res) => {
   try {
-    const userId = req.user.claims.sub;
+    const userId = req.user.claims?.sub || req.user.id;
     
     const prefsSchema = z.object({
       pushEnabled: z.boolean().optional(),

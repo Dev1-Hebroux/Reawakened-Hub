@@ -20,7 +20,6 @@ import NotFound from "@/pages/not-found";
 import { LoginPage } from "@/pages/auth/LoginPage";
 import { RegisterPage } from "@/pages/auth/RegisterPage";
 import { ForgotPasswordPage, ResetPasswordPage } from "@/pages/auth/PasswordRecoveryPages";
-import { useAuth as useEmailAuth } from "@/contexts/AuthContext";
 import { Redirect } from "wouter";
 
 // Lazy load all pages for better initial bundle size
@@ -124,22 +123,22 @@ function LoadingFallback() {
 }
 
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
-  const { isAuthenticated, isLoading } = useEmailAuth();
-  
+  const { isAuthenticated, isLoading } = useAuth();
+
   if (isLoading) {
     return <LoadingFallback />;
   }
-  
+
   if (!isAuthenticated) {
     const returnUrl = encodeURIComponent(window.location.pathname);
     return <Redirect to={`/login?redirect=${returnUrl}`} />;
   }
-  
+
   return <Component />;
 }
 
 function GuestRoute({ component: Component }: { component: React.ComponentType }) {
-  const { isAuthenticated, isLoading } = useEmailAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   
   if (isLoading) {
     return <LoadingFallback />;

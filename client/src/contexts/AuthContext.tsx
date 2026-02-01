@@ -10,6 +10,9 @@ interface User {
   authProvider: string | null;
   emailVerifiedAt: Date | null;
   role: string | null;
+  audienceSegment: string | null;
+  contentMode: string | null;
+  createdAt: Date | null;
 }
 
 interface BootstrapData {
