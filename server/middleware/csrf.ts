@@ -4,6 +4,7 @@ import crypto from 'crypto';
 const CSRF_COOKIE_NAME = 'csrf_token';
 const CSRF_HEADER_NAME = 'x-csrf-token';
 const CSRF_TOKEN_LENGTH = 32;
+const isProduction = process.env.NODE_ENV === 'production';
 
 function generateCsrfToken(): string {
   return crypto.randomBytes(CSRF_TOKEN_LENGTH).toString('hex');
@@ -25,9 +26,10 @@ export const setCsrfToken: RequestHandler = (req, res, next) => {
     token = generateCsrfToken();
     res.cookie(CSRF_COOKIE_NAME, token, {
       httpOnly: false,
-      secure: true,
-      sameSite: 'strict',
+      secure: isProduction,
+      sameSite: isProduction ? 'strict' : 'lax',
       maxAge: 24 * 60 * 60 * 1000,
+      path: '/',
     });
   }
   

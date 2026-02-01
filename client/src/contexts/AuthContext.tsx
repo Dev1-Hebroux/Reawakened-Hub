@@ -46,17 +46,36 @@ function getCsrfToken(): string | null {
 }
 
 let csrfPromise: Promise<string | null> | null = null;
+let cachedCsrfToken: string | null = null;
 
 async function ensureCsrfToken(): Promise<string | null> {
+  // First check our cached token
+  if (cachedCsrfToken) return cachedCsrfToken;
+
+  // Then check cookie
   let token = getCsrfToken();
-  if (token) return token;
+  if (token) {
+    cachedCsrfToken = token;
+    return token;
+  }
 
   if (csrfPromise) return csrfPromise;
 
   csrfPromise = fetch(getApiUrl('/api/auth/csrf'), { credentials: 'include' })
-    .then(response => {
+    .then(async response => {
       if (response.ok) {
-        return getCsrfToken();
+        // Use token from response body (more reliable than cookie timing)
+        const data = await response.json();
+        if (data.token) {
+          cachedCsrfToken = data.token;
+          return data.token;
+        }
+        // Fallback to cookie
+        const cookieToken = getCsrfToken();
+        if (cookieToken) {
+          cachedCsrfToken = cookieToken;
+        }
+        return cookieToken;
       }
       return null;
     })
@@ -200,6 +219,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setUser(null);
       setBootstrap(defaultBootstrap);
+      // Clear cached CSRF token on logout
+      cachedCsrfToken = null;
     }
   };
 
