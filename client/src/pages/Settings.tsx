@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { 
   Settings as SettingsIcon, ArrowLeft, Moon, Sun, Monitor, Globe, 
   Bell, Mail, Heart, MessageCircle, Calendar, Flame, Smartphone, 
-  BellRing, Users, Loader2
+  BellRing, Users, Loader2, Download, CheckCircle
 } from "lucide-react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
@@ -15,6 +15,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import { useNotifications } from "@/services/NotificationService";
+import { usePWA } from "@/components/PWAComponents";
 import {
   Select,
   SelectContent,
@@ -72,6 +73,9 @@ export default function Settings() {
     preferences: pushPreferences,
     updatePreferences: updatePushPreferences
   } = useNotifications();
+  
+  const { canInstall, isInstalled, installApp, isIOS, setShowIOSInstallInstructions } = usePWA();
+  const [isInstalling, setIsInstalling] = useState(false);
 
   const [theme, setTheme] = useState("system");
   const [language, setLanguage] = useState("en");
@@ -314,6 +318,78 @@ export default function Settings() {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+          </motion.div>
+
+          {/* Install App */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.12 }}
+            className="bg-[#FAF8F5] dark:bg-[#243656] rounded-3xl p-6 mb-4 border border-gray-200 dark:border-[#4A7C7C]/30"
+          >
+            <h2 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+              <Download className="h-5 w-5 text-[#7C9A8E]" />
+              Install App
+            </h2>
+            
+            <div className="space-y-4">
+              {isInstalled ? (
+                <div className="flex items-center gap-3 p-4 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-700/30" data-testid="status-app-installed">
+                  <CheckCircle className="h-6 w-6 text-green-600 dark:text-green-400" />
+                  <div>
+                    <p className="font-medium text-green-800 dark:text-green-300" data-testid="text-install-status">App Installed</p>
+                    <p className="text-sm text-green-600 dark:text-green-400">Reawakened is installed on your device</p>
+                  </div>
+                </div>
+              ) : canInstall ? (
+                <div className="p-4 bg-white dark:bg-[#1a2744] rounded-xl border border-gray-200 dark:border-[#4A7C7C]/30">
+                  <div className="flex items-start gap-4">
+                    <div className="p-3 rounded-xl bg-gradient-to-br from-[#7C9A8E] to-[#4A7C7C] flex-shrink-0">
+                      <Download className="h-6 w-6 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-medium text-gray-900 dark:text-white mb-1">Install Reawakened</h3>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
+                        {isIOS 
+                          ? "Add to your home screen for quick access and offline support"
+                          : "Install the app for faster access, push notifications, and offline support"
+                        }
+                      </p>
+                      <Button
+                        onClick={async () => {
+                          if (isIOS) {
+                            setShowIOSInstallInstructions(true);
+                          } else {
+                            setIsInstalling(true);
+                            const success = await installApp();
+                            setIsInstalling(false);
+                            if (success) {
+                              toast.success("App installed successfully!");
+                            }
+                          }
+                        }}
+                        disabled={isInstalling}
+                        className="bg-primary hover:bg-primary/90 text-white"
+                        data-testid="button-install-app"
+                      >
+                        {isInstalling ? (
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        ) : (
+                          <Download className="h-4 w-4 mr-2" />
+                        )}
+                        {isIOS ? "Show Install Instructions" : "Install App"}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-4 bg-gray-50 dark:bg-[#1a2744] rounded-xl border border-gray-200 dark:border-[#4A7C7C]/30" data-testid="status-install-unavailable">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Install option not available. This may be because you're using a browser that doesn't support app installation, or you've already installed the app.
+                  </p>
+                </div>
+              )}
             </div>
           </motion.div>
 

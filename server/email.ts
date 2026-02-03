@@ -1485,23 +1485,102 @@ export async function sendAuthWelcomeEmail(to: string, firstName: string | null)
 <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #FAF8F5;">
   <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
     ${getEmailHeader("Welcome to Reawakened!", `Hey ${name}, your journey starts now`)}
+    
     <div style="background: #ffffff; border-radius: 16px; padding: 32px; margin-bottom: 24px; border: 1px solid #E8E4DE;">
       <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
-        We're so glad you're here. Reawakened is a community for young people who want to grow, connect, and make an impact.
+        We're so glad you're here! Reawakened is a community for young people who want to grow spiritually, connect with others, and make an impact for the Kingdom.
       </p>
-      <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
-        Here's what you can explore:
+      <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 16px 0; font-weight: 600;">
+        Here's everything you can explore:
       </p>
-      <ul style="color: #374151; font-size: 16px; line-height: 1.8; margin: 0 0 24px 0; padding-left: 20px;">
-        <li><strong>Daily Sparks</strong> — bite-sized devotionals to start your day</li>
-        <li><strong>Reading Plans</strong> — guided journeys through Scripture</li>
-        <li><strong>Prayer Wall</strong> — pray and be prayed for</li>
-        <li><strong>Community</strong> — connect with others on the journey</li>
-      </ul>
-      <a href="https://reawakened.app/sparks" style="display: inline-block; background: linear-gradient(135deg, #1a2744 0%, #2d3a52 100%); color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 12px; font-weight: 600; font-size: 15px;">
-        Start Exploring
+    </div>
+
+    <!-- Daily Sparks -->
+    <a href="https://reawakened.app/sparks" style="text-decoration: none; display: block;">
+      <div style="background: linear-gradient(135deg, #D4A574 0%, #C49464 100%); border-radius: 16px; padding: 20px 24px; margin-bottom: 12px; display: flex; align-items: center;">
+        <span style="font-size: 24px; margin-right: 16px;">✨</span>
+        <div>
+          <p style="color: #ffffff; font-size: 16px; font-weight: 600; margin: 0 0 4px 0;">Daily Sparks</p>
+          <p style="color: rgba(255,255,255,0.9); font-size: 14px; margin: 0;">Bite-sized devotionals to start your day with purpose</p>
+        </div>
+      </div>
+    </a>
+
+    <!-- Journeys -->
+    <a href="https://reawakened.app/journeys" style="text-decoration: none; display: block;">
+      <div style="background: linear-gradient(135deg, #7C9A8E 0%, #6B8B7E 100%); border-radius: 16px; padding: 20px 24px; margin-bottom: 12px; display: flex; align-items: center;">
+        <span style="font-size: 24px; margin-right: 16px;">🗺️</span>
+        <div>
+          <p style="color: #ffffff; font-size: 16px; font-weight: 600; margin: 0 0 4px 0;">Journeys</p>
+          <p style="color: rgba(255,255,255,0.9); font-size: 14px; margin: 0;">Multi-day guided programs for deeper spiritual growth</p>
+        </div>
+      </div>
+    </a>
+
+    <!-- Vision & Goals -->
+    <a href="https://reawakened.app/vision" style="text-decoration: none; display: block;">
+      <div style="background: linear-gradient(135deg, #4A7C7C 0%, #3A6C6C 100%); border-radius: 16px; padding: 20px 24px; margin-bottom: 12px; display: flex; align-items: center;">
+        <span style="font-size: 24px; margin-right: 16px;">🎯</span>
+        <div>
+          <p style="color: #ffffff; font-size: 16px; font-weight: 600; margin: 0 0 4px 0;">Vision & Goals</p>
+          <p style="color: rgba(255,255,255,0.9); font-size: 14px; margin: 0;">Discover your purpose and set meaningful life goals</p>
+        </div>
+      </div>
+    </a>
+
+    <!-- Prayer -->
+    <a href="https://reawakened.app/pray" style="text-decoration: none; display: block;">
+      <div style="background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%); border-radius: 16px; padding: 20px 24px; margin-bottom: 12px; display: flex; align-items: center;">
+        <span style="font-size: 24px; margin-right: 16px;">🙏</span>
+        <div>
+          <p style="color: #ffffff; font-size: 16px; font-weight: 600; margin: 0 0 4px 0;">Prayer Hub</p>
+          <p style="color: rgba(255,255,255,0.9); font-size: 14px; margin: 0;">Share prayer requests and intercede for others</p>
+        </div>
+      </div>
+    </a>
+
+    <!-- Community -->
+    <a href="https://reawakened.app/community" style="text-decoration: none; display: block;">
+      <div style="background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%); border-radius: 16px; padding: 20px 24px; margin-bottom: 12px; display: flex; align-items: center;">
+        <span style="font-size: 24px; margin-right: 16px;">👥</span>
+        <div>
+          <p style="color: #ffffff; font-size: 16px; font-weight: 600; margin: 0 0 4px 0;">Community Hub</p>
+          <p style="color: rgba(255,255,255,0.9); font-size: 14px; margin: 0;">Connect, chat, and grow with fellow believers</p>
+        </div>
+      </div>
+    </a>
+
+    <!-- Events -->
+    <a href="https://reawakened.app/outreach" style="text-decoration: none; display: block;">
+      <div style="background: linear-gradient(135deg, #EC4899 0%, #DB2777 100%); border-radius: 16px; padding: 20px 24px; margin-bottom: 12px; display: flex; align-items: center;">
+        <span style="font-size: 24px; margin-right: 16px;">📅</span>
+        <div>
+          <p style="color: #ffffff; font-size: 16px; font-weight: 600; margin: 0 0 4px 0;">Events & Outreach</p>
+          <p style="color: rgba(255,255,255,0.9); font-size: 14px; margin: 0;">Join mission trips, retreats, and community gatherings</p>
+        </div>
+      </div>
+    </a>
+
+    <!-- Missions -->
+    <a href="https://reawakened.app/missions" style="text-decoration: none; display: block;">
+      <div style="background: linear-gradient(135deg, #1a2744 0%, #2d3a52 100%); border-radius: 16px; padding: 20px 24px; margin-bottom: 24px; display: flex; align-items: center;">
+        <span style="font-size: 24px; margin-right: 16px;">🚀</span>
+        <div>
+          <p style="color: #ffffff; font-size: 16px; font-weight: 600; margin: 0 0 4px 0;">Missions</p>
+          <p style="color: rgba(255,255,255,0.9); font-size: 14px; margin: 0;">Take action and make digital impact for the Kingdom</p>
+        </div>
+      </div>
+    </a>
+
+    <div style="background: #ffffff; border-radius: 16px; padding: 24px; margin-bottom: 24px; border: 1px solid #E8E4DE; text-align: center;">
+      <p style="color: #374151; font-size: 15px; line-height: 1.6; margin: 0 0 16px 0;">
+        Ready to begin your journey? Start with today's Daily Spark!
+      </p>
+      <a href="https://reawakened.app/sparks" style="display: inline-block; background: linear-gradient(135deg, #1a2744 0%, #2d3a52 100%); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 12px; font-weight: 600; font-size: 15px;">
+        Get Started Now
       </a>
     </div>
+
     ${getEmailFooter(to, 'For I know the plans I have for you, declares the Lord. — Jeremiah 29:11')}
   </div>
 </body>

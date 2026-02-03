@@ -32,6 +32,17 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Separate effect for closing mobile menu on scroll
+  useEffect(() => {
+    if (!isOpen) return;
+    
+    const handleScrollClose = () => {
+      setIsOpen(false);
+    };
+    window.addEventListener("scroll", handleScrollClose, { once: true });
+    return () => window.removeEventListener("scroll", handleScrollClose);
+  }, [isOpen]);
+
   // Determine navbar appearance:
   // Scrolled: Always white background with dark logo/text
   // Dark Hero (unscrolled): Navy glass with white logo/text
