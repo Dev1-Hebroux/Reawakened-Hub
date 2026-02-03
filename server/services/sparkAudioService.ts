@@ -22,9 +22,9 @@ const TTS_CONFIG = {
 
 type TTSVoice = 'alloy' | 'echo' | 'fable' | 'onyx' | 'nova' | 'shimmer';
 
-const VOICE_OPTIONS: { voice: TTSVoice; accent: string }[] = [
-  { voice: 'fable', accent: 'UK' },   // British narrative style
-  { voice: 'nova', accent: 'US' },    // Warm US female
+const VOICE_OPTIONS: { voice: TTSVoice; accent: string; gender: string }[] = [
+  { voice: 'onyx', accent: 'US', gender: 'male' },    // Deep male voice
+  { voice: 'nova', accent: 'US', gender: 'female' },  // Warm female voice
 ];
 
 function selectVoiceForSpark(sparkId: number): TTSVoice {
