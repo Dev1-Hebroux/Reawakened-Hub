@@ -32,15 +32,30 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Separate effect for closing mobile menu on scroll
+  // Close mobile menu on scroll or touch move
   useEffect(() => {
     if (!isOpen) return;
     
+    const initialScrollY = window.scrollY;
+    
     const handleScrollClose = () => {
+      // Close if scrolled more than 10px from initial position
+      if (Math.abs(window.scrollY - initialScrollY) > 10) {
+        setIsOpen(false);
+      }
+    };
+    
+    const handleTouchMove = () => {
       setIsOpen(false);
     };
-    window.addEventListener("scroll", handleScrollClose, { once: true });
-    return () => window.removeEventListener("scroll", handleScrollClose);
+    
+    window.addEventListener("scroll", handleScrollClose, { passive: true });
+    document.addEventListener("touchmove", handleTouchMove, { passive: true });
+    
+    return () => {
+      window.removeEventListener("scroll", handleScrollClose);
+      document.removeEventListener("touchmove", handleTouchMove);
+    };
   }, [isOpen]);
 
   // Determine navbar appearance:
