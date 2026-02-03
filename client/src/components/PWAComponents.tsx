@@ -58,6 +58,7 @@ export function PWAProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const handleBeforeInstall = (e: Event) => {
+      console.log('[PWA] beforeinstallprompt event received');
       e.preventDefault();
       setInstallPrompt(e as BeforeInstallPromptEvent);
     };
@@ -65,9 +66,12 @@ export function PWAProvider({ children }: { children: ReactNode }) {
     window.addEventListener('beforeinstallprompt', handleBeforeInstall);
     
     window.addEventListener('appinstalled', () => {
+      console.log('[PWA] App installed successfully');
       setIsInstalled(true);
       setInstallPrompt(null);
     });
+
+    console.log('[PWA] Listeners registered, waiting for beforeinstallprompt...');
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstall);
@@ -118,17 +122,25 @@ export function PWAProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const installApp = useCallback(async (): Promise<boolean> => {
+    console.log('[PWA] Install button clicked, prompt available:', !!installPrompt);
+    
     if (!installPrompt) {
       if (isIOS) {
+        console.log('[PWA] iOS detected, showing manual instructions');
         setShowIOSInstallInstructions(true);
         return false;
       }
+      console.log('[PWA] No install prompt available - browser may not support PWA install or app already installed');
+      // Show alert for unsupported browsers
+      alert('To install this app:\n\n• On Chrome/Edge: Look for the install icon in the address bar\n• On Safari: Tap Share → Add to Home Screen\n• On Firefox: This browser doesn\'t support PWA install');
       return false;
     }
 
     try {
+      console.log('[PWA] Triggering install prompt...');
       await installPrompt.prompt();
       const { outcome } = await installPrompt.userChoice;
+      console.log('[PWA] User choice:', outcome);
       
       if (outcome === 'accepted') {
         setInstallPrompt(null);
@@ -137,7 +149,7 @@ export function PWAProvider({ children }: { children: ReactNode }) {
         return false;
       }
     } catch (error) {
-      console.error('Install failed:', error);
+      console.error('[PWA] Install failed:', error);
       return false;
     }
   }, [installPrompt, isIOS]);

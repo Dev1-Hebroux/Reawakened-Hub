@@ -280,7 +280,7 @@ function AppContent() {
       </div>
       <MobileNav />
       <UpdateBanner />
-      <InstallBanner delay={30000} requireEngagement />
+      <InstallBanner delay={5000} requireEngagement={false} />
       <IOSInstallInstructions />
       <OfflineIndicator />
       {isAuthenticated && (
