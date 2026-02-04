@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { BookOpen, ArrowRight, RefreshCw, Play, Calendar } from "lucide-react";
-import { useState, useEffect } from "react";
+import { BookOpen, ArrowRight, RefreshCw, Play, Calendar, Flame, ChevronRight } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
 import { useRoute, useLocation } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
 import { Navbar } from "@/components/layout/Navbar";
@@ -103,12 +103,31 @@ export function SparksPage() {
     }
   }, [sparkIdFromUrl, navigate]);
 
+  // Handle hash navigation (e.g. /sparks#podcast)
+  useEffect(() => {
+    if (window.location.hash) {
+      const id = window.location.hash.slice(1);
+      const timer = setTimeout(() => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
   const filteredSparks = activeFilter === "All"
     ? sparks
     : sparks.filter(s => s.category === activeFilter);
 
   const featuredSpark = featuredSparks.length > 0 ? featuredSparks[0] : (sparks.length > 0 ? sparks[0] : null);
   const heroSpark = todaySpark || featuredSpark;
+
+  // Group sparks by category for horizontal scroll sections
+  const devotionals = sparks.filter(s => s.category === 'daily-devotional');
+  const worshipSparks = sparks.filter(s => s.category === 'worship');
+  const testimonies = sparks.filter(s => s.category === 'testimony');
 
   return (
     <div
@@ -149,7 +168,7 @@ export function SparksPage() {
         onComplete={() => setShowOnboarding(false)}
       />
 
-      {/* 1. Hero Section (shorter) */}
+      {/* 1. Hero Section */}
       <HeroSection
         featuredSpark={heroSpark}
         totalSparks={sparks.length}
@@ -157,30 +176,29 @@ export function SparksPage() {
         onSubscribeClick={() => setShowSubscribe(true)}
       />
 
-      {/* 2. Main Content — Filters + Today's Spark + Grid */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Sticky Filters */}
+      {/* 2. Sticky Filters */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <SparkFilters
           pillars={pillars}
           pillarLabels={pillarLabels}
           activeFilter={activeFilter}
           onFilterChange={setActiveFilter}
         />
+      </div>
 
-        {/* Today's Spark — Featured Card */}
-        {heroSpark && activeFilter !== "podcast" && (
+      {/* 3. Today's Featured Spark */}
+      {heroSpark && activeFilter === "All" && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-10"
           >
             <div
               onClick={() => navigate(`/spark/${heroSpark.id}`)}
               className="group relative rounded-2xl overflow-hidden cursor-pointer border border-white/[0.06] hover:border-white/[0.12] transition-all duration-500"
             >
               <div className="grid md:grid-cols-2">
-                {/* Image */}
-                <div className="relative aspect-video md:aspect-auto md:min-h-[280px]">
+                <div className="relative aspect-video md:aspect-auto md:min-h-[260px]">
                   <img
                     src={getSparkImage(heroSpark, 0)}
                     alt={heroSpark.title}
@@ -195,8 +213,6 @@ export function SparksPage() {
                     </div>
                   </div>
                 </div>
-
-                {/* Info */}
                 <div className="p-6 md:p-8 flex flex-col justify-center bg-gradient-to-br from-white/[0.04] to-transparent">
                   <div className="flex items-center gap-2 mb-3">
                     <span className="bg-primary/90 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">
@@ -227,21 +243,84 @@ export function SparksPage() {
               </div>
             </div>
           </motion.div>
-        )}
+        </div>
+      )}
 
-        {/* Spark Grid */}
-        <SparkGrid
-          sparks={filteredSparks}
-          isLoading={isLoading}
-          onSparkClick={(id) => navigate(`/spark/${id}`)}
-          pillarLabels={pillarLabels}
-        />
-      </div>
+      {/* 4. Category Sections — Horizontal Scroll (Spotify/YouTube Music style) */}
+      {activeFilter === "All" && (
+        <div className="space-y-10 mb-12">
+          {/* Devotionals Carousel */}
+          {devotionals.length > 0 && (
+            <HorizontalSection
+              title="Daily Devotionals"
+              subtitle="Start your day with the Word"
+              sparks={devotionals}
+              onSparkClick={(id) => navigate(`/spark/${id}`)}
+              onSeeAll={() => setActiveFilter('daily-devotional')}
+              pillarLabels={pillarLabels}
+            />
+          )}
 
-      {/* 3. Podcast Section */}
+          {/* Worship Carousel */}
+          {worshipSparks.length > 0 && (
+            <HorizontalSection
+              title="Worship"
+              subtitle="Encounter His presence"
+              sparks={worshipSparks}
+              onSparkClick={(id) => navigate(`/spark/${id}`)}
+              onSeeAll={() => setActiveFilter('worship')}
+              pillarLabels={pillarLabels}
+            />
+          )}
+
+          {/* Testimonies Carousel */}
+          {testimonies.length > 0 && (
+            <HorizontalSection
+              title="Testimonies"
+              subtitle="Stories of God moving"
+              sparks={testimonies}
+              onSparkClick={(id) => navigate(`/spark/${id}`)}
+              onSeeAll={() => setActiveFilter('testimony')}
+              pillarLabels={pillarLabels}
+            />
+          )}
+        </div>
+      )}
+
+      {/* 5. Full Grid (when a filter is active or as browse-all) */}
+      {activeFilter !== "All" && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
+          <SparkGrid
+            sparks={filteredSparks}
+            isLoading={isLoading}
+            onSparkClick={(id) => navigate(`/spark/${id}`)}
+            pillarLabels={pillarLabels}
+          />
+        </div>
+      )}
+
+      {/* Browse All — shown on "All" tab below carousels */}
+      {activeFilter === "All" && sparks.length > 0 && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h3 className="text-xl font-display font-bold text-white tracking-tight">Browse All</h3>
+              <p className="text-xs text-white/30 mt-0.5">{sparks.length} sparks available</p>
+            </div>
+          </div>
+          <SparkGrid
+            sparks={sparks}
+            isLoading={isLoading}
+            onSparkClick={(id) => navigate(`/spark/${id}`)}
+            pillarLabels={pillarLabels}
+          />
+        </div>
+      )}
+
+      {/* 6. Podcast Section */}
       <PodcastSection />
 
-      {/* 4. Reading Plans CTA */}
+      {/* 7. Reading Plans CTA */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -289,5 +368,131 @@ export function SparksPage() {
         onEmailSubmit={handleEmailSubscribe}
       />
     </div>
+  );
+}
+
+
+/** Horizontal scroll section — YouTube Music / Spotify style */
+function HorizontalSection({
+  title,
+  subtitle,
+  sparks,
+  onSparkClick,
+  onSeeAll,
+  pillarLabels,
+}: {
+  title: string;
+  subtitle: string;
+  sparks: any[];
+  onSparkClick: (id: number) => void;
+  onSeeAll: () => void;
+  pillarLabels: Record<string, string>;
+}) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-50px" }}
+    >
+      {/* Section Header */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-xl font-display font-bold text-white tracking-tight">{title}</h3>
+            <p className="text-xs text-white/30 mt-0.5">{subtitle}</p>
+          </div>
+          <button
+            onClick={onSeeAll}
+            className="flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary/80 transition-colors"
+          >
+            See all <ChevronRight className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      </div>
+
+      {/* Horizontal Scroll */}
+      <div
+        ref={scrollRef}
+        className="flex gap-4 overflow-x-auto scrollbar-hide px-4 sm:px-6 lg:px-8 pb-2 snap-x snap-mandatory"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+      >
+        {sparks.slice(0, 8).map((spark, i) => (
+          <div
+            key={spark.id}
+            className="flex-shrink-0 w-[160px] sm:w-[180px] snap-start"
+          >
+            <HorizontalSparkCard
+              spark={spark}
+              index={i}
+              onClick={() => onSparkClick(spark.id)}
+              pillarLabels={pillarLabels}
+            />
+          </div>
+        ))}
+      </div>
+    </motion.div>
+  );
+}
+
+
+/** Compact spark card for horizontal scroll — YouTube Music style */
+function HorizontalSparkCard({
+  spark,
+  index,
+  onClick,
+  pillarLabels,
+}: {
+  spark: any;
+  index: number;
+  onClick: () => void;
+  pillarLabels: Record<string, string>;
+}) {
+  return (
+    <motion.div
+      onClick={onClick}
+      initial={{ opacity: 0, scale: 0.95 }}
+      whileInView={{ opacity: 1, scale: 1 }}
+      viewport={{ once: true }}
+      transition={{ delay: index * 0.04 }}
+      className="group cursor-pointer"
+    >
+      {/* Thumbnail */}
+      <div className="relative aspect-square rounded-xl overflow-hidden mb-2.5 bg-gray-900">
+        <img
+          src={getSparkImage(spark, index)}
+          alt={spark.title}
+          className="w-full h-full object-cover transition-all duration-500 group-hover:scale-110 opacity-80 group-hover:opacity-100"
+          style={{ filter: 'saturate(1.1)' }}
+          loading="lazy"
+          decoding="async"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+
+        {/* Play overlay on hover */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
+          <div className="h-10 w-10 bg-primary rounded-full flex items-center justify-center shadow-lg shadow-primary/30 scale-90 group-hover:scale-100 transition-transform">
+            <Play className="h-4 w-4 fill-white text-white ml-0.5" />
+          </div>
+        </div>
+
+        {/* Duration badge */}
+        {spark.duration && (
+          <div className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-sm text-[10px] font-medium text-white/80 px-1.5 py-0.5 rounded">
+            {Math.floor(spark.duration / 60)}:{String(spark.duration % 60).padStart(2, '0')}
+          </div>
+        )}
+      </div>
+
+      {/* Info */}
+      <h4 className="text-sm font-semibold text-white line-clamp-2 leading-snug group-hover:text-primary transition-colors">
+        {spark.title}
+      </h4>
+      <p className="text-[11px] text-white/35 mt-1 flex items-center gap-1">
+        <Flame className="h-2.5 w-2.5 text-primary/50" />
+        {pillarLabels[spark.category] || spark.category}
+      </p>
+    </motion.div>
   );
 }

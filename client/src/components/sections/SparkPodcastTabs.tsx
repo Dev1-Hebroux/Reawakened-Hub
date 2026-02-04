@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Play, ArrowRight, Mic2, Clock, Flame, Loader2 } from "lucide-react";
-import { Link } from "wouter";
+import { Play, ArrowRight, Mic2, Flame, Loader2 } from "lucide-react";
+import { Link, useLocation } from "wouter";
 import { useDashboard } from "@/hooks/useDashboard";
 
 import identityImg from "@assets/generated_images/identity_in_chaos_abstract.png";
@@ -12,9 +12,11 @@ const fallbackImages = [identityImg, believeImg];
 const PODCAST_PREVIEW = [
   { num: 3, title: "When the Horses Got Confused", theme: "Revival transforms society", duration: "10 min", color: "from-orange-500 to-amber-400" },
   { num: 2, title: "The Teenage Girl Who Changed Everything", theme: "Simple testimony releases power", duration: "11 min", color: "from-teal-500 to-emerald-400" },
+  { num: 1, title: "The Pattern Nobody Talks About", theme: "Prayer precedes every revival", duration: "12 min", color: "from-purple-500 to-indigo-400" },
 ];
 
 export function SparkPodcastTabs() {
+  const [, navigate] = useLocation();
   const [activeTab, setActiveTab] = useState<'sparks' | 'podcast'>('sparks');
   const { todaySpark, featured, sparks, isLoading } = useDashboard();
 
@@ -23,6 +25,14 @@ export function SparkPodcastTabs() {
     ...featured.filter(s => s.id !== todaySpark?.id),
     ...sparks.filter(s => s.id !== todaySpark?.id && !featured.some(f => f.id === s.id)),
   ].filter(Boolean).slice(0, 3);
+
+  const handleSparkTabClick = () => {
+    navigate('/sparks');
+  };
+
+  const handlePodcastTabClick = () => {
+    setActiveTab('podcast');
+  };
 
   return (
     <div>
@@ -36,7 +46,7 @@ export function SparkPodcastTabs() {
       {/* Pill Toggle */}
       <div className="flex items-center gap-1 bg-gray-100 rounded-full p-1 mb-5 w-fit">
         <button
-          onClick={() => setActiveTab('sparks')}
+          onClick={handleSparkTabClick}
           className={`px-5 py-2 rounded-full text-xs font-bold tracking-wide transition-all duration-300 flex items-center gap-1.5 ${
             activeTab === 'sparks'
               ? 'bg-white text-gray-900 shadow-sm'
@@ -44,9 +54,10 @@ export function SparkPodcastTabs() {
           }`}
         >
           <Flame className="h-3 w-3" /> Sparks
+          <ArrowRight className="h-2.5 w-2.5 opacity-60" />
         </button>
         <button
-          onClick={() => setActiveTab('podcast')}
+          onClick={handlePodcastTabClick}
           className={`px-5 py-2 rounded-full text-xs font-bold tracking-wide transition-all duration-300 flex items-center gap-1.5 ${
             activeTab === 'podcast'
               ? 'bg-primary text-white shadow-sm'
@@ -119,37 +130,40 @@ export function SparkPodcastTabs() {
             className="space-y-3"
           >
             {PODCAST_PREVIEW.map((ep) => (
-              <Link key={ep.num} href="/sparks">
-                <div className="group flex items-center gap-3 p-3 rounded-xl bg-gray-50 hover:bg-gray-100 border border-gray-100 hover:border-gray-200 transition-all cursor-pointer">
-                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${ep.color} flex items-center justify-center flex-shrink-0 shadow-sm`}>
-                    <span className="text-lg font-display font-bold text-white">{ep.num}</span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h4 className="text-sm font-semibold text-gray-900 truncate group-hover:text-primary transition-colors">
-                      {ep.title}
-                    </h4>
-                    <p className="text-[11px] text-gray-500 mt-0.5 flex items-center gap-1.5">
-                      <span>{ep.theme}</span>
-                      <span className="w-1 h-1 rounded-full bg-gray-300" />
-                      <span>{ep.duration}</span>
-                    </p>
-                  </div>
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary group-hover:scale-105 transition-all">
-                    <Play className="h-3 w-3 text-primary group-hover:text-white fill-current ml-0.5" />
-                  </div>
+              <div
+                key={ep.num}
+                onClick={() => navigate('/sparks#podcast')}
+                className="group flex items-center gap-3 p-3 rounded-xl bg-gray-50 hover:bg-gray-100 border border-gray-100 hover:border-gray-200 transition-all cursor-pointer"
+              >
+                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${ep.color} flex items-center justify-center flex-shrink-0 shadow-sm`}>
+                  <span className="text-lg font-display font-bold text-white">{ep.num}</span>
                 </div>
-              </Link>
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-sm font-semibold text-gray-900 truncate group-hover:text-primary transition-colors">
+                    {ep.title}
+                  </h4>
+                  <p className="text-[11px] text-gray-500 mt-0.5 flex items-center gap-1.5">
+                    <span>{ep.theme}</span>
+                    <span className="w-1 h-1 rounded-full bg-gray-300" />
+                    <span>{ep.duration}</span>
+                  </p>
+                </div>
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary group-hover:scale-105 transition-all">
+                  <Play className="h-3 w-3 text-primary group-hover:text-white fill-current ml-0.5" />
+                </div>
+              </div>
             ))}
           </motion.div>
         )}
       </AnimatePresence>
 
       {/* View All */}
-      <Link href="/sparks">
-        <div className="mt-4 flex items-center justify-center gap-2 text-sm font-semibold text-primary hover:text-primary/80 transition-colors cursor-pointer">
-          View All {activeTab === 'sparks' ? 'Sparks' : 'Episodes'} <ArrowRight className="h-3.5 w-3.5" />
-        </div>
-      </Link>
+      <div
+        onClick={() => navigate(activeTab === 'sparks' ? '/sparks' : '/sparks#podcast')}
+        className="mt-4 flex items-center justify-center gap-2 text-sm font-semibold text-primary hover:text-primary/80 transition-colors cursor-pointer"
+      >
+        View All {activeTab === 'sparks' ? 'Sparks' : 'Episodes'} <ArrowRight className="h-3.5 w-3.5" />
+      </div>
     </div>
   );
 }

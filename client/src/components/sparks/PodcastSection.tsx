@@ -226,7 +226,7 @@ export function PodcastSection() {
   const latestEpisode = PODCAST_EPISODES[0];
 
   return (
-    <section className="relative overflow-hidden">
+    <section id="podcast" className="relative overflow-hidden scroll-mt-20">
       <audio ref={audioRef} preload="none" />
 
       {/* Background glow */}
