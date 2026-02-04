@@ -384,10 +384,29 @@ export default function Settings() {
                   </div>
                 </div>
               ) : (
-                <div className="p-4 bg-gray-50 dark:bg-[#1a2744] rounded-xl border border-gray-200 dark:border-[#4A7C7C]/30" data-testid="status-install-unavailable">
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Install option not available. This may be because you're using a browser that doesn't support app installation, or you've already installed the app.
-                  </p>
+                <div className="p-4 bg-white dark:bg-[#1a2744] rounded-xl border border-gray-200 dark:border-[#4A7C7C]/30" data-testid="status-install-manual">
+                  <div className="flex items-start gap-4">
+                    <div className="p-3 rounded-xl bg-gradient-to-br from-[#7C9A8E] to-[#4A7C7C] flex-shrink-0">
+                      <Download className="h-6 w-6 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-medium text-gray-900 dark:text-white mb-2">Install Reawakened</h3>
+                      <div className="text-sm text-gray-600 dark:text-gray-300 space-y-2">
+                        <p className="font-medium">On Chrome/Edge (Android or Desktop):</p>
+                        <p className="text-gray-500 dark:text-gray-400 ml-2">Look for the install icon in the address bar, or tap the menu (⋮) → "Install app"</p>
+                        <p className="font-medium mt-3">On Safari (iPhone/iPad):</p>
+                        <p className="text-gray-500 dark:text-gray-400 ml-2">Tap Share → "Add to Home Screen"</p>
+                      </div>
+                      <Button
+                        onClick={() => installApp()}
+                        className="mt-4 bg-primary hover:bg-primary/90 text-white"
+                        data-testid="button-try-install"
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Try Install
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
