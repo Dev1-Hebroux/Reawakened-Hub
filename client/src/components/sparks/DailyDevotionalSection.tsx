@@ -1,11 +1,11 @@
 /**
- * DailyDevotionalSection Component
+ * DailyDevotionalSection Component — Premium Design
  *
  * Today's devotional section with:
- * - View mode toggle (Reflection vs Faith Overlay)
- * - Today's spark video/audio
- * - Scripture verse and prayer
- * - WhatsApp and Email subscription CTAs
+ * - Refined glass-morphism cards
+ * - Premium toggle with smooth transitions
+ * - Cinematic video/audio preview card
+ * - Elegant scripture display
  */
 
 import { BookOpen, Play, Calendar, Heart, Share2, MessageCircle, Mail, HandHeart, Loader2 } from "lucide-react";
@@ -53,71 +53,84 @@ export function DailyDevotionalSection({
   };
 
   return (
-    <div className="bg-gray-900 border-y border-white/10">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
+    <div className="relative overflow-hidden">
+      {/* Subtle background separation */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black via-gray-950 to-black" />
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
+
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-10 flex-wrap gap-4">
           <div>
-            <h2 className="text-2xl font-bold font-display flex items-center gap-2">
-              <BookOpen className="h-6 w-6 text-primary" /> Today's Devotional
+            <h2 className="text-2xl md:text-3xl font-display font-bold text-white tracking-tight flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-primary/10 border border-primary/10">
+                <BookOpen className="h-5 w-5 text-primary" />
+              </div>
+              Today's Devotional
             </h2>
-            <p className="text-gray-400 text-sm">Your daily dose of scripture and inspiration.</p>
+            <p className="text-sm text-white/30 mt-1.5 ml-12 font-light">Your daily dose of scripture and inspiration.</p>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center bg-white/5 rounded-full p-1 border border-white/10">
-              <button
-                onClick={() => onViewModeChange('reflection')}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                  viewMode === 'reflection'
-                    ? 'bg-white text-black'
-                    : 'text-gray-400 hover:text-white'
-                }`}
-                data-testid="button-mode-reflection"
-              >
-                Reflection
-              </button>
-              <button
-                onClick={() => onViewModeChange('faith')}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                  viewMode === 'faith'
-                    ? 'bg-primary text-white'
-                    : 'text-gray-400 hover:text-white'
-                }`}
-                data-testid="button-mode-faith"
-              >
-                Faith Overlay
-              </button>
-            </div>
+          <div className="flex items-center bg-white/[0.04] rounded-full p-1 border border-white/[0.06]">
+            <button
+              onClick={() => onViewModeChange('reflection')}
+              className={`px-5 py-2.5 rounded-full text-xs font-semibold tracking-wide transition-all duration-300 ${
+                viewMode === 'reflection'
+                  ? 'bg-white text-black shadow-lg'
+                  : 'text-white/40 hover:text-white/70'
+              }`}
+              data-testid="button-mode-reflection"
+            >
+              Reflection
+            </button>
+            <button
+              onClick={() => onViewModeChange('faith')}
+              className={`px-5 py-2.5 rounded-full text-xs font-semibold tracking-wide transition-all duration-300 ${
+                viewMode === 'faith'
+                  ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                  : 'text-white/40 hover:text-white/70'
+              }`}
+              data-testid="button-mode-faith"
+            >
+              Faith Overlay
+            </button>
           </div>
         </div>
 
         {todayLoading ? (
-          <div className="flex justify-center py-16">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <div className="flex justify-center py-20">
+            <Loader2 className="h-8 w-8 animate-spin text-primary/50" />
           </div>
         ) : todaySpark ? (
           <div className="grid md:grid-cols-2 gap-8">
-            {/* Today's Spark */}
+            {/* Today's Spark — Cinematic Preview */}
             <div
               onClick={onSparkClick}
-              className="relative aspect-video rounded-2xl overflow-hidden group cursor-pointer border border-white/10"
+              className="relative aspect-video rounded-2xl overflow-hidden group cursor-pointer border border-white/[0.06] hover:border-white/[0.12] transition-all duration-500"
               data-testid="card-today-spark"
             >
               <img
                 src={getSparkImage(todaySpark, 0)}
                 alt={todaySpark.title}
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                className="w-full h-full object-cover transition-all duration-700 group-hover:scale-105"
+                style={{ filter: 'brightness(0.8) saturate(1.1)' }}
               />
-              <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                <div className="h-16 w-16 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 group-hover:scale-110 transition-transform">
-                  <Play className="h-8 w-8 fill-white text-white ml-1" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+
+              {/* Center Play */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="h-16 w-16 bg-white/10 backdrop-blur-xl rounded-full flex items-center justify-center border border-white/20 group-hover:scale-110 group-hover:bg-white/20 transition-all duration-500 shadow-2xl">
+                  <Play className="h-7 w-7 fill-white text-white ml-1" />
                 </div>
               </div>
-              <div className="absolute bottom-4 left-4 right-4">
-                <span className="bg-primary text-white text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wider mb-2 inline-block">
+
+              {/* Bottom Meta */}
+              <div className="absolute bottom-5 left-5 right-5">
+                <span className="text-[9px] font-bold uppercase tracking-[0.2em] bg-primary/80 text-white px-2.5 py-1 rounded-md mb-2.5 inline-block">
                   {todaySpark.weekTheme || "Today's Word"}
                 </span>
-                <h3 className="text-xl font-bold text-white">{todaySpark.title}</h3>
-                <p className="text-sm text-white/80">
+                <h3 className="text-lg font-bold text-white tracking-tight">{todaySpark.title}</h3>
+                <p className="text-xs text-white/60 mt-1">
                   {todaySpark.duration
                     ? `${Math.floor(todaySpark.duration / 60)} min ${
                         todaySpark.mediaType === 'video' ? 'watch' : 'listen'
@@ -127,25 +140,25 @@ export function DailyDevotionalSection({
               </div>
             </div>
 
-            {/* Today's Scripture & Prayer */}
-            <div className="flex flex-col justify-between space-y-6">
-              <div className="bg-white/5 rounded-2xl p-6 border border-white/10 flex-1">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
-                    <Calendar className="h-4 w-4" /> {formatDate(todaySpark.dailyDate)}
+            {/* Scripture & Prayer — Glass Card */}
+            <div className="flex flex-col justify-between gap-6">
+              <div className="bg-white/[0.03] rounded-2xl p-7 border border-white/[0.05] flex-1">
+                <div className="flex items-center justify-between mb-6">
+                  <span className="text-[10px] font-bold text-white/30 uppercase tracking-[0.15em] flex items-center gap-2">
+                    <Calendar className="h-3.5 w-3.5" /> {formatDate(todaySpark.dailyDate)}
                   </span>
                   <div className="flex items-center gap-3">
                     <button
                       onClick={onReactionClick}
-                      className="flex items-center gap-1.5 text-gray-400 hover:text-red-400 transition-colors group"
+                      className="flex items-center gap-1.5 text-white/30 hover:text-red-400 transition-colors duration-300 group"
                       data-testid="button-like-verse"
                     >
-                      <Heart className="h-4 w-4 group-hover:fill-red-400" />
-                      <span className="text-xs">Amen</span>
+                      <Heart className="h-4 w-4 group-hover:fill-red-400 transition-all" />
+                      <span className="text-[10px] font-medium">Amen</span>
                     </button>
                     <button
                       onClick={handleShare}
-                      className="text-gray-400 cursor-pointer hover:text-white transition-colors"
+                      className="text-white/30 cursor-pointer hover:text-white transition-colors duration-300"
                       data-testid="button-share-verse"
                     >
                       <Share2 className="h-4 w-4" />
@@ -153,62 +166,61 @@ export function DailyDevotionalSection({
                   </div>
                 </div>
 
-                {/* Word of Encouragement / Verse */}
-                <div className="mb-4">
-                  <blockquote className="text-xl font-display font-semibold text-white leading-relaxed border-l-4 border-primary pl-4">
-                    "{todaySpark.description}"
-                  </blockquote>
-                </div>
+                {/* Scripture Quote */}
+                <blockquote className="text-lg md:text-xl font-display font-semibold text-white/90 leading-relaxed border-l-2 border-primary/60 pl-5 mb-4">
+                  "{todaySpark.description}"
+                </blockquote>
 
                 {viewMode === 'faith' && todaySpark.scriptureRef && (
-                  <p className="text-right text-primary font-bold">— {todaySpark.scriptureRef}</p>
+                  <p className="text-right text-primary font-bold text-sm">— {todaySpark.scriptureRef}</p>
                 )}
                 {viewMode === 'faith' && todaySpark.prayerLine && (
-                  <div className="mt-4 pt-4 border-t border-white/10">
-                    <p className="text-sm text-gray-400 uppercase tracking-wider mb-2 flex items-center gap-2">
-                      <HandHeart className="h-4 w-4" /> Prayer
+                  <div className="mt-5 pt-5 border-t border-white/[0.05]">
+                    <p className="text-[10px] text-white/25 uppercase tracking-[0.15em] mb-2 flex items-center gap-2 font-medium">
+                      <HandHeart className="h-3.5 w-3.5" /> Prayer
                     </p>
-                    <p className="text-white/80 italic">{todaySpark.prayerLine}</p>
+                    <p className="text-white/60 italic text-sm leading-relaxed">{todaySpark.prayerLine}</p>
                   </div>
                 )}
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              {/* Subscribe buttons */}
+              <div className="grid grid-cols-2 gap-3">
                 <button
                   onClick={onSubscribeClick}
-                  className="bg-gray-800 hover:bg-gray-700 p-4 rounded-xl flex items-center gap-3 transition-colors border border-white/5 group"
+                  className="bg-white/[0.03] hover:bg-white/[0.06] p-4 rounded-xl flex items-center gap-3 transition-all duration-300 border border-white/[0.04] hover:border-green-500/20 group"
                   data-testid="button-whatsapp"
                 >
-                  <div className="h-10 w-10 bg-green-500/20 rounded-full flex items-center justify-center text-green-500 group-hover:bg-green-500 group-hover:text-white transition-colors">
+                  <div className="h-10 w-10 bg-green-500/10 rounded-xl flex items-center justify-center text-green-500 group-hover:bg-green-500 group-hover:text-white transition-all duration-300">
                     <MessageCircle className="h-5 w-5" />
                   </div>
                   <div className="text-left">
-                    <div className="text-xs text-gray-400">Join on</div>
-                    <div className="font-bold">WhatsApp</div>
+                    <div className="text-[10px] text-white/25 font-medium">Join on</div>
+                    <div className="font-bold text-sm text-white/80">WhatsApp</div>
                   </div>
                 </button>
 
                 <button
                   onClick={onSubscribeClick}
-                  className="bg-gray-800 hover:bg-gray-700 p-4 rounded-xl flex items-center gap-3 transition-colors border border-white/5 group"
+                  className="bg-white/[0.03] hover:bg-white/[0.06] p-4 rounded-xl flex items-center gap-3 transition-all duration-300 border border-white/[0.04] hover:border-blue-500/20 group"
                   data-testid="button-email"
                 >
-                  <div className="h-10 w-10 bg-blue-500/20 rounded-full flex items-center justify-center text-blue-500 group-hover:bg-blue-500 group-hover:text-white transition-colors">
+                  <div className="h-10 w-10 bg-blue-500/10 rounded-xl flex items-center justify-center text-blue-500 group-hover:bg-blue-500 group-hover:text-white transition-all duration-300">
                     <Mail className="h-5 w-5" />
                   </div>
                   <div className="text-left">
-                    <div className="text-xs text-gray-400">Get via</div>
-                    <div className="font-bold">Email</div>
+                    <div className="text-[10px] text-white/25 font-medium">Get via</div>
+                    <div className="font-bold text-sm text-white/80">Email</div>
                   </div>
                 </button>
               </div>
             </div>
           </div>
         ) : (
-          <div className="text-center py-12 bg-white/5 rounded-2xl border border-white/10">
-            <Calendar className="h-12 w-12 text-gray-500 mx-auto mb-4" />
-            <h3 className="text-xl font-bold text-white mb-2">No Devotional Today</h3>
-            <p className="text-gray-400 max-w-md mx-auto">
+          <div className="text-center py-16 bg-white/[0.02] rounded-2xl border border-white/[0.04]">
+            <Calendar className="h-10 w-10 text-white/10 mx-auto mb-4" />
+            <h3 className="text-xl font-bold text-white/80 mb-2">No Devotional Today</h3>
+            <p className="text-sm text-white/30 max-w-md mx-auto font-light">
               Check back tomorrow for your daily dose of inspiration, or explore our library of past devotionals below.
             </p>
           </div>

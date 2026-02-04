@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reawakened Content Dashboard</title>
+    <style>
+        :root {
+            --primary: #1a2744;
+            --accent: #e85d04;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --bg: #faf8f5;
+            --card: #ffffff;
+            --text: #333333;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            padding: 20px;
+        }
+
+        .header {
+            background: var(--primary);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+        }
+
+        .header .subtitle {
+            opacity: 0.8;
+            font-size: 14px;
+        }
+
+        .refresh-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--card);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .stat-card .label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-card .value {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 5px 0;
+        }
+
+        .stat-card.accent .value {
+            color: var(--accent);
+        }
+
+        .stat-card.success .value {
+            color: var(--success);
+        }
+
+        .content-section {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .section-header h2 {
+            font-size: 18px;
+            color: var(--primary);
+        }
+
+        .badge {
+            background: var(--bg);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .badge.ready {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge.posted {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .badge.draft {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .post-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .post-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .post-item:last-child {
+            border-bottom: none;
+        }
+
+        .post-info {
+            flex: 1;
+        }
+
+        .post-id {
+            font-size: 12px;
+            color: #999;
+            font-family: monospace;
+        }
+
+        .post-title {
+            font-weight: 500;
+            margin: 2px 0;
+        }
+
+        .post-series {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .post-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-preview {
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        .btn-post {
+            background: var(--accent);
+            color: white;
+        }
+
+        .platforms {
+            display: flex;
+            gap: 5px;
+            margin-top: 5px;
+        }
+
+        .platform-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: white;
+        }
+
+        .platform-twitter { background: #1da1f2; }
+        .platform-instagram { background: #e4405f; }
+        .platform-facebook { background: #1877f2; }
+        .platform-linkedin { background: #0a66c2; }
+        .platform-tiktok { background: #000000; }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .preview-platform {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: var(--bg);
+            border-radius: 8px;
+        }
+
+        .preview-platform h4 {
+            margin-bottom: 10px;
+            color: var(--primary);
+        }
+
+        .preview-text {
+            white-space: pre-wrap;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .char-count {
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            font-size: 12px;
+            background: var(--bg);
+        }
+
+        .calendar-day.has-event {
+            background: var(--accent);
+            color: white;
+            cursor: pointer;
+        }
+
+        .calendar-day.today {
+            border: 2px solid var(--primary);
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .post-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <h1>🔥 Reawakened Content Dashboard</h1>
+            <div class="subtitle">Revival Mobilization Content Management</div>
+        </div>
+        <button class="refresh-btn" onclick="loadData()">Refresh Data</button>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="label">Total Posts</div>
+            <div class="value" id="stat-total">--</div>
+        </div>
+        <div class="stat-card accent">
+            <div class="label">Ready to Post</div>
+            <div class="value" id="stat-ready">--</div>
+        </div>
+        <div class="stat-card success">
+            <div class="label">Posted</div>
+            <div class="value" id="stat-posted">--</div>
+        </div>
+        <div class="stat-card">
+            <div class="label">Drafts</div>
+            <div class="value" id="stat-draft">--</div>
+        </div>
+    </div>
+
+    <div class="content-section">
+        <div class="section-header">
+            <h2>Ready to Post</h2>
+            <span class="badge ready" id="ready-count">0 items</span>
+        </div>
+        <div class="post-list" id="ready-posts">
+            <p>Loading...</p>
+        </div>
+    </div>
+
+    <div class="content-section">
+        <div class="section-header">
+            <h2>Recently Posted</h2>
+            <span class="badge posted" id="posted-count">0 items</span>
+        </div>
+        <div class="post-list" id="posted-posts">
+            <p>Loading...</p>
+        </div>
+    </div>
+
+    <div class="content-section">
+        <div class="section-header">
+            <h2>Upcoming Historical Dates</h2>
+        </div>
+        <div id="upcoming-dates">
+            <p>Loading...</p>
+        </div>
+    </div>
+
+    <!-- Preview Modal -->
+    <div class="modal" id="preview-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Preview</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <script>
+        let allPosts = [];
+        let thisDayEvents = [];
+
+        async function loadData() {
+            try {
+                // In production, this would fetch from an API
+                // For local use, we'll load from the JSON files via a local server
+                // Or you can paste the data directly here
+
+                // Simulated data load - replace with actual fetch in production
+                const mockData = await loadLocalData();
+                allPosts = mockData.posts;
+                thisDayEvents = mockData.this_day_in_history || [];
+
+                updateStats();
+                renderReadyPosts();
+                renderPostedPosts();
+                renderUpcomingDates();
+
+            } catch (error) {
+                console.error('Error loading data:', error);
+                document.getElementById('ready-posts').innerHTML = '<p>Error loading data. Make sure content files exist.</p>';
+            }
+        }
+
+        async function loadLocalData() {
+            // Try to load from local files if running with a server
+            // Otherwise, use embedded data
+            try {
+                const libResponse = await fetch('../content/revival-content-library.json');
+                const lib = await libResponse.json();
+
+                let expanded = { posts: [] };
+                try {
+                    const expResponse = await fetch('../content/revival-content-expanded.json');
+                    expanded = await expResponse.json();
+                } catch (e) {}
+
+                return {
+                    posts: [...lib.posts, ...expanded.posts],
+                    this_day_in_history: lib.this_day_in_history || []
+                };
+            } catch (e) {
+                // Return embedded sample data for demo
+                return getSampleData();
+            }
+        }
+
+        function getSampleData() {
+            return {
+                posts: [
+                    {
+                        id: "001",
+                        title: "Welsh Revival Pit Ponies",
+                        series: "did_you_know",
+                        status: "ready",
+                        postedTo: [],
+                        platforms: {
+                            twitter: { text: "In 1904, pit ponies in Welsh coal mines got confused..." },
+                            instagram: { caption: "In 1904, pit ponies in Welsh coal mines got confused... 🐴" }
+                        }
+                    },
+                    {
+                        id: "002",
+                        title: "Moravian 100-Year Prayer",
+                        series: "did_you_know",
+                        status: "ready",
+                        postedTo: [],
+                        platforms: {
+                            twitter: { text: "A prayer meeting lasted 100 YEARS... 🔥" }
+                        }
+                    }
+                ],
+                this_day_in_history: [
+                    { date: "01-07", year: 1907, event: "Pyongyang Revival" },
+                    { date: "02-14", year: 1904, event: "Florrie Evans testimony" },
+                    { date: "05-24", year: 1738, event: "Wesley's Aldersgate" }
+                ]
+            };
+        }
+
+        function updateStats() {
+            const total = allPosts.length;
+            const ready = allPosts.filter(p => p.status === 'ready' && (!p.postedTo || p.postedTo.length === 0)).length;
+            const posted = allPosts.filter(p => p.postedTo && p.postedTo.length > 0).length;
+            const draft = allPosts.filter(p => p.status === 'draft').length;
+
+            document.getElementById('stat-total').textContent = total;
+            document.getElementById('stat-ready').textContent = ready;
+            document.getElementById('stat-posted').textContent = posted;
+            document.getElementById('stat-draft').textContent = draft;
+
+            document.getElementById('ready-count').textContent = ready + ' items';
+            document.getElementById('posted-count').textContent = posted + ' items';
+        }
+
+        function renderReadyPosts() {
+            const container = document.getElementById('ready-posts');
+            const readyPosts = allPosts.filter(p => p.status === 'ready' && (!p.postedTo || p.postedTo.length === 0));
+
+            if (readyPosts.length === 0) {
+                container.innerHTML = '<p>No posts ready. Create more content!</p>';
+                return;
+            }
+
+            container.innerHTML = readyPosts.map(post => `
+                <div class="post-item">
+                    <div class="post-info">
+                        <div class="post-id">#${post.id}</div>
+                        <div class="post-title">${post.title}</div>
+                        <div class="post-series">${post.series}</div>
+                        <div class="platforms">
+                            ${post.platforms?.twitter ? '<span class="platform-icon platform-twitter">X</span>' : ''}
+                            ${post.platforms?.instagram ? '<span class="platform-icon platform-instagram">IG</span>' : ''}
+                            ${post.platforms?.facebook ? '<span class="platform-icon platform-facebook">FB</span>' : ''}
+                            ${post.platforms?.linkedin ? '<span class="platform-icon platform-linkedin">LI</span>' : ''}
+                            ${post.platforms?.tiktok ? '<span class="platform-icon platform-tiktok">TT</span>' : ''}
+                        </div>
+                    </div>
+                    <div class="post-actions">
+                        <button class="btn-small btn-preview" onclick="previewPost('${post.id}')">Preview</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderPostedPosts() {
+            const container = document.getElementById('posted-posts');
+            const postedPosts = allPosts.filter(p => p.postedTo && p.postedTo.length > 0);
+
+            if (postedPosts.length === 0) {
+                container.innerHTML = '<p>No posts have been published yet.</p>';
+                return;
+            }
+
+            container.innerHTML = postedPosts.slice(0, 10).map(post => `
+                <div class="post-item">
+                    <div class="post-info">
+                        <div class="post-id">#${post.id}</div>
+                        <div class="post-title">${post.title}</div>
+                        <div class="post-series">Posted to: ${post.postedTo.map(p => p.platform).join(', ')}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderUpcomingDates() {
+            const container = document.getElementById('upcoming-dates');
+
+            // Get next 30 days of events
+            const today = new Date();
+            const upcoming = thisDayEvents.map(event => {
+                const [month, day] = event.date.split('-');
+                const eventDate = new Date(today.getFullYear(), parseInt(month) - 1, parseInt(day));
+                if (eventDate < today) {
+                    eventDate.setFullYear(eventDate.getFullYear() + 1);
+                }
+                return { ...event, dateObj: eventDate };
+            }).sort((a, b) => a.dateObj - b.dateObj).slice(0, 5);
+
+            if (upcoming.length === 0) {
+                container.innerHTML = '<p>No upcoming historical dates configured.</p>';
+                return;
+            }
+
+            container.innerHTML = upcoming.map(event => `
+                <div class="post-item">
+                    <div class="post-info">
+                        <div class="post-id">${event.dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div>
+                        <div class="post-title">${event.event} (${event.year})</div>
+                        <div class="post-series">${event.description || ''}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function previewPost(postId) {
+            const post = allPosts.find(p => p.id === postId);
+            if (!post) return;
+
+            document.getElementById('modal-title').textContent = post.title;
+
+            let body = '';
+            const platforms = ['twitter', 'instagram', 'facebook', 'linkedin', 'tiktok'];
+
+            platforms.forEach(platform => {
+                if (post.platforms?.[platform]) {
+                    const content = post.platforms[platform];
+                    const text = content.text || content.caption || content.script || '';
+                    body += `
+                        <div class="preview-platform">
+                            <h4>${platform.charAt(0).toUpperCase() + platform.slice(1)}</h4>
+                            <div class="preview-text">${escapeHtml(text)}</div>
+                            <div class="char-count">${text.length} characters</div>
+                        </div>
+                    `;
+                }
+            });
+
+            document.getElementById('modal-body').innerHTML = body;
+            document.getElementById('preview-modal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('preview-modal').classList.remove('active');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Close modal on outside click
+        document.getElementById('preview-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'preview-modal') {
+                closeModal();
+            }
+        });
+
+        // Load data on page load
+        loadData();
+    </script>
+</body>
+</html>

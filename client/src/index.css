@@ -234,6 +234,15 @@
     }
   }
 
+  @keyframes slowZoom {
+    0% {
+      transform: scale(1);
+    }
+    100% {
+      transform: scale(1.08);
+    }
+  }
+
   /* GPU Acceleration Helper */
   .will-change-transform {
     will-change: transform;

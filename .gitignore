@@ -4,3 +4,8 @@ dist
 server/public
 vite.config.ts.*
 *.tar.gz
+.env
+*.mp3
+*.wav
+social-media/scripts/.env
+social-media/podcast-output/

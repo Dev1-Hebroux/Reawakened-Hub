@@ -1,0 +1,145 @@
+name: Weekly Content Report
+
+on:
+  schedule:
+    # Runs every Monday at 9:00 AM UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+jobs:
+  generate-report:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Generate content report
+        id: report
+        run: |
+          cd social-media/scripts
+
+          node -e "
+            const fs = require('fs');
+
+            // Load all content
+            const lib = JSON.parse(fs.readFileSync('../content/revival-content-library.json'));
+            let expanded = { posts: [] };
+            try {
+              expanded = JSON.parse(fs.readFileSync('../content/revival-content-expanded.json'));
+            } catch (e) {}
+
+            const allPosts = [...lib.posts, ...expanded.posts];
+
+            // Calculate stats
+            const total = allPosts.length;
+            const ready = allPosts.filter(p => p.status === 'ready').length;
+            const posted = allPosts.filter(p => p.postedTo && p.postedTo.length > 0).length;
+            const draft = allPosts.filter(p => p.status === 'draft').length;
+
+            // Posts by series
+            const bySeries = {};
+            allPosts.forEach(p => {
+              bySeries[p.series] = (bySeries[p.series] || 0) + 1;
+            });
+
+            // Upcoming scheduled posts
+            const today = new Date();
+            const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+            const upcoming = allPosts.filter(p => {
+              if (p.scheduledDate) {
+                const date = new Date(p.scheduledDate);
+                return date >= today && date <= nextWeek;
+              }
+              return false;
+            });
+
+            console.log('📊 WEEKLY CONTENT REPORT');
+            console.log('========================\\n');
+
+            console.log('CONTENT INVENTORY');
+            console.log('-----------------');
+            console.log('Total posts:', total);
+            console.log('Ready to post:', ready);
+            console.log('Already posted:', posted);
+            console.log('Drafts:', draft);
+            console.log('');
+
+            console.log('BY SERIES');
+            console.log('---------');
+            Object.entries(bySeries).forEach(([series, count]) => {
+              console.log(series + ':', count);
+            });
+            console.log('');
+
+            if (upcoming.length > 0) {
+              console.log('UPCOMING THIS WEEK');
+              console.log('------------------');
+              upcoming.forEach(p => {
+                console.log('- ' + p.scheduledDate + ': ' + p.title);
+              });
+            }
+
+            console.log('');
+            console.log('RECOMMENDATIONS');
+            console.log('---------------');
+            if (ready < 7) {
+              console.log('⚠️  Less than 7 posts ready - create more content');
+            }
+            if (posted > total * 0.8) {
+              console.log('⚠️  Running low on fresh content - 80%+ already posted');
+            }
+            console.log('');
+            console.log('Report generated:', new Date().toISOString());
+          "
+
+      - name: Create report file
+        run: |
+          cd social-media
+          mkdir -p reports
+          DATE=$(date +"%Y-%m-%d")
+          cd scripts
+
+          node -e "
+            const fs = require('fs');
+
+            const lib = JSON.parse(fs.readFileSync('../content/revival-content-library.json'));
+            let expanded = { posts: [] };
+            try {
+              expanded = JSON.parse(fs.readFileSync('../content/revival-content-expanded.json'));
+            } catch (e) {}
+
+            const allPosts = [...lib.posts, ...expanded.posts];
+
+            const report = {
+              date: new Date().toISOString(),
+              stats: {
+                total: allPosts.length,
+                ready: allPosts.filter(p => p.status === 'ready').length,
+                posted: allPosts.filter(p => p.postedTo && p.postedTo.length > 0).length,
+                draft: allPosts.filter(p => p.status === 'draft').length
+              },
+              posts: allPosts.map(p => ({
+                id: p.id,
+                title: p.title,
+                status: p.status,
+                series: p.series,
+                postedTo: p.postedTo || []
+              }))
+            };
+
+            fs.writeFileSync('../reports/report-$DATE.json', JSON.stringify(report, null, 2));
+          "
+
+      - name: Commit report
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add -A
+          git diff --staged --quiet || git commit -m "Weekly content report - $(date +%Y-%m-%d)"
+          git push || echo "No changes to push"

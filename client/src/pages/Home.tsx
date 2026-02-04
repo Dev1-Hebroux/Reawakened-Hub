@@ -14,7 +14,7 @@ import { Footer } from "@/components/layout/Footer";
 import { VisionGetStartedCard } from "@/components/VisionGetStartedCard";
 import { VisionPromptModal } from "@/components/VisionPromptModal";
 import { WdepPinnedAction, ScaFocusCard } from "@/components/DashboardPinnedCards";
-import { ArrowRight, ShoppingBag, Flame, Heart, Globe, Zap, Rocket, HandHeart, Users, Clock, CheckCircle2, Compass, Target, TrendingUp, Calendar, MapPin, Loader2 } from "lucide-react";
+import { ArrowRight, ShoppingBag, Flame, Heart, Globe, Zap, Rocket, HandHeart, Users, Clock, CheckCircle2, Compass, Target, TrendingUp, Calendar, MapPin, Loader2, Mic2, Play, Headphones } from "lucide-react";
 import { StatsBar } from "@/components/ui/StatsBar";
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
@@ -164,6 +164,75 @@ export default function Home() {
                   </motion.div>
                 )}
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* The Reawakened One Podcast — Compact Preview */}
+        <section className="py-10 md:py-14 bg-gradient-to-b from-[#0D0D1A] to-[#131320] relative overflow-hidden">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/[0.04] rounded-full blur-[120px] pointer-events-none" />
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 relative z-10">
+            <div className="flex items-center justify-between mb-8 flex-wrap gap-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/10">
+                  <Mic2 className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <h2 className="text-2xl md:text-3xl font-display font-bold text-white tracking-tight">
+                    The Reawakened One Podcast
+                  </h2>
+                  <p className="text-sm text-white/40 font-light">with Abraham — Revival history deep-dives</p>
+                </div>
+              </div>
+              <Link href="/sparks">
+                <button className="flex items-center gap-2 bg-white/[0.06] hover:bg-white/[0.12] text-white/80 font-semibold px-5 py-2.5 rounded-full text-sm transition-all border border-white/[0.08] hover:border-white/[0.16]">
+                  All Episodes <ArrowRight className="h-4 w-4" />
+                </button>
+              </Link>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-4">
+              {[
+                { num: 3, title: "When the Horses Got Confused", theme: "True revival transforms society", duration: "10 min", scripture: "2 Chronicles 7:14" },
+                { num: 2, title: "The Teenage Girl Who Changed Everything", theme: "Simple testimony releases power", duration: "11 min", scripture: "Revelation 12:11" },
+                { num: 1, title: "The Pattern Nobody Talks About", theme: "Prayer precedes every revival", duration: "12 min", scripture: "Joel 2:28" },
+              ].map((ep, index) => (
+                <motion.div
+                  key={ep.num}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  onClick={() => navigate('/sparks')}
+                  className="group flex items-center gap-4 p-4 rounded-2xl bg-white/[0.03] border border-white/[0.05] hover:bg-white/[0.07] hover:border-primary/15 transition-all duration-300 cursor-pointer"
+                >
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center flex-shrink-0 border border-primary/10 group-hover:from-primary/30 group-hover:to-primary/10 transition-all duration-300">
+                    <span className="text-lg font-display font-bold text-primary/80 group-hover:text-primary transition-colors">
+                      {ep.num}
+                    </span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-sm font-semibold text-white/90 group-hover:text-white transition-colors truncate">
+                      {ep.title}
+                    </h4>
+                    <p className="text-[11px] text-white/30 mt-1 flex items-center gap-2">
+                      <span className="truncate">{ep.theme}</span>
+                      <span className="inline-block w-1 h-1 rounded-full bg-white/20 flex-shrink-0" />
+                      <span className="flex-shrink-0">{ep.duration}</span>
+                    </p>
+                  </div>
+                  <div className="w-9 h-9 rounded-full bg-white/[0.04] border border-white/[0.06] flex items-center justify-center flex-shrink-0 group-hover:bg-primary group-hover:border-primary transition-all duration-300">
+                    <Play className="h-3 w-3 text-white/50 group-hover:text-white fill-current transition-colors ml-0.5" />
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+
+            <div className="flex items-center justify-center gap-4 mt-6 pt-6 border-t border-white/[0.04]">
+              <Headphones className="h-3.5 w-3.5 text-primary/40" />
+              <p className="text-xs text-white/20 tracking-wider uppercase font-medium">New episodes weekly</p>
+              <span className="text-xs text-white/10">|</span>
+              <p className="text-xs text-primary/30 font-semibold tracking-wide">Go be dangerous.</p>
             </div>
           </div>
         </section>

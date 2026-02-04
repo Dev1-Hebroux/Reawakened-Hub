@@ -1,0 +1,167 @@
+# REAWAKENED HOST VOICE PROFILE
+# Fill this out to customize AI-generated podcast scripts to match your voice
+
+# ============================================
+# BASIC INFO
+# ============================================
+host:
+  name: "Abraham"  # The Reawakened One
+  role: "Revival historian and mobilizer"
+  podcast: "Reawakened"
+  tagline: "Learning from history to ignite the future"
+
+# ============================================
+# SPEAKING STYLE (rate 1-5 for each)
+# ============================================
+style:
+  # 1=very slow, 5=rapid
+  pace: 4  # Energetic/faster in conversation and challenge
+
+  # 1=very casual, 5=formal
+  formality: 3  # Professional but warm/accessible
+
+  # 1=reserved, 5=very animated
+  emotion_expression: 5  # Very passionate during stories and appeals
+
+  # 1=indirect, 5=very direct
+  directness: 5  # Very direct and challenging (Sample 4)
+
+  # Descriptive summary (update after filling above)
+  summary: "deeply passionate, heart-driven, commanding yet intimate"
+
+# ============================================
+# VOCABULARY PATTERNS
+# ============================================
+vocabulary:
+  # Phrases you naturally use often
+  signature_phrases:
+    - "Here's the thing..."
+    - "Think about this..."
+    - "But it doesn't stop there."
+    - "That's what sparks revival."
+    - "Something shifts in your heart."
+
+  # Words/phrases to avoid
+  avoid:
+    - "Obviously"
+    - "Actually"
+    - "Just kind of"
+    - "Maybe"
+
+  # How you address your audience
+  audience_address: "you"  # Direct and personal
+
+# ============================================
+# EPISODE STRUCTURE PREFERENCES
+# ============================================
+structure:
+  # How you typically open
+  # Options: hook_story, direct_welcome, question, quote_fact
+  opening_style: "hook_story"
+
+  # How you close
+  # Options: challenge, prayer, encouragement, preview, casual_signoff
+  closing_style: "challenge"
+
+  # Your sign-off phrase
+  signoff: "Go be dangerous."
+
+  # Story vs teaching ratio
+  # Options: story_heavy (70/30), balanced (50/50), teaching_heavy (30/70)
+  content_ratio: "balanced"
+
+# ============================================
+# STORYTELLING STYLE
+# ============================================
+storytelling:
+  # What you emphasize in historical stories
+  emphasis:
+    - sensory_details: true      # "The falling of many waters"
+    - human_emotion: true        # "Tears streaming down his face"
+    - facts_timeline: true       # "1907. Pyongyang, Korea."
+    - modern_parallels: true     # "What would it look like today?"
+
+  # Pacing within stories
+  # Options: slow_build, punchy, dramatic_pauses, conversational
+  pacing: "dramatic_pauses"
+
+# ============================================
+# THEOLOGICAL APPROACH
+# ============================================
+theology:
+  # Audience assumption
+  # Options: seeker_friendly, believer_focused, accessible_but_deep
+  audience_assumption: "accessible_but_deep"
+
+  # When challenging listeners spiritually
+  # Options: gentle_invitation, clear_call, bold_prophetic, varies
+  challenge_style: "bold_prophetic"
+
+  # Use of Scripture
+  # Options: quote_frequently, reference_concepts, minimal
+  scripture_usage: "quote_frequently"  # e.g., Joel 2:28
+
+# ============================================
+# SAMPLE PHRASES (write exactly as you'd say them)
+# ============================================
+samples:
+  # How you introduce a topic
+  introducing_topic: |
+    "Let me explain why small groups matter for revival. When John Wesley organized the Methodist movement, he didn't just preach to crowds—he created class meetings."
+
+  # How you make a key point
+  making_point: |
+    "Here's what I need you to understand. Revival is not a spectator sport. You cannot scroll your way into spiritual awakening."
+
+  # How you transition between sections
+  transitioning: |
+    "But it doesn't stop there. Because it does matter to me personally, because God's word says that it will come to pass afterwards that I will pour out my Spirit upon all flesh."
+
+  # How you challenge the listener
+  challenging: |
+    "So let me ask you directly: What are you actually DOING? Not thinking about doing. Not planning to do. What are you doing TODAY to seek God?"
+
+  # How you close with encouragement
+  encouraging: |
+    "Find ten minutes—that's it, ten minutes—and ask God this question: 'What do you want to do in me... and through me?' Then just listen."
+
+# ============================================
+# AI VOICE SETTINGS (after cloning)
+# ============================================
+ai_voice:
+  # ElevenLabs cloned voices
+  elevenlabs_voice_id_1: "dqwf8gpdM6B9JxRUArTA"
+  elevenlabs_voice_id_2: "35WSYz4kujsGVD7ZDCdw"
+
+  # Set which voice to use as primary
+  primary_voice: "35WSYz4kujsGVD7ZDCdw"
+
+  # Voice settings (adjust after testing)
+  stability: 0.5           # 0-1, lower = more expressive
+  similarity_boost: 0.75   # 0-1, higher = closer to original
+  style: 0.5              # 0-1, how much to exaggerate style
+
+  # Alternative services (if using others)
+  playht_voice_id: ""
+  resemble_voice_id: ""
+
+# ============================================
+# RECURRING THEMES/MESSAGES
+# ============================================
+themes:
+  core_message: "What God has done, He will do again"
+
+  repeated_concepts:
+    - "Revival follows patterns we can learn from"
+    - "Prayer precedes every awakening"
+    - "Young people carry the fire"
+    - "Conversion without community doesn't last"
+    - "God is able to do exceedingly abundantly"
+
+# ============================================
+# VERSION HISTORY
+# ============================================
+metadata:
+  created: "2026-02-04"
+  last_updated: "2026-02-04"
+  version: "1.0"

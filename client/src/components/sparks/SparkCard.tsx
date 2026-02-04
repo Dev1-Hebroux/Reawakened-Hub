@@ -1,12 +1,11 @@
 /**
- * SparkCard Component
+ * SparkCard Component — Premium Design
  *
  * Individual spark card with:
- * - Thumbnail image with fallback
- * - Title and description
- * - Category badge
- * - Duration and media type
- * - Hover effects
+ * - Cinematic thumbnail with parallax zoom
+ * - Glass-morphism overlays
+ * - Smooth micro-interactions
+ * - Clean typography hierarchy
  */
 
 import { motion } from "framer-motion";
@@ -31,51 +30,54 @@ export function SparkCard({ spark, index, onClick, pillarLabels }: SparkCardProp
       onClick={onClick}
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.05 }}
-      className="group relative aspect-[9/16] rounded-[24px] overflow-hidden bg-gray-900 cursor-pointer border border-white/5 hover:border-white/20 transition-colors"
+      transition={{ delay: index * 0.05, duration: 0.5 }}
+      className="group relative aspect-[9/16] rounded-[20px] overflow-hidden bg-gray-950 cursor-pointer border border-white/[0.04] hover:border-white/[0.12] transition-all duration-500 hover:shadow-2xl hover:shadow-black/40"
       data-testid={`card-spark-${spark.id}`}
     >
       <img
         src={getSparkImage(spark, index)}
         alt={spark.title}
-        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-80 group-hover:opacity-100"
+        className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110 opacity-70 group-hover:opacity-90"
+        style={{ filter: 'saturate(1.1)' }}
       />
 
-      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent" />
+      {/* Gradient overlay — multi-layer for premium depth */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-90" />
+      <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-black/30" />
 
       {/* Top Meta */}
-      <div className="absolute top-4 left-4 right-4 flex justify-between items-start">
-        <span className="bg-black/40 backdrop-blur-md text-white text-[10px] font-bold px-2 py-1 rounded-md border border-white/10 flex items-center gap-1">
-          <Flame className="h-3 w-3 text-primary" /> {pillarLabels[spark.category] || spark.category}
+      <div className="absolute top-3.5 left-3.5 right-3.5 flex justify-between items-start">
+        <span className="bg-black/30 backdrop-blur-xl text-white text-[9px] font-bold px-2.5 py-1 rounded-lg border border-white/[0.06] flex items-center gap-1.5 tracking-wider uppercase">
+          <Flame className="h-2.5 w-2.5 text-primary" /> {pillarLabels[spark.category] || spark.category}
         </span>
       </div>
 
-      {/* Bottom Meta */}
-      <div className="absolute bottom-0 left-0 right-0 p-4 transform translate-y-2 group-hover:translate-y-0 transition-transform">
-        <h3 className="text-sm font-bold text-white line-clamp-1 mb-1">
+      {/* Bottom Content */}
+      <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-1 group-hover:translate-y-0 transition-transform duration-500">
+        <h3 className="text-sm font-bold text-white line-clamp-2 mb-1.5 leading-snug tracking-tight">
           {spark.title}
         </h3>
-        <p className="text-xs text-white/70 line-clamp-2 mb-3 leading-snug">
+        <p className="text-[11px] text-white/50 line-clamp-2 mb-3 leading-relaxed font-light">
           {spark.description}
         </p>
-        <div className="flex items-center justify-between text-xs font-bold text-white/50 border-t border-white/10 pt-3">
-          <span className="flex items-center gap-1">
+        <div className="flex items-center justify-between text-[10px] font-semibold text-white/40 border-t border-white/[0.06] pt-3">
+          <span className="flex items-center gap-1.5">
             <Clock className="h-3 w-3" />{" "}
             {spark.duration
-              ? `${Math.floor(spark.duration / 60)}min`
+              ? `${Math.floor(spark.duration / 60)} min`
               : spark.mediaType === 'quick-read'
-              ? '2min'
-              : '5min'}
+              ? '2 min'
+              : '5 min'}
           </span>
-          <span className="flex items-center gap-1 text-primary">
+          <span className="flex items-center gap-1.5 text-primary/70">
             <MediaIcon className="h-3 w-3" /> {getMediaTypeLabel(spark.mediaType)}
           </span>
         </div>
       </div>
 
-      {/* Hover Action Button */}
-      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-        <div className="h-12 w-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center border border-white/30">
+      {/* Center Play Button on Hover */}
+      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-400">
+        <div className="h-14 w-14 bg-white/15 backdrop-blur-md rounded-full flex items-center justify-center border border-white/20 shadow-2xl shadow-black/20 group-hover:scale-105 transition-transform duration-300">
           <MediaIcon className="h-6 w-6 fill-white text-white" />
         </div>
       </div>

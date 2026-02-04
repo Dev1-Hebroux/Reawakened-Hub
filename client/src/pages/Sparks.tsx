@@ -20,17 +20,19 @@ import { SparkFilters } from "@/components/sparks/SparkFilters";
 import { SparkGrid } from "@/components/sparks/SparkGrid";
 import { SubscribeModal } from "@/components/sparks/SubscribeModal";
 import { IntercessionModal } from "@/components/sparks/IntercessionModal";
+import { PodcastSection } from "@/components/sparks/PodcastSection";
 import { usePullToRefresh } from "@/hooks/useGestures";
 
-const pillars = ["All", "daily-devotional", "worship", "testimony"];
+const pillars = ["All", "daily-devotional", "worship", "testimony", "podcast"];
 const pillarLabels: Record<string, string> = {
   "All": "All",
   "daily-devotional": "Devotional",
   "worship": "Worship",
-  "testimony": "Testimony"
+  "testimony": "Testimony",
+  "podcast": "Podcast"
 };
 
-const subscriptionCategories = ["daily-devotional", "worship", "testimony"];
+const subscriptionCategories = ["daily-devotional", "worship", "testimony", "podcast"];
 
 export function SparksPage() {
   const [, params] = useRoute("/sparks/:id");
@@ -198,6 +200,9 @@ export function SparksPage() {
 
       {/* Weekly Challenge */}
       <WeeklyChallenge />
+
+      {/* Podcast Section */}
+      <PodcastSection onEpisodeClick={(id) => navigate(`/spark/${id}`)} />
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">

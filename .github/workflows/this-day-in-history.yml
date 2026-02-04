@@ -1,0 +1,100 @@
+name: This Day in Revival History
+
+on:
+  schedule:
+    # Runs at 8:00 AM UTC every day
+    - cron: '0 8 * * *'
+  workflow_dispatch:
+
+jobs:
+  check-and-post:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: |
+          cd social-media/scripts
+          npm install
+
+      - name: Check for today's historical event
+        id: check-date
+        run: |
+          cd social-media/scripts
+          TODAY=$(date +"%m-%d")
+
+          # Check for matching "this_day" posts
+          RESULT=$(node -e "
+            const fs = require('fs');
+            const today = '$TODAY';
+
+            // Load content libraries
+            const lib = JSON.parse(fs.readFileSync('../content/revival-content-library.json'));
+            const expanded = JSON.parse(fs.readFileSync('../content/revival-content-expanded.json'));
+
+            // Find matching this_day posts
+            const allPosts = [...lib.posts, ...expanded.posts];
+            const todayPosts = allPosts.filter(p => {
+              if (p.scheduledDate) {
+                const postDate = p.scheduledDate.slice(5, 10); // Extract MM-DD
+                return postDate === today;
+              }
+              return false;
+            });
+
+            // Also check this_day_in_history array
+            const thisDay = lib.this_day_in_history?.find(d => d.date === today);
+
+            if (todayPosts.length > 0) {
+              console.log(JSON.stringify({
+                hasEvent: true,
+                postId: todayPosts[0].id,
+                title: todayPosts[0].title
+              }));
+            } else if (thisDay) {
+              console.log(JSON.stringify({
+                hasEvent: true,
+                event: thisDay.event,
+                year: thisDay.year,
+                description: thisDay.description
+              }));
+            } else {
+              console.log(JSON.stringify({ hasEvent: false }));
+            }
+          ")
+
+          echo "result=$RESULT" >> $GITHUB_OUTPUT
+          echo "Today is: $TODAY"
+          echo "Result: $RESULT"
+
+      - name: Generate and post if event found
+        if: fromJson(steps.check-date.outputs.result).hasEvent == true
+        env:
+          TWITTER_API_KEY: ${{ secrets.TWITTER_API_KEY }}
+          TWITTER_API_SECRET: ${{ secrets.TWITTER_API_SECRET }}
+          TWITTER_ACCESS_TOKEN: ${{ secrets.TWITTER_ACCESS_TOKEN }}
+          TWITTER_ACCESS_SECRET: ${{ secrets.TWITTER_ACCESS_SECRET }}
+        run: |
+          cd social-media/scripts
+          RESULT='${{ steps.check-date.outputs.result }}'
+          POST_ID=$(echo $RESULT | jq -r '.postId // empty')
+
+          if [ -n "$POST_ID" ]; then
+            echo "Posting scheduled content: $POST_ID"
+            node social-poster.js post $POST_ID twitter
+          else
+            echo "Event found but no pre-made post. Event details logged."
+            echo $RESULT | jq .
+          fi
+
+      - name: Log today's check
+        run: |
+          echo "Date checked: $(date +"%Y-%m-%d")"
+          echo "Result: ${{ steps.check-date.outputs.result }}"

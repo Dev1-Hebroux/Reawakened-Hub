@@ -1,0 +1,33 @@
+{
+  "name": "reawakened-social-media",
+  "version": "1.0.0",
+  "description": "Social media posting system for Reawakened revival content",
+  "main": "social-poster.js",
+  "scripts": {
+    "list": "node social-poster.js list",
+    "post": "node social-poster.js post",
+    "export": "node social-poster.js export csv",
+    "export:buffer": "node social-poster.js export buffer",
+    "preview": "node social-poster.js preview",
+    "setup": "cp .env.example .env && echo 'Created .env file - add your API keys!'",
+    "podcast:generate": "node podcast-generator.js generate",
+    "podcast:list": "node podcast-generator.js list",
+    "podcast:preview": "node podcast-generator.js preview"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "dotenv": "^16.3.0",
+    "twitter-api-v2": "^1.15.0"
+  },
+  "keywords": [
+    "social-media",
+    "twitter",
+    "facebook",
+    "linkedin",
+    "instagram",
+    "revival",
+    "christian"
+  ],
+  "author": "Reawakened",
+  "license": "MIT"
+}

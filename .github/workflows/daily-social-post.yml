@@ -1,0 +1,86 @@
+name: Daily Social Media Post
+
+on:
+  schedule:
+    # Runs at 12:00 PM UTC every day (adjust for your timezone)
+    - cron: '0 12 * * *'
+  workflow_dispatch:
+    inputs:
+      post_id:
+        description: 'Specific post ID to publish (leave empty for scheduled)'
+        required: false
+        default: ''
+      platforms:
+        description: 'Platforms to post to (comma-separated)'
+        required: false
+        default: 'twitter,linkedin,facebook'
+
+jobs:
+  post-content:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: |
+          cd social-media/scripts
+          npm install
+
+      - name: Get today's scheduled post
+        id: get-post
+        run: |
+          cd social-media/scripts
+          POST_ID="${{ github.event.inputs.post_id }}"
+          if [ -z "$POST_ID" ]; then
+            # Get the next ready post from the queue
+            POST_ID=$(node -e "
+              const fs = require('fs');
+              const lib = JSON.parse(fs.readFileSync('../content/revival-content-library.json'));
+              const expanded = JSON.parse(fs.readFileSync('../content/revival-content-expanded.json'));
+              const allPosts = [...lib.posts, ...expanded.posts];
+              const ready = allPosts.filter(p => p.status === 'ready' && (!p.postedTo || p.postedTo.length === 0));
+              if (ready.length > 0) console.log(ready[0].id);
+              else console.log('');
+            ")
+          fi
+          echo "post_id=$POST_ID" >> $GITHUB_OUTPUT
+
+      - name: Post to social media
+        if: steps.get-post.outputs.post_id != ''
+        env:
+          TWITTER_API_KEY: ${{ secrets.TWITTER_API_KEY }}
+          TWITTER_API_SECRET: ${{ secrets.TWITTER_API_SECRET }}
+          TWITTER_ACCESS_TOKEN: ${{ secrets.TWITTER_ACCESS_TOKEN }}
+          TWITTER_ACCESS_SECRET: ${{ secrets.TWITTER_ACCESS_SECRET }}
+          LINKEDIN_ACCESS_TOKEN: ${{ secrets.LINKEDIN_ACCESS_TOKEN }}
+          LINKEDIN_PERSON_ID: ${{ secrets.LINKEDIN_PERSON_ID }}
+          FACEBOOK_PAGE_ID: ${{ secrets.FACEBOOK_PAGE_ID }}
+          FACEBOOK_PAGE_ACCESS_TOKEN: ${{ secrets.FACEBOOK_PAGE_ACCESS_TOKEN }}
+        run: |
+          cd social-media/scripts
+          PLATFORMS="${{ github.event.inputs.platforms }}"
+          if [ -z "$PLATFORMS" ]; then
+            PLATFORMS="twitter,linkedin,facebook"
+          fi
+          node social-poster.js post ${{ steps.get-post.outputs.post_id }} $PLATFORMS
+
+      - name: Log result
+        run: |
+          echo "Posted content ID: ${{ steps.get-post.outputs.post_id }}"
+          echo "Platforms: ${{ github.event.inputs.platforms || 'twitter,linkedin,facebook' }}"
+
+      - name: Update content library
+        if: steps.get-post.outputs.post_id != ''
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add -A
+          git diff --staged --quiet || git commit -m "Update: Mark post ${{ steps.get-post.outputs.post_id }} as posted"
+          git push || echo "No changes to push"
