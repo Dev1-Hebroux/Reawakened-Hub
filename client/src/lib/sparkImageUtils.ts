@@ -33,6 +33,15 @@ export const weekThemeImages: Record<string, string> = {
 export const defaultThumbnails = [spark1, spark2, spark3, spark4];
 
 /**
+ * Combined pool of all available fallback images for maximum variety
+ * when displaying sparks in lists/grids
+ */
+export const allFallbackImages = [
+  spark1, spark2, spark3, spark4,
+  identityImage, prayerImage, peaceImage, boldImage, commissionImage,
+];
+
+/**
  * Get default thumbnail image based on index (rotates through 4 images)
  */
 export function getDefaultThumbnail(index: number): string {
@@ -43,15 +52,16 @@ export function getDefaultThumbnail(index: number): string {
  * Get the appropriate image for a spark, with fallback logic:
  * 1. Use spark.imageUrl if available
  * 2. Use spark.thumbnailUrl if available
- * 3. Use week theme image if weekTheme matches
- * 4. Use default thumbnail based on fallbackIndex
+ * 3. Use week theme image if weekTheme matches (only for single/featured display)
+ * 4. Use fallback from combined image pool based on fallbackIndex
  *
  * @param spark - The spark object
- * @param fallbackIndex - Index for default thumbnail (optional, defaults to 0)
+ * @param fallbackIndex - Index for fallback image (uses full pool for variety)
  * @returns URL string for the image to display
  */
 export function getSparkImage(
   spark: {
+    id?: number;
     imageUrl?: string | null;
     thumbnailUrl?: string | null;
     weekTheme?: string | null;
@@ -64,8 +74,8 @@ export function getSparkImage(
   if (spark.thumbnailUrl) {
     return spark.thumbnailUrl;
   }
-  if (spark.weekTheme && weekThemeImages[spark.weekTheme]) {
-    return weekThemeImages[spark.weekTheme];
-  }
-  return getDefaultThumbnail(fallbackIndex);
+  // Use spark.id to deterministically pick a unique image per spark
+  // This prevents all sparks with the same weekTheme from showing identical images
+  const uniqueIndex = spark.id != null ? spark.id : fallbackIndex;
+  return allFallbackImages[uniqueIndex % allFallbackImages.length];
 }

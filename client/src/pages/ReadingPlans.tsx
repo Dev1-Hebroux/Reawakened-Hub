@@ -19,6 +19,7 @@ import prayerImage from "@assets/stock_images/person_praying_hands_2c083135.jpg"
 import leadershipImage from "@assets/stock_images/business_leader_prof_05517ed1.jpg";
 import relationshipsImage from "@assets/stock_images/happy_family_togethe_b54439f5.jpg";
 import identityImage from "@assets/stock_images/person_standing_conf_d8ff5fd8.jpg";
+import womenLeadershipImage from "@assets/generated_images/woman_looking_at_a_city_skyline_at_sunset.png";
 
 const TOPIC_IMAGES: Record<string, string> = {
   anxiety: peaceImage,
@@ -29,6 +30,11 @@ const TOPIC_IMAGES: Record<string, string> = {
   relationships: relationshipsImage,
   identity: identityImage,
   faith: peaceImage,
+};
+
+// Plan-specific image overrides (by title)
+const PLAN_IMAGE_OVERRIDES: Record<string, string> = {
+  "Let the Deborahs Arise": womenLeadershipImage,
 };
 
 const TOPICS = [
@@ -701,7 +707,7 @@ function PlanCard({
 }) {
   const maturityLabel = MATURITY_LEVELS.find(m => m.id === plan.maturityLevel)?.label || plan.maturityLevel;
   const primaryTopic = plan.topics?.[0] || "faith";
-  const topicImage = TOPIC_IMAGES[primaryTopic] || peaceImage;
+  const topicImage = PLAN_IMAGE_OVERRIDES[plan.title] || TOPIC_IMAGES[primaryTopic] || peaceImage;
 
   return (
     <div className="bg-[#19233b] rounded-2xl border border-white/10 overflow-hidden">

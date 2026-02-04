@@ -15,6 +15,7 @@ import anxietyImage from "@assets/generated_images/peace_and_calm_devotional.jpg
 import prayerImage from "@assets/generated_images/prayer_and_presence_devotional.jpg";
 import revivalImage from "@assets/generated_images/worship_gathering_devotional_image.jpg";
 import leadershipImage from "@assets/generated_images/group_discussion_in_a_living_room.png";
+import womenLeadershipImage from "@assets/generated_images/woman_looking_at_a_city_skyline_at_sunset.png";
 import relationshipsImage from "@assets/generated_images/diverse_group_taking_a_selfie.png";
 import identityImage from "@assets/generated_images/young_man_praying_with_golden_light_overlay.png";
 import defaultImage from "@assets/generated_images/cinematic_sunrise_devotional_background.png";
@@ -31,6 +32,11 @@ const topicImages: Record<string, string> = {
   "community": relationshipsImage,
   "identity": identityImage,
   "faith": identityImage,
+};
+
+// Plan-specific image overrides (by title match)
+const planImageOverrides: Record<string, string> = {
+  "Let the Deborahs Arise": womenLeadershipImage,
 };
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -252,8 +258,9 @@ export function ReadingPlanDetail() {
     );
   }
 
-  // Get background image based on plan topics
+  // Get background image based on plan title override, coverImageUrl, or topics
   const getBackgroundImage = () => {
+    if (planImageOverrides[plan.title]) return planImageOverrides[plan.title];
     if (plan.coverImageUrl) return plan.coverImageUrl;
     const topics = plan.topics || [];
     for (const topic of topics) {

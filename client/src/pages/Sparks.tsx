@@ -738,7 +738,7 @@ function HorizontalSparkCard({
 }
 
 
-/** Browse category — "Quick picks" list style (like YouTube Music) */
+/** Browse — "Quick picks" list style (YouTube Music) */
 function BrowseListSection({
   label,
   title,
@@ -765,74 +765,68 @@ function BrowseListSection({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-40px" }}
     >
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <span className="text-[10px] font-bold text-white/25 uppercase tracking-[0.15em]">{label}</span>
-          <h3 className="text-lg font-display font-bold text-white tracking-tight">{title}</h3>
-        </div>
+      {/* Header — YouTube Music style */}
+      <div className="flex items-center justify-between mb-5">
+        <h3 className="text-xl font-display font-bold text-white tracking-tight">{title}</h3>
         <div className="flex items-center gap-2">
           {sparks.length > 4 && (
             <button
               onClick={onSeeAll}
-              className="text-xs font-semibold text-white/40 bg-white/[0.06] hover:bg-white/[0.1] px-3 py-1.5 rounded-full transition-colors"
+              className="text-xs font-semibold text-white/50 bg-white/[0.08] hover:bg-white/[0.14] px-4 py-2 rounded-full transition-colors border border-white/[0.08]"
             >
-              More
+              Play all
             </button>
           )}
           <button
             onClick={() => scroll('left')}
-            className="hidden sm:flex h-8 w-8 rounded-full bg-white/[0.06] hover:bg-white/[0.12] items-center justify-center transition-colors"
+            className="hidden sm:flex h-9 w-9 rounded-full bg-white/[0.06] hover:bg-white/[0.12] items-center justify-center transition-colors border border-white/[0.06]"
           >
-            <ChevronLeft className="h-4 w-4 text-white/60" />
+            <ChevronLeft className="h-4 w-4 text-white/50" />
           </button>
           <button
             onClick={() => scroll('right')}
-            className="hidden sm:flex h-8 w-8 rounded-full bg-white/[0.06] hover:bg-white/[0.12] items-center justify-center transition-colors"
+            className="hidden sm:flex h-9 w-9 rounded-full bg-white/[0.06] hover:bg-white/[0.12] items-center justify-center transition-colors border border-white/[0.06]"
           >
-            <ChevronRight className="h-4 w-4 text-white/60" />
+            <ChevronRight className="h-4 w-4 text-white/50" />
           </button>
         </div>
       </div>
 
-      {/* Horizontal scrollable list rows — 2 columns on desktop */}
+      {/* Two-column scrollable list — YouTube Music "Quick picks" */}
       <div
         ref={scrollRef}
-        className="flex gap-3 overflow-x-auto scrollbar-hide pb-1 snap-x"
+        className="flex gap-4 overflow-x-auto scrollbar-hide pb-1 snap-x"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
-        {/* Group into columns of 4 rows each */}
-        {Array.from({ length: Math.ceil(Math.min(sparks.length, 12) / 4) }).map((_, colIdx) => (
-          <div key={colIdx} className="flex-shrink-0 w-[85vw] sm:w-[340px] space-y-1 snap-start">
-            {sparks.slice(colIdx * 4, colIdx * 4 + 4).map((spark) => (
+        {Array.from({ length: Math.ceil(Math.min(sparks.length, 16) / 4) }).map((_, colIdx) => (
+          <div key={colIdx} className="flex-shrink-0 w-[85vw] sm:w-[380px] space-y-0.5 snap-start">
+            {sparks.slice(colIdx * 4, colIdx * 4 + 4).map((spark, rowIdx) => (
               <div
                 key={spark.id}
                 onClick={() => onSparkClick(spark.id)}
-                className="group flex items-center gap-3 p-2 rounded-lg hover:bg-white/[0.04] transition-colors cursor-pointer"
+                className="group flex items-center gap-3 p-2.5 rounded-lg hover:bg-white/[0.06] transition-colors cursor-pointer"
               >
-                <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-gray-900">
+                <div className="w-12 h-12 rounded-md overflow-hidden flex-shrink-0 bg-gray-900 relative">
                   <img
-                    src={getSparkImage(spark, 0)}
+                    src={getSparkImage(spark, colIdx * 4 + rowIdx)}
                     alt={spark.title}
                     className="w-full h-full object-cover"
                     loading="lazy"
                     decoding="async"
                   />
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <Play className="h-4 w-4 fill-white text-white" />
+                  </div>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h4 className="text-sm font-semibold text-white truncate group-hover:text-primary transition-colors">
+                  <h4 className="text-sm font-semibold text-white truncate group-hover:text-white transition-colors">
                     {spark.title}
                   </h4>
-                  <p className="text-[11px] text-white/30 truncate">
+                  <p className="text-[11px] text-white/40 truncate">
                     {spark.weekTheme || spark.category?.replace('-', ' ')}
                     {spark.duration ? ` · ${Math.floor(spark.duration / 60)}:${String(spark.duration % 60).padStart(2, '0')}` : ''}
                   </p>
                 </div>
-                {spark.duration && (
-                  <span className="text-[11px] font-medium text-white/20 flex-shrink-0 tabular-nums">
-                    {Math.floor(spark.duration / 60)}:{String(spark.duration % 60).padStart(2, '0')}
-                  </span>
-                )}
               </div>
             ))}
           </div>
@@ -843,7 +837,7 @@ function BrowseListSection({
 }
 
 
-/** Browse category — card carousel style (like YouTube Music "Albums for you") */
+/** Browse — "Albums for you" card carousel (YouTube Music) */
 function BrowseCardSection({
   label,
   title,
@@ -873,36 +867,33 @@ function BrowseCardSection({
       viewport={{ once: true, margin: "-40px" }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <span className="text-[10px] font-bold text-white/25 uppercase tracking-[0.15em]">{label}</span>
-          <h3 className="text-lg font-display font-bold text-white tracking-tight">{title}</h3>
-        </div>
+      <div className="flex items-center justify-between mb-5">
+        <h3 className="text-xl font-display font-bold text-white tracking-tight">{title}</h3>
         <div className="flex items-center gap-2">
           {sparks.length > 4 && (
             <button
               onClick={onSeeAll}
-              className="text-xs font-semibold text-white/40 bg-white/[0.06] hover:bg-white/[0.1] px-3 py-1.5 rounded-full transition-colors"
+              className="text-xs font-semibold text-white/50 bg-white/[0.08] hover:bg-white/[0.14] px-4 py-2 rounded-full transition-colors border border-white/[0.08]"
             >
               More
             </button>
           )}
           <button
             onClick={() => scroll('left')}
-            className="hidden sm:flex h-8 w-8 rounded-full bg-white/[0.06] hover:bg-white/[0.12] items-center justify-center transition-colors"
+            className="hidden sm:flex h-9 w-9 rounded-full bg-white/[0.06] hover:bg-white/[0.12] items-center justify-center transition-colors border border-white/[0.06]"
           >
-            <ChevronLeft className="h-4 w-4 text-white/60" />
+            <ChevronLeft className="h-4 w-4 text-white/50" />
           </button>
           <button
             onClick={() => scroll('right')}
-            className="hidden sm:flex h-8 w-8 rounded-full bg-white/[0.06] hover:bg-white/[0.12] items-center justify-center transition-colors"
+            className="hidden sm:flex h-9 w-9 rounded-full bg-white/[0.06] hover:bg-white/[0.12] items-center justify-center transition-colors border border-white/[0.06]"
           >
-            <ChevronRight className="h-4 w-4 text-white/60" />
+            <ChevronRight className="h-4 w-4 text-white/50" />
           </button>
         </div>
       </div>
 
-      {/* Horizontal card scroll */}
+      {/* Large square cards — YouTube Music "Albums for you" */}
       <div
         ref={scrollRef}
         className="flex gap-4 overflow-x-auto scrollbar-hide pb-2 snap-x snap-mandatory"
@@ -911,14 +902,35 @@ function BrowseCardSection({
         {sparks.slice(0, 10).map((spark, i) => (
           <div
             key={spark.id}
-            className="flex-shrink-0 w-[160px] sm:w-[180px] snap-start"
+            onClick={() => onSparkClick(spark.id)}
+            className="flex-shrink-0 w-[160px] sm:w-[200px] snap-start group cursor-pointer"
           >
-            <HorizontalSparkCard
-              spark={spark}
-              index={i}
-              onClick={() => onSparkClick(spark.id)}
-              pillarLabels={pillarLabels}
-            />
+            <div className="relative aspect-square rounded-md overflow-hidden mb-3 bg-gray-900">
+              <img
+                src={getSparkImage(spark, i)}
+                alt={spark.title}
+                className="w-full h-full object-cover transition-all duration-500 group-hover:scale-105"
+                loading="lazy"
+                decoding="async"
+              />
+              <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0">
+                <div className="h-10 w-10 bg-primary rounded-full flex items-center justify-center shadow-lg shadow-black/40">
+                  <Play className="h-4 w-4 fill-white text-white ml-0.5" />
+                </div>
+              </div>
+              {spark.duration && (
+                <div className="absolute bottom-2 left-2 bg-black/60 backdrop-blur-sm text-[10px] font-medium text-white/80 px-1.5 py-0.5 rounded">
+                  {Math.floor(spark.duration / 60)}:{String(spark.duration % 60).padStart(2, '0')}
+                </div>
+              )}
+            </div>
+            <h4 className="text-sm font-semibold text-white line-clamp-2 leading-snug mb-0.5">
+              {spark.title}
+            </h4>
+            <p className="text-[11px] text-white/40 line-clamp-1">
+              {spark.weekTheme || pillarLabels[spark.category] || spark.category}
+            </p>
           </div>
         ))}
       </div>

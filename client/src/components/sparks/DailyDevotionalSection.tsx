@@ -9,6 +9,8 @@
  */
 
 import { BookOpen, Play, Calendar, Heart, Share2, MessageCircle, Mail, HandHeart, Loader2 } from "lucide-react";
+import { motion } from "framer-motion";
+import { useState } from "react";
 import { toast } from "sonner";
 import type { Spark } from "@shared/schema";
 import { getSparkImage } from "@/lib/sparkImageUtils";
@@ -32,6 +34,26 @@ export function DailyDevotionalSection({
   onSubscribeClick,
   onReactionClick,
 }: DailyDevotionalSectionProps) {
+  const [isLiked, setIsLiked] = useState(() => {
+    if (typeof window === 'undefined' || !todaySpark) return false;
+    const stored = localStorage.getItem('amen_liked_sparks');
+    const ids: number[] = stored ? JSON.parse(stored) : [];
+    return todaySpark ? ids.includes(todaySpark.id) : false;
+  });
+
+  const handleAmen = () => {
+    if (!todaySpark) return;
+    const stored = localStorage.getItem('amen_liked_sparks');
+    const ids: number[] = stored ? JSON.parse(stored) : [];
+    const next = isLiked ? ids.filter(id => id !== todaySpark.id) : [...ids, todaySpark.id];
+    localStorage.setItem('amen_liked_sparks', JSON.stringify(next));
+    setIsLiked(!isLiked);
+    if (!isLiked) {
+      toast.success("Amen! 🙏");
+    }
+    onReactionClick();
+  };
+
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
     return new Date(dateStr).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
@@ -150,14 +172,24 @@ export function DailyDevotionalSection({
                     <Calendar className="h-3.5 w-3.5" /> {formatDate(todaySpark.dailyDate)}
                   </span>
                   <div className="flex items-center gap-3">
-                    <button
-                      onClick={onReactionClick}
-                      className="flex items-center gap-1.5 text-white/30 hover:text-red-400 transition-colors duration-300 group"
+                    <motion.button
+                      onClick={handleAmen}
+                      whileTap={{ scale: 1.3 }}
+                      className={`flex items-center gap-1.5 transition-colors duration-300 ${
+                        isLiked ? 'text-red-400' : 'text-white/30 hover:text-red-400'
+                      }`}
                       data-testid="button-like-verse"
                     >
-                      <Heart className="h-4 w-4 group-hover:fill-red-400 transition-all" />
-                      <span className="text-[10px] font-medium">Amen</span>
-                    </button>
+                      <motion.div
+                        animate={isLiked ? {
+                          scale: [1, 1.3, 1],
+                        } : {}}
+                        transition={{ duration: 0.4, ease: "easeOut" }}
+                      >
+                        <Heart className={`h-4 w-4 transition-all ${isLiked ? 'fill-red-400 text-red-400' : 'hover:fill-red-400'}`} />
+                      </motion.div>
+                      <span className={`text-[10px] font-medium ${isLiked ? 'text-red-400' : ''}`}>Amen</span>
+                    </motion.button>
                     <button
                       onClick={handleShare}
                       className="text-white/30 cursor-pointer hover:text-white transition-colors duration-300"
