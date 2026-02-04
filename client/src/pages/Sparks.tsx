@@ -231,8 +231,8 @@ export function SparksPage() {
             onReactionClick={() => {}}
           />
 
-          {/* Category Carousels */}
-          <div className="space-y-10 mb-8">
+          {/* ── Category Carousels ── */}
+          <div className="space-y-10 pt-4 pb-6">
             {devotionals.length > 0 && (
               <HorizontalSection
                 title="Daily Devotionals"
@@ -267,12 +267,22 @@ export function SparksPage() {
             )}
           </div>
 
-          {/* Weekly Challenge */}
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-4">
+          {/* ── Section Divider ── */}
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
+          </div>
+
+          {/* ── Weekly Challenge ── */}
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <WeeklyChallenge />
           </div>
 
-          {/* Reflection & Growth Section */}
+          {/* ── Section Divider ── */}
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
+          </div>
+
+          {/* ── Reflection & Growth ── */}
           <ReflectionGrowthSection
             todayReflection={reflection}
             activeSessions={activeSessions}
@@ -282,28 +292,64 @@ export function SparksPage() {
             onIntercessionClick={() => setShowIntercession(true)}
           />
 
-          {/* Browse All */}
-          {sparks.length > 0 && (
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h3 className="text-xl font-display font-bold text-white tracking-tight">Browse All</h3>
-                  <p className="text-xs text-white/30 mt-0.5">{sparks.length} sparks available</p>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                {sparks.map((spark, i) => (
-                  <HorizontalSparkCard
-                    key={spark.id}
-                    spark={spark}
-                    index={i}
-                    onClick={() => navigate(`/spark/${spark.id}`)}
-                    pillarLabels={pillarLabels}
-                  />
-                ))}
-              </div>
+          {/* ── Section Divider ── */}
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
+          </div>
+
+          {/* ── Podcast ── */}
+          <PodcastSection />
+
+          {/* ── Section Divider ── */}
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
+          </div>
+
+          {/* ── Browse Library — Categorized Sections ── */}
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div className="mb-8">
+              <h2 className="text-2xl font-display font-bold text-white tracking-tight">Browse Library</h2>
+              <p className="text-sm text-white/30 mt-1">{sparks.length} sparks across all categories</p>
             </div>
-          )}
+
+            <div className="space-y-12">
+              {/* Devotionals Browse */}
+              {devotionals.length > 0 && (
+                <BrowseCategory
+                  title="Devotionals"
+                  count={devotionals.length}
+                  sparks={devotionals}
+                  onSparkClick={(id) => navigate(`/spark/${id}`)}
+                  onSeeAll={() => setActiveFilter('daily-devotional')}
+                  pillarLabels={pillarLabels}
+                />
+              )}
+
+              {/* Worship Browse */}
+              {worshipSparks.length > 0 && (
+                <BrowseCategory
+                  title="Worship"
+                  count={worshipSparks.length}
+                  sparks={worshipSparks}
+                  onSparkClick={(id) => navigate(`/spark/${id}`)}
+                  onSeeAll={() => setActiveFilter('worship')}
+                  pillarLabels={pillarLabels}
+                />
+              )}
+
+              {/* Testimonies Browse */}
+              {testimonies.length > 0 && (
+                <BrowseCategory
+                  title="Testimonies"
+                  count={testimonies.length}
+                  sparks={testimonies}
+                  onSparkClick={(id) => navigate(`/spark/${id}`)}
+                  onSeeAll={() => setActiveFilter('testimony')}
+                  pillarLabels={pillarLabels}
+                />
+              )}
+            </div>
+          </div>
         </>
       )}
 
@@ -416,9 +462,6 @@ export function SparksPage() {
           )}
         </div>
       )}
-
-      {/* Podcast Section — always visible on "All" tab below everything */}
-      {activeFilter === "All" && <PodcastSection />}
 
       {/* Reading Plans CTA */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
@@ -677,6 +720,61 @@ function HorizontalSparkCard({
         <Flame className="h-2.5 w-2.5 text-primary/50" />
         {pillarLabels[spark.category] || spark.category}
       </p>
+    </motion.div>
+  );
+}
+
+
+/** Browse category section — shows 4 items in grid with "See all" */
+function BrowseCategory({
+  title,
+  count,
+  sparks,
+  onSparkClick,
+  onSeeAll,
+  pillarLabels,
+}: {
+  title: string;
+  count: number;
+  sparks: any[];
+  onSparkClick: (id: number) => void;
+  onSeeAll: () => void;
+  pillarLabels: Record<string, string>;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-40px" }}
+    >
+      {/* Category Header */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2.5">
+          <h3 className="text-lg font-display font-bold text-white tracking-tight">{title}</h3>
+          <span className="text-xs font-medium text-white/20 bg-white/[0.04] px-2 py-0.5 rounded-full">{count}</span>
+        </div>
+        {count > 4 && (
+          <button
+            onClick={onSeeAll}
+            className="flex items-center gap-1 text-xs font-semibold text-primary hover:text-primary/80 transition-colors"
+          >
+            See all <ChevronRight className="h-3.5 w-3.5" />
+          </button>
+        )}
+      </div>
+
+      {/* Grid — max 4 items */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+        {sparks.slice(0, 4).map((spark, i) => (
+          <HorizontalSparkCard
+            key={spark.id}
+            spark={spark}
+            index={i}
+            onClick={() => onSparkClick(spark.id)}
+            pillarLabels={pillarLabels}
+          />
+        ))}
+      </div>
     </motion.div>
   );
 }
