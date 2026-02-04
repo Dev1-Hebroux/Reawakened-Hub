@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, ArrowRight, Calendar, Target, Plus, X, Clock, Users } from "lucide-react";
+import { ArrowLeft, ArrowRight, Calendar, Target, Plus, X, Clock, Users, Check } from "lucide-react";
 import { AICoachPanel, IntroGuide } from "@/components/AICoachPanel";
 import { getApiUrl } from "@/lib/api";
 
@@ -48,6 +48,8 @@ export function VisionPlan() {
     }
   }, [planData]);
 
+  const [planSaved, setPlanSaved] = useState(false);
+
   const savePlan = useMutation({
     mutationFn: async () => {
       const res = await fetch(getApiUrl(`/api/vision/sessions/${sessionId}/plan`), {
@@ -61,6 +63,8 @@ export function VisionPlan() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/vision/sessions/${sessionId}/plan`] });
+      setPlanSaved(true);
+      setTimeout(() => setPlanSaved(false), 3000);
     },
   });
 
@@ -359,10 +363,17 @@ export function VisionPlan() {
                   variant="outline"
                   onClick={() => savePlan.mutate()}
                   disabled={savePlan.isPending}
-                  className="border-[#7C9A8E] text-[#7C9A8E] hover:bg-[#7C9A8E]/10"
+                  className={planSaved
+                    ? "border-[#5B8C5A] text-[#5B8C5A] bg-[#5B8C5A]/10"
+                    : "border-[#7C9A8E] text-[#7C9A8E] hover:bg-[#7C9A8E]/10"
+                  }
                   data-testid="button-save-plan"
                 >
-                  {savePlan.isPending ? "Saving..." : "Save Plan"}
+                  {savePlan.isPending ? "Saving..." : planSaved ? (
+                    <span className="flex items-center gap-2">
+                      <Check className="w-4 h-4" /> Saved!
+                    </span>
+                  ) : "Save Plan"}
                 </Button>
                 <Button
                   onClick={() => navigate(`/vision/${sessionId}/habits`)}

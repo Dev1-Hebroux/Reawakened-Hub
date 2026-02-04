@@ -122,7 +122,7 @@ export function AiCoachDrawer({ entryPoint = "general" }: AiCoachDrawerProps) {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-r from-[#1a2744] to-[#243656] text-white rounded-full shadow-2xl flex items-center justify-center z-50 hover:shadow-xl transition-shadow"
+          className="fixed bottom-24 right-4 xl:bottom-6 xl:right-6 w-14 h-14 bg-gradient-to-r from-[#1a2744] to-[#243656] text-white rounded-full shadow-2xl flex items-center justify-center z-[60] hover:shadow-xl transition-shadow"
           data-testid="button-open-ai-coach"
           aria-label="Open AI Coach"
         >

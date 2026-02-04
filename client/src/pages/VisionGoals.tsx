@@ -256,7 +256,10 @@ export function VisionGoals() {
                 setIsDialogOpen(true);
               }}
             />
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <Dialog open={isDialogOpen} onOpenChange={(open) => {
+              setIsDialogOpen(open);
+              if (!open) { setEditingGoal(null); resetForm(); }
+            }}>
               <DialogTrigger asChild>
                 <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                   <Button

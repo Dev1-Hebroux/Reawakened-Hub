@@ -33,10 +33,12 @@ export function VisionCheckin() {
   const { data: session } = useQuery({
     queryKey: [`/api/vision/sessions/${sessionId}`],
     queryFn: async () => {
-      const res = await fetch(getApiUrl("/api/vision/sessions/current"), { credentials: "include" });
+      const res = await fetch(getApiUrl(`/api/vision/sessions/${sessionId}`), { credentials: "include" });
       if (!res.ok) return null;
-      return (await res.json()).data;
+      const data = await res.json();
+      return data.data || data;
     },
+    enabled: !!sessionId,
   });
 
   const { data: dailyCheckin } = useQuery({
@@ -48,17 +50,19 @@ export function VisionCheckin() {
       if (!res.ok) return null;
       return (await res.json()).data;
     },
+    enabled: !!sessionId,
   });
 
   const { data: weeklyReview } = useQuery({
-    queryKey: [`/api/vision/sessions/${sessionId}/review/weekly/${weekStart}`],
+    queryKey: [`/api/vision/sessions/${sessionId}/checkin/weekly/${weekStart}`],
     queryFn: async () => {
-      const res = await fetch(getApiUrl(`/api/vision/sessions/${sessionId}/review/weekly/${weekStart}`), {
+      const res = await fetch(getApiUrl(`/api/vision/sessions/${sessionId}/checkin/weekly/${weekStart}`), {
         credentials: "include",
       });
       if (!res.ok) return null;
       return (await res.json()).data;
     },
+    enabled: !!sessionId,
   });
 
   const isFaithMode = session?.mode === "faith";
