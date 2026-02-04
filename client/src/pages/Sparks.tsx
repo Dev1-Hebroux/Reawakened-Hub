@@ -1,27 +1,22 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { BookOpen, ArrowRight, RefreshCw } from "lucide-react";
+import { BookOpen, ArrowRight, RefreshCw, Play, Calendar } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useRoute, useLocation } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
 import { Navbar } from "@/components/layout/Navbar";
 import { useAuth } from "@/hooks/useAuth";
 import { DominionOnboarding } from "@/components/DominionOnboarding";
-import { WeeklyChallenge } from "@/components/WeeklyChallenge";
 import { SEO } from "@/components/SEO";
 import { useDashboard } from "@/hooks/useDashboard";
 import { useSparkSubscriptions } from "@/hooks/useSparkSubscriptions";
-import { useSparkReactions } from "@/hooks/useSparkReactions";
-import { useViewMode } from "@/hooks/useViewMode";
 import { useEmailSubscription } from "@/hooks/useEmailSubscription";
 import { HeroSection } from "@/components/sparks/HeroSection";
-import { DailyDevotionalSection } from "@/components/sparks/DailyDevotionalSection";
-import { ReflectionGrowthSection } from "@/components/sparks/ReflectionGrowthSection";
 import { SparkFilters } from "@/components/sparks/SparkFilters";
 import { SparkGrid } from "@/components/sparks/SparkGrid";
 import { SubscribeModal } from "@/components/sparks/SubscribeModal";
-import { IntercessionModal } from "@/components/sparks/IntercessionModal";
 import { PodcastSection } from "@/components/sparks/PodcastSection";
 import { usePullToRefresh } from "@/hooks/useGestures";
+import { getSparkImage } from "@/lib/sparkImageUtils";
 
 const pillars = ["All", "daily-devotional", "worship", "testimony", "podcast"];
 const pillarLabels: Record<string, string> = {
@@ -43,8 +38,8 @@ export function SparksPage() {
   const [showSubscribe, setShowSubscribe] = useState(false);
   const { user, isAuthenticated } = useAuth();
 
-  const userContentMode = (user as any)?.contentMode as 'reflection' | 'faith' | undefined;
   const userAudienceSegment = (user as any)?.audienceSegment as string | undefined;
+  const userContentMode = (user as any)?.contentMode as 'reflection' | 'faith' | undefined;
 
   const [showOnboarding, setShowOnboarding] = useState(() => {
     if (typeof window === 'undefined') return false;
@@ -53,16 +48,6 @@ export function SparksPage() {
   });
 
   const needsOnboarding = isAuthenticated && showOnboarding && !userContentMode && !userAudienceSegment;
-
-  const [showIntercession, setShowIntercession] = useState(false);
-  const [reflectionTab, setReflectionTab] = useState<'reflection' | 'growth'>('reflection');
-
-  // Custom Hooks
-  const { viewMode, handleViewModeChange } = useViewMode({
-    isAuthenticated,
-    userContentMode,
-    userAudienceSegment,
-  });
 
   const {
     subscriptions,
@@ -73,8 +58,6 @@ export function SparksPage() {
     handleSubscriptionToggle,
   } = useSparkSubscriptions(isAuthenticated);
 
-  const { handleSparkReaction } = useSparkReactions(isAuthenticated);
-
   const {
     emailInput,
     setEmailInput,
@@ -83,11 +66,10 @@ export function SparksPage() {
     handleEmailSubscribe,
   } = useEmailSubscription();
 
-  // Pull-to-refresh functionality
+  // Pull-to-refresh
   const queryClient = useQueryClient();
   const { containerRef, pullDistance, isRefreshing, handlers } = usePullToRefresh(
     async () => {
-      // Invalidate all dashboard queries to fetch fresh data
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["/api/dashboard"] }),
         queryClient.invalidateQueries({ queryKey: ["/api/me/progress"] }),
@@ -97,7 +79,7 @@ export function SparksPage() {
     { threshold: 80, maxPull: 120 }
   );
 
-  // Sync audience segment to localStorage
+  // Sync audience segment
   useEffect(() => {
     if (userAudienceSegment) {
       localStorage.setItem('user_audience_segment', userAudienceSegment);
@@ -112,10 +94,7 @@ export function SparksPage() {
   const sparks = dashboardResult.sparks ?? [];
   const todaySpark = dashboardResult.todaySpark;
   const featuredSparks = dashboardResult.featured ?? [];
-  const todayReflection = dashboardResult.reflection;
-  const activeSessions = dashboardResult.sessions ?? [];
   const isLoading = dashboardResult.isLoading;
-  const todayLoading = isLoading;
 
   // Redirect old spark URLs
   useEffect(() => {
@@ -129,6 +108,7 @@ export function SparksPage() {
     : sparks.filter(s => s.category === activeFilter);
 
   const featuredSpark = featuredSparks.length > 0 ? featuredSparks[0] : (sparks.length > 0 ? sparks[0] : null);
+  const heroSpark = todaySpark || featuredSpark;
 
   return (
     <div
@@ -136,9 +116,13 @@ export function SparksPage() {
       className="min-h-screen bg-black text-white overflow-x-hidden"
       {...handlers}
     >
+      <SEO
+        title="Sparks - Reawakened"
+        description="Daily devotionals, worship, testimonies, and the Reawakened One Podcast. Ignite your spiritual journey."
+      />
       <Navbar />
 
-      {/* Pull-to-Refresh Indicator */}
+      {/* Pull-to-Refresh */}
       <AnimatePresence>
         {pullDistance > 0 && (
           <motion.div
@@ -165,54 +149,85 @@ export function SparksPage() {
         onComplete={() => setShowOnboarding(false)}
       />
 
-      {/* Hero Section - Shows today's spark */}
+      {/* 1. Hero Section (shorter) */}
       <HeroSection
-        featuredSpark={todaySpark || featuredSpark}
+        featuredSpark={heroSpark}
         totalSparks={sparks.length}
-        onWatchClick={() => (todaySpark || featuredSpark) && navigate(`/spark/${(todaySpark || featuredSpark)!.id}`)}
+        onWatchClick={() => heroSpark && navigate(`/spark/${heroSpark.id}`)}
         onSubscribeClick={() => setShowSubscribe(true)}
       />
 
-      {/* Daily Devotional Section */}
-      <DailyDevotionalSection
-        todaySpark={todaySpark}
-        todayLoading={todayLoading}
-        viewMode={viewMode}
-        onViewModeChange={handleViewModeChange}
-        onSparkClick={() => todaySpark && navigate(`/spark/${todaySpark.id}`)}
-        onSubscribeClick={() => setShowSubscribe(true)}
-        onReactionClick={() => {
-          if (todaySpark) {
-            handleSparkReaction(todaySpark.id, 'amen');
-          }
-        }}
-      />
-
-      {/* Reflection & Growth Section */}
-      <ReflectionGrowthSection
-        todayReflection={todayReflection}
-        activeSessions={activeSessions}
-        reflectionTab={reflectionTab}
-        viewMode={viewMode}
-        onTabChange={setReflectionTab}
-        onIntercessionClick={() => setShowIntercession(true)}
-      />
-
-      {/* Weekly Challenge */}
-      <WeeklyChallenge />
-
-      {/* Podcast Section */}
-      <PodcastSection onEpisodeClick={(id) => navigate(`/spark/${id}`)} />
-
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Filters */}
+      {/* 2. Main Content — Filters + Today's Spark + Grid */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Sticky Filters */}
         <SparkFilters
           pillars={pillars}
           pillarLabels={pillarLabels}
           activeFilter={activeFilter}
           onFilterChange={setActiveFilter}
         />
+
+        {/* Today's Spark — Featured Card */}
+        {heroSpark && activeFilter !== "podcast" && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-10"
+          >
+            <div
+              onClick={() => navigate(`/spark/${heroSpark.id}`)}
+              className="group relative rounded-2xl overflow-hidden cursor-pointer border border-white/[0.06] hover:border-white/[0.12] transition-all duration-500"
+            >
+              <div className="grid md:grid-cols-2">
+                {/* Image */}
+                <div className="relative aspect-video md:aspect-auto md:min-h-[280px]">
+                  <img
+                    src={getSparkImage(heroSpark, 0)}
+                    alt={heroSpark.title}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    style={{ filter: 'brightness(0.85) saturate(1.1)' }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent to-black/60 hidden md:block" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent md:hidden" />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="h-14 w-14 bg-white/15 backdrop-blur-xl rounded-full flex items-center justify-center border border-white/25 group-hover:scale-110 group-hover:bg-white/25 transition-all duration-500 shadow-2xl">
+                      <Play className="h-6 w-6 fill-white text-white ml-1" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Info */}
+                <div className="p-6 md:p-8 flex flex-col justify-center bg-gradient-to-br from-white/[0.04] to-transparent">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="bg-primary/90 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">
+                      Today's Word
+                    </span>
+                    <span className="text-[10px] text-white/30 uppercase tracking-wider flex items-center gap-1">
+                      <Calendar className="h-3 w-3" />
+                      {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                    </span>
+                  </div>
+                  <h3 className="text-xl md:text-2xl font-display font-bold text-white mb-2 tracking-tight">
+                    {heroSpark.title}
+                  </h3>
+                  <p className="text-sm text-white/50 line-clamp-2 mb-4 leading-relaxed">
+                    {heroSpark.description}
+                  </p>
+                  {heroSpark.scriptureRef && (
+                    <p className="text-sm text-primary font-semibold">
+                      {heroSpark.scriptureRef}
+                    </p>
+                  )}
+                  {heroSpark.duration && (
+                    <p className="text-xs text-white/30 mt-2">
+                      {Math.floor(heroSpark.duration / 60)} min {heroSpark.mediaType === 'video' ? 'watch' : 'listen'}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
 
         {/* Spark Grid */}
         <SparkGrid
@@ -221,13 +236,18 @@ export function SparksPage() {
           onSparkClick={(id) => navigate(`/spark/${id}`)}
           pillarLabels={pillarLabels}
         />
+      </div>
 
-        {/* Reading Plans CTA */}
+      {/* 3. Podcast Section */}
+      <PodcastSection />
+
+      {/* 4. Reading Plans CTA */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="mt-16 bg-gradient-to-br from-[#7C9A8E]/20 to-[#4A7C7C]/10 rounded-3xl p-8 border border-white/10"
+          className="bg-gradient-to-br from-[#7C9A8E]/20 to-[#4A7C7C]/10 rounded-3xl p-8 border border-white/10"
         >
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="text-center md:text-left">
@@ -267,13 +287,6 @@ export function SparksPage() {
         onSubscriptionToggle={handleSubscriptionToggle}
         onEmailChange={setEmailInput}
         onEmailSubmit={handleEmailSubscribe}
-      />
-
-      {/* Live Intercession Modal */}
-      <IntercessionModal
-        isOpen={showIntercession}
-        todaySpark={todaySpark}
-        onClose={() => setShowIntercession(false)}
       />
     </div>
   );

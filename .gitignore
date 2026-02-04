@@ -6,6 +6,7 @@ vite.config.ts.*
 *.tar.gz
 .env
 *.mp3
+!client/public/podcast/*.mp3
 *.wav
 social-media/scripts/.env
 social-media/podcast-output/

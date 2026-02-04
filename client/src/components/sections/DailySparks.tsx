@@ -1,8 +1,8 @@
 import { motion } from "framer-motion";
 import { Play, Heart, ArrowRight, Loader2 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import type { Spark } from "@shared/schema";
+import { useDashboard } from "@/hooks/useDashboard";
 
 import identityImg from "@assets/generated_images/identity_in_chaos_abstract.png";
 import believeImg from "@assets/generated_images/why_i_believe_abstract.png";
@@ -11,29 +11,18 @@ import boldnessImg from "@assets/generated_images/boldness_at_work_abstract.png"
 
 const fallbackImages = [identityImg, believeImg, hearingImg, boldnessImg];
 
-interface DashboardResponse {
-  todaySpark?: Spark;
-  featured?: Spark[];
-  sparks?: Spark[];
-}
-
 interface DailySparksProps {
   compact?: boolean;
 }
 
 export function DailySparks({ compact = false }: DailySparksProps) {
-  // Fetch from dashboard to get today's spark
-  const { data: dashboard, isLoading, error } = useQuery<DashboardResponse>({
-    queryKey: ["/api/sparks/dashboard"],
-    staleTime: 1000 * 60 * 5,
-  });
+  const { todaySpark, featured, sparks, isLoading, isError } = useDashboard();
 
-  // In compact mode, show today's spark; otherwise show featured sparks
-  const todaySpark = dashboard?.todaySpark;
-  const featuredSparks = dashboard?.featured || [];
-  const displaySparks = compact 
-    ? (todaySpark ? [todaySpark] : []) 
-    : featuredSparks.slice(0, 4);
+  // Use todaySpark first, fall back to featured[0], then sparks[0]
+  const primarySpark = todaySpark || featured[0] || sparks[0] || null;
+  const displaySparks = compact
+    ? (primarySpark ? [primarySpark] : [])
+    : (featured.length > 0 ? featured.slice(0, 4) : sparks.slice(0, 4));
 
   if (compact) {
     return (
@@ -42,7 +31,7 @@ export function DailySparks({ compact = false }: DailySparksProps) {
           <div className="flex justify-center py-4">
             <Loader2 className="h-6 w-6 animate-spin text-primary" />
           </div>
-        ) : error || displaySparks.length === 0 ? (
+        ) : isError || displaySparks.length === 0 ? (
           <div className="text-center py-4">
             <p className="text-gray-500 text-sm">New devotionals coming soon!</p>
           </div>
@@ -57,13 +46,13 @@ export function DailySparks({ compact = false }: DailySparksProps) {
           >
             <Link href="/sparks">
               <div className="relative rounded-[20px] overflow-hidden aspect-[3/4] max-w-sm shadow-lg group-hover:shadow-xl transition-all duration-300">
-                <img 
-                  src={displaySparks[0].thumbnailUrl || displaySparks[0].imageUrl || fallbackImages[0]} 
-                  alt={displaySparks[0].title} 
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
+                <img
+                  src={displaySparks[0].thumbnailUrl || displaySparks[0].imageUrl || fallbackImages[0]}
+                  alt={displaySparks[0].title}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#1a2744]/70 via-transparent to-transparent opacity-70" />
-                
+
                 <div className="absolute top-3 left-3 bg-white/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
                   <span className="text-xs font-bold text-white capitalize">Daily Devotional</span>
                 </div>
@@ -80,7 +69,7 @@ export function DailySparks({ compact = false }: DailySparksProps) {
                   </div>
                 </div>
               </div>
-              
+
               <div className="mt-3">
                 <h3 className="text-base font-bold text-gray-900 group-hover:text-primary transition-colors line-clamp-2">{displaySparks[0].title}</h3>
               </div>
@@ -102,7 +91,7 @@ export function DailySparks({ compact = false }: DailySparksProps) {
             </h2>
           </div>
           <Link href="/sparks">
-            <button 
+            <button
               data-testid="button-view-all-sparks"
               className="bg-gray-100 hover:bg-gray-200 text-gray-900 font-bold px-6 py-3 rounded-full flex items-center gap-2 transition-colors"
             >
@@ -115,7 +104,7 @@ export function DailySparks({ compact = false }: DailySparksProps) {
           <div className="flex justify-center py-16">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
-        ) : error || displaySparks.length === 0 ? (
+        ) : isError || displaySparks.length === 0 ? (
           <div className="text-center py-16">
             <p className="text-gray-500">New devotionals coming soon. Check back for daily inspiration!</p>
           </div>
@@ -133,13 +122,13 @@ export function DailySparks({ compact = false }: DailySparksProps) {
               >
                 <Link href="/sparks">
                   <div className="relative rounded-[24px] overflow-hidden aspect-[3/4] mb-4 shadow-md group-hover:shadow-xl transition-all duration-300">
-                    <img 
-                      src={spark.thumbnailUrl || spark.imageUrl || fallbackImages[i % fallbackImages.length]} 
-                      alt={spark.title} 
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
+                    <img
+                      src={spark.thumbnailUrl || spark.imageUrl || fallbackImages[i % fallbackImages.length]}
+                      alt={spark.title}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-[#1a2744]/60 via-transparent to-transparent opacity-60" />
-                    
+
                     <div className="absolute top-4 left-4 bg-white/20 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
                       <span className="text-xs font-bold text-white capitalize">{spark.category.replace('-', ' ')}</span>
                     </div>
@@ -156,7 +145,7 @@ export function DailySparks({ compact = false }: DailySparksProps) {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="space-y-1">
                     <h3 className="text-xl font-bold text-gray-900 group-hover:text-primary transition-colors">{spark.title}</h3>
                     <div className="flex items-center justify-between text-sm text-gray-500 font-medium">

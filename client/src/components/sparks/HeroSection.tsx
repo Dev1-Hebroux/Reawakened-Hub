@@ -38,7 +38,7 @@ export function HeroSection({ featuredSpark, totalSparks, onWatchClick, onSubscr
         <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-[120px]" />
       </div>
 
-      <div className="relative z-10 flex flex-col justify-end min-h-[65vh] md:min-h-[75vh] p-6 md:p-16 max-w-7xl mx-auto w-full">
+      <div className="relative z-10 flex flex-col justify-end min-h-[45vh] md:min-h-[50vh] p-6 md:p-12 max-w-7xl mx-auto w-full">
         <div className="w-full md:w-3/5 space-y-5">
           {/* Badges */}
           <div className="flex items-center gap-3">
