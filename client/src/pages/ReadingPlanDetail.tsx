@@ -11,9 +11,9 @@ import {
 } from "lucide-react";
 
 // Background images for reading plans based on topics
-import anxietyImage from "@assets/generated_images/peace_and_calm_devotional.png";
-import prayerImage from "@assets/generated_images/prayer_and_presence_devotional.png";
-import revivalImage from "@assets/generated_images/worship_gathering_devotional_image.png";
+import anxietyImage from "@assets/generated_images/peace_and_calm_devotional.jpg";
+import prayerImage from "@assets/generated_images/prayer_and_presence_devotional.jpg";
+import revivalImage from "@assets/generated_images/worship_gathering_devotional_image.jpg";
 import leadershipImage from "@assets/generated_images/group_discussion_in_a_living_room.png";
 import relationshipsImage from "@assets/generated_images/diverse_group_taking_a_selfie.png";
 import identityImage from "@assets/generated_images/young_man_praying_with_golden_light_overlay.png";

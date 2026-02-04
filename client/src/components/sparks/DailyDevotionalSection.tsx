@@ -114,6 +114,8 @@ export function DailyDevotionalSection({
                 alt={todaySpark.title}
                 className="w-full h-full object-cover transition-all duration-700 group-hover:scale-105"
                 style={{ filter: 'brightness(0.8) saturate(1.1)' }}
+                loading="lazy"
+                decoding="async"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
 

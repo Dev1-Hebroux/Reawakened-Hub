@@ -11,7 +11,7 @@
 import { Play, Rss, Sparkles } from "lucide-react";
 import type { Spark } from "@shared/schema";
 import { getSparkImage } from "@/lib/sparkImageUtils";
-import identityImage from "@assets/generated_images/worship_gathering_devotional_image.png";
+import identityImage from "@assets/generated_images/worship_gathering_devotional_image.jpg";
 
 interface HeroSectionProps {
   featuredSpark: Spark | null;

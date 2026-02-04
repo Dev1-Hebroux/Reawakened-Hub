@@ -16,11 +16,11 @@ import { toast } from "sonner";
 import confetti from "canvas-confetti";
 import type { Spark } from "@shared/schema";
 
-import identityImage from "@assets/generated_images/worship_gathering_devotional_image.png";
-import prayerImage from "@assets/generated_images/prayer_and_presence_devotional.png";
-import peaceImage from "@assets/generated_images/peace_and_calm_devotional.png";
-import boldImage from "@assets/generated_images/bold_witness_devotional_image.png";
-import commissionImage from "@assets/generated_images/commission_missions_devotional.png";
+import identityImage from "@assets/generated_images/worship_gathering_devotional_image.jpg";
+import prayerImage from "@assets/generated_images/prayer_and_presence_devotional.jpg";
+import peaceImage from "@assets/generated_images/peace_and_calm_devotional.jpg";
+import boldImage from "@assets/generated_images/bold_witness_devotional_image.jpg";
+import commissionImage from "@assets/generated_images/commission_missions_devotional.jpg";
 
 const weekThemeImages: Record<string, string> = {
   "Week 1: Identity & Belonging": identityImage,

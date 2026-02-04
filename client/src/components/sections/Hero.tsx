@@ -6,10 +6,10 @@ import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { VisionModal } from "@/components/VisionModal";
 import heroImage from "@assets/generated_images/young_man_praying_with_golden_light_overlay.png";
-import studentsCampus from "@assets/Uni_Student_1767866708966.png";
-import studentsSharing from "@assets/Uni_Student_Sharing_1767866708964.png";
+import studentsCampus from "@assets/Uni_Student_1767866708966.jpg";
+import studentsSharing from "@assets/Uni_Student_Sharing_1767866708964.jpg";
 import logoImage from "@assets/1_1765584395888.png";
-import heroBgImage from "@assets/11_1767182385476.png";
+import heroBgImage from "@assets/11_1767182385476.jpg";
 
 const heroImages = [
   { src: heroImage, alt: "Young man praying" },
@@ -37,10 +37,13 @@ export function Hero() {
 
       {/* Background Image with Rich Gradient Overlay */}
       <div className="absolute inset-0 z-0">
-        <img 
-          src={heroBgImage} 
-          alt="Sunrise with cross" 
+        <img
+          src={heroBgImage}
+          alt="Sunrise with cross"
           className="w-full h-full object-cover"
+          loading="eager"
+          decoding="async"
+          fetchPriority="low"
         />
         <div className="absolute inset-0 bg-gradient-to-br from-[#7C9A8E]/20 via-[#D4A574]/15 to-[#4A7C7C]/20" />
         <div className="absolute inset-0 bg-gradient-to-r from-[#FFF8F3]/90 via-[#FFF8F3]/70 to-transparent" />
@@ -76,15 +79,16 @@ export function Hero() {
           >
             <div className="relative z-10 rounded-[24px] lg:rounded-[40px] overflow-hidden shadow-2xl border-2 lg:border-4 border-white lg:rotate-2 lg:hover:rotate-0 transition-transform duration-500 mx-auto max-w-sm lg:max-w-none">
               <AnimatePresence mode="wait">
-                <motion.img 
+                <motion.img
                   key={currentImageIndex}
-                  src={heroImages[currentImageIndex].src} 
-                  alt={heroImages[currentImageIndex].alt} 
+                  src={heroImages[currentImageIndex].src}
+                  alt={heroImages[currentImageIndex].alt}
                   className="w-full h-[280px] sm:h-[320px] md:h-[400px] lg:h-[600px] object-cover"
                   initial={{ opacity: 0, scale: 1.05 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ duration: 0.8, ease: "easeInOut" }}
+                  decoding="async"
                 />
               </AnimatePresence>
               

@@ -39,6 +39,8 @@ export function SparkCard({ spark, index, onClick, pillarLabels }: SparkCardProp
         alt={spark.title}
         className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110 opacity-70 group-hover:opacity-90"
         style={{ filter: 'saturate(1.1)' }}
+        loading="lazy"
+        decoding="async"
       />
 
       {/* Gradient overlay — multi-layer for premium depth */}

@@ -5,16 +5,16 @@
  * Extracted from Sparks.tsx and SparkDetail.tsx to eliminate code duplication.
  */
 
-import spark1 from "@assets/generated_images/raw_street_worship_in_brazil.png";
-import spark2 from "@assets/generated_images/testimony_of_healing_in_a_village.png";
-import spark3 from "@assets/generated_images/underground_prayer_meeting.png";
-import spark4 from "@assets/generated_images/student_sharing_gospel_on_campus.png";
+import spark1 from "@assets/generated_images/raw_street_worship_in_brazil.jpg";
+import spark2 from "@assets/generated_images/testimony_of_healing_in_a_village.jpg";
+import spark3 from "@assets/generated_images/underground_prayer_meeting.jpg";
+import spark4 from "@assets/generated_images/student_sharing_gospel_on_campus.jpg";
 
-import identityImage from "@assets/generated_images/worship_gathering_devotional_image.png";
-import prayerImage from "@assets/generated_images/prayer_and_presence_devotional.png";
-import peaceImage from "@assets/generated_images/peace_and_calm_devotional.png";
-import boldImage from "@assets/generated_images/bold_witness_devotional_image.png";
-import commissionImage from "@assets/generated_images/commission_missions_devotional.png";
+import identityImage from "@assets/generated_images/worship_gathering_devotional_image.jpg";
+import prayerImage from "@assets/generated_images/prayer_and_presence_devotional.jpg";
+import peaceImage from "@assets/generated_images/peace_and_calm_devotional.jpg";
+import boldImage from "@assets/generated_images/bold_witness_devotional_image.jpg";
+import commissionImage from "@assets/generated_images/commission_missions_devotional.jpg";
 
 export const weekThemeImages: Record<string, string> = {
   "Week 1: Identity & Belonging": identityImage,
