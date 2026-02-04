@@ -170,14 +170,14 @@ export function BlogGrid() {
     : posts.filter(post => post.category === activeCategory);
 
   return (
-    <section className="py-24 bg-gray-50">
+    <section className="py-14 md:py-16 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         {/* Header & Filters */}
-        <div className="flex flex-col md:flex-row justify-between items-center mb-12 gap-6">
+        <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
           <div>
-            <span className="text-primary font-bold tracking-wider uppercase text-sm">The Blog</span>
-            <h2 className="text-3xl md:text-5xl font-display font-bold text-gray-900 mt-2">
+            <span className="text-primary font-bold tracking-wider uppercase text-xs">The Blog</span>
+            <h2 className="text-2xl md:text-4xl font-display font-bold text-gray-900 mt-1">
               Stories of <span className="text-primary">Transformation</span>
             </h2>
           </div>
@@ -206,132 +206,128 @@ export function BlogGrid() {
           </div>
         ) : (
           <>
-            {/* Featured Post (Hero Style) - First post */}
+            {/* Featured Post (Hero) — text overlapping image */}
             {filteredPosts.length > 0 && (
-              <div className="mb-12">
-                <motion.div 
-                  initial={{ opacity: 0, y: 20 }}
+              <div className="mb-8">
+                <Link href={`/blog/${filteredPosts[0].slug}`}>
+                <motion.div
+                  initial={{ opacity: 0, y: 16 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  className="group relative rounded-[40px] overflow-hidden aspect-[16/9] md:aspect-[21/9] cursor-pointer"
+                  className="group relative rounded-2xl overflow-hidden aspect-[16/9] md:aspect-[2.4/1] cursor-pointer"
                   data-testid={`card-blog-featured-${filteredPosts[0].id}`}
                 >
-                  <img 
-                    src={filteredPosts[0].coverImageUrl || getDefaultImage(0)} 
-                    alt={filteredPosts[0].title} 
+                  <img
+                    src={filteredPosts[0].coverImageUrl || getDefaultImage(0)}
+                    alt={filteredPosts[0].title}
                     className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    loading="eager"
+                    decoding="async"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                  
-                  <div className="absolute bottom-0 left-0 p-8 md:p-12 w-full md:w-2/3">
-                    <div className="flex items-center gap-3 mb-4">
-                      <span className="bg-primary text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">Featured</span>
-                      <span className="text-white/80 text-sm font-medium flex items-center gap-1"><Clock className="h-3 w-3" /> 10 min read</span>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+
+                  <div className="absolute bottom-0 left-0 p-6 md:p-10 w-full md:w-2/3">
+                    <div className="flex items-center gap-2.5 mb-3">
+                      <span className="bg-primary text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">Featured</span>
+                      <span className="text-white/70 text-xs font-medium flex items-center gap-1"><Clock className="h-3 w-3" /> 10 min read</span>
                     </div>
-                    <h3 className="text-3xl md:text-5xl font-display font-bold text-white mb-4 leading-tight group-hover:text-primary transition-colors">
+                    <h3 className="text-2xl md:text-4xl font-display font-bold text-white mb-2 leading-tight group-hover:text-primary transition-colors">
                       {filteredPosts[0].title}
                     </h3>
-                    <p className="text-white/80 text-lg mb-6 line-clamp-2">
+                    <p className="text-white/70 text-sm md:text-base mb-4 line-clamp-2">
                       {filteredPosts[0].excerpt}
                     </p>
-                    <div className="flex items-center gap-4 flex-wrap">
-                      <div className="flex items-center gap-2">
-                        <div className="h-10 w-10 rounded-full bg-gray-200 border-2 border-white" />
-                        <span className="text-white font-bold">{filteredPosts[0].category}</span>
-                      </div>
-                      <Link href={`/blog/${filteredPosts[0].slug}`}>
-                        <button className="bg-white/20 backdrop-blur-md text-white px-6 py-3 rounded-full font-bold hover:bg-white hover:text-black transition-all flex items-center gap-2" data-testid="button-read-featured">
-                          Read Article <ArrowRight className="h-4 w-4" />
-                        </button>
-                      </Link>
-                      <div className="relative">
-                        <button 
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <span className="text-white/60 text-xs font-semibold">{filteredPosts[0].category}</span>
+                      <span className="bg-white/20 backdrop-blur-md text-white px-5 py-2.5 rounded-full text-sm font-bold hover:bg-white hover:text-black transition-all flex items-center gap-2">
+                        Read Article <ArrowRight className="h-3.5 w-3.5" />
+                      </span>
+                      <div className="relative" onClick={(e) => e.preventDefault()}>
+                        <button
                           onClick={(e) => {
                             e.stopPropagation();
+                            e.preventDefault();
                             setOpenShareId(openShareId === filteredPosts[0].id ? null : filteredPosts[0].id);
                           }}
-                          className="bg-white/20 backdrop-blur-md text-white p-3 rounded-full font-bold hover:bg-white hover:text-black transition-all"
+                          className="bg-white/20 backdrop-blur-md text-white p-2.5 rounded-full hover:bg-white hover:text-black transition-all"
                           data-testid="button-share-featured"
                         >
-                          <Share2 className="h-5 w-5" />
+                          <Share2 className="h-4 w-4" />
                         </button>
-                        <ShareDropdown 
-                          post={filteredPosts[0]} 
-                          isOpen={openShareId === filteredPosts[0].id} 
-                          onClose={() => setOpenShareId(null)} 
+                        <ShareDropdown
+                          post={filteredPosts[0]}
+                          isOpen={openShareId === filteredPosts[0].id}
+                          onClose={() => setOpenShareId(null)}
                         />
                       </div>
                     </div>
                   </div>
                 </motion.div>
+                </Link>
               </div>
             )}
 
-            {/* Post Grid - Rest of posts */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Post Grid — compact cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {filteredPosts.slice(1).map((post, i) => (
                 <Link key={post.id} href={`/blog/${post.slug}`}>
                 <motion.div
-                  initial={{ opacity: 0, y: 20 }}
+                  initial={{ opacity: 0, y: 16 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.1 }}
+                  transition={{ delay: Math.min(i * 0.05, 0.3) }}
                   viewport={{ once: true }}
-                  className="bg-white rounded-[30px] p-4 border border-gray-100 hover:shadow-xl transition-all duration-300 group cursor-pointer"
+                  className="bg-white rounded-xl border border-gray-100 hover:shadow-lg transition-all duration-300 group cursor-pointer overflow-hidden"
                   data-testid={`card-blog-${post.id}`}
                 >
-                  <div className="relative rounded-[20px] overflow-hidden aspect-[16/10] mb-6">
-                    <img 
-                      src={post.coverImageUrl || getDefaultImage(i + 1)} 
-                      alt={post.title} 
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  <div className="relative aspect-[16/10] overflow-hidden">
+                    <img
+                      src={post.coverImageUrl || getDefaultImage(i + 1)}
+                      alt={post.title}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      loading="lazy"
+                      decoding="async"
                     />
-                    <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-gray-900 shadow-sm">
+                    <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-2.5 py-0.5 rounded-full text-[10px] font-bold text-gray-900 shadow-sm">
                       {post.category}
-                    </div>
-                    
-                    <div className="absolute bottom-4 right-4 bg-black/50 backdrop-blur-md h-10 w-10 rounded-full flex items-center justify-center text-white">
-                      <ArrowRight className="h-5 w-5 -rotate-45" />
                     </div>
                   </div>
 
-                  <div className="px-2 pb-4">
-                    <div className="flex items-center gap-4 text-xs text-gray-400 font-bold uppercase tracking-wider mb-3">
+                  <div className="p-4">
+                    <div className="flex items-center gap-3 text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-2">
                       <span>{formatDate(post.publishedAt)}</span>
                       <span className="w-1 h-1 rounded-full bg-gray-300" />
                       <span>5 min</span>
                     </div>
-                    
-                    <h3 className="text-2xl font-display font-bold text-gray-900 mb-3 group-hover:text-primary transition-colors leading-tight">
+
+                    <h3 className="text-lg font-display font-bold text-gray-900 mb-1.5 group-hover:text-primary transition-colors leading-snug line-clamp-2">
                       {post.title}
                     </h3>
-                    <p className="text-gray-500 mb-6 line-clamp-2">
+                    <p className="text-gray-500 text-sm line-clamp-2 mb-3">
                       {post.excerpt}
                     </p>
 
-                    <div className="flex items-center justify-between border-t border-gray-50 pt-4">
-                      <div className="flex items-center gap-2">
-                        <div className="h-8 w-8 rounded-full bg-gray-100" />
-                        <span className="text-sm font-bold text-gray-700">{post.category}</span>
-                      </div>
-                      <div className="flex items-center gap-4 text-gray-400">
-                        <button className="hover:text-red-500 transition-colors flex items-center gap-1 text-xs font-bold" data-testid={`button-like-${post.id}`}>
-                          <Heart className="h-4 w-4" />
+                    <div className="flex items-center justify-between pt-3 border-t border-gray-50">
+                      <span className="text-xs font-semibold text-gray-500">{post.category}</span>
+                      <div className="flex items-center gap-3 text-gray-400">
+                        <button className="hover:text-red-500 transition-colors" data-testid={`button-like-${post.id}`}>
+                          <Heart className="h-3.5 w-3.5" />
                         </button>
                         <div className="relative">
-                          <button 
+                          <button
                             onClick={(e) => {
                               e.stopPropagation();
+                              e.preventDefault();
                               setOpenShareId(openShareId === post.id ? null : post.id);
                             }}
                             className={`hover:text-blue-500 transition-colors ${openShareId === post.id ? 'text-blue-500' : ''}`}
                             data-testid={`button-share-${post.id}`}
                           >
-                            <Share2 className="h-4 w-4" />
+                            <Share2 className="h-3.5 w-3.5" />
                           </button>
-                          <ShareDropdown 
-                            post={post} 
-                            isOpen={openShareId === post.id} 
-                            onClose={() => setOpenShareId(null)} 
+                          <ShareDropdown
+                            post={post}
+                            isOpen={openShareId === post.id}
+                            onClose={() => setOpenShareId(null)}
                           />
                         </div>
                       </div>
@@ -345,7 +341,7 @@ export function BlogGrid() {
         )}
 
         {filteredPosts.length > 4 && (
-          <div className="mt-16 text-center">
+          <div className="mt-10 text-center">
             <button className="btn-primary" data-testid="button-load-more">
               Load More Stories
             </button>

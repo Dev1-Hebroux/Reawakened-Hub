@@ -60,39 +60,40 @@ export default function BlogPostPage() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="relative h-[50vh] md:h-[60vh] w-full overflow-hidden"
+            className="relative h-[40vh] md:h-[50vh] w-full overflow-hidden"
           >
-            <img 
-              src={post.coverImageUrl || defaultImg} 
+            <img
+              src={post.coverImageUrl || defaultImg}
               alt={post.title}
               className="w-full h-full object-cover"
+              decoding="async"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-            
-            <div className="absolute bottom-0 left-0 right-0 p-8 md:p-16 max-w-4xl mx-auto">
+
+            <div className="absolute bottom-0 left-0 right-0 p-6 md:p-12 max-w-4xl mx-auto">
               <Link href="/blog">
-                <button className="text-white/80 hover:text-white mb-6 flex items-center gap-2 font-medium transition-colors" data-testid="button-back">
-                  <ArrowLeft className="h-4 w-4" /> Back to Blog
+                <button className="text-white/80 hover:text-white mb-4 flex items-center gap-2 text-sm font-medium transition-colors" data-testid="button-back">
+                  <ArrowLeft className="h-3.5 w-3.5" /> Back to Blog
                 </button>
               </Link>
-              
-              <div className="flex items-center gap-3 mb-4">
-                <span className="bg-primary text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+
+              <div className="flex items-center gap-2.5 mb-3">
+                <span className="bg-primary text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">
                   {post.category}
                 </span>
               </div>
-              
-              <h1 className="text-3xl md:text-5xl font-display font-bold text-white leading-tight mb-4" data-testid="text-post-title">
+
+              <h1 className="text-2xl md:text-4xl font-display font-bold text-white leading-tight mb-3" data-testid="text-post-title">
                 {post.title}
               </h1>
-              
-              <div className="flex items-center gap-6 text-white/70 text-sm">
-                <span className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
+
+              <div className="flex items-center gap-5 text-white/60 text-xs">
+                <span className="flex items-center gap-1.5">
+                  <Calendar className="h-3.5 w-3.5" />
                   {formatDate(post.publishedAt)}
                 </span>
-                <span className="flex items-center gap-2">
-                  <Clock className="h-4 w-4" />
+                <span className="flex items-center gap-1.5">
+                  <Clock className="h-3.5 w-3.5" />
                   5 min read
                 </span>
               </div>
