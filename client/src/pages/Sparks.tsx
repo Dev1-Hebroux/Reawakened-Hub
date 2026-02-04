@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { BookOpen, ArrowRight, RefreshCw, Play, Calendar, Flame, ChevronRight, Clock, Sparkles } from "lucide-react";
+import { BookOpen, ArrowRight, RefreshCw, Play, Calendar, Flame, ChevronLeft, ChevronRight, Clock, Sparkles, Mic2 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { useRoute, useLocation } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
@@ -305,50 +305,41 @@ export function SparksPage() {
             <div className="h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
           </div>
 
-          {/* ── Browse Library — Categorized Sections ── */}
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <div className="mb-8">
-              <h2 className="text-2xl font-display font-bold text-white tracking-tight">Browse Library</h2>
-              <p className="text-sm text-white/30 mt-1">{sparks.length} sparks across all categories</p>
-            </div>
+          {/* ── Browse Library — Mixed Format Sections ── */}
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12">
+            {/* Devotionals — Quick Picks list style */}
+            {devotionals.length > 0 && (
+              <BrowseListSection
+                label="Daily Inspiration"
+                title="Devotionals"
+                sparks={devotionals}
+                onSparkClick={(id) => navigate(`/spark/${id}`)}
+                onSeeAll={() => setActiveFilter('daily-devotional')}
+              />
+            )}
 
-            <div className="space-y-12">
-              {/* Devotionals Browse */}
-              {devotionals.length > 0 && (
-                <BrowseCategory
-                  title="Devotionals"
-                  count={devotionals.length}
-                  sparks={devotionals}
-                  onSparkClick={(id) => navigate(`/spark/${id}`)}
-                  onSeeAll={() => setActiveFilter('daily-devotional')}
-                  pillarLabels={pillarLabels}
-                />
-              )}
+            {/* Worship — Card carousel style */}
+            {worshipSparks.length > 0 && (
+              <BrowseCardSection
+                label="Encounter"
+                title="Worship"
+                sparks={worshipSparks}
+                onSparkClick={(id) => navigate(`/spark/${id}`)}
+                onSeeAll={() => setActiveFilter('worship')}
+                pillarLabels={pillarLabels}
+              />
+            )}
 
-              {/* Worship Browse */}
-              {worshipSparks.length > 0 && (
-                <BrowseCategory
-                  title="Worship"
-                  count={worshipSparks.length}
-                  sparks={worshipSparks}
-                  onSparkClick={(id) => navigate(`/spark/${id}`)}
-                  onSeeAll={() => setActiveFilter('worship')}
-                  pillarLabels={pillarLabels}
-                />
-              )}
-
-              {/* Testimonies Browse */}
-              {testimonies.length > 0 && (
-                <BrowseCategory
-                  title="Testimonies"
-                  count={testimonies.length}
-                  sparks={testimonies}
-                  onSparkClick={(id) => navigate(`/spark/${id}`)}
-                  onSeeAll={() => setActiveFilter('testimony')}
-                  pillarLabels={pillarLabels}
-                />
-              )}
-            </div>
+            {/* Testimonies — Quick Picks list style */}
+            {testimonies.length > 0 && (
+              <BrowseListSection
+                label="Real Stories"
+                title="Testimonies"
+                sparks={testimonies}
+                onSparkClick={(id) => navigate(`/spark/${id}`)}
+                onSeeAll={() => setActiveFilter('testimony')}
+              />
+            )}
           </div>
         </>
       )}
@@ -599,7 +590,7 @@ function FilteredFeaturedCard({
 }
 
 
-/** Horizontal scroll section — YouTube Music / Spotify style */
+/** Horizontal scroll section — YouTube Music style with scroll arrows */
 function HorizontalSection({
   title,
   subtitle,
@@ -617,6 +608,12 @@ function HorizontalSection({
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  const scroll = (dir: 'left' | 'right') => {
+    if (!scrollRef.current) return;
+    const amount = scrollRef.current.clientWidth * 0.7;
+    scrollRef.current.scrollBy({ left: dir === 'left' ? -amount : amount, behavior: 'smooth' });
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -630,12 +627,28 @@ function HorizontalSection({
             <h3 className="text-xl font-display font-bold text-white tracking-tight">{title}</h3>
             <p className="text-xs text-white/30 mt-0.5">{subtitle}</p>
           </div>
-          <button
-            onClick={onSeeAll}
-            className="flex items-center gap-1.5 text-xs font-semibold text-primary hover:text-primary/80 transition-colors"
-          >
-            See all <ChevronRight className="h-3.5 w-3.5" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={onSeeAll}
+              className="text-xs font-semibold text-white/40 bg-white/[0.06] hover:bg-white/[0.1] px-3 py-1.5 rounded-full transition-colors"
+            >
+              More
+            </button>
+            <button
+              onClick={() => scroll('left')}
+              className="hidden sm:flex h-8 w-8 rounded-full bg-white/[0.06] hover:bg-white/[0.12] items-center justify-center transition-colors"
+              aria-label="Scroll left"
+            >
+              <ChevronLeft className="h-4 w-4 text-white/60" />
+            </button>
+            <button
+              onClick={() => scroll('right')}
+              className="hidden sm:flex h-8 w-8 rounded-full bg-white/[0.06] hover:bg-white/[0.12] items-center justify-center transition-colors"
+              aria-label="Scroll right"
+            >
+              <ChevronRight className="h-4 w-4 text-white/60" />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -645,7 +658,7 @@ function HorizontalSection({
         className="flex gap-4 overflow-x-auto scrollbar-hide px-4 sm:px-6 lg:px-8 pb-2 snap-x snap-mandatory"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
-        {sparks.slice(0, 8).map((spark, i) => (
+        {sparks.slice(0, 10).map((spark, i) => (
           <div
             key={spark.id}
             className="flex-shrink-0 w-[160px] sm:w-[180px] snap-start"
@@ -725,54 +738,188 @@ function HorizontalSparkCard({
 }
 
 
-/** Browse category section — shows 4 items in grid with "See all" */
-function BrowseCategory({
+/** Browse category — "Quick picks" list style (like YouTube Music) */
+function BrowseListSection({
+  label,
   title,
-  count,
   sparks,
   onSparkClick,
   onSeeAll,
-  pillarLabels,
 }: {
+  label: string;
   title: string;
-  count: number;
   sparks: any[];
   onSparkClick: (id: number) => void;
   onSeeAll: () => void;
-  pillarLabels: Record<string, string>;
 }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const scroll = (dir: 'left' | 'right') => {
+    if (!scrollRef.current) return;
+    const amount = scrollRef.current.clientWidth * 0.6;
+    scrollRef.current.scrollBy({ left: dir === 'left' ? -amount : amount, behavior: 'smooth' });
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-40px" }}
     >
-      {/* Category Header */}
+      {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2.5">
+        <div>
+          <span className="text-[10px] font-bold text-white/25 uppercase tracking-[0.15em]">{label}</span>
           <h3 className="text-lg font-display font-bold text-white tracking-tight">{title}</h3>
-          <span className="text-xs font-medium text-white/20 bg-white/[0.04] px-2 py-0.5 rounded-full">{count}</span>
         </div>
-        {count > 4 && (
+        <div className="flex items-center gap-2">
+          {sparks.length > 4 && (
+            <button
+              onClick={onSeeAll}
+              className="text-xs font-semibold text-white/40 bg-white/[0.06] hover:bg-white/[0.1] px-3 py-1.5 rounded-full transition-colors"
+            >
+              More
+            </button>
+          )}
           <button
-            onClick={onSeeAll}
-            className="flex items-center gap-1 text-xs font-semibold text-primary hover:text-primary/80 transition-colors"
+            onClick={() => scroll('left')}
+            className="hidden sm:flex h-8 w-8 rounded-full bg-white/[0.06] hover:bg-white/[0.12] items-center justify-center transition-colors"
           >
-            See all <ChevronRight className="h-3.5 w-3.5" />
+            <ChevronLeft className="h-4 w-4 text-white/60" />
           </button>
-        )}
+          <button
+            onClick={() => scroll('right')}
+            className="hidden sm:flex h-8 w-8 rounded-full bg-white/[0.06] hover:bg-white/[0.12] items-center justify-center transition-colors"
+          >
+            <ChevronRight className="h-4 w-4 text-white/60" />
+          </button>
+        </div>
       </div>
 
-      {/* Grid — max 4 items */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-        {sparks.slice(0, 4).map((spark, i) => (
-          <HorizontalSparkCard
+      {/* Horizontal scrollable list rows — 2 columns on desktop */}
+      <div
+        ref={scrollRef}
+        className="flex gap-3 overflow-x-auto scrollbar-hide pb-1 snap-x"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+      >
+        {/* Group into columns of 4 rows each */}
+        {Array.from({ length: Math.ceil(Math.min(sparks.length, 12) / 4) }).map((_, colIdx) => (
+          <div key={colIdx} className="flex-shrink-0 w-[85vw] sm:w-[340px] space-y-1 snap-start">
+            {sparks.slice(colIdx * 4, colIdx * 4 + 4).map((spark) => (
+              <div
+                key={spark.id}
+                onClick={() => onSparkClick(spark.id)}
+                className="group flex items-center gap-3 p-2 rounded-lg hover:bg-white/[0.04] transition-colors cursor-pointer"
+              >
+                <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-gray-900">
+                  <img
+                    src={getSparkImage(spark, 0)}
+                    alt={spark.title}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-sm font-semibold text-white truncate group-hover:text-primary transition-colors">
+                    {spark.title}
+                  </h4>
+                  <p className="text-[11px] text-white/30 truncate">
+                    {spark.weekTheme || spark.category?.replace('-', ' ')}
+                    {spark.duration ? ` · ${Math.floor(spark.duration / 60)}:${String(spark.duration % 60).padStart(2, '0')}` : ''}
+                  </p>
+                </div>
+                {spark.duration && (
+                  <span className="text-[11px] font-medium text-white/20 flex-shrink-0 tabular-nums">
+                    {Math.floor(spark.duration / 60)}:{String(spark.duration % 60).padStart(2, '0')}
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    </motion.div>
+  );
+}
+
+
+/** Browse category — card carousel style (like YouTube Music "Albums for you") */
+function BrowseCardSection({
+  label,
+  title,
+  sparks,
+  onSparkClick,
+  onSeeAll,
+  pillarLabels,
+}: {
+  label: string;
+  title: string;
+  sparks: any[];
+  onSparkClick: (id: number) => void;
+  onSeeAll: () => void;
+  pillarLabels: Record<string, string>;
+}) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const scroll = (dir: 'left' | 'right') => {
+    if (!scrollRef.current) return;
+    const amount = scrollRef.current.clientWidth * 0.7;
+    scrollRef.current.scrollBy({ left: dir === 'left' ? -amount : amount, behavior: 'smooth' });
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-40px" }}
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <span className="text-[10px] font-bold text-white/25 uppercase tracking-[0.15em]">{label}</span>
+          <h3 className="text-lg font-display font-bold text-white tracking-tight">{title}</h3>
+        </div>
+        <div className="flex items-center gap-2">
+          {sparks.length > 4 && (
+            <button
+              onClick={onSeeAll}
+              className="text-xs font-semibold text-white/40 bg-white/[0.06] hover:bg-white/[0.1] px-3 py-1.5 rounded-full transition-colors"
+            >
+              More
+            </button>
+          )}
+          <button
+            onClick={() => scroll('left')}
+            className="hidden sm:flex h-8 w-8 rounded-full bg-white/[0.06] hover:bg-white/[0.12] items-center justify-center transition-colors"
+          >
+            <ChevronLeft className="h-4 w-4 text-white/60" />
+          </button>
+          <button
+            onClick={() => scroll('right')}
+            className="hidden sm:flex h-8 w-8 rounded-full bg-white/[0.06] hover:bg-white/[0.12] items-center justify-center transition-colors"
+          >
+            <ChevronRight className="h-4 w-4 text-white/60" />
+          </button>
+        </div>
+      </div>
+
+      {/* Horizontal card scroll */}
+      <div
+        ref={scrollRef}
+        className="flex gap-4 overflow-x-auto scrollbar-hide pb-2 snap-x snap-mandatory"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+      >
+        {sparks.slice(0, 10).map((spark, i) => (
+          <div
             key={spark.id}
-            spark={spark}
-            index={i}
-            onClick={() => onSparkClick(spark.id)}
-            pillarLabels={pillarLabels}
-          />
+            className="flex-shrink-0 w-[160px] sm:w-[180px] snap-start"
+          >
+            <HorizontalSparkCard
+              spark={spark}
+              index={i}
+              onClick={() => onSparkClick(spark.id)}
+              pillarLabels={pillarLabels}
+            />
+          </div>
         ))}
       </div>
     </motion.div>
