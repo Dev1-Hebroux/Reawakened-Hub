@@ -1245,6 +1245,19 @@ export class DatabaseStorage implements IStorage {
     return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
   }
 
+  private getLondonHour(): number {
+    const londonTime = new Date().toLocaleString("en-GB", { timeZone: "Europe/London", hour: 'numeric', hour12: false });
+    return parseInt(londonTime, 10);
+  }
+
+  private getTomorrowLondonDate(): string {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const londonTime = tomorrow.toLocaleString("en-GB", { timeZone: "Europe/London" });
+    const parts = londonTime.split(',')[0].split('/');
+    return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+  }
+
   async getPublishedSparks(audienceSegment?: string): Promise<Spark[]> {
     const now = new Date();
     const conditions = [
@@ -1274,17 +1287,30 @@ export class DatabaseStorage implements IStorage {
 
   async getTodaySpark(audienceSegment?: string): Promise<Spark | undefined> {
     const todayLondon = this.getLondonDate();
-    const conditions = [
-      eq(sparks.dailyDate, todayLondon),
-      sql`${sparks.status} IN ('published', 'scheduled')`,
-    ];
-    if (audienceSegment) {
-      conditions.push(eq(sparks.audienceSegment, audienceSegment));
-    } else {
-      conditions.push(sql`(${sparks.audienceSegment} IS NULL OR ${sparks.audienceSegment} = '')`);
+    const londonHour = this.getLondonHour();
+
+    // After 23:00 London time, also check tomorrow's devotional so it drops before midnight
+    const datesToCheck = [todayLondon];
+    if (londonHour >= 23) {
+      datesToCheck.push(this.getTomorrowLondonDate());
     }
-    const [spark] = await db.select().from(sparks).where(and(...conditions)).limit(1);
-    return spark;
+
+    const audienceCondition = audienceSegment
+      ? eq(sparks.audienceSegment, audienceSegment)
+      : sql`(${sparks.audienceSegment} IS NULL OR ${sparks.audienceSegment} = '')`;
+
+    // Try tomorrow first (if after 23:00) so the newer devotional takes priority
+    for (const dateStr of datesToCheck.reverse()) {
+      const conditions = [
+        eq(sparks.dailyDate, dateStr),
+        sql`${sparks.status} IN ('published', 'scheduled')`,
+        audienceCondition,
+      ];
+      const [spark] = await db.select().from(sparks).where(and(...conditions)).limit(1);
+      if (spark) return spark;
+    }
+
+    return undefined;
   }
 
   async getSparksByDailyDate(dailyDate: string): Promise<Spark[]> {
