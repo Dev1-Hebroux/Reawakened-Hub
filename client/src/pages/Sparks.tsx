@@ -14,6 +14,10 @@ import { HeroSection } from "@/components/sparks/HeroSection";
 import { SparkFilters } from "@/components/sparks/SparkFilters";
 import { SubscribeModal } from "@/components/sparks/SubscribeModal";
 import { PodcastSection } from "@/components/sparks/PodcastSection";
+import { DailyDevotionalSection } from "@/components/sparks/DailyDevotionalSection";
+import { ReflectionGrowthSection } from "@/components/sparks/ReflectionGrowthSection";
+import { IntercessionModal } from "@/components/sparks/IntercessionModal";
+import { WeeklyChallenge } from "@/components/WeeklyChallenge";
 import { usePullToRefresh } from "@/hooks/useGestures";
 import { getSparkImage } from "@/lib/sparkImageUtils";
 import { getMediaTypeIcon, getMediaTypeLabel } from "@/lib/mediaTypeUtils";
@@ -36,6 +40,9 @@ export function SparksPage() {
 
   const [activeFilter, setActiveFilter] = useState("All");
   const [showSubscribe, setShowSubscribe] = useState(false);
+  const [viewMode, setViewMode] = useState<'reflection' | 'faith'>('faith');
+  const [reflectionTab, setReflectionTab] = useState<'reflection' | 'growth'>('reflection');
+  const [showIntercession, setShowIntercession] = useState(false);
   const { user, isAuthenticated } = useAuth();
 
   const userAudienceSegment = (user as any)?.audienceSegment as string | undefined;
@@ -94,6 +101,8 @@ export function SparksPage() {
   const sparks = dashboardResult.sparks ?? [];
   const todaySpark = dashboardResult.todaySpark;
   const featuredSparks = dashboardResult.featured ?? [];
+  const reflection = dashboardResult.reflection;
+  const activeSessions = dashboardResult.sessions ?? [];
   const isLoading = dashboardResult.isLoading;
 
   // Redirect old spark URLs
@@ -211,68 +220,19 @@ export function SparksPage() {
       {/* === ALL TAB === */}
       {activeFilter === "All" && (
         <>
-          {/* Today's Featured Spark */}
-          {heroSpark && (
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-              >
-                <div
-                  onClick={() => navigate(`/spark/${heroSpark.id}`)}
-                  className="group relative rounded-2xl overflow-hidden cursor-pointer border border-white/[0.06] hover:border-white/[0.12] transition-all duration-500"
-                >
-                  <div className="grid md:grid-cols-2">
-                    <div className="relative aspect-video md:aspect-auto md:min-h-[260px]">
-                      <img
-                        src={getSparkImage(heroSpark, 0)}
-                        alt={heroSpark.title}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                        style={{ filter: 'brightness(0.85) saturate(1.1)' }}
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent to-black/60 hidden md:block" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent md:hidden" />
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="h-14 w-14 bg-white/15 backdrop-blur-xl rounded-full flex items-center justify-center border border-white/25 group-hover:scale-110 group-hover:bg-white/25 transition-all duration-500 shadow-2xl">
-                          <Play className="h-6 w-6 fill-white text-white ml-1" />
-                        </div>
-                      </div>
-                    </div>
-                    <div className="p-6 md:p-8 flex flex-col justify-center bg-gradient-to-br from-white/[0.04] to-transparent">
-                      <div className="flex items-center gap-2 mb-3">
-                        <span className="bg-primary/90 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">
-                          Today's Word
-                        </span>
-                        <span className="text-[10px] text-white/30 uppercase tracking-wider flex items-center gap-1">
-                          <Calendar className="h-3 w-3" />
-                          {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
-                        </span>
-                      </div>
-                      <h3 className="text-xl md:text-2xl font-display font-bold text-white mb-2 tracking-tight">
-                        {heroSpark.title}
-                      </h3>
-                      <p className="text-sm text-white/50 line-clamp-2 mb-4 leading-relaxed">
-                        {heroSpark.description}
-                      </p>
-                      {heroSpark.scriptureRef && (
-                        <p className="text-sm text-primary font-semibold">
-                          {heroSpark.scriptureRef}
-                        </p>
-                      )}
-                      {heroSpark.duration && (
-                        <p className="text-xs text-white/30 mt-2">
-                          {Math.floor(heroSpark.duration / 60)} min {heroSpark.mediaType === 'video' ? 'watch' : 'listen'}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            </div>
-          )}
+          {/* Today's Devotional — Scripture, Prayer, Share, Subscribe */}
+          <DailyDevotionalSection
+            todaySpark={heroSpark}
+            todayLoading={isLoading}
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
+            onSparkClick={() => heroSpark && navigate(`/spark/${heroSpark.id}`)}
+            onSubscribeClick={() => setShowSubscribe(true)}
+            onReactionClick={() => {}}
+          />
 
           {/* Category Carousels */}
-          <div className="space-y-10 mb-12">
+          <div className="space-y-10 mb-8">
             {devotionals.length > 0 && (
               <HorizontalSection
                 title="Daily Devotionals"
@@ -306,6 +266,21 @@ export function SparksPage() {
               />
             )}
           </div>
+
+          {/* Weekly Challenge */}
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-4">
+            <WeeklyChallenge />
+          </div>
+
+          {/* Reflection & Growth Section */}
+          <ReflectionGrowthSection
+            todayReflection={reflection}
+            activeSessions={activeSessions}
+            reflectionTab={reflectionTab}
+            viewMode={viewMode}
+            onTabChange={setReflectionTab}
+            onIntercessionClick={() => setShowIntercession(true)}
+          />
 
           {/* Browse All */}
           {sparks.length > 0 && (
@@ -473,6 +448,13 @@ export function SparksPage() {
         </motion.div>
       </div>
 
+      {/* Intercession Modal */}
+      <IntercessionModal
+        isOpen={showIntercession}
+        todaySpark={heroSpark}
+        onClose={() => setShowIntercession(false)}
+      />
+
       {/* Subscribe Modal */}
       <SubscribeModal
         isOpen={showSubscribe}
@@ -520,6 +502,8 @@ function FilteredFeaturedCard({
             alt={spark.title}
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             style={{ filter: 'brightness(0.8) saturate(1.1)' }}
+            loading="lazy"
+            decoding="async"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-transparent to-black/70 hidden md:block" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent md:hidden" />

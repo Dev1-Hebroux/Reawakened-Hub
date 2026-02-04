@@ -3,13 +3,7 @@ import { Play, Heart, ArrowRight, Loader2 } from "lucide-react";
 import { Link } from "wouter";
 import type { Spark } from "@shared/schema";
 import { useDashboard } from "@/hooks/useDashboard";
-
-import identityImg from "@assets/generated_images/identity_in_chaos_abstract.png";
-import believeImg from "@assets/generated_images/why_i_believe_abstract.png";
-import hearingImg from "@assets/generated_images/hearing_god's_voice_abstract.png";
-import boldnessImg from "@assets/generated_images/boldness_at_work_abstract.png";
-
-const fallbackImages = [identityImg, believeImg, hearingImg, boldnessImg];
+import { getSparkImage } from "@/lib/sparkImageUtils";
 
 interface DailySparksProps {
   compact?: boolean;
@@ -47,9 +41,11 @@ export function DailySparks({ compact = false }: DailySparksProps) {
             <Link href="/sparks">
               <div className="relative rounded-[20px] overflow-hidden aspect-[3/4] max-w-sm shadow-lg group-hover:shadow-xl transition-all duration-300">
                 <img
-                  src={displaySparks[0].thumbnailUrl || displaySparks[0].imageUrl || fallbackImages[0]}
+                  src={getSparkImage(displaySparks[0], 0)}
                   alt={displaySparks[0].title}
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  loading="lazy"
+                  decoding="async"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#1a2744]/70 via-transparent to-transparent opacity-70" />
 
@@ -123,9 +119,11 @@ export function DailySparks({ compact = false }: DailySparksProps) {
                 <Link href="/sparks">
                   <div className="relative rounded-[24px] overflow-hidden aspect-[3/4] mb-4 shadow-md group-hover:shadow-xl transition-all duration-300">
                     <img
-                      src={spark.thumbnailUrl || spark.imageUrl || fallbackImages[i % fallbackImages.length]}
+                      src={getSparkImage(spark, i)}
                       alt={spark.title}
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      loading="lazy"
+                      decoding="async"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-[#1a2744]/60 via-transparent to-transparent opacity-60" />
 

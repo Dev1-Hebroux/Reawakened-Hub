@@ -3,11 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Play, ArrowRight, Mic2, Flame, Loader2 } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useDashboard } from "@/hooks/useDashboard";
-
-import identityImg from "@assets/generated_images/identity_in_chaos_abstract.png";
-import believeImg from "@assets/generated_images/why_i_believe_abstract.png";
-
-const fallbackImages = [identityImg, believeImg];
+import { getSparkImage } from "@/lib/sparkImageUtils";
 
 const PODCAST_PREVIEW = [
   { num: 3, title: "When the Horses Got Confused", theme: "Revival transforms society", duration: "10 min", color: "from-orange-500 to-amber-400" },
@@ -93,9 +89,11 @@ export function SparkPodcastTabs() {
                   <div className="group flex items-center gap-3 p-3 rounded-xl bg-gray-50 hover:bg-gray-100 border border-gray-100 hover:border-gray-200 transition-all cursor-pointer">
                     <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0">
                       <img
-                        src={spark!.thumbnailUrl || spark!.imageUrl || fallbackImages[i % fallbackImages.length]}
+                        src={getSparkImage(spark!, i)}
                         alt={spark!.title}
                         className="w-full h-full object-cover"
+                        loading="lazy"
+                        decoding="async"
                       />
                     </div>
                     <div className="flex-1 min-w-0">
