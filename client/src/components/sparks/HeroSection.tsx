@@ -52,13 +52,13 @@ export function HeroSection({ featuredSpark, totalSparks, onWatchClick, onSubscr
 
           {/* Title */}
           <h1 className="text-4xl md:text-[3.5rem] lg:text-6xl font-display font-bold leading-[1.08] tracking-tight" data-testid="text-hero-title">
-            {featuredSpark?.title || "Dominion Begins with Belonging"}
+            {featuredSpark?.title || "Your Daily Spark"}
           </h1>
 
           {/* Description */}
           <p className="text-base md:text-lg text-white/70 max-w-xl leading-relaxed font-light" data-testid="text-hero-description">
             {featuredSpark?.description ||
-              "Real authority starts with security, not striving. Whether you're in school, on campus, building your career or business, or doing life as a couple, this is a simple daily reset for pressure and pace."}
+              "Daily devotionals, worship moments, and real stories to fuel your faith. A simple reset for the pressure and pace of everyday life."}
           </p>
 
           {/* CTAs */}
