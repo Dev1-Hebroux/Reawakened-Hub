@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import { objectStorageClient, ObjectStorageService } from "./replit_integrations/object_storage";
+import { isStorageConfigured, uploadAudio, audioExists, deleteAudio as deleteAudioFile } from "./supabaseStorage";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -10,18 +10,13 @@ interface TTSGenerationResult {
 }
 
 export class TTSService {
-  private objectStorageService: ObjectStorageService | null = null;
-  private bucketName: string = "";
   private isConfigured: boolean = false;
 
   constructor() {
-    const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
-    if (!bucketId) {
-      console.warn("DEFAULT_OBJECT_STORAGE_BUCKET_ID not configured - TTS features will be disabled");
+    if (!isStorageConfigured()) {
+      console.warn("Supabase storage not configured - TTS features will be disabled");
       return;
     }
-    this.objectStorageService = new ObjectStorageService();
-    this.bucketName = bucketId;
     this.isConfigured = true;
   }
 
@@ -33,7 +28,7 @@ export class TTSService {
     if (!this.isConfigured) {
       return { success: false, error: "TTS service not configured" };
     }
-    
+
     try {
       const mp3Response = await openai.audio.speech.create({
         model: "tts-1",
@@ -42,23 +37,7 @@ export class TTSService {
       });
 
       const audioBuffer = Buffer.from(await mp3Response.arrayBuffer());
-      const objectPath = `public/audio/${filename}`;
-      const bucket = objectStorageClient.bucket(this.bucketName);
-      const file = bucket.file(objectPath);
-
-      await file.save(audioBuffer, {
-        metadata: {
-          contentType: "audio/mpeg",
-          metadata: {
-            "custom:aclPolicy": JSON.stringify({
-              owner: "system",
-              visibility: "public",
-            }),
-          },
-        },
-      });
-
-      const audioUrl = `/api/audio/${filename}`;
+      const audioUrl = await uploadAudio(filename, audioBuffer);
 
       return {
         success: true,
@@ -77,13 +56,9 @@ export class TTSService {
     if (!this.isConfigured) {
       return null;
     }
-    
+
     try {
-      const objectPath = `public/audio/${filename}`;
-      const bucket = objectStorageClient.bucket(this.bucketName);
-      const file = bucket.file(objectPath);
-      const [exists] = await file.exists();
-      
+      const exists = await audioExists(filename);
       if (exists) {
         return `/api/audio/${filename}`;
       }
@@ -98,13 +73,9 @@ export class TTSService {
     if (!this.isConfigured) {
       return false;
     }
-    
+
     try {
-      const objectPath = `public/audio/${filename}`;
-      const bucket = objectStorageClient.bucket(this.bucketName);
-      const file = bucket.file(objectPath);
-      await file.delete();
-      return true;
+      return await deleteAudioFile(filename);
     } catch (error) {
       console.error("Error deleting audio file:", error);
       return false;
@@ -123,6 +94,7 @@ interface SparkAudioContent {
   todayAction?: string;
   prayerLine?: string;
   ctaPrimary?: string;
+  weekTheme?: string;
 }
 
 export async function generateSparkAudio(
@@ -181,8 +153,15 @@ export async function generateSparkAudio(
     
     narrationText = parts.join('');
   }
-  
-  return ttsService.generateAndUploadAudio(narrationText, filename, "nova");
+
+  // Determine voice: female-only for Deborahs, alternating for others
+  const weekTheme = typeof content !== 'string' ? content.weekTheme : undefined;
+  let voice: "onyx" | "nova" = sparkId % 2 === 0 ? "onyx" : "nova";
+  if (weekTheme === "Let the Deborahs Arise") {
+    voice = "nova"; // Female voices only for this series
+  }
+
+  return ttsService.generateAndUploadAudio(narrationText, filename, voice);
 }
 
 export async function getSparkAudioUrl(sparkId: number): Promise<string | null> {

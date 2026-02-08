@@ -60,17 +60,14 @@ export function VisionHabits() {
 
   const createHabit = useMutation({
     mutationFn: async () => {
-      const res = await fetch(getApiUrl(`/api/vision/habits`), {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
+      return await apiFetchJson(getApiUrl(`/api/vision/habits`), {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({
           sessionId: parseInt(sessionId!),
           ...habitForm,
         }),
       });
-      if (!res.ok) throw new Error("Failed to create habit");
-      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/vision/sessions/${sessionId}/habits`] });
@@ -81,11 +78,10 @@ export function VisionHabits() {
 
   const deleteHabit = useMutation({
     mutationFn: async (habitId: number) => {
-      const res = await fetch(getApiUrl(`/api/vision/habits/${habitId}`), {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
+      return await apiFetchJson(getApiUrl(`/api/vision/habits/${habitId}`), {
         method: "DELETE",
-        credentials: "include",
       });
-      if (!res.ok) throw new Error("Failed to delete habit");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/vision/sessions/${sessionId}/habits`] });
@@ -316,14 +312,11 @@ function HabitCard({
 
   const toggleLog = useMutation({
     mutationFn: async ({ date, completed }: { date: string; completed: boolean }) => {
-      const res = await fetch(getApiUrl(`/api/vision/habits/${habit.id}/log`), {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
+      return await apiFetchJson(getApiUrl(`/api/vision/habits/${habit.id}/log`), {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ date, completed }),
       });
-      if (!res.ok) throw new Error("Failed to toggle");
-      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/vision/habits/${habit.id}/logs`] });

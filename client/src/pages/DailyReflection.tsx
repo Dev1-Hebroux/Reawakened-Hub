@@ -113,13 +113,11 @@ export function DailyReflection() {
   const logEngagement = useMutation({
     mutationFn: async ({ reflectionId, journalEntry, reaction }: { reflectionId: number; journalEntry?: string; reaction?: string }) => {
       if (!user || reflectionId === 0) return;
-      const res = await fetch(`/api/reflection/${reflectionId}/engage`, {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
+      return await apiFetchJson(`/api/reflection/${reflectionId}/engage`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ journalEntry, reaction }),
       });
-      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/reflection/log"] });
@@ -158,10 +156,9 @@ export function DailyReflection() {
       // Fetch AI coaching insight based on the journal entry
       setIsLoadingInsight(true);
       try {
-        const res = await fetch("/api/ai/analyze", {
+        const { apiFetchJson } = await import('@/lib/apiFetch');
+        const result = await apiFetchJson("/api/ai/analyze", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
           body: JSON.stringify({
             tool: "reflection",
             data: {
@@ -175,13 +172,10 @@ export function DailyReflection() {
             prompt: "Based on this person's reflection and journal entry, provide a brief, warm, and encouraging coaching insight (2-3 sentences). Help them see patterns, growth opportunities, or affirm their journey. Be conversational and personal."
           }),
         });
-        if (res.ok) {
-          const result = await res.json();
-          // API returns { ok, data: AIResponse }
-          const insight = result.data?.encouragement || result.data?.insights?.[0] || result.data?.suggestions?.[0];
-          if (insight) {
-            setAiInsight(insight);
-          }
+        // API returns { ok, data: AIResponse }
+        const insight = result.data?.encouragement || result.data?.insights?.[0] || result.data?.suggestions?.[0];
+        if (insight) {
+          setAiInsight(insight);
         }
       } catch (error) {
         console.error("Failed to get AI insight:", error);

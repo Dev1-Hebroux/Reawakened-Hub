@@ -1,0 +1,25 @@
+# Antigravity IDE - File Watcher Exclusions
+# These directories will be excluded from indexing to improve performance
+
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+
+# Large asset directories
+attached_assets/generated_images/
+attached_assets/generated_videos/
+
+# System files
+.DS_Store
+*.tar.gz
+
+# Environment files
+.env
+.env.local
+.env.*.local

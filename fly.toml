@@ -6,6 +6,9 @@ primary_region = "lhr"
 
 [build]
 
+[deploy]
+  release_command = "npm run db:push"
+
 [env]
   NODE_ENV = "production"
   PORT = "8080"

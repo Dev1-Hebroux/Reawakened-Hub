@@ -125,21 +125,31 @@ samples:
   encouraging: |
     "Find ten minutes—that's it, ten minutes—and ask God this question: 'What do you want to do in me... and through me?' Then just listen."
 
+# = :REFINEMENT PROMPTS (Use in ElevenLabs Voice Description)
+# ============================================
+refinement:
+  description_prompt: |
+    "An authentic, heart-driven voice with a distinct natural accent. Speaks with a commanding presence and high energy, characterized by an urgent yet warm pace. The delivery is focused on audience mobilization, using rhythmic variations and emphatic delivery to create a 'live' and engaging atmosphere."
+
+  suggested_voice_settings:
+    stability: 0.45          # Verified preference
+    similarity_boost: 0.95   # Verified preference
+    style_exaggeration: 0.6  # Verified preference
+
 # ============================================
 # AI VOICE SETTINGS (after cloning)
 # ============================================
 ai_voice:
   # ElevenLabs cloned voices
-  elevenlabs_voice_id_1: "dqwf8gpdM6B9JxRUArTA"
-  elevenlabs_voice_id_2: "35WSYz4kujsGVD7ZDCdw"
+  elevenlabs_voice_id: "32HXK9DCauVtWButrCWT"
 
   # Set which voice to use as primary
-  primary_voice: "35WSYz4kujsGVD7ZDCdw"
+  primary_voice: "32HXK9DCauVtWButrCWT"
 
   # Voice settings (adjust after testing)
-  stability: 0.5           # 0-1, lower = more expressive
-  similarity_boost: 0.75   # 0-1, higher = closer to original
-  style: 0.5              # 0-1, how much to exaggerate style
+  stability: 0.45           # 0-1, lower = more expressive
+  similarity_boost: 0.95   # 0-1, higher = closer to original
+  style: 0.6               # 0-1, how much to exaggerate style
 
   # Alternative services (if using others)
   playht_voice_id: ""

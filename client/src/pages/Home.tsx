@@ -18,6 +18,8 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { SEO } from "@/components/SEO";
+import MarketingHome from "@/pages/MarketingHome";
+import { isMarketingSite } from "@/lib/domain";
 
 // Lazy-load heavy below-fold sections to reduce initial bundle
 const Foundations = lazy(() => import("@/components/sections/Foundations").then(m => ({ default: m.Foundations })));
@@ -44,7 +46,7 @@ const formatDate = (date: string | Date) => {
 export default function Home() {
   const [, navigate] = useLocation();
   const [selectedCommitment, setSelectedCommitment] = useState<string | null>(null);
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
 
   const { data: events = [], isLoading: eventsLoading } = useQuery<Event[]>({
@@ -54,6 +56,11 @@ export default function Home() {
   const featuredEvents = events
     .slice(0, 2)
     .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+
+  // On reawakened.one always show the marketing site; .app shows the full Home page
+  if (isMarketingSite()) {
+    return <MarketingHome />;
+  }
 
   return (
     <div className="min-h-screen bg-white text-foreground overflow-x-hidden relative">

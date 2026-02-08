@@ -70,14 +70,11 @@ export function WheelOfLife() {
         score: scores[cat.key] || 5,
         notes: notes[cat.key] || null,
       }));
-      const res = await fetch(getApiUrl(`/api/vision/sessions/${sessionId}/wheel`), {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
+      return await apiFetchJson(getApiUrl(`/api/vision/sessions/${sessionId}/wheel`), {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ categories, focusAreas: selectedFocus }),
       });
-      if (!res.ok) throw new Error("Failed to save");
-      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/vision/sessions/${sessionId}/wheel`] });

@@ -36,11 +36,11 @@ const weekThemeImages: Record<string, string> = {
 };
 
 const backgroundTracks = [
-  { id: "track1", name: "Peaceful Dawn", url: "/attached_assets/DappyTKeys_-_Background_Music_-_01_Background_Music_-_1_1767469486425.mp3" },
-  { id: "track2", name: "Gentle Waters", url: "/attached_assets/DappyTKeys_-_Background_Music_-_02_Background_Music_-_2_1767469511632.mp3" },
-  { id: "track3", name: "Morning Light", url: "/attached_assets/DappyTKeys_-_Background_Music_-_03_Background_Music_-_3_1767469511633.mp3" },
-  { id: "track4", name: "Still Moments", url: "/attached_assets/DappyTKeys_-_Background_Music_-_04_Background_Music_-_4_1767469511634.mp3" },
-  { id: "track5", name: "Grace Notes", url: "/attached_assets/DappyTKeys_-_Background_Music_-_05_Background_Music_-_5_1767469511635.mp3" },
+  { id: "track1", name: "Peaceful Dawn", url: "/media/DappyTKeys_-_Background_Music_-_01_Background_Music_-_1_1767469486425.mp3" },
+  { id: "track2", name: "Gentle Waters", url: "/media/DappyTKeys_-_Background_Music_-_02_Background_Music_-_2_1767469511632.mp3" },
+  { id: "track3", name: "Morning Light", url: "/media/DappyTKeys_-_Background_Music_-_03_Background_Music_-_3_1767469511633.mp3" },
+  { id: "track4", name: "Still Moments", url: "/media/DappyTKeys_-_Background_Music_-_04_Background_Music_-_4_1767469511634.mp3" },
+  { id: "track5", name: "Grace Notes", url: "/media/DappyTKeys_-_Background_Music_-_05_Background_Music_-_5_1767469511635.mp3" },
 ];
 
 export function SparkDetail() {

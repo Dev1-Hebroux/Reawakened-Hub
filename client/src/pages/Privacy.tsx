@@ -236,7 +236,7 @@ export default function Privacy() {
                 <div>
                   <p className="font-medium text-gray-900 dark:text-white">Connected Account</p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Signed in with Replit
+                    Signed in with email
                   </p>
                 </div>
                 <div className="h-10 w-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">

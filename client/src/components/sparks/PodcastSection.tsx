@@ -10,7 +10,7 @@
  */
 
 import { motion } from "framer-motion";
-import { Headphones, Play, Pause, Mic2, Radio, SkipForward } from "lucide-react";
+import { Headphones, Play, Pause, Mic2, Radio, SkipForward, Share2 } from "lucide-react";
 import { useState, useRef, useEffect, useCallback } from "react";
 
 interface PodcastEpisode {
@@ -25,6 +25,8 @@ interface PodcastEpisode {
   gradientText: string;
   accentColor: string;
   sections: string[];
+  releaseDate: string; // e.g. "Jan 15, 2026"
+  coverImage: string; // Thematic cover image
 }
 
 const PODCAST_EPISODES: PodcastEpisode[] = [
@@ -40,6 +42,8 @@ const PODCAST_EPISODES: PodcastEpisode[] = [
     gradient: "from-orange-500 via-amber-500 to-yellow-400",
     gradientText: "from-orange-400 to-yellow-300",
     accentColor: "orange",
+    releaseDate: "Jan 28, 2026",
+    coverImage: "https://images.unsplash.com/photo-1553284965-83fd3e82fa5a?w=400&h=400&fit=crop", // Horse portrait
     sections: [
       "/podcast/ep03-intro.mp3",
       "/podcast/ep03-section1.mp3",
@@ -60,6 +64,8 @@ const PODCAST_EPISODES: PodcastEpisode[] = [
     gradient: "from-teal-500 via-emerald-500 to-green-400",
     gradientText: "from-teal-400 to-emerald-300",
     accentColor: "teal",
+    releaseDate: "Jan 21, 2026",
+    coverImage: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=400&h=400&fit=crop", // Young woman face
     sections: [
       "/podcast/ep02-intro.mp3",
       "/podcast/ep02-section1.mp3",
@@ -80,6 +86,8 @@ const PODCAST_EPISODES: PodcastEpisode[] = [
     gradient: "from-purple-500 via-violet-500 to-indigo-400",
     gradientText: "from-purple-400 to-indigo-300",
     accentColor: "purple",
+    releaseDate: "Jan 14, 2026",
+    coverImage: "https://images.unsplash.com/photo-1545389336-cf090694435e?w=400&h=400&fit=crop", // Hands in prayer with light
     sections: [
       "/podcast/ep01-intro.mp3",
       "/podcast/ep01-section1.mp3",
@@ -89,6 +97,27 @@ const PODCAST_EPISODES: PodcastEpisode[] = [
     ],
   },
 ];
+
+// Share function for episodes
+const shareEpisode = async (episode: PodcastEpisode) => {
+  const shareData = {
+    title: `${episode.title} | Reawakened Podcast`,
+    text: `${episode.theme} - ${episode.description}`,
+    url: `${window.location.origin}/sparks#podcast`,
+  };
+
+  if (navigator.share) {
+    try {
+      await navigator.share(shareData);
+    } catch (err) {
+      // User cancelled or error
+    }
+  } else {
+    // Fallback: copy link to clipboard
+    navigator.clipboard.writeText(shareData.url);
+    alert('Link copied to clipboard!');
+  }
+};
 
 const SECTION_LABELS = ["Intro", "Part 1", "Part 2", "Part 3", "Closing"];
 
@@ -268,13 +297,16 @@ export function PodcastSection() {
 
           <div className="relative p-6 md:p-10">
             <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-start">
-              {/* Episode Art — Colorful */}
+              {/* Episode Art — Cover Image */}
               <div className="relative flex-shrink-0">
                 <div className={`absolute inset-0 bg-gradient-to-br ${latestEpisode.gradient} rounded-3xl blur-xl scale-110 opacity-30 group-hover:opacity-50 transition-opacity duration-500`} />
-                <div className={`relative w-24 h-24 md:w-32 md:h-32 rounded-3xl bg-gradient-to-br ${latestEpisode.gradient} flex items-center justify-center shadow-2xl`}>
-                  <span className="text-4xl md:text-5xl font-bold text-white/90 font-display">
-                    {latestEpisode.number}
-                  </span>
+                <div className={`relative w-24 h-24 md:w-32 md:h-32 rounded-3xl overflow-hidden shadow-2xl`}>
+                  <img
+                    src={latestEpisode.coverImage}
+                    alt={latestEpisode.title}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className={`absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent`} />
                 </div>
               </div>
 
@@ -285,7 +317,7 @@ export function PodcastSection() {
                     Latest Episode
                   </span>
                   <span className="text-[10px] font-medium uppercase tracking-[0.15em] text-white/30">
-                    Episode {latestEpisode.number} · Season 1
+                    Episode {latestEpisode.number} · {latestEpisode.releaseDate}
                   </span>
                 </div>
 
@@ -354,6 +386,17 @@ export function PodcastSection() {
                   <span className="text-sm text-white/20 font-medium hidden sm:inline">
                     {latestEpisode.scripture}
                   </span>
+                  {/* Share button */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      shareEpisode(latestEpisode);
+                    }}
+                    className="ml-auto p-2.5 rounded-full bg-white/[0.06] border border-white/[0.08] hover:bg-white/[0.12] transition-all"
+                    title="Share this episode"
+                  >
+                    <Share2 className="h-4 w-4 text-white/50 hover:text-white/80" />
+                  </button>
                 </div>
               </div>
             </div>
@@ -380,13 +423,16 @@ export function PodcastSection() {
                 }`}
                 onClick={() => playEpisode(episode.id)}
               >
-                {/* Colorful Episode Thumbnail */}
-                <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${episode.gradient} flex items-center justify-center flex-shrink-0 shadow-lg ${
+                {/* Episode Thumbnail */}
+                <div className={`w-14 h-14 rounded-2xl overflow-hidden flex-shrink-0 shadow-lg relative ${
                   isEpPlaying ? 'animate-pulse' : ''
                 }`}>
-                  <span className="text-lg font-display font-bold text-white">
-                    {episode.number}
-                  </span>
+                  <img
+                    src={episode.coverImage}
+                    alt={episode.title}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className={`absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent`} />
                 </div>
 
                 {/* Episode Info */}
@@ -397,7 +443,7 @@ export function PodcastSection() {
                     {episode.title}
                   </h4>
                   <p className="text-xs text-white/30 mt-1 flex items-center gap-2">
-                    <span className="truncate">{episode.theme}</span>
+                    <span className="flex-shrink-0 text-white/40">{episode.releaseDate}</span>
                     <span className="inline-block w-1 h-1 rounded-full bg-white/20 flex-shrink-0" />
                     <span className="flex-shrink-0">{episode.duration}</span>
                     <span className="inline-block w-1 h-1 rounded-full bg-white/20 flex-shrink-0 hidden sm:inline-block" />
@@ -419,6 +465,18 @@ export function PodcastSection() {
                     </div>
                   )}
                 </div>
+
+                {/* Share button */}
+                <button
+                  className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 bg-white/[0.04] border border-white/[0.06] hover:bg-white/[0.10] transition-all"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    shareEpisode(episode);
+                  }}
+                  title="Share"
+                >
+                  <Share2 className="h-3.5 w-3.5 text-white/40 hover:text-white/70" />
+                </button>
 
                 {/* Play/Pause button */}
                 <button

@@ -34,13 +34,15 @@ RUN apt-get update && apt-get install -y \
     g++ \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy package files and install production dependencies only
+# Copy package files and install all dependencies (including drizzle-kit for migrations)
 COPY package.json package-lock.json* ./
-RUN npm ci --omit=dev
+RUN npm ci
 
-# Copy built files from base stage
+# Copy built files and source needed for migrations
 COPY --from=base /app/dist ./dist
 COPY --from=base /app/attached_assets ./attached_assets
+COPY drizzle.config.ts ./
+COPY shared ./shared
 
 # Set environment
 ENV NODE_ENV=production

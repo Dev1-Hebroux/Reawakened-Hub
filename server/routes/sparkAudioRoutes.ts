@@ -5,43 +5,36 @@
  */
 
 import { Router } from 'express';
-import { isAuthenticated } from '../replitAuth';
+import { isAuthenticated } from '../auth';
 import { sparkAudioService } from '../services/sparkAudioService';
 import { logger } from '../lib/logger';
-import { objectStorageClient } from '../replit_integrations/object_storage';
+import { downloadAudio, audioExists, getPublicUrl } from '../supabaseStorage';
+import { storage } from '../storage';
+import { generateSparkAudio, getSparkAudioUrl } from '../tts-service';
+import { verifyAndRepairUpcomingAudio } from '../audio-pregeneration';
 
 const router = Router();
 
 router.get('/audio/:filename', async (req, res) => {
   try {
     const { filename } = req.params;
-    const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
-    
-    if (!bucketId) {
-      return res.status(500).json({ error: 'Object storage not configured' });
+
+    // Redirect to Supabase public URL
+    const publicUrl = getPublicUrl(filename);
+    if (!publicUrl) {
+      return res.status(500).json({ error: 'Storage not configured' });
     }
-    
-    const bucket = objectStorageClient.bucket(bucketId);
-    const file = bucket.file(`public/audio/${filename}`);
-    
-    const [exists] = await file.exists();
+
+    const exists = await audioExists(filename);
     if (!exists) {
       return res.status(404).json({ error: 'Audio file not found' });
     }
-    
-    const [metadata] = await file.getMetadata();
-    const fileSize = metadata.size;
-    
-    res.setHeader('Content-Type', 'audio/mpeg');
-    res.setHeader('Content-Length', fileSize || 0);
+
     res.setHeader('Cache-Control', 'public, max-age=31536000');
-    res.setHeader('Accept-Ranges', 'bytes');
-    
-    const stream = file.createReadStream();
-    stream.pipe(res);
+    res.redirect(publicUrl);
   } catch (error) {
-    logger.error({ error }, 'Error streaming audio file');
-    res.status(500).json({ error: 'Failed to stream audio' });
+    logger.error({ error }, 'Error serving audio file');
+    res.status(500).json({ error: 'Failed to serve audio' });
   }
 });
 
@@ -60,22 +53,41 @@ router.get('/sparks/:id/audio', async (req, res) => {
     }
     
     // Fallback: check for legacy non-hashed audio file
-    const bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID;
-    if (bucketId) {
-      const legacyFilename = `spark-${sparkId}.mp3`;
-      const bucket = objectStorageClient.bucket(bucketId);
-      const file = bucket.file(`public/audio/${legacyFilename}`);
-      const [exists] = await file.exists();
-      
-      if (exists) {
-        return res.json({ audioUrl: `/api/audio/${legacyFilename}`, sparkId, cached: true });
-      }
+    const legacyFilename = `spark-${sparkId}.mp3`;
+    const legacyExists = await audioExists(legacyFilename);
+    if (legacyExists) {
+      return res.json({ audioUrl: `/api/audio/${legacyFilename}`, sparkId, cached: true });
     }
-    
-    // No audio available
-    return res.status(404).json({ 
+
+    // On-demand generation: try generating audio now rather than returning 404
+    logger.warn({ sparkId }, 'Audio not pre-generated, attempting on-demand generation');
+
+    const spark = await storage.getSpark(sparkId);
+    if (spark?.fullTeaching) {
+      const genResult = await generateSparkAudio(sparkId, {
+        title: spark.title,
+        scriptureRef: spark.scriptureRef || undefined,
+        fullPassage: spark.fullPassage || undefined,
+        fullTeaching: spark.fullTeaching,
+        reflectionQuestion: spark.reflectionQuestion || undefined,
+        todayAction: spark.todayAction || undefined,
+        prayerLine: spark.prayerLine || undefined,
+        ctaPrimary: spark.ctaPrimary || undefined,
+        weekTheme: spark.weekTheme || undefined
+      });
+
+      if (genResult.success && genResult.audioUrl) {
+        logger.info({ sparkId }, 'On-demand audio generation succeeded');
+        return res.json({ audioUrl: genResult.audioUrl, sparkId, cached: false, generated: true });
+      }
+
+      logger.error({ sparkId, error: genResult.error }, 'On-demand audio generation failed');
+    }
+
+    // Truly no audio available
+    return res.status(404).json({
       error: 'Audio not available',
-      message: 'Audio for this spark has not been generated yet.',
+      message: 'Audio for this spark could not be generated. Please try again later.',
     });
   } catch (error) {
     logger.error({ error }, 'Error getting spark audio');
@@ -169,6 +181,26 @@ router.post('/admin/spark-audio/regenerate-outdated', isAuthenticated, async (re
   } catch (error) {
     logger.error({ error }, 'Error regenerating outdated audio');
     res.status(500).json({ error: 'Failed to regenerate audio' });
+  }
+});
+
+router.post('/admin/spark-audio/verify', isAuthenticated, async (req: any, res) => {
+  try {
+    if (req.user?.claims?.metadata?.role !== 'super_admin' && req.user?.claims?.metadata?.role !== 'admin') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    logger.info({ userId: req.user?.claims?.sub }, 'Admin triggered audio verification');
+
+    const result = await verifyAndRepairUpcomingAudio(3);
+
+    res.json({
+      message: 'Audio verification complete',
+      ...result,
+    });
+  } catch (error) {
+    logger.error({ error }, 'Error running audio verification');
+    res.status(500).json({ error: 'Failed to run verification' });
   }
 });
 

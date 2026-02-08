@@ -32,7 +32,6 @@ interface AuthContextType {
   login: (credentials: { email: string; password: string }) => Promise<{ success: boolean; error?: string }>;
   register: (data: { email: string; password: string; firstName?: string; lastName?: string }) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
-  loginWithReplit: () => void;
   requestPasswordReset: (email: string) => Promise<{ success: boolean }>;
   resetPassword: (token: string, password: string) => Promise<{ success: boolean; error?: string }>;
   addPassword: (password: string) => Promise<{ success: boolean; error?: string }>;
@@ -227,10 +226,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const loginWithReplit = () => {
-    window.location.href = getApiUrl('/api/login');
-  };
-
   const requestPasswordReset = async (email: string) => {
     try {
       await authFetch('/api/auth/forgot-password', {
@@ -285,7 +280,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const clearError = () => setError(null);
 
   const hasPassword = user?.authProvider === 'email' || user?.authProvider === 'both';
-  const canAddPassword = user?.authProvider === 'replit' && !!user?.email;
+  const canAddPassword = !hasPassword && !!user?.email;
 
   const value: AuthContextType = {
     user,
@@ -298,7 +293,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     login,
     register,
     logout,
-    loginWithReplit,
     requestPasswordReset,
     resetPassword,
     addPassword,

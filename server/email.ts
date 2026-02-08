@@ -12,15 +12,32 @@ if (!resend) {
 const LOGO_URL = 'https://reawakened.app/logo-email.png';
 
 // Email header with Reawakened branding (replaces emoji icons)
-export function getEmailHeader(title: string, subtitle: string, bgGradient: string = 'linear-gradient(135deg, #1a2744 0%, #2d3a52 100%)'): string {
+// Uses table with bgcolor attribute for maximum email client compatibility
+export function getEmailHeader(title: string, subtitle: string, bgColor: string = '#1a2744'): string {
   return `
-    <div style="background: ${bgGradient}; border-radius: 24px; padding: 40px; text-align: center; margin-bottom: 24px;">
-      <div style="margin-bottom: 20px;">
-        <span style="font-family: 'Space Grotesk', 'Segoe UI', sans-serif; font-size: 28px; font-weight: 700; color: #ffffff; letter-spacing: -0.5px;">Reawakened</span>
-      </div>
-      <h1 style="color: #ffffff; font-size: 24px; margin: 0 0 12px 0; font-weight: 700;">${title}</h1>
-      <p style="color: rgba(255,255,255,0.9); font-size: 16px; margin: 0;">${subtitle}</p>
-    </div>`;
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 24px;">
+      <tr>
+        <td bgcolor="${bgColor}" style="background-color: ${bgColor}; border-radius: 24px; padding: 40px; text-align: center;">
+          <table width="100%" cellpadding="0" cellspacing="0" border="0">
+            <tr>
+              <td style="padding-bottom: 20px; text-align: center;">
+                <span style="font-family: 'Space Grotesk', 'Segoe UI', Arial, sans-serif; font-size: 28px; font-weight: 700; color: #ffffff; letter-spacing: -0.5px;">Reawakened</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="text-align: center; padding-bottom: 12px;">
+                <h1 style="color: #ffffff; font-size: 24px; margin: 0; font-weight: 700; font-family: 'Segoe UI', Arial, sans-serif;">${title}</h1>
+              </td>
+            </tr>
+            <tr>
+              <td style="text-align: center;">
+                <p style="color: #e0e0e0; font-size: 16px; margin: 0; font-family: 'Segoe UI', Arial, sans-serif;">${subtitle}</p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>`;
 }
 
 // Social media links
@@ -41,7 +58,7 @@ export function getEmailFooter(email: string, scriptureQuote?: string): string {
       <p style="color: #6B7B6E; font-size: 13px; margin: 0 0 16px 0; text-transform: uppercase; letter-spacing: 1px;">Connect with us</p>
       <div style="margin-bottom: 20px;">
         <a href="${SOCIAL_LINKS.instagram}" style="display: inline-block; margin: 0 8px; text-decoration: none;" title="Instagram">
-          <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #E1306C 0%, #F77737 50%, #FCAF45 100%); border-radius: 10px; display: inline-flex; align-items: center; justify-content: center;">
+          <div style="width: 40px; height: 40px; background-color: #E1306C; background: linear-gradient(135deg, #E1306C 0%, #F77737 50%, #FCAF45 100%); border-radius: 10px; display: inline-flex; align-items: center; justify-content: center;">
             <span style="color: #ffffff; font-size: 18px; line-height: 40px;">📷</span>
           </div>
         </a>
@@ -178,14 +195,18 @@ export async function sendWelcomeEmail(to: string, name: string, data: {
 </head>
 <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #FAF8F5;">
   <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
-    <div style="background: linear-gradient(135deg, #1a2744 0%, #2d3a52 100%); border-radius: 24px; padding: 40px; text-align: center; margin-bottom: 24px;">
-      <h1 style="color: #ffffff; font-size: 32px; margin: 0 0 16px 0; font-weight: 700;">
-        🔥 Welcome to Reawakened, ${name}!
-      </h1>
-      <p style="color: rgba(255,255,255,0.8); font-size: 18px; margin: 0; line-height: 1.6;">
-        Your mission journey has begun. You're now part of a global movement making digital impact for the Kingdom.
-      </p>
-    </div>
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 24px;">
+      <tr>
+        <td bgcolor="#1a2744" style="background-color: #1a2744; border-radius: 24px; padding: 40px; text-align: center;">
+          <h1 style="color: #ffffff; font-size: 32px; margin: 0 0 16px 0; font-weight: 700; font-family: 'Segoe UI', Arial, sans-serif;">
+            🔥 Welcome to Reawakened, ${name}!
+          </h1>
+          <p style="color: #e0e0e0; font-size: 18px; margin: 0; line-height: 1.6; font-family: 'Segoe UI', Arial, sans-serif;">
+            Your mission journey has begun. You're now part of a global movement making digital impact for the Kingdom.
+          </p>
+        </td>
+      </tr>
+    </table>
 
     <div style="background: #ffffff; border-radius: 16px; padding: 32px; margin-bottom: 24px; border: 1px solid #E8E4DE;">
       <h2 style="color: #1a2744; font-size: 20px; margin: 0 0 20px 0; font-weight: 600;">
@@ -213,15 +234,15 @@ export async function sendWelcomeEmail(to: string, name: string, data: {
         🚀 Get Started
       </h2>
       
-      <a href="https://reawakened.app/sparks" style="display: block; background: linear-gradient(135deg, #D4A574 0%, #C49464 100%); color: #ffffff; text-decoration: none; padding: 16px 24px; border-radius: 12px; margin-bottom: 12px; font-weight: 600;">
+      <a href="https://reawakened.app/sparks" style="display: block; background-color: #D4A574; background: linear-gradient(135deg, #D4A574 0%, #C49464 100%); color: #ffffff; text-decoration: none; padding: 16px 24px; border-radius: 12px; margin-bottom: 12px; font-weight: 600;">
         ✨ Daily Sparks — Start your day with devotionals
       </a>
       
-      <a href="https://reawakened.app/community" style="display: block; background: linear-gradient(135deg, #7C9A8E 0%, #6B8B7E 100%); color: #ffffff; text-decoration: none; padding: 16px 24px; border-radius: 12px; margin-bottom: 12px; font-weight: 600;">
+      <a href="https://reawakened.app/community" style="display: block; background-color: #7C9A8E; background: linear-gradient(135deg, #7C9A8E 0%, #6B8B7E 100%); color: #ffffff; text-decoration: none; padding: 16px 24px; border-radius: 12px; margin-bottom: 12px; font-weight: 600;">
         👥 Community Hub — Connect with fellow believers
       </a>
       
-      <a href="https://reawakened.app/vision" style="display: block; background: linear-gradient(135deg, #4A7C7C 0%, #3A6C6C 100%); color: #ffffff; text-decoration: none; padding: 16px 24px; border-radius: 12px; font-weight: 600;">
+      <a href="https://reawakened.app/vision" style="display: block; background-color: #4A7C7C; background: linear-gradient(135deg, #4A7C7C 0%, #3A6C6C 100%); color: #ffffff; text-decoration: none; padding: 16px 24px; border-radius: 12px; font-weight: 600;">
         🎯 Vision Journey — Discover your purpose
       </a>
     </div>
@@ -262,7 +283,7 @@ export async function sendPrayerReminderEmail(to: string, name: string, data: {
 }) {
   const prayerPointsHtml = data.prayerPoints.map((point, i) => `
     <div style="display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px;">
-      <div style="width: 24px; height: 24px; background: linear-gradient(135deg, #D4A574 0%, #C49464 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+      <div style="width: 24px; height: 24px; background-color: #D4A574; background: linear-gradient(135deg, #D4A574 0%, #C49464 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
         <span style="color: white; font-size: 12px; font-weight: bold;">${i + 1}</span>
       </div>
       <p style="color: #1a2744; font-size: 14px; margin: 0; line-height: 1.6;">${point}</p>
@@ -286,17 +307,21 @@ export async function sendPrayerReminderEmail(to: string, name: string, data: {
 </head>
 <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #FAF8F5;">
   <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
-    <div style="background: linear-gradient(135deg, #1a2744 0%, #2d3a52 100%); border-radius: 24px; padding: 40px; text-align: center; margin-bottom: 24px;">
-      <p style="color: rgba(255,255,255,0.6); font-size: 14px; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 1px;">
-        ${greeting}'s Prayer Focus
-      </p>
-      <h1 style="color: #ffffff; font-size: 28px; margin: 0 0 12px 0; font-weight: 700;">
-        ${focusIcon} ${data.focusName}
-      </h1>
-      <p style="color: rgba(255,255,255,0.8); font-size: 16px; margin: 0; line-height: 1.6;">
-        Hi ${name}, here are today's prayer points for your intercession.
-      </p>
-    </div>
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 24px;">
+      <tr>
+        <td bgcolor="#1a2744" style="background-color: #1a2744; border-radius: 24px; padding: 40px; text-align: center;">
+          <p style="color: #b0b0b0; font-size: 14px; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 1px; font-family: 'Segoe UI', Arial, sans-serif;">
+            ${greeting}'s Prayer Focus
+          </p>
+          <h1 style="color: #ffffff; font-size: 28px; margin: 0 0 12px 0; font-weight: 700; font-family: 'Segoe UI', Arial, sans-serif;">
+            ${focusIcon} ${data.focusName}
+          </h1>
+          <p style="color: #e0e0e0; font-size: 16px; margin: 0; line-height: 1.6; font-family: 'Segoe UI', Arial, sans-serif;">
+            Hi ${name}, here are today's prayer points for your intercession.
+          </p>
+        </td>
+      </tr>
+    </table>
 
     <div style="background: #ffffff; border-radius: 16px; padding: 32px; margin-bottom: 24px; border: 1px solid #E8E4DE;">
       <h2 style="color: #1a2744; font-size: 18px; margin: 0 0 20px 0; font-weight: 600; display: flex; align-items: center; gap: 8px;">
@@ -320,7 +345,7 @@ export async function sendPrayerReminderEmail(to: string, name: string, data: {
     </div>
 
     <div style="text-align: center; margin-bottom: 24px;">
-      <a href="https://reawakened.app/pray" style="display: inline-block; background: linear-gradient(135deg, #D4A574 0%, #C49464 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 12px; font-weight: 600; font-size: 16px;">
+      <a href="https://reawakened.app/pray" style="display: inline-block; background-color: #D4A574; background: linear-gradient(135deg, #D4A574 0%, #C49464 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 12px; font-weight: 600; font-size: 16px;">
         🙏 Start Praying Now
       </a>
     </div>
@@ -366,7 +391,7 @@ export async function sendPrayerAdoptionConfirmation(to: string, name: string, d
   
   const prayerPointsHtml = data.prayerPoints.slice(0, 4).map((point, i) => `
     <div style="display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px;">
-      <div style="width: 24px; height: 24px; background: linear-gradient(135deg, #4A7C7C 0%, #3A6C6C 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+      <div style="width: 24px; height: 24px; background-color: #4A7C7C; background: linear-gradient(135deg, #4A7C7C 0%, #3A6C6C 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
         <span style="color: white; font-size: 12px; font-weight: bold;">${i + 1}</span>
       </div>
       <p style="color: #1a2744; font-size: 14px; margin: 0; line-height: 1.6;">${point}</p>
@@ -426,7 +451,7 @@ export async function sendPrayerAdoptionConfirmation(to: string, name: string, d
     </div>
     ` : ''}
 
-    <div style="background: linear-gradient(135deg, #E8F4F0 0%, #D4E8E4 100%); border-radius: 16px; padding: 24px; margin-bottom: 24px; text-align: center;">
+    <div style="background-color: #E8F4F0; background: linear-gradient(135deg, #E8F4F0 0%, #D4E8E4 100%); border-radius: 16px; padding: 24px; margin-bottom: 24px; text-align: center;">
       <p style="color: #1a2744; font-size: 15px; font-style: italic; margin: 0 0 8px 0; line-height: 1.6;">
         "Ask of me, and I will make the nations your inheritance, the ends of the earth your possession."
       </p>
@@ -434,7 +459,7 @@ export async function sendPrayerAdoptionConfirmation(to: string, name: string, d
     </div>
 
     <div style="text-align: center; margin-bottom: 24px;">
-      <a href="https://reawakened.app/pray" style="display: inline-block; background: linear-gradient(135deg, #4A7C7C 0%, #3A6C6C 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 12px; font-weight: 600; font-size: 16px;">
+      <a href="https://reawakened.app/pray" style="display: inline-block; background-color: #4A7C7C; background: linear-gradient(135deg, #4A7C7C 0%, #3A6C6C 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 12px; font-weight: 600; font-size: 16px;">
         🙏 Start Praying Now
       </a>
     </div>
@@ -547,7 +572,7 @@ export async function sendAltarJoinConfirmation(to: string, name: string, data: 
     ` : ''}
 
     <div style="text-align: center; margin-bottom: 24px;">
-      <a href="https://reawakened.app/pray" style="display: inline-block; background: linear-gradient(135deg, #D4A574 0%, #C49464 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 12px; font-weight: 600; font-size: 16px;">
+      <a href="https://reawakened.app/pray" style="display: inline-block; background-color: #D4A574; background: linear-gradient(135deg, #D4A574 0%, #C49464 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 12px; font-weight: 600; font-size: 16px;">
         Start Interceding
       </a>
     </div>
@@ -620,7 +645,7 @@ export async function sendPrayerRequestNotification(data: {
     </div>
 
     <div style="text-align: center; margin-bottom: 24px;">
-      <a href="https://reawakened.app/admin/prayer" style="display: inline-block; background: linear-gradient(135deg, #4A7C7C 0%, #3A6C6C 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 12px; font-weight: 600; font-size: 16px;">
+      <a href="https://reawakened.app/admin/prayer" style="display: inline-block; background-color: #4A7C7C; background: linear-gradient(135deg, #4A7C7C 0%, #3A6C6C 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 12px; font-weight: 600; font-size: 16px;">
         View in Prayer Dashboard
       </a>
     </div>
@@ -751,7 +776,7 @@ export async function sendChallengeEnrollmentEmail(to: string, name: string, dat
       </div>
     </div>
     <div style="text-align: center; margin-bottom: 24px;">
-      <a href="https://reawakened.app/challenges" style="display: inline-block; background: linear-gradient(135deg, #D4A574 0%, #C49464 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 12px; font-weight: 600;">
+      <a href="https://reawakened.app/challenges" style="display: inline-block; background-color: #D4A574; background: linear-gradient(135deg, #D4A574 0%, #C49464 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 12px; font-weight: 600;">
         Start Your Challenge
       </a>
     </div>
@@ -979,7 +1004,7 @@ export async function sendVolunteerConfirmationEmail(to: string, name: string, d
     </div>
 
     <div style="text-align: center; margin-bottom: 24px;">
-      <a href="https://reawakened.app/events" style="display: inline-block; background: linear-gradient(135deg, #4A7C7C 0%, #3A6C6C 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 12px; font-weight: 600;">
+      <a href="https://reawakened.app/events" style="display: inline-block; background-color: #4A7C7C; background: linear-gradient(135deg, #4A7C7C 0%, #3A6C6C 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 12px; font-weight: 600;">
         ${ctaText}
       </a>
     </div>
@@ -1140,7 +1165,7 @@ export async function sendSubscriptionWelcomeEmail(to: string, data: {
     <div style="background: #ffffff; border-radius: 16px; padding: 24px; margin-bottom: 24px; border: 1px solid #E8E4DE;">
       <h3 style="color: #1a2744; font-size: 16px; margin: 0 0 16px 0; font-weight: 600;">Your Next Step (choose one)</h3>
       <div style="display: flex; flex-direction: column; gap: 12px;">
-        <a href="https://reawakened.app/settings" style="display: block; background: linear-gradient(135deg, #D4A574 0%, #C49464 100%); color: #ffffff; text-decoration: none; padding: 14px 24px; border-radius: 12px; font-weight: 600; font-size: 14px; text-align: center;">
+        <a href="https://reawakened.app/settings" style="display: block; background-color: #D4A574; background: linear-gradient(135deg, #D4A574 0%, #C49464 100%); color: #ffffff; text-decoration: none; padding: 14px 24px; border-radius: 12px; font-weight: 600; font-size: 14px; text-align: center;">
           Set Your Preferences
         </a>
         <a href="https://reawakened.app/vision" style="display: block; background: #FAF8F5; color: #1a2744; text-decoration: none; padding: 14px 24px; border-radius: 12px; font-weight: 600; font-size: 14px; text-align: center; border: 1px solid #E8E4DE;">
@@ -1206,7 +1231,7 @@ export async function sendPrayerPodNotificationEmail(to: string, name: string, d
       </p>
     </div>
     <div style="text-align: center; margin-bottom: 24px;">
-      <a href="https://reawakened.app/prayer-pods" style="display: inline-block; background: linear-gradient(135deg, #4A7C7C 0%, #3A6C6C 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 12px; font-weight: 600;">
+      <a href="https://reawakened.app/prayer-pods" style="display: inline-block; background-color: #4A7C7C; background: linear-gradient(135deg, #4A7C7C 0%, #3A6C6C 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 12px; font-weight: 600;">
         View Your Pods
       </a>
     </div>
@@ -1317,7 +1342,7 @@ export async function sendPrayerRequestConfirmationEmail(to: string, name: strin
     <div style="background: #ffffff; border-radius: 16px; padding: 24px; margin-bottom: 24px; border: 1px solid #E8E4DE;">
       <h3 style="color: #1a2744; font-size: 16px; margin: 0 0 12px 0; font-weight: 600;">Your Next Step</h3>
       <div style="display: flex; gap: 12px;">
-        <a href="https://reawakened.app/pray" style="display: inline-block; background: linear-gradient(135deg, #D4A574 0%, #C49464 100%); color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 12px; font-weight: 600; font-size: 14px;">
+        <a href="https://reawakened.app/pray" style="display: inline-block; background-color: #D4A574; background: linear-gradient(135deg, #D4A574 0%, #C49464 100%); color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 12px; font-weight: 600; font-size: 14px;">
           Join a Prayer Moment
         </a>
         <a href="https://reawakened.app/prayer-wall" style="display: inline-block; background: #FAF8F5; color: #1a2744; text-decoration: none; padding: 12px 24px; border-radius: 12px; font-weight: 600; font-size: 14px; border: 1px solid #E8E4DE;">
@@ -1367,11 +1392,15 @@ export async function sendDailyDevotionalEmail(to: string, name: string, data: {
 </head>
 <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #FAF8F5;">
   <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
-    <div style="background: linear-gradient(135deg, #1a2744 0%, #2d3a52 100%); border-radius: 24px; padding: 40px; text-align: center; margin-bottom: 24px;">
-      <p style="color: rgba(255,255,255,0.6); font-size: 12px; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 1px;">Today's Spark</p>
-      <h1 style="color: #ffffff; font-size: 26px; margin: 0 0 12px 0; font-weight: 700;">${data.sparkTitle}</h1>
-      <p style="color: #D4A574; font-size: 14px; margin: 0; font-weight: 500;">${data.scriptureRef}</p>
-    </div>
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 24px;">
+      <tr>
+        <td bgcolor="#1a2744" style="background-color: #1a2744; border-radius: 24px; padding: 40px; text-align: center;">
+          <p style="color: #b0b0b0; font-size: 12px; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 1px; font-family: 'Segoe UI', Arial, sans-serif;">Today's Spark</p>
+          <h1 style="color: #ffffff; font-size: 26px; margin: 0 0 12px 0; font-weight: 700; font-family: 'Segoe UI', Arial, sans-serif;">${data.sparkTitle}</h1>
+          <p style="color: #D4A574; font-size: 14px; margin: 0; font-weight: 500; font-family: 'Segoe UI', Arial, sans-serif;">${data.scriptureRef}</p>
+        </td>
+      </tr>
+    </table>
     <div style="background: #ffffff; border-radius: 16px; padding: 32px; margin-bottom: 24px; border: 1px solid #E8E4DE;">
       <p style="color: #1a2744; font-size: 16px; line-height: 1.7; margin: 0 0 20px 0;">${data.sparkDescription}</p>
       ${data.prayerLine ? `
@@ -1381,7 +1410,7 @@ export async function sendDailyDevotionalEmail(to: string, name: string, data: {
       </div>` : ''}
     </div>
     <div style="text-align: center; margin-bottom: 24px;">
-      <a href="https://reawakened.app/sparks" style="display: inline-block; background: linear-gradient(135deg, #D4A574 0%, #C49464 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 12px; font-weight: 600;">
+      <a href="https://reawakened.app/sparks" style="display: inline-block; background-color: #D4A574; background: linear-gradient(135deg, #D4A574 0%, #C49464 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 12px; font-weight: 600;">
         Read Full Devotional
       </a>
     </div>
@@ -1497,7 +1526,7 @@ export async function sendAuthWelcomeEmail(to: string, firstName: string | null)
 
     <!-- Daily Sparks -->
     <a href="https://reawakened.app/sparks" style="text-decoration: none; display: block;">
-      <div style="background: linear-gradient(135deg, #D4A574 0%, #C49464 100%); border-radius: 16px; padding: 20px 24px; margin-bottom: 12px; display: flex; align-items: center;">
+      <div style="background-color: #D4A574; background: linear-gradient(135deg, #D4A574 0%, #C49464 100%); border-radius: 16px; padding: 20px 24px; margin-bottom: 12px; display: flex; align-items: center;">
         <span style="font-size: 24px; margin-right: 16px;">✨</span>
         <div>
           <p style="color: #ffffff; font-size: 16px; font-weight: 600; margin: 0 0 4px 0;">Daily Sparks</p>
@@ -1508,7 +1537,7 @@ export async function sendAuthWelcomeEmail(to: string, firstName: string | null)
 
     <!-- Journeys -->
     <a href="https://reawakened.app/journeys" style="text-decoration: none; display: block;">
-      <div style="background: linear-gradient(135deg, #7C9A8E 0%, #6B8B7E 100%); border-radius: 16px; padding: 20px 24px; margin-bottom: 12px; display: flex; align-items: center;">
+      <div style="background-color: #7C9A8E; background: linear-gradient(135deg, #7C9A8E 0%, #6B8B7E 100%); border-radius: 16px; padding: 20px 24px; margin-bottom: 12px; display: flex; align-items: center;">
         <span style="font-size: 24px; margin-right: 16px;">🗺️</span>
         <div>
           <p style="color: #ffffff; font-size: 16px; font-weight: 600; margin: 0 0 4px 0;">Journeys</p>
@@ -1519,7 +1548,7 @@ export async function sendAuthWelcomeEmail(to: string, firstName: string | null)
 
     <!-- Vision & Goals -->
     <a href="https://reawakened.app/vision" style="text-decoration: none; display: block;">
-      <div style="background: linear-gradient(135deg, #4A7C7C 0%, #3A6C6C 100%); border-radius: 16px; padding: 20px 24px; margin-bottom: 12px; display: flex; align-items: center;">
+      <div style="background-color: #4A7C7C; background: linear-gradient(135deg, #4A7C7C 0%, #3A6C6C 100%); border-radius: 16px; padding: 20px 24px; margin-bottom: 12px; display: flex; align-items: center;">
         <span style="font-size: 24px; margin-right: 16px;">🎯</span>
         <div>
           <p style="color: #ffffff; font-size: 16px; font-weight: 600; margin: 0 0 4px 0;">Vision & Goals</p>
@@ -1530,7 +1559,7 @@ export async function sendAuthWelcomeEmail(to: string, firstName: string | null)
 
     <!-- Prayer -->
     <a href="https://reawakened.app/pray" style="text-decoration: none; display: block;">
-      <div style="background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%); border-radius: 16px; padding: 20px 24px; margin-bottom: 12px; display: flex; align-items: center;">
+      <div style="background-color: #8B5CF6; background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%); border-radius: 16px; padding: 20px 24px; margin-bottom: 12px; display: flex; align-items: center;">
         <span style="font-size: 24px; margin-right: 16px;">🙏</span>
         <div>
           <p style="color: #ffffff; font-size: 16px; font-weight: 600; margin: 0 0 4px 0;">Prayer Hub</p>
@@ -1541,7 +1570,7 @@ export async function sendAuthWelcomeEmail(to: string, firstName: string | null)
 
     <!-- Community -->
     <a href="https://reawakened.app/community" style="text-decoration: none; display: block;">
-      <div style="background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%); border-radius: 16px; padding: 20px 24px; margin-bottom: 12px; display: flex; align-items: center;">
+      <div style="background-color: #3B82F6; background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%); border-radius: 16px; padding: 20px 24px; margin-bottom: 12px; display: flex; align-items: center;">
         <span style="font-size: 24px; margin-right: 16px;">👥</span>
         <div>
           <p style="color: #ffffff; font-size: 16px; font-weight: 600; margin: 0 0 4px 0;">Community Hub</p>
@@ -1552,7 +1581,7 @@ export async function sendAuthWelcomeEmail(to: string, firstName: string | null)
 
     <!-- Events -->
     <a href="https://reawakened.app/outreach" style="text-decoration: none; display: block;">
-      <div style="background: linear-gradient(135deg, #EC4899 0%, #DB2777 100%); border-radius: 16px; padding: 20px 24px; margin-bottom: 12px; display: flex; align-items: center;">
+      <div style="background-color: #EC4899; background: linear-gradient(135deg, #EC4899 0%, #DB2777 100%); border-radius: 16px; padding: 20px 24px; margin-bottom: 12px; display: flex; align-items: center;">
         <span style="font-size: 24px; margin-right: 16px;">📅</span>
         <div>
           <p style="color: #ffffff; font-size: 16px; font-weight: 600; margin: 0 0 4px 0;">Events & Outreach</p>
@@ -1563,22 +1592,34 @@ export async function sendAuthWelcomeEmail(to: string, firstName: string | null)
 
     <!-- Missions -->
     <a href="https://reawakened.app/missions" style="text-decoration: none; display: block;">
-      <div style="background: linear-gradient(135deg, #1a2744 0%, #2d3a52 100%); border-radius: 16px; padding: 20px 24px; margin-bottom: 24px; display: flex; align-items: center;">
-        <span style="font-size: 24px; margin-right: 16px;">🚀</span>
-        <div>
-          <p style="color: #ffffff; font-size: 16px; font-weight: 600; margin: 0 0 4px 0;">Missions</p>
-          <p style="color: rgba(255,255,255,0.9); font-size: 14px; margin: 0;">Take action and make digital impact for the Kingdom</p>
-        </div>
-      </div>
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 24px;">
+        <tr>
+          <td bgcolor="#1a2744" style="background-color: #1a2744; border-radius: 16px; padding: 20px 24px;">
+            <table cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td style="padding-right: 16px; vertical-align: middle;"><span style="font-size: 24px;">🚀</span></td>
+                <td style="vertical-align: middle;">
+                  <p style="color: #ffffff; font-size: 16px; font-weight: 600; margin: 0 0 4px 0; font-family: 'Segoe UI', Arial, sans-serif;">Missions</p>
+                  <p style="color: #e0e0e0; font-size: 14px; margin: 0; font-family: 'Segoe UI', Arial, sans-serif;">Take action and make digital impact for the Kingdom</p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
     </a>
 
     <div style="background: #ffffff; border-radius: 16px; padding: 24px; margin-bottom: 24px; border: 1px solid #E8E4DE; text-align: center;">
       <p style="color: #374151; font-size: 15px; line-height: 1.6; margin: 0 0 16px 0;">
         Ready to begin your journey? Start with today's Daily Spark!
       </p>
-      <a href="https://reawakened.app/sparks" style="display: inline-block; background: linear-gradient(135deg, #1a2744 0%, #2d3a52 100%); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 12px; font-weight: 600; font-size: 15px;">
-        Get Started Now
-      </a>
+      <table cellpadding="0" cellspacing="0" border="0" style="display: inline-table;">
+        <tr>
+          <td bgcolor="#1a2744" style="background-color: #1a2744; border-radius: 12px; padding: 14px 32px;">
+            <a href="https://reawakened.app/sparks" style="color: #ffffff; text-decoration: none; font-weight: 600; font-size: 15px; font-family: 'Segoe UI', Arial, sans-serif;">Get Started Now</a>
+          </td>
+        </tr>
+      </table>
     </div>
 
     ${getEmailFooter(to, 'For I know the plans I have for you, declares the Lord. — Jeremiah 29:11')}
@@ -1624,9 +1665,13 @@ export async function sendEmailVerificationEmail(to: string, firstName: string |
       <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
         Please verify your email address to complete your account setup.
       </p>
-      <a href="${verifyUrl}" style="display: inline-block; background: linear-gradient(135deg, #1a2744 0%, #2d3a52 100%); color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 12px; font-weight: 600; font-size: 15px;">
-        Verify Email Address
-      </a>
+      <table cellpadding="0" cellspacing="0" border="0" style="display: inline-table;">
+        <tr>
+          <td bgcolor="#1a2744" style="background-color: #1a2744; border-radius: 12px; padding: 14px 28px;">
+            <a href="${verifyUrl}" style="color: #ffffff; text-decoration: none; font-weight: 600; font-size: 15px; font-family: 'Segoe UI', Arial, sans-serif;">Verify Email Address</a>
+          </td>
+        </tr>
+      </table>
       <p style="color: #6B7280; font-size: 14px; margin: 24px 0 0 0;">
         This link expires in 24 hours. If you didn't create an account, you can ignore this email.
       </p>
@@ -1674,9 +1719,13 @@ export async function sendPasswordResetEmail(to: string, firstName: string | nul
       <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
         We received a request to reset your password. Click the button below to create a new password.
       </p>
-      <a href="${resetUrl}" style="display: inline-block; background: linear-gradient(135deg, #1a2744 0%, #2d3a52 100%); color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 12px; font-weight: 600; font-size: 15px;">
-        Reset Password
-      </a>
+      <table cellpadding="0" cellspacing="0" border="0" style="display: inline-table;">
+        <tr>
+          <td bgcolor="#1a2744" style="background-color: #1a2744; border-radius: 12px; padding: 14px 28px;">
+            <a href="${resetUrl}" style="color: #ffffff; text-decoration: none; font-weight: 600; font-size: 15px; font-family: 'Segoe UI', Arial, sans-serif;">Reset Password</a>
+          </td>
+        </tr>
+      </table>
       <p style="color: #6B7280; font-size: 14px; margin: 24px 0 0 0;">
         This link expires in 1 hour. If you didn't request this, you can safely ignore this email.
       </p>
@@ -1722,16 +1771,20 @@ export async function sendMigrationEmail(to: string, firstName: string | null, t
     ${getEmailHeader("Set Up Your Password", `Hey ${name}, we've got an upgrade for you`)}
     <div style="background: #ffffff; border-radius: 16px; padding: 32px; margin-bottom: 24px; border: 1px solid #E8E4DE;">
       <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
-        Great news! You can now log in with your email and password, in addition to Replit SSO.
+        Great news! You can now set up a password for your account.
       </p>
       <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
-        Click below to set up a password for your account. This is optional — you can still use Replit to sign in.
+        Click below to set up a password for your account.
       </p>
-      <a href="${setupUrl}" style="display: inline-block; background: linear-gradient(135deg, #1a2744 0%, #2d3a52 100%); color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 12px; font-weight: 600; font-size: 15px;">
-        Set Up Password
-      </a>
+      <table cellpadding="0" cellspacing="0" border="0" style="display: inline-table;">
+        <tr>
+          <td bgcolor="#1a2744" style="background-color: #1a2744; border-radius: 12px; padding: 14px 28px;">
+            <a href="${setupUrl}" style="color: #ffffff; text-decoration: none; font-weight: 600; font-size: 15px; font-family: 'Segoe UI', Arial, sans-serif;">Set Up Password</a>
+          </td>
+        </tr>
+      </table>
       <p style="color: #6B7280; font-size: 14px; margin: 24px 0 0 0;">
-        This link expires in 7 days. No action needed if you're happy using Replit.
+        This link expires in 7 days.
       </p>
     </div>
     ${getEmailFooter(to)}

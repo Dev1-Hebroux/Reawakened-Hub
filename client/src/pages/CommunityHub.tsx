@@ -121,16 +121,20 @@ export function CommunityHub() {
   });
 
   // Handle clicking on a user's story circle
-  const handleUserStoryClick = (userId: string, userStories: UserStoryWithUser[]) => {
+  const handleUserStoryClick = async (userId: string, userStories: UserStoryWithUser[]) => {
     if (userStories.length > 0) {
       setUserStoriesForViewer(userStories);
       setViewingStoryIndex(0);
       setViewingStory(userStories[0]);
       // Record view
-      fetch(`/api/stories/${userStories[0].id}/view`, { 
-        method: "POST", 
-        credentials: "include" 
-      }).catch(() => {});
+      try {
+        const { apiFetchJson } = await import('@/lib/apiFetch');
+        await apiFetchJson(`/api/stories/${userStories[0].id}/view`, {
+          method: "POST",
+        });
+      } catch (error) {
+        // Silently fail
+      }
     }
   };
 
@@ -155,16 +159,20 @@ export function CommunityHub() {
   };
 
   // Advance to next story in viewer
-  const handleStoryAdvance = () => {
+  const handleStoryAdvance = async () => {
     if (viewingStoryIndex < userStoriesForViewer.length - 1) {
       const nextIndex = viewingStoryIndex + 1;
       setViewingStoryIndex(nextIndex);
       setViewingStory(userStoriesForViewer[nextIndex]);
       // Record view
-      fetch(`/api/stories/${userStoriesForViewer[nextIndex].id}/view`, { 
-        method: "POST", 
-        credentials: "include" 
-      }).catch(() => {});
+      try {
+        const { apiFetchJson } = await import('@/lib/apiFetch');
+        await apiFetchJson(`/api/stories/${userStoriesForViewer[nextIndex].id}/view`, {
+          method: "POST",
+        });
+      } catch (error) {
+        // Silently fail
+      }
     } else {
       // Close viewer when done
       setViewingStory(null);
@@ -206,19 +214,15 @@ export function CommunityHub() {
     setIsUploadingStory(true);
     try {
       // Get presigned URL
-      const urlRes = await fetch("/api/uploads/request-url", {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
+      const { uploadURL, objectPath } = await apiFetchJson("/api/uploads/request-url", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({
           name: selectedMediaFile.name,
           size: selectedMediaFile.size,
           contentType: selectedMediaFile.type,
         }),
       });
-      
-      if (!urlRes.ok) throw new Error("Failed to get upload URL");
-      const { uploadURL, objectPath } = await urlRes.json();
 
       // Upload file to object storage
       const uploadRes = await fetch(uploadURL, {

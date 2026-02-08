@@ -25,6 +25,23 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      // Capture beforeinstallprompt early - before React loads
+      // This prevents the race condition where the event fires before React is ready
+      window.__pwaInstallPrompt = null;
+      window.addEventListener('beforeinstallprompt', function(e) {
+        e.preventDefault();
+        window.__pwaInstallPrompt = e;
+        console.log('[PWA] beforeinstallprompt captured early');
+        // Dispatch custom event for React components
+        window.dispatchEvent(new CustomEvent('pwa-install-ready', { detail: e }));
+      });
+      window.addEventListener('appinstalled', function() {
+        console.log('[PWA] App installed');
+        window.__pwaInstallPrompt = null;
+        window.dispatchEvent(new CustomEvent('pwa-installed'));
+      });
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

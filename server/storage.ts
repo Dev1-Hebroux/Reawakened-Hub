@@ -502,6 +502,7 @@ export interface IStorage {
   getFeaturedSparks(audienceSegment?: string): Promise<Spark[]>;
   getTodaySpark(audienceSegment?: string): Promise<Spark | undefined>;
   getSparksByDailyDate(dailyDate: string): Promise<Spark[]>;
+  getSparksByDateRange(startDate: string, endDate: string): Promise<Spark[]>;
   getAllDominionSparks(): Promise<Spark[]>;
 
   // Reflection Cards
@@ -635,14 +636,14 @@ export interface IStorage {
   createAlphaCohort(cohort: InsertAlphaCohort): Promise<AlphaCohort>;
   getAlphaCohortWeeks(cohortId: number): Promise<AlphaCohortWeek[]>;
   createAlphaCohortWeek(week: InsertAlphaCohortWeek): Promise<AlphaCohortWeek>;
-  
+
   // Alpha Cohort Participants
   getAlphaCohortParticipants(cohortId: number): Promise<AlphaCohortParticipant[]>;
   getAlphaCohortParticipant(cohortId: number, userId: string): Promise<AlphaCohortParticipant | undefined>;
   getAlphaCohortParticipantById(participantId: number): Promise<AlphaCohortParticipant | undefined>;
   enrollInAlphaCohort(cohortId: number, userId: string, role?: string): Promise<AlphaCohortParticipant>;
   getUserAlphaCohorts(userId: string): Promise<AlphaCohortParticipant[]>;
-  
+
   // Alpha Cohort Progress
   getAlphaCohortWeekProgress(participantId: number): Promise<AlphaCohortWeekProgress[]>;
   updateAlphaCohortWeekProgress(participantId: number, weekNumber: number, updates: Partial<InsertAlphaCohortWeekProgress>): Promise<AlphaCohortWeekProgress>;
@@ -1004,17 +1005,17 @@ export interface IStorage {
   getReadingPlanDays(planId: number): Promise<ReadingPlanDay[]>;
   getReadingPlanDay(planId: number, dayNumber: number): Promise<ReadingPlanDay | undefined>;
   createReadingPlanDay(day: InsertReadingPlanDay): Promise<ReadingPlanDay>;
-  
+
   // User Spiritual Profiles
   getUserSpiritualProfile(userId: string): Promise<UserSpiritualProfile | undefined>;
   upsertUserSpiritualProfile(profile: InsertUserSpiritualProfile): Promise<UserSpiritualProfile>;
-  
+
   // User Plan Enrollments
   getUserPlanEnrollments(userId: string): Promise<UserPlanEnrollment[]>;
   getUserPlanEnrollment(userId: string, planId: number): Promise<UserPlanEnrollment | undefined>;
   createUserPlanEnrollment(enrollment: InsertUserPlanEnrollment): Promise<UserPlanEnrollment>;
   updateUserPlanEnrollment(id: number, updates: Partial<UserPlanEnrollment>): Promise<UserPlanEnrollment>;
-  
+
   // User Reading Progress
   getUserReadingProgress(enrollmentId: number): Promise<UserReadingProgress[]>;
   createUserReadingProgress(progress: InsertUserReadingProgress): Promise<UserReadingProgress>;
@@ -1098,7 +1099,7 @@ export class DatabaseStorage implements IStorage {
       .innerJoin(users, eq(userStories.userId, users.id))
       .where(gte(userStories.expiresAt, now))
       .orderBy(desc(userStories.createdAt));
-    
+
     return results.map(r => ({ ...r.story, user: r.user }));
   }
 
@@ -1106,7 +1107,7 @@ export class DatabaseStorage implements IStorage {
     const existing = await db.select().from(storyViews)
       .where(and(eq(storyViews.storyId, storyId), eq(storyViews.viewerId, viewerId)))
       .limit(1);
-    
+
     if (existing.length === 0) {
       await db.insert(storyViews).values({ storyId, viewerId });
       await db.update(userStories)
@@ -1148,7 +1149,7 @@ export class DatabaseStorage implements IStorage {
       .leftJoin(users, eq(posts.userId, users.id))
       .orderBy(desc(posts.createdAt));
 
-    const results = type 
+    const results = type
       ? await query.where(eq(posts.type, type))
       : await query;
 
@@ -1156,7 +1157,7 @@ export class DatabaseStorage implements IStorage {
     const postIds = results.map(p => p.id);
     let reactionCounts: { postId: number; count: number }[] = [];
     let commentCounts: { postId: number; count: number }[] = [];
-    
+
     if (postIds.length > 0) {
       [reactionCounts, commentCounts] = await Promise.all([
         db
@@ -1269,7 +1270,10 @@ export class DatabaseStorage implements IStorage {
     } else {
       conditions.push(sql`(${sparks.audienceSegment} IS NULL OR ${sparks.audienceSegment} = '')`);
     }
-    return db.select().from(sparks).where(and(...conditions)).orderBy(desc(sparks.publishAt));
+    return db.select().from(sparks)
+      .where(and(...conditions))
+      // Prefer most recently published/created in case of same-day conflicts
+      .orderBy(desc(sparks.publishAt), desc(sparks.createdAt));
   }
 
   async getFeaturedSparks(audienceSegment?: string): Promise<Spark[]> {
@@ -1282,7 +1286,11 @@ export class DatabaseStorage implements IStorage {
     } else {
       conditions.push(sql`(${sparks.audienceSegment} IS NULL OR ${sparks.audienceSegment} = '')`);
     }
-    return db.select().from(sparks).where(and(...conditions)).orderBy(desc(sparks.publishAt)).limit(5);
+    return db.select().from(sparks)
+      .where(and(...conditions))
+      // Prefer most recently published/created in case of same-day conflicts
+      .orderBy(desc(sparks.publishAt), desc(sparks.createdAt))
+      .limit(5);
   }
 
   async getTodaySpark(audienceSegment?: string): Promise<Spark | undefined> {
@@ -1306,23 +1314,47 @@ export class DatabaseStorage implements IStorage {
         sql`${sparks.status} IN ('published', 'scheduled')`,
         audienceCondition,
       ];
-      const [spark] = await db.select().from(sparks).where(and(...conditions)).limit(1);
+      // FIX: Order by publishAt DESC, createdAt DESC to ensure if multiple devotionals exist for the same day
+      // (e.g. overlap of series), the most recently added/published one takes precedence.
+      const [spark] = await db.select().from(sparks)
+        .where(and(...conditions))
+        .orderBy(desc(sparks.publishAt), desc(sparks.createdAt))
+        .limit(1);
+
       if (spark) return spark;
     }
 
-    return undefined;
+    // Fallback: return the most recent published spark (by dailyDate, then publishAt)
+    const now = new Date();
+    const [latestSpark] = await db.select().from(sparks).where(
+      and(
+        sql`${sparks.status} IN ('published', 'scheduled')`,
+        sql`(${sparks.publishAt} IS NULL OR ${sparks.publishAt} <= ${now})`,
+        sql`${sparks.dailyDate} <= ${todayLondon}`,
+        audienceCondition,
+      )
+    ).orderBy(desc(sparks.dailyDate), desc(sparks.publishAt), desc(sparks.createdAt)).limit(1);
+
+    return latestSpark;
   }
 
   async getSparksByDailyDate(dailyDate: string): Promise<Spark[]> {
     return db.select().from(sparks).where(eq(sparks.dailyDate, dailyDate));
   }
 
-  async getAllDominionSparks(): Promise<Spark[]> {
+  async getSparksByDateRange(startDate: string, endDate: string): Promise<Spark[]> {
     return db.select().from(sparks).where(
       and(
-        sql`${sparks.dailyDate} >= '2026-01-03'`,
-        sql`${sparks.dailyDate} <= '2026-02-01'`
+        sql`${sparks.dailyDate} >= ${startDate}`,
+        sql`${sparks.dailyDate} <= ${endDate}`,
+        sql`${sparks.status} IN ('published', 'scheduled')`
       )
+    ).orderBy(sparks.dailyDate);
+  }
+
+  async getAllDominionSparks(): Promise<Spark[]> {
+    return db.select().from(sparks).where(
+      sql`${sparks.dailyDate} >= '2026-01-03'`
     ).orderBy(sparks.dailyDate);
   }
 
@@ -1366,13 +1398,13 @@ export class DatabaseStorage implements IStorage {
     const existing = await db.select().from(sparks).where(
       and(
         eq(sparks.dailyDate, sparkData.dailyDate || ''),
-        sparkData.audienceSegment 
+        sparkData.audienceSegment
           ? eq(sparks.audienceSegment, sparkData.audienceSegment)
           : sql`(${sparks.audienceSegment} IS NULL OR ${sparks.audienceSegment} = '')`,
         eq(sparks.title, sparkData.title)
       )
     );
-    
+
     if (existing.length > 0) {
       // Update existing spark
       const [updated] = await db.update(sparks)
@@ -1392,12 +1424,12 @@ export class DatabaseStorage implements IStorage {
     const existing = await db.select().from(reflectionCards).where(
       and(
         eq(reflectionCards.dailyDate, cardData.dailyDate || ''),
-        cardData.audienceSegment 
+        cardData.audienceSegment
           ? eq(reflectionCards.audienceSegment, cardData.audienceSegment)
           : sql`(${reflectionCards.audienceSegment} IS NULL OR ${reflectionCards.audienceSegment} = '')`,
       )
     );
-    
+
     if (existing.length > 0) {
       // Update existing card
       const [updated] = await db.update(reflectionCards)
@@ -1487,20 +1519,20 @@ export class DatabaseStorage implements IStorage {
     const completions = await db.select().from(sparkActionCompletions)
       .where(eq(sparkActionCompletions.userId, userId))
       .orderBy(desc(sparkActionCompletions.completedAt));
-    
+
     if (completions.length === 0) return 0;
-    
+
     let streak = 0;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
     for (let i = 0; i < completions.length; i++) {
       const completionDate = new Date(completions[i].completedAt!);
       completionDate.setHours(0, 0, 0, 0);
-      
+
       const expectedDate = new Date(today);
       expectedDate.setDate(today.getDate() - i);
-      
+
       if (completionDate.getTime() === expectedDate.getTime()) {
         streak++;
       } else if (i === 0 && completionDate.getTime() === new Date(today.getTime() - 86400000).getTime()) {
@@ -1509,7 +1541,7 @@ export class DatabaseStorage implements IStorage {
         break;
       }
     }
-    
+
     return streak;
   }
 
@@ -1517,27 +1549,27 @@ export class DatabaseStorage implements IStorage {
     const completions = await db.select().from(sparkActionCompletions)
       .where(eq(sparkActionCompletions.userId, userId))
       .orderBy(desc(sparkActionCompletions.completedAt));
-    
+
     if (completions.length === 0) return { current: 0, longest: 0 };
-    
+
     const toDateKey = (d: Date): string => {
       return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
     };
-    
+
     const toDayIndex = (dateKey: string): number => {
       const [y, m, d] = dateKey.split('-').map(Number);
       return Math.floor(Date.UTC(y, m - 1, d) / 86400000);
     };
-    
+
     const uniqueDays = new Set<string>();
     for (const c of completions) {
       const d = new Date(c.completedAt!);
       uniqueDays.add(toDateKey(d));
     }
-    
+
     const sortedDayKeys = Array.from(uniqueDays).sort();
     if (sortedDayKeys.length === 0) return { current: 0, longest: 0 };
-    
+
     let longestStreak = 1;
     let tempStreak = 1;
     for (let i = 1; i < sortedDayKeys.length; i++) {
@@ -1550,18 +1582,18 @@ export class DatabaseStorage implements IStorage {
         tempStreak = 1;
       }
     }
-    
+
     const now = new Date();
     const todayKey = toDateKey(now);
     const todayIdx = toDayIndex(todayKey);
-    
+
     const sortedDesc = [...sortedDayKeys].sort().reverse();
-    
+
     let currentStreak = 0;
     for (let i = 0; i < sortedDesc.length; i++) {
       const dayIdx = toDayIndex(sortedDesc[i]);
       const expectedIdx = todayIdx - i;
-      
+
       if (dayIdx === expectedIdx) {
         currentStreak++;
       } else if (i === 0 && dayIdx === todayIdx - 1) {
@@ -1570,7 +1602,7 @@ export class DatabaseStorage implements IStorage {
         break;
       }
     }
-    
+
     return { current: currentStreak, longest: Math.max(longestStreak, currentStreak) };
   }
 
@@ -1700,7 +1732,7 @@ export class DatabaseStorage implements IStorage {
         eq(events.startDate, eventData.startDate)
       )
     );
-    
+
     if (existing.length > 0) {
       const [updated] = await db.update(events)
         .set(eventData)
@@ -1741,7 +1773,7 @@ export class DatabaseStorage implements IStorage {
       .from(eventRegistrations)
       .where(eq(eventRegistrations.userId, userId))
       .orderBy(desc(eventRegistrations.createdAt));
-    
+
     const results: { registration: EventRegistration; event: Event }[] = [];
     for (const reg of registrations) {
       const event = await this.getEvent(reg.eventId);
@@ -1781,7 +1813,7 @@ export class DatabaseStorage implements IStorage {
 
   async upsertBlogPost(postData: InsertBlogPost & { publishedAt?: Date }): Promise<BlogPost> {
     const existing = await db.select().from(blogPosts).where(eq(blogPosts.slug, postData.slug));
-    
+
     if (existing.length > 0) {
       const [updated] = await db.update(blogPosts)
         .set(postData)
@@ -1874,7 +1906,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   // ===== JOURNEYS =====
-  
+
   async getJourneys(category?: string): Promise<Journey[]> {
     if (category) {
       return db.select().from(journeys).where(and(eq(journeys.isPublished, "true"), eq(journeys.category, category)));
@@ -2115,12 +2147,12 @@ export class DatabaseStorage implements IStorage {
     const [existing] = await db.select().from(alphaCohortWeekProgress).where(
       and(eq(alphaCohortWeekProgress.participantId, participantId), eq(alphaCohortWeekProgress.weekNumber, weekNumber))
     );
-    
+
     if (existing) {
       const [updated] = await db.update(alphaCohortWeekProgress).set(updates).where(eq(alphaCohortWeekProgress.id, existing.id)).returning();
       return updated;
     }
-    
+
     const [progress] = await db.insert(alphaCohortWeekProgress).values({
       participantId,
       weekNumber,
@@ -2799,7 +2831,7 @@ export class DatabaseStorage implements IStorage {
         sql`${dailyReflections.scheduledDate} >= ${today}`,
         sql`${dailyReflections.scheduledDate} < ${tomorrow}`
       ));
-    
+
     if (scheduled) return scheduled;
 
     // Get all unscheduled active reflections and pick one based on day of year
@@ -2809,13 +2841,13 @@ export class DatabaseStorage implements IStorage {
         sql`${dailyReflections.scheduledDate} IS NULL`
       ))
       .orderBy(dailyReflections.id);
-    
+
     if (allUnscheduled.length === 0) return undefined;
-    
+
     // Use day of year to deterministically select a reflection
     const dayOfYear = Math.floor((today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
     const index = dayOfYear % allUnscheduled.length;
-    
+
     return allUnscheduled[index];
   }
 
@@ -2845,7 +2877,7 @@ export class DatabaseStorage implements IStorage {
       .where(eq(reflectionLogs.userId, userId))
       .orderBy(desc(reflectionLogs.viewedAt))
       .limit(30);
-    
+
     if (logs.length === 0) return 0;
 
     let streak = 0;
@@ -2861,21 +2893,21 @@ export class DatabaseStorage implements IStorage {
         logDate.setHours(0, 0, 0, 0);
         return logDate.getTime() === checkDate.getTime();
       });
-      
+
       if (hasLog) {
         streak++;
       } else if (i > 0) {
         break;
       }
     }
-    
+
     return streak;
   }
 
   async logReflectionView(userId: string, reflectionId: number): Promise<ReflectionLog> {
     const existing = await this.getUserReflectionLog(userId, reflectionId);
     if (existing) return existing;
-    
+
     const [log] = await db.insert(reflectionLogs).values({
       userId,
       reflectionId,
@@ -2885,7 +2917,7 @@ export class DatabaseStorage implements IStorage {
 
   async logReflectionEngagement(userId: string, reflectionId: number, data: { journalEntry?: string; reaction?: string }): Promise<ReflectionLog> {
     const existing = await this.getUserReflectionLog(userId, reflectionId);
-    
+
     if (existing) {
       const [updated] = await db.update(reflectionLogs)
         .set({
@@ -2897,7 +2929,7 @@ export class DatabaseStorage implements IStorage {
         .returning();
       return updated;
     }
-    
+
     const [log] = await db.insert(reflectionLogs).values({
       userId,
       reflectionId,
@@ -3220,17 +3252,17 @@ export class DatabaseStorage implements IStorage {
         eq(missionPrayerSessions.completed, true)
       ))
       .orderBy(desc(missionPrayerSessions.createdAt));
-    
+
     let streak = 0;
     let currentDate = new Date();
     currentDate.setHours(0, 0, 0, 0);
-    
+
     for (const session of sessions) {
       if (!session.createdAt) continue;
       const sessionDate = new Date(session.createdAt);
       sessionDate.setHours(0, 0, 0, 0);
       const diffDays = Math.floor((currentDate.getTime() - sessionDate.getTime()) / (1000 * 60 * 60 * 24));
-      
+
       if (diffDays === streak) {
         streak++;
       } else if (diffDays > streak) {
@@ -3244,14 +3276,14 @@ export class DatabaseStorage implements IStorage {
   async getMissionProjects(filters?: { pillarTag?: string; hasDigitalActions?: boolean; status?: string }): Promise<MissionProject[]> {
     let query = db.select().from(missionProjects);
     const conditions = [];
-    
+
     if (filters?.status) conditions.push(eq(missionProjects.status, filters.status));
     if (filters?.hasDigitalActions !== undefined) conditions.push(eq(missionProjects.hasDigitalActions, filters.hasDigitalActions));
-    
+
     if (conditions.length > 0) {
       query = query.where(and(...conditions)) as typeof query;
     }
-    
+
     return query.orderBy(desc(missionProjects.hasDigitalActions), desc(missionProjects.createdAt));
   }
 
@@ -3309,15 +3341,15 @@ export class DatabaseStorage implements IStorage {
   async getMissionOpportunities(filters?: { deliveryMode?: string; type?: string; status?: string }): Promise<MissionOpportunity[]> {
     let query = db.select().from(missionOpportunities);
     const conditions = [];
-    
+
     if (filters?.deliveryMode) conditions.push(eq(missionOpportunities.deliveryMode, filters.deliveryMode));
     if (filters?.type) conditions.push(eq(missionOpportunities.type, filters.type));
     if (filters?.status) conditions.push(eq(missionOpportunities.status, filters.status));
-    
+
     if (conditions.length > 0) {
       query = query.where(and(...conditions)) as typeof query;
     }
-    
+
     return query.orderBy(
       sql`CASE WHEN ${missionOpportunities.deliveryMode} = 'online' THEN 0 ELSE 1 END`,
       desc(missionOpportunities.createdAt)
@@ -3526,7 +3558,7 @@ export class DatabaseStorage implements IStorage {
   async getMissionTestimonies(visibility?: string): Promise<MissionTestimony[]> {
     const conditions = [eq(missionTestimonies.moderationStatus, 'approved')];
     if (visibility) conditions.push(eq(missionTestimonies.visibility, visibility));
-    
+
     return db.select().from(missionTestimonies)
       .where(and(...conditions))
       .orderBy(desc(missionTestimonies.createdAt));
@@ -3538,28 +3570,28 @@ export class DatabaseStorage implements IStorage {
   }
 
   // ===== SIMPLE GOALS & RESOLUTIONS =====
-  
+
   async getUserGoals(userId: string): Promise<any[]> {
     const userSessions = await db.select()
       .from(pathwaySessions)
       .where(eq(pathwaySessions.userId, userId));
-    
+
     if (userSessions.length === 0) {
       return [];
     }
-    
+
     const sessionIds = userSessions.map(s => s.id);
     const today = new Date().toISOString().split('T')[0];
-    
+
     const goalsData = await db.select()
       .from(visionGoals)
       .where(inArray(visionGoals.sessionId, sessionIds))
       .orderBy(desc(visionGoals.createdAt));
-    
+
     const allHabits = await db.select()
       .from(visionHabits)
       .where(inArray(visionHabits.sessionId, sessionIds));
-    
+
     const habitsWithStatus = await Promise.all(allHabits.map(async (habit) => {
       const todayLog = await db.select()
         .from(habitLogs)
@@ -3568,7 +3600,7 @@ export class DatabaseStorage implements IStorage {
           eq(habitLogs.date, today)
         ))
         .limit(1);
-      
+
       const allLogs = await db.select()
         .from(habitLogs)
         .where(and(
@@ -3577,7 +3609,7 @@ export class DatabaseStorage implements IStorage {
         ))
         .orderBy(desc(habitLogs.date))
         .limit(30);
-      
+
       let streak = 0;
       const todayDate = new Date();
       for (let i = 0; i < 30; i++) {
@@ -3590,7 +3622,7 @@ export class DatabaseStorage implements IStorage {
           break;
         }
       }
-      
+
       return {
         id: habit.id,
         title: habit.title,
@@ -3599,17 +3631,17 @@ export class DatabaseStorage implements IStorage {
         streak,
       };
     }));
-    
+
     const goalsWithDetails = await Promise.all(goalsData.map(async (goal, index) => {
       const milestones = await db.select()
         .from(goalMilestones)
         .where(eq(goalMilestones.goalId, goal.id));
-      
+
       const completedMilestones = milestones.filter(m => m.completedAt).length;
-      const progress = milestones.length > 0 
+      const progress = milestones.length > 0
         ? Math.round((completedMilestones / milestones.length) * 100)
         : 0;
-      
+
       return {
         id: goal.id,
         title: goal.title,
@@ -3625,7 +3657,7 @@ export class DatabaseStorage implements IStorage {
         })),
       };
     }));
-    
+
     return goalsWithDetails;
   }
 
@@ -3642,9 +3674,9 @@ export class DatabaseStorage implements IStorage {
       .from(pathwaySessions)
       .where(eq(pathwaySessions.userId, data.userId))
       .limit(1);
-    
+
     let sessionId: number;
-    
+
     if (session.length === 0) {
       const [newSession] = await db.insert(pathwaySessions)
         .values({
@@ -3658,7 +3690,7 @@ export class DatabaseStorage implements IStorage {
     } else {
       sessionId = session[0].id;
     }
-    
+
     const [goal] = await db.insert(visionGoals)
       .values({
         sessionId,
@@ -3670,7 +3702,7 @@ export class DatabaseStorage implements IStorage {
         status: 'active',
       })
       .returning();
-    
+
     if (data.habitTitle) {
       await db.insert(visionHabits)
         .values({
@@ -3681,7 +3713,7 @@ export class DatabaseStorage implements IStorage {
           isActive: true,
         });
     }
-    
+
     return goal;
   }
 
@@ -3693,7 +3725,7 @@ export class DatabaseStorage implements IStorage {
         eq(habitLogs.date, date)
       ))
       .limit(1);
-    
+
     if (existingLog.length > 0) {
       const [updatedLog] = await db.update(habitLogs)
         .set({ completed })
@@ -3709,7 +3741,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   // ===== AI COACHING =====
-  
+
   async createAiCoachSession(data: InsertAiCoachSession): Promise<AiCoachSession> {
     const [session] = await db.insert(aiCoachSessions).values(data).returning();
     return session;
@@ -3820,11 +3852,11 @@ export class DatabaseStorage implements IStorage {
       userId: notificationPreferences.userId,
       pushSubscription: notificationPreferences.pushSubscription,
     })
-    .from(notificationPreferences)
-    .where(and(
-      eq(notificationPreferences.pushEnabled, true),
-      sql`${notificationPreferences.pushSubscription} IS NOT NULL`
-    ));
+      .from(notificationPreferences)
+      .where(and(
+        eq(notificationPreferences.pushEnabled, true),
+        sql`${notificationPreferences.pushSubscription} IS NOT NULL`
+      ));
     return results.filter(r => r.pushSubscription !== null) as Array<{ userId: string; pushSubscription: string }>;
   }
 
@@ -4101,7 +4133,7 @@ export class DatabaseStorage implements IStorage {
       .leftJoin(users, eq(challengeParticipants.userId, users.id))
       .where(eq(challengeParticipants.challengeId, challengeId))
       .orderBy(desc(challengeParticipants.points));
-    
+
     return participants as any;
   }
 
@@ -4243,7 +4275,7 @@ export class DatabaseStorage implements IStorage {
       .leftJoin(users, eq(tripApplications.userId, users.id))
       .where(eq(tripApplications.tripId, tripId))
       .orderBy(desc(tripApplications.appliedAt));
-    
+
     return applications as any;
   }
 
@@ -4519,7 +4551,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   // ===== PRAYER MOVEMENT =====
-  
+
   // Prayer Focus Groups
   async getPrayerFocusGroups(category?: string): Promise<PrayerFocusGroup[]> {
     if (category) {
@@ -4555,7 +4587,7 @@ export class DatabaseStorage implements IStorage {
     let conditions = [];
     if (type) conditions.push(eq(ukCampuses.type, type));
     if (region) conditions.push(eq(ukCampuses.region, region));
-    
+
     if (conditions.length > 0) {
       return db.select().from(ukCampuses).where(and(...conditions)).orderBy(ukCampuses.name);
     }
@@ -4649,7 +4681,7 @@ export class DatabaseStorage implements IStorage {
     let conditions = [eq(prayerSubscriptions.userId, userId)];
     if (focusGroupId) conditions.push(eq(prayerSubscriptions.focusGroupId, focusGroupId));
     if (altarId) conditions.push(eq(prayerSubscriptions.altarId, altarId));
-    
+
     const [subscription] = await db.select().from(prayerSubscriptions).where(and(...conditions));
     return subscription;
   }
@@ -4680,11 +4712,11 @@ export class DatabaseStorage implements IStorage {
   async getPrayerSubscriptionsDueForReminder(frequency: 'daily' | 'weekly'): Promise<Array<{ subscription: PrayerSubscription; user: User; focusGroup: PrayerFocusGroup | null }>> {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    
+
     // For daily: check if not sent today
     // For weekly: check if not sent in last 7 days
-    const cutoffDate = frequency === 'daily' 
-      ? today 
+    const cutoffDate = frequency === 'daily'
+      ? today
       : new Date(today.getTime() - 6 * 24 * 60 * 60 * 1000);
 
     // Use a single joined query for efficiency
@@ -4723,7 +4755,7 @@ export class DatabaseStorage implements IStorage {
     let conditions = [eq(prayerWallEntries.status, "active")];
     if (focusGroupId) conditions.push(eq(prayerWallEntries.focusGroupId, focusGroupId));
     if (altarId) conditions.push(eq(prayerWallEntries.altarId, altarId));
-    
+
     return db.select().from(prayerWallEntries)
       .where(and(...conditions))
       .orderBy(desc(prayerWallEntries.createdAt))
@@ -4760,17 +4792,17 @@ export class DatabaseStorage implements IStorage {
     const [hoursResult] = await db.select({
       totalMinutes: sql<number>`COALESCE(SUM(${prayerLogs.durationMinutes}), 0)`
     }).from(prayerLogs);
-    
+
     // Get unique intercessors
     const [intercessorsResult] = await db.select({
       count: sql<number>`COUNT(DISTINCT ${prayerSubscriptions.userId})`
     }).from(prayerSubscriptions);
-    
+
     // Get campuses with altars
     const [campusesResult] = await db.select({
       count: sql<number>`COUNT(*)`
     }).from(campusAltars).where(eq(campusAltars.status, "active"));
-    
+
     return {
       totalHours: Math.floor(Number(hoursResult?.totalMinutes || 0) / 60),
       totalIntercessors: Number(intercessorsResult?.count || 0),
@@ -4872,21 +4904,21 @@ export class DatabaseStorage implements IStorage {
   }
 
   // ===== BIBLE READING PLANS =====
-  
+
   async getReadingPlans(filters?: { topic?: string; maturityLevel?: string; durationDays?: number }): Promise<ReadingPlan[]> {
     let conditions = [eq(readingPlans.status, 'published')];
-    
+
     if (filters?.maturityLevel) {
       conditions.push(eq(readingPlans.maturityLevel, filters.maturityLevel));
     }
     if (filters?.durationDays) {
       conditions.push(eq(readingPlans.durationDays, filters.durationDays));
     }
-    
+
     const plans = await db.select().from(readingPlans)
       .where(and(...conditions))
       .orderBy(desc(readingPlans.featured), desc(readingPlans.enrollmentCount));
-    
+
     // Filter by topic if specified
     if (filters?.topic) {
       return plans.filter(plan => plan.topics?.includes(filters.topic!));
@@ -4987,17 +5019,17 @@ export class DatabaseStorage implements IStorage {
     // Get the enrollment to find the day number
     const [enrollment] = await db.select().from(userPlanEnrollments)
       .where(eq(userPlanEnrollments.id, enrollmentId));
-    
+
     const [planDay] = await db.select().from(readingPlanDays)
       .where(eq(readingPlanDays.id, planDayId));
-    
+
     // Check if progress already exists
     const [existing] = await db.select().from(userReadingProgress)
       .where(and(
         eq(userReadingProgress.enrollmentId, enrollmentId),
         eq(userReadingProgress.planDayId, planDayId)
       ));
-    
+
     if (existing) {
       const [updated] = await db.update(userReadingProgress)
         .set({ completed: true, completedAt: new Date(), journalEntry: journalEntry || existing.journalEntry })
@@ -5005,7 +5037,7 @@ export class DatabaseStorage implements IStorage {
         .returning();
       return updated;
     }
-    
+
     const [created] = await db.insert(userReadingProgress).values({
       userId: enrollment.userId,
       enrollmentId,
@@ -5014,12 +5046,12 @@ export class DatabaseStorage implements IStorage {
       completed: true,
       journalEntry,
     }).returning();
-    
+
     // Update enrollment's current day and streak
     const now = new Date();
     const lastRead = enrollment.lastReadAt;
     let newStreak = enrollment.currentStreak || 0;
-    
+
     if (lastRead) {
       const daysSinceLastRead = Math.floor((now.getTime() - lastRead.getTime()) / (1000 * 60 * 60 * 24));
       if (daysSinceLastRead <= 1) {
@@ -5030,11 +5062,11 @@ export class DatabaseStorage implements IStorage {
     } else {
       newStreak = 1;
     }
-    
+
     // Get the plan to check if completed
     const plan = await this.getReadingPlan(enrollment.planId);
     const isCompleted = planDay.dayNumber >= (plan?.durationDays || 0);
-    
+
     await db.update(userPlanEnrollments)
       .set({
         currentDay: planDay.dayNumber + 1,
@@ -5044,7 +5076,7 @@ export class DatabaseStorage implements IStorage {
         completedAt: isCompleted ? now : undefined,
       })
       .where(eq(userPlanEnrollments.id, enrollmentId));
-    
+
     // Update user's spiritual profile stats
     if (isCompleted) {
       await db.update(userSpiritualProfiles)
@@ -5062,7 +5094,7 @@ export class DatabaseStorage implements IStorage {
         })
         .where(eq(userSpiritualProfiles.userId, enrollment.userId));
     }
-    
+
     return created;
   }
 
@@ -5070,9 +5102,9 @@ export class DatabaseStorage implements IStorage {
     const enrollments = await db.select().from(userPlanEnrollments)
       .where(eq(userPlanEnrollments.userId, userId))
       .orderBy(desc(userPlanEnrollments.lastReadAt));
-    
+
     if (enrollments.length === 0) return 0;
-    
+
     // Return the highest current streak from active enrollments
     return Math.max(...enrollments.map(e => e.currentStreak || 0));
   }

@@ -197,14 +197,11 @@ function DailyCheckin({ sessionId, isFaithMode }: { sessionId: string; isFaithMo
 
   const saveCheckin = useMutation({
     mutationFn: async () => {
-      const res = await fetch(getApiUrl(`/api/vision/sessions/${sessionId}/checkin/daily`), {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
+      return await apiFetchJson(getApiUrl(`/api/vision/sessions/${sessionId}/checkin/daily`), {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ date: today, energy, todayFocus, note, prayerNote }),
       });
-      if (!res.ok) throw new Error("Failed to save");
-      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/vision/sessions/${sessionId}/checkin/daily/${today}`] });
@@ -357,10 +354,9 @@ function WeeklyReview({ sessionId, isFaithMode }: { sessionId: string; isFaithMo
 
   const saveReview = useMutation({
     mutationFn: async () => {
-      const res = await fetch(getApiUrl(`/api/vision/sessions/${sessionId}/checkin/weekly`), {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
+      return await apiFetchJson(getApiUrl(`/api/vision/sessions/${sessionId}/checkin/weekly`), {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({
           weekStartDate: weekStart,
           win,
@@ -372,8 +368,6 @@ function WeeklyReview({ sessionId, isFaithMode }: { sessionId: string; isFaithMo
           prayerFocus,
         }),
       });
-      if (!res.ok) throw new Error("Failed to save");
-      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/vision/sessions/${sessionId}/checkin/weekly/${weekStart}`] });

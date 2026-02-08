@@ -1,10 +1,11 @@
 import { Link, useLocation } from "wouter";
-import { Menu, X, Compass, Bot } from "lucide-react";
+import { Menu, X, Compass, Bot, CloudRain } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/hooks/useAuth";
 import { NotificationBell } from "@/components/NotificationBell";
+import { isMarketingSite, navigateToApp, appUrl } from "@/lib/domain";
 
 const openAwakeAI = () => window.dispatchEvent(new CustomEvent('openAwakeAI'));
 
@@ -17,6 +18,8 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [location, navigate] = useLocation();
   const { isAuthenticated } = useAuth();
+  const isMarketing = isMarketingSite();
+  const goApp = (path: string) => navigateToApp(path, navigate);
 
   // Pages with genuinely dark hero backgrounds (navy overlays, dark gradients)
   const isDarkHeroPage = ["/outreach", "/mission", "/missions", "/pray", "/give", "/movement", "/sparks", "/vision", "/journeys", "/group-labs", "/coaching-labs"].includes(location) || location.startsWith("/projects/");
@@ -93,7 +96,15 @@ export function Navbar() {
           
           <div className={`hidden md:block px-4 py-1.5 rounded-full border transition-all duration-300 ${scrolled ? 'bg-white/50 border-gray-200' : 'bg-transparent border-transparent'}`}>
             <div className="flex items-baseline space-x-0.5">
-              {isAuthenticated && (
+              {isMarketing && (
+                <Link href="/the-outpouring">
+                  <span className={`${textColor} ${hoverColor} px-3 py-1.5 rounded-full text-sm font-bold transition-all cursor-pointer inline-flex items-center gap-1`} data-testid="nav-outpouring">
+                    <CloudRain className="h-3.5 w-3.5" />
+                    The Outpouring
+                  </span>
+                </Link>
+              )}
+              {isAuthenticated && !isMarketing && (
                 <Link href="/vision">
                   <span className={`${textColor} ${hoverColor} px-3 py-1.5 rounded-full text-sm font-bold transition-all cursor-pointer inline-flex items-center gap-1`} data-testid="nav-vision">
                     <Compass className="h-3.5 w-3.5" />
@@ -101,9 +112,19 @@ export function Navbar() {
                   </span>
                 </Link>
               )}
-              <Link href="/sparks"><span className={`${textColor} ${hoverColor} px-3 py-1.5 rounded-full text-sm font-bold transition-all cursor-pointer`} data-testid="nav-sparks">Sparks</span></Link>
-              <Link href="/community"><span className={`${textColor} ${hoverColor} px-3 py-1.5 rounded-full text-sm font-bold transition-all cursor-pointer`} data-testid="nav-community">Community Hub</span></Link>
-              <Link href="/outreach"><span className={`${textColor} ${hoverColor} px-3 py-1.5 rounded-full text-sm font-bold transition-all cursor-pointer`} data-testid="nav-outreach">Outreach</span></Link>
+              {isMarketing ? (
+                <>
+                  <a href={appUrl("/sparks")}><span className={`${textColor} ${hoverColor} px-3 py-1.5 rounded-full text-sm font-bold transition-all cursor-pointer`} data-testid="nav-sparks">Sparks</span></a>
+                  <a href={appUrl("/community")}><span className={`${textColor} ${hoverColor} px-3 py-1.5 rounded-full text-sm font-bold transition-all cursor-pointer`} data-testid="nav-community">Community Hub</span></a>
+                  <a href={appUrl("/outreach")}><span className={`${textColor} ${hoverColor} px-3 py-1.5 rounded-full text-sm font-bold transition-all cursor-pointer`} data-testid="nav-outreach">Outreach</span></a>
+                </>
+              ) : (
+                <>
+                  <Link href="/sparks"><span className={`${textColor} ${hoverColor} px-3 py-1.5 rounded-full text-sm font-bold transition-all cursor-pointer`} data-testid="nav-sparks">Sparks</span></Link>
+                  <Link href="/community"><span className={`${textColor} ${hoverColor} px-3 py-1.5 rounded-full text-sm font-bold transition-all cursor-pointer`} data-testid="nav-community">Community Hub</span></Link>
+                  <Link href="/outreach"><span className={`${textColor} ${hoverColor} px-3 py-1.5 rounded-full text-sm font-bold transition-all cursor-pointer`} data-testid="nav-outreach">Outreach</span></Link>
+                </>
+              )}
               <Link href="/blog"><span className={`${textColor} ${hoverColor} px-3 py-1.5 rounded-full text-sm font-bold transition-all cursor-pointer`} data-testid="nav-blog">Blog</span></Link>
               <Link href="/about"><span className={`${textColor} ${hoverColor} px-3 py-1.5 rounded-full text-sm font-bold transition-all cursor-pointer`} data-testid="nav-about">About</span></Link>
             </div>
@@ -122,17 +143,17 @@ export function Navbar() {
             )}
             <NotificationBell isDark={useDarkTheme} />
             {!isAuthenticated && (
-              <Button 
+              <Button
                 variant="ghost"
-                onClick={() => navigate('/login')}
+                onClick={() => goApp('/login')}
                 className={`${useDarkTheme ? 'text-white hover:bg-white/10' : 'text-gray-700 hover:bg-gray-100'} font-bold px-4 py-2 rounded-full transition-all`}
                 data-testid="nav-signin"
               >
                 Sign In
               </Button>
             )}
-            <Button 
-              onClick={() => navigate(isAuthenticated ? '/missions' : '/outreach')}
+            <Button
+              onClick={() => isAuthenticated ? navigate('/missions') : goApp('/register')}
               className={`${useDarkTheme ? 'bg-white text-primary hover:bg-gray-100' : 'bg-primary text-white hover:bg-primary/90'} font-bold px-5 py-2 rounded-full shadow-lg transition-all hover:scale-105`}
               data-testid="nav-join"
             >
@@ -161,7 +182,15 @@ export function Navbar() {
           >
             <div className="px-4 pt-4 pb-6 space-y-2">
               <Link href="/"><span className="text-gray-800 hover:text-primary hover:bg-gray-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer" data-testid="mobile-nav-home">Home</span></Link>
-              {isAuthenticated && (
+              {isMarketing && (
+                <Link href="/the-outpouring">
+                  <span className="text-gray-800 hover:text-primary hover:bg-gray-50 px-3 py-2 rounded-lg text-base font-bold cursor-pointer flex items-center gap-2" data-testid="mobile-nav-outpouring">
+                    <CloudRain className="h-4 w-4 text-[#046bd2]" />
+                    The Outpouring
+                  </span>
+                </Link>
+              )}
+              {isAuthenticated && !isMarketing && (
                 <Link href="/vision">
                   <span className="text-gray-800 hover:text-primary hover:bg-gray-50 px-3 py-2 rounded-lg text-base font-bold cursor-pointer flex items-center gap-2" data-testid="mobile-nav-vision">
                     <Compass className="h-4 w-4 text-[#7C9A8E]" />
@@ -169,16 +198,26 @@ export function Navbar() {
                   </span>
                 </Link>
               )}
-              <Link href="/sparks"><span className="text-gray-800 hover:text-primary hover:bg-gray-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer" data-testid="mobile-nav-sparks">Sparks</span></Link>
-              <Link href="/community"><span className="text-gray-800 hover:text-primary hover:bg-gray-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer" data-testid="mobile-nav-community">Community Hub</span></Link>
-              <Link href="/outreach"><span className="text-gray-800 hover:text-primary hover:bg-gray-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer" data-testid="mobile-nav-outreach">Outreach</span></Link>
+              {isMarketing ? (
+                <>
+                  <a href={appUrl("/sparks")}><span className="text-gray-800 hover:text-primary hover:bg-gray-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer" data-testid="mobile-nav-sparks">Sparks</span></a>
+                  <a href={appUrl("/community")}><span className="text-gray-800 hover:text-primary hover:bg-gray-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer" data-testid="mobile-nav-community">Community Hub</span></a>
+                  <a href={appUrl("/outreach")}><span className="text-gray-800 hover:text-primary hover:bg-gray-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer" data-testid="mobile-nav-outreach">Outreach</span></a>
+                </>
+              ) : (
+                <>
+                  <Link href="/sparks"><span className="text-gray-800 hover:text-primary hover:bg-gray-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer" data-testid="mobile-nav-sparks">Sparks</span></Link>
+                  <Link href="/community"><span className="text-gray-800 hover:text-primary hover:bg-gray-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer" data-testid="mobile-nav-community">Community Hub</span></Link>
+                  <Link href="/outreach"><span className="text-gray-800 hover:text-primary hover:bg-gray-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer" data-testid="mobile-nav-outreach">Outreach</span></Link>
+                </>
+              )}
               <Link href="/blog"><span className="text-gray-800 hover:text-primary hover:bg-gray-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer" data-testid="mobile-nav-blog">Blog</span></Link>
               <Link href="/about"><span className="text-gray-800 hover:text-primary hover:bg-gray-50 block px-3 py-2 rounded-lg text-base font-bold cursor-pointer" data-testid="mobile-nav-about">About</span></Link>
               <div className="pt-4 space-y-2">
                 {!isAuthenticated && (
                   <Button 
                     variant="outline"
-                    onClick={() => { setIsOpen(false); navigate('/login'); }}
+                    onClick={() => { setIsOpen(false); goApp('/login'); }}
                     className="w-full border-gray-300 text-gray-700 hover:bg-gray-50 font-bold py-5 rounded-xl" 
                     data-testid="mobile-nav-signin"
                   >
@@ -186,7 +225,7 @@ export function Navbar() {
                   </Button>
                 )}
                 <Button 
-                  onClick={() => { setIsOpen(false); navigate(isAuthenticated ? '/missions' : '/outreach'); }}
+                  onClick={() => { setIsOpen(false); isAuthenticated ? navigate('/missions') : goApp('/register'); }}
                   className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-6 rounded-xl" 
                   data-testid="mobile-nav-join"
                 >

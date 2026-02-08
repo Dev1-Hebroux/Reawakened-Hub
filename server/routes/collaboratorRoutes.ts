@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { storage } from "../storage";
-import { isAuthenticated, isAdmin } from "../replitAuth";
+import { isAuthenticated, isAdmin } from "../auth";
 import { z } from "zod";
 
 const router = Router();

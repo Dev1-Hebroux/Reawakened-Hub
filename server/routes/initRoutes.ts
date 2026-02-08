@@ -34,15 +34,11 @@ router.get('/init', async (req: Request, res: Response) => {
   try {
     const csrfToken = (res.locals.csrfToken as string) || req.cookies?.csrf_token || null;
     
-    // Check Replit auth first, then email auth session
-    let user = (req as any).user;
-    
-    // If no Replit user, check for email auth session
-    if (!user) {
-      const sessionToken = req.cookies?.auth_session;
-      if (sessionToken) {
-        user = await validateSession(sessionToken);
-      }
+    // Check email auth session
+    let user = null;
+    const sessionToken = req.cookies?.auth_session;
+    if (sessionToken) {
+      user = await validateSession(sessionToken);
     }
     
     if (!user) {
@@ -59,25 +55,25 @@ router.get('/init', async (req: Request, res: Response) => {
       return res.json(response);
     }
     
-    const userId = user.claims?.sub || user.id;
-    
+    const userId = user.id;
+
     const [notificationCount, preferences, streak] = await Promise.all([
       getUnreadNotificationCount(userId),
       getUserPreferences(userId),
       getCurrentStreak(userId),
     ]);
-    
+
     const response: InitResponse = {
       authenticated: true,
       user: {
         id: userId,
-        email: user.email || user.claims?.email,
-        firstName: user.firstName || user.claims?.first_name,
-        lastName: user.lastName || user.claims?.last_name,
-        role: user.role || 'user',
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role || 'member',
         emailVerified: !!user.emailVerifiedAt,
-        authProvider: user.authProvider || 'replit',
-        profileImageUrl: user.profileImageUrl || user.claims?.profile_image,
+        authProvider: user.authProvider || 'email',
+        profileImageUrl: user.profileImageUrl,
       },
       csrfToken,
       notifications: { unread: notificationCount },

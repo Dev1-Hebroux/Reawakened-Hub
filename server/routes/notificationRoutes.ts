@@ -6,7 +6,7 @@
  */
 
 import { Router } from 'express';
-import { isAuthenticated } from '../replitAuth';
+import { isAuthenticated } from '../auth';
 import { storage } from '../storage';
 import { z } from 'zod';
 

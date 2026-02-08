@@ -42,6 +42,9 @@ export function useAwakeAI() {
   return context;
 }
 
+const AI_BUTTON_HIDDEN_KEY = 'awake-ai-button-hidden';
+const AI_BUTTON_DELAY_MS = 2 * 60 * 1000; // 2 minutes
+
 export function AiCoachDrawer({ entryPoint = "general" }: AiCoachDrawerProps) {
   const { isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
@@ -50,8 +53,56 @@ export function AiCoachDrawer({ entryPoint = "general" }: AiCoachDrawerProps) {
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Show button after 2 minutes on site, allow user to hide it
+  const [showButton, setShowButton] = useState(false);
+  const [isHiddenByUser, setIsHiddenByUser] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem(AI_BUTTON_HIDDEN_KEY) === 'true';
+    }
+    return false;
+  });
+
+  // Timer to show button after 2 minutes
   useEffect(() => {
-    const handleOpenAwakeAI = () => setIsOpen(true);
+    if (isHiddenByUser) return;
+
+    const timer = setTimeout(() => {
+      setShowButton(true);
+    }, AI_BUTTON_DELAY_MS);
+
+    return () => clearTimeout(timer);
+  }, [isHiddenByUser]);
+
+  // Hide bot when dialogs/modals are open (form filling)
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  useEffect(() => {
+    const checkForDialogs = () => {
+      const hasOpenDialog = document.querySelector('[role="dialog"]') !== null ||
+                           document.querySelector('[data-state="open"]') !== null ||
+                           document.querySelector('.fixed.inset-0') !== null;
+      setIsFormOpen(hasOpenDialog && !isOpen);
+    };
+
+    // Check on mount and observe DOM changes
+    checkForDialogs();
+    const observer = new MutationObserver(checkForDialogs);
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    return () => observer.disconnect();
+  }, [isOpen]);
+
+  // Handle hiding the button
+  const handleHideButton = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsHiddenByUser(true);
+    localStorage.setItem(AI_BUTTON_HIDDEN_KEY, 'true');
+  };
+
+  useEffect(() => {
+    const handleOpenAwakeAI = () => {
+      setShowButton(true); // Force show when explicitly opened
+      setIsOpen(true);
+    };
     window.addEventListener('openAwakeAI', handleOpenAwakeAI);
     return () => window.removeEventListener('openAwakeAI', handleOpenAwakeAI);
   }, []);
@@ -113,23 +164,38 @@ export function AiCoachDrawer({ entryPoint = "general" }: AiCoachDrawerProps) {
 
   return (
     <>
-      {/* Floating AI Bot Button */}
-      {!isOpen && (
-        <motion.button
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0, opacity: 0 }}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => setIsOpen(true)}
-          className="fixed bottom-24 right-4 xl:bottom-6 xl:right-6 w-14 h-14 bg-gradient-to-r from-[#1a2744] to-[#243656] text-white rounded-full shadow-2xl flex items-center justify-center z-[60] hover:shadow-xl transition-shadow"
-          data-testid="button-open-ai-coach"
-          aria-label="Open AI Coach"
-        >
-          <Bot className="h-6 w-6" />
-          <span className="absolute inset-0 rounded-full bg-[#4A7C7C] animate-ping opacity-20" />
-        </motion.button>
-      )}
+      {/* Floating AI Bot Button — always bottom-right, shows after 2 mins, hides during forms */}
+      <AnimatePresence>
+        {!isOpen && showButton && !isHiddenByUser && !isFormOpen && (
+          <motion.div
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0, opacity: 0 }}
+            className="fixed bottom-20 right-4 md:bottom-24 md:right-6 z-[60] flex items-center gap-2"
+          >
+            {/* Main AI button */}
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setIsOpen(true)}
+              className="h-12 px-4 bg-[#1a2744] text-white rounded-full shadow-lg flex items-center gap-2 transition-shadow hover:shadow-xl"
+              data-testid="button-open-ai-coach"
+              aria-label="Open AI Coach"
+            >
+              <Bot className="h-5 w-5" />
+              <span className="text-sm font-medium">Ask Awake AI</span>
+            </motion.button>
+            {/* Close/Hide button */}
+            <button
+              onClick={handleHideButton}
+              className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-gray-600 bg-white rounded-full shadow-md hover:shadow-lg transition-all"
+              aria-label="Hide Awake AI button"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
       <AnimatePresence>
         {isOpen && (
           <>

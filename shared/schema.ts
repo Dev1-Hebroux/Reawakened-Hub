@@ -41,7 +41,7 @@ export const users = pgTable("users", {
   region: varchar("region"), // for regional leaders
   community: varchar("community"), // community/group affiliation
   passwordHash: text("password_hash"),
-  authProvider: varchar("auth_provider").default("replit"), // 'replit', 'email', 'both'
+  authProvider: varchar("auth_provider").default("email"),
   emailVerifiedAt: timestamp("email_verified_at"),
   lastLoginAt: timestamp("last_login_at"),
   loginAttempts: integer("login_attempts").default(0),
@@ -3221,3 +3221,143 @@ export const idempotencyKeys = pgTable("idempotency_keys", {
 export const insertIdempotencyKeySchema = createInsertSchema(idempotencyKeys).omit({ id: true, createdAt: true });
 export type InsertIdempotencyKey = z.infer<typeof insertIdempotencyKeySchema>;
 export type IdempotencyKey = typeof idempotencyKeys.$inferSelect;
+
+// ==========================================
+// PRODUCT LAUNCH TOOLS - Faith-Based Entrepreneurship
+// Genesis 1:28 - "Be fruitful and multiply; fill the earth and subdue it"
+// ==========================================
+
+// Product Launch Sessions - Main container for each product/venture
+export const productLaunchSessions = pgTable("product_launch_sessions", {
+  id: serial("id").primaryKey(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  productName: text("product_name"),
+  productDescription: text("product_description"),
+  productType: text("product_type"), // 'physical', 'digital', 'service', 'ministry'
+  stage: text("stage").default("ideation"), // 'ideation', 'validation', 'planning', 'pre-launch', 'launched'
+  prayerCommitment: text("prayer_commitment"), // Personal prayer commitment for the venture
+  scriptureAnchor: text("scripture_anchor"), // Guiding scripture for the product
+  kingdomImpact: text("kingdom_impact"), // How this serves God's purposes
+  coverImage: text("cover_image"),
+  isArchived: boolean("is_archived").default(false),
+  completedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => [index("idx_product_launch_user").on(table.userId, table.createdAt)]);
+
+export const insertProductLaunchSessionSchema = createInsertSchema(productLaunchSessions).omit({ id: true, createdAt: true, updatedAt: true });
+export type InsertProductLaunchSession = z.infer<typeof insertProductLaunchSessionSchema>;
+export type ProductLaunchSession = typeof productLaunchSessions.$inferSelect;
+
+// SWOT Analysis - Strengths, Weaknesses, Opportunities, Threats with faith perspective
+export const swotAnalysisData = pgTable("swot_analysis_data", {
+  id: serial("id").primaryKey(),
+  sessionId: integer("session_id").notNull().references(() => productLaunchSessions.id, { onDelete: 'cascade' }),
+  strengths: jsonb("strengths").default([]), // [{ item: "", faithReflection: "", godGiven: boolean }]
+  weaknesses: jsonb("weaknesses").default([]), // [{ item: "", growthArea: "", trustInGod: "" }]
+  opportunities: jsonb("opportunities").default([]), // [{ item: "", kingdomOpportunity: "" }]
+  threats: jsonb("threats").default([]), // [{ item: "", faithResponse: "" }]
+  actionItems: jsonb("action_items").default([]), // [{ action: "", priority: "", deadline: "" }]
+  prayerPoints: jsonb("prayer_points").default([]), // Specific prayer needs from SWOT
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertSwotAnalysisSchema = createInsertSchema(swotAnalysisData).omit({ id: true, updatedAt: true });
+export type InsertSwotAnalysis = z.infer<typeof insertSwotAnalysisSchema>;
+export type SwotAnalysisData = typeof swotAnalysisData.$inferSelect;
+
+// Go-To-Market Canvas - Kingdom-aligned market strategy
+export const gtmCanvasData = pgTable("gtm_canvas_data", {
+  id: serial("id").primaryKey(),
+  sessionId: integer("session_id").notNull().references(() => productLaunchSessions.id, { onDelete: 'cascade' }),
+  // Target Market Section
+  targetMarket: jsonb("target_market"), // { primaryAudience, demographics, psychographics, painPoints }
+  customerPersonas: jsonb("customer_personas"), // [{ name, age, story, needs, faithJourney }]
+  // Value Proposition Section
+  valueProposition: jsonb("value_proposition"), // { uniqueBenefit, problemSolved, kingdomValue }
+  competitorAnalysis: jsonb("competitor_analysis"), // [{ name, strengths, weaknesses, differentiation }]
+  // Channels Section
+  distributionChannels: jsonb("distribution_channels"), // [{ channel, strategy, faithAlignment }]
+  marketingChannels: jsonb("marketing_channels"), // [{ channel, content, integrity }]
+  partnerships: jsonb("partnerships"), // [{ partner, relationship, kingdomSynergy }]
+  // Positioning Section
+  positioningStatement: text("positioning_statement"),
+  brandValues: jsonb("brand_values"), // [{ value, meaning, biblical basis }]
+  messagingPillars: jsonb("messaging_pillars"), // [{ pillar, keyMessage }]
+  // Stewardship Check
+  stewardshipReflection: text("stewardship_reflection"), // How does this serve others?
+  integrityCommitment: text("integrity_commitment"), // Commitment to ethical business
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertGtmCanvasSchema = createInsertSchema(gtmCanvasData).omit({ id: true, updatedAt: true });
+export type InsertGtmCanvas = z.infer<typeof insertGtmCanvasSchema>;
+export type GtmCanvasData = typeof gtmCanvasData.$inferSelect;
+
+// Pricing Calculator - Fair pricing with generosity options
+export const pricingCalculatorData = pgTable("pricing_calculator_data", {
+  id: serial("id").primaryKey(),
+  sessionId: integer("session_id").notNull().references(() => productLaunchSessions.id, { onDelete: 'cascade' }),
+  // Costs
+  fixedCosts: jsonb("fixed_costs").default([]), // [{ name, amount, frequency }]
+  variableCosts: jsonb("variable_costs").default([]), // [{ name, perUnitCost }]
+  laborCosts: jsonb("labor_costs").default([]), // [{ role, hourlyRate, hoursPerUnit }]
+  totalCostPerUnit: integer("total_cost_per_unit"), // calculated in cents
+  // Pricing Strategy
+  pricingStrategy: text("pricing_strategy"), // 'cost-plus', 'value-based', 'competitive', 'penetration'
+  targetMargin: integer("target_margin"), // percentage (e.g., 30 for 30%)
+  recommendedPrice: integer("recommended_price"), // cents
+  // Competitor Pricing
+  competitorPrices: jsonb("competitor_prices").default([]), // [{ competitor, price, notes }]
+  pricePositioning: text("price_positioning"), // 'premium', 'mid-market', 'budget'
+  // Generosity & Kingdom Economics
+  generosityTier: jsonb("generosity_tier"), // { enabled, type: 'pay-what-you-can' | 'tithe-back' | 'scholarship', details }
+  kingdomTithe: integer("kingdom_tithe"), // percentage to donate to ministry/charity
+  fairPricingReflection: text("fair_pricing_reflection"), // Proverbs 11:1 reflection
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertPricingCalculatorSchema = createInsertSchema(pricingCalculatorData).omit({ id: true, updatedAt: true });
+export type InsertPricingCalculator = z.infer<typeof insertPricingCalculatorSchema>;
+export type PricingCalculatorData = typeof pricingCalculatorData.$inferSelect;
+
+// Launch Checklist - Pre/Launch/Post tasks with prayer milestones
+export const launchChecklistData = pgTable("launch_checklist_data", {
+  id: serial("id").primaryKey(),
+  sessionId: integer("session_id").notNull().references(() => productLaunchSessions.id, { onDelete: 'cascade' }),
+  launchDate: timestamp("launch_date"),
+  // Task Lists (each item: { id, title, completed, dueDate, notes, isPrayerMilestone })
+  preLaunchTasks: jsonb("pre_launch_tasks").default([]),
+  launchDayTasks: jsonb("launch_day_tasks").default([]),
+  postLaunchTasks: jsonb("post_launch_tasks").default([]),
+  // Prayer Milestones
+  dedicationPrayer: jsonb("dedication_prayer"), // { completed, date, notes }
+  mentorBlessing: jsonb("mentor_blessing"), // { sought, mentorName, date, notes }
+  communitySupport: jsonb("community_support"), // { requested, supporters: [], prayers: [] }
+  launchDayPrayer: jsonb("launch_day_prayer"), // { completed, date, notes }
+  gratitudeLog: jsonb("gratitude_log").default([]), // [{ date, gratitude }]
+  // Accountability
+  accountabilityPartner: text("accountability_partner"),
+  weeklyCheckIn: jsonb("weekly_check_in").default([]), // [{ week, completed, notes }]
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertLaunchChecklistSchema = createInsertSchema(launchChecklistData).omit({ id: true, updatedAt: true });
+export type InsertLaunchChecklist = z.infer<typeof insertLaunchChecklistSchema>;
+export type LaunchChecklistData = typeof launchChecklistData.$inferSelect;
+
+// Product Launch Milestones - Track key achievements
+export const productLaunchMilestones = pgTable("product_launch_milestones", {
+  id: serial("id").primaryKey(),
+  sessionId: integer("session_id").notNull().references(() => productLaunchSessions.id, { onDelete: 'cascade' }),
+  title: text("title").notNull(),
+  description: text("description"),
+  targetDate: timestamp("target_date"),
+  completedAt: timestamp("completed_at"),
+  celebrationNote: text("celebration_note"), // How will you celebrate this with gratitude?
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertProductLaunchMilestoneSchema = createInsertSchema(productLaunchMilestones).omit({ id: true, createdAt: true });
+export type InsertProductLaunchMilestone = z.infer<typeof insertProductLaunchMilestoneSchema>;
+export type ProductLaunchMilestone = typeof productLaunchMilestones.$inferSelect;

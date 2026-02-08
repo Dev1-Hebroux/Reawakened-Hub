@@ -52,8 +52,7 @@ self.addEventListener('fetch', (event) => {
   if (url.pathname.startsWith('/api/auth/') || 
       url.pathname.startsWith('/api/login') || 
       url.pathname.startsWith('/api/logout') ||
-      url.pathname.startsWith('/api/callback') ||
-      url.hostname.includes('replit.com')) {
+      url.pathname.startsWith('/api/callback')) {
     return;
   }
 

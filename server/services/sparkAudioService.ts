@@ -11,7 +11,7 @@ import { sparks } from '@shared/schema';
 import { eq, sql, isNotNull } from 'drizzle-orm';
 import { createHash } from 'crypto';
 import { logger } from '../lib/logger';
-import { objectStorageClient } from '../replit_integrations/object_storage';
+import { uploadAudio, audioExists as checkAudioExists, deleteAudio, isStorageConfigured } from '../supabaseStorage';
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -241,10 +241,8 @@ async function clearAudioMetadata(sparkId: number): Promise<void> {
 }
 
 export class SparkAudioService {
-  private bucketId: string;
-  
   constructor() {
-    this.bucketId = process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID || '';
+    // Storage is configured via Supabase environment variables
   }
   
   async getAudioUrl(sparkId: number): Promise<string | null> {
@@ -285,27 +283,13 @@ export class SparkAudioService {
       const script = composeNarrationScript(spark);
       const audioBuffer = await generateTTSAudio(script, sparkId);
       
-      if (!this.bucketId) {
-        return { success: false, sparkId, error: 'Object storage not configured' };
+      if (!isStorageConfigured()) {
+        return { success: false, sparkId, error: 'Supabase storage not configured' };
       }
-      
-      const bucket = objectStorageClient.bucket(this.bucketId);
-      const file = bucket.file(storagePath);
-      
-      await file.save(audioBuffer, {
-        metadata: {
-          contentType: 'audio/mpeg',
-          metadata: {
-            'custom:aclPolicy': JSON.stringify({
-              owner: 'system',
-              visibility: 'public',
-            }),
-          },
-        },
-      });
-      
-      const publicUrl = `/api/audio/spark-${sparkId}-${contentHash}.mp3`;
-      
+
+      const audioFilename = `spark-${sparkId}-${contentHash}.mp3`;
+      const publicUrl = await uploadAudio(audioFilename, audioBuffer);
+
       const metadata: AudioMetadata = {
         sparkId,
         contentHash,
@@ -314,17 +298,16 @@ export class SparkAudioService {
         storagePath,
         publicUrl,
       };
-      
+
       await saveAudioMetadata(sparkId, metadata);
-      
+
       // Delete legacy file if exists
       try {
-        const legacyPath = getLegacyAudioPath(sparkId);
-        const legacyFile = bucket.file(legacyPath);
-        const [exists] = await legacyFile.exists();
-        if (exists) {
-          await legacyFile.delete();
-          logger.info({ sparkId, legacyPath }, 'Deleted legacy audio file');
+        const legacyFilename = `spark-${sparkId}.mp3`;
+        const legacyExists = await checkAudioExists(legacyFilename);
+        if (legacyExists) {
+          await deleteAudio(legacyFilename);
+          logger.info({ sparkId, legacyFilename }, 'Deleted legacy audio file');
         }
       } catch (e) {
         // Ignore errors when deleting legacy files
@@ -453,43 +436,41 @@ export class SparkAudioService {
     const allSparks = await fetchAllSparks();
     let deleted = 0;
     const errors: string[] = [];
-    
-    if (!this.bucketId) {
-      return { deleted: 0, errors: ['Object storage not configured'] };
+
+    if (!isStorageConfigured()) {
+      return { deleted: 0, errors: ['Supabase storage not configured'] };
     }
-    
-    const bucket = objectStorageClient.bucket(this.bucketId);
-    
+
     for (const spark of allSparks) {
       try {
         const metadata = await getStoredAudioMetadata(spark.id);
-        
+
         if (metadata?.storagePath) {
-          const file = bucket.file(metadata.storagePath);
-          const [exists] = await file.exists();
+          // Extract filename from storage path (e.g. "public/audio/spark-1-abc123.mp3" -> "spark-1-abc123.mp3")
+          const filename = metadata.storagePath.replace(`${AUDIO_STORAGE_PREFIX}/`, '');
+          const exists = await checkAudioExists(filename);
           if (exists) {
-            await file.delete();
+            await deleteAudio(filename);
             deleted++;
           }
         }
-        
+
         // Also try legacy path
-        const legacyPath = getLegacyAudioPath(spark.id);
-        const legacyFile = bucket.file(legacyPath);
-        const [legacyExists] = await legacyFile.exists();
+        const legacyFilename = `spark-${spark.id}.mp3`;
+        const legacyExists = await checkAudioExists(legacyFilename);
         if (legacyExists) {
-          await legacyFile.delete();
+          await deleteAudio(legacyFilename);
           deleted++;
         }
-        
+
         await clearAudioMetadata(spark.id);
       } catch (error) {
         errors.push(`Spark ${spark.id}: ${error instanceof Error ? error.message : 'Unknown error'}`);
       }
     }
-    
+
     logger.info({ deleted, errors: errors.length }, 'Deleted all spark audio');
-    
+
     return { deleted, errors };
   }
 }

@@ -24,6 +24,7 @@ import { Redirect } from "wouter";
 
 // Lazy load all pages for better initial bundle size
 const Home = lazy(() => import("@/pages/Home"));
+const TheOutpouring = lazy(() => import("@/pages/TheOutpouring"));
 const AboutPage = lazy(() => import("@/pages/About"));
 const Blog = lazy(() => import("@/pages/Blog"));
 const BlogPostPage = lazy(() => import("@/pages/BlogPost"));
@@ -89,6 +90,14 @@ const ReadingPlans = lazy(() => import("@/pages/ReadingPlans").then(m => ({ defa
 const ReadingPlanDetail = lazy(() => import("@/pages/ReadingPlanDetail").then(m => ({ default: m.ReadingPlanDetail })));
 const PartnerVision = lazy(() => import("@/pages/PartnerVision").then(m => ({ default: m.PartnerVision })));
 const UnsubscribePage = lazy(() => import("@/pages/Unsubscribe").then(m => ({ default: m.UnsubscribePage })));
+
+// Product Launch Tools
+const ProductLaunchHub = lazy(() => import("@/pages/ProductLaunchHub"));
+const ProductLaunchSession = lazy(() => import("@/pages/ProductLaunchSession"));
+const SwotBuilderTool = lazy(() => import("@/pages/tools/SwotBuilderTool"));
+const LaunchChecklistTool = lazy(() => import("@/pages/tools/LaunchChecklistTool"));
+const PricingCalculatorTool = lazy(() => import("@/pages/tools/PricingCalculatorTool"));
+const GtmCanvasTool = lazy(() => import("@/pages/tools/GtmCanvasTool"));
 
 
 const AdminDashboard = lazy(() => import("@/pages/Admin").then(m => ({ default: m.AdminDashboard })));
@@ -156,6 +165,7 @@ function Router() {
     <Suspense fallback={<LoadingFallback />}>
       <Switch>
         <Route path="/" component={Home} />
+        <Route path="/the-outpouring" component={TheOutpouring} />
         <Route path="/about" component={AboutPage} />
         <Route path="/blog" component={Blog} />
         <Route path="/blog/:slug" component={BlogPostPage} />
@@ -244,6 +254,12 @@ function Router() {
         <Route path="/mission-trips" component={MissionTripsPublic} />
         <Route path="/coaching-public" component={CoachingPublic} />
         <Route path="/goals" component={Goals} />
+        <Route path="/product-launch" component={ProductLaunchHub} />
+        <Route path="/product-launch/:sessionId" component={ProductLaunchSession} />
+        <Route path="/product-launch/:sessionId/swot" component={SwotBuilderTool} />
+        <Route path="/product-launch/:sessionId/checklist" component={LaunchChecklistTool} />
+        <Route path="/product-launch/:sessionId/pricing" component={PricingCalculatorTool} />
+        <Route path="/product-launch/:sessionId/gtm-canvas" component={GtmCanvasTool} />
         <Route path="/login">
           <GuestRoute component={LoginPage} />
         </Route>

@@ -1,52 +1,54 @@
 import { storage } from "./storage";
 import { generateSparkAudio, getSparkAudioUrl } from "./tts-service";
 
-export async function pregenerateTomorrowsAudio(): Promise<void> {
-  if (!process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID) {
-    console.log("[Audio Pre-generation] Skipping - object storage not configured");
+export async function pregenerateUpcomingAudio(daysAhead: number = 7): Promise<void> {
+  if (!process.env.SUPABASE_URL) {
+    console.log("[Audio Pre-generation] Skipping - Supabase storage not configured");
     return;
   }
-  
-  console.log("[Audio Pre-generation] Starting pre-generation job...");
-  
+
+  console.log(`[Audio Pre-generation] Starting pre-generation for next ${daysAhead} days...`);
+
   try {
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const tomorrowStr = tomorrow.toISOString().split('T')[0];
-    
-    console.log(`[Audio Pre-generation] Looking for sparks with daily_date = ${tomorrowStr}`);
-    
-    const sparks = await storage.getSparksByDailyDate(tomorrowStr);
-    
+    const now = new Date();
+    const londonNow = new Date(now.toLocaleString("en-US", { timeZone: "Europe/London" }));
+    const todayStr = londonNow.toISOString().split('T')[0];
+
+    const endDate = new Date(londonNow);
+    endDate.setDate(endDate.getDate() + daysAhead);
+    const endStr = endDate.toISOString().split('T')[0];
+
+    console.log(`[Audio Pre-generation] Looking for sparks from ${todayStr} to ${endStr}`);
+
+    const sparks = await storage.getSparksByDateRange(todayStr, endStr);
+
     if (sparks.length === 0) {
-      console.log("[Audio Pre-generation] No sparks scheduled for tomorrow");
+      console.log("[Audio Pre-generation] No sparks found for upcoming dates");
       return;
     }
-    
+
     console.log(`[Audio Pre-generation] Found ${sparks.length} sparks to process`);
-    
+
     let generated = 0;
     let skipped = 0;
     let failed = 0;
-    
+
     for (const spark of sparks) {
       try {
         const existingUrl = await getSparkAudioUrl(spark.id);
-        
+
         if (existingUrl) {
-          console.log(`[Audio Pre-generation] Spark ${spark.id} already has audio, skipping`);
           skipped++;
           continue;
         }
-        
+
         if (!spark.fullTeaching) {
-          console.log(`[Audio Pre-generation] Spark ${spark.id} has no teaching content, skipping`);
           skipped++;
           continue;
         }
-        
-        console.log(`[Audio Pre-generation] Generating audio for spark ${spark.id}: ${spark.title}`);
-        
+
+        console.log(`[Audio Pre-generation] Generating audio for spark ${spark.id}: ${spark.title} (${spark.dailyDate})`);
+
         const result = await generateSparkAudio(spark.id, {
           title: spark.title,
           scriptureRef: spark.scriptureRef || undefined,
@@ -55,9 +57,10 @@ export async function pregenerateTomorrowsAudio(): Promise<void> {
           reflectionQuestion: spark.reflectionQuestion || undefined,
           todayAction: spark.todayAction || undefined,
           prayerLine: spark.prayerLine || undefined,
-          ctaPrimary: spark.ctaPrimary || undefined
+          ctaPrimary: spark.ctaPrimary || undefined,
+          weekTheme: spark.weekTheme || undefined
         });
-        
+
         if (result.success) {
           console.log(`[Audio Pre-generation] Successfully generated audio for spark ${spark.id}`);
           generated++;
@@ -65,17 +68,18 @@ export async function pregenerateTomorrowsAudio(): Promise<void> {
           console.error(`[Audio Pre-generation] Failed to generate audio for spark ${spark.id}: ${result.error}`);
           failed++;
         }
-        
+
+        // Throttle API calls
         await new Promise(resolve => setTimeout(resolve, 1000));
-        
+
       } catch (error) {
         console.error(`[Audio Pre-generation] Error processing spark ${spark.id}:`, error);
         failed++;
       }
     }
-    
-    console.log(`[Audio Pre-generation] Complete: ${generated} generated, ${skipped} skipped, ${failed} failed`);
-    
+
+    console.log(`[Audio Pre-generation] Complete: ${generated} generated, ${skipped} skipped (already have audio), ${failed} failed`);
+
   } catch (error) {
     console.error("[Audio Pre-generation] Job failed:", error);
   }
@@ -105,8 +109,8 @@ export async function generateAudioBatch(limit: number = 10, forceRegenerate: bo
     generatedIds: []
   };
 
-  if (!process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID) {
-    result.errors.push("Object storage not configured");
+  if (!process.env.SUPABASE_URL) {
+    result.errors.push("Supabase storage not configured");
     return result;
   }
 
@@ -156,9 +160,10 @@ export async function generateAudioBatch(limit: number = 10, forceRegenerate: bo
           reflectionQuestion: spark.reflectionQuestion || undefined,
           todayAction: spark.todayAction || undefined,
           prayerLine: spark.prayerLine || undefined,
-          ctaPrimary: spark.ctaPrimary || undefined
+          ctaPrimary: spark.ctaPrimary || undefined,
+          weekTheme: spark.weekTheme || undefined
         });
-        
+
         if (genResult.success) {
           console.log(`[Batch Audio] Successfully generated audio for spark ${spark.id}`);
           result.generated++;
@@ -201,8 +206,8 @@ export async function pregenerateAllDominionAudio(batchSize: number = 10): Promi
     generatedIds: []
   };
 
-  if (!process.env.DEFAULT_OBJECT_STORAGE_BUCKET_ID) {
-    result.errors.push("Object storage not configured");
+  if (!process.env.SUPABASE_URL) {
+    result.errors.push("Supabase storage not configured");
     return result;
   }
 
@@ -244,9 +249,10 @@ export async function pregenerateAllDominionAudio(batchSize: number = 10): Promi
           reflectionQuestion: spark.reflectionQuestion || undefined,
           todayAction: spark.todayAction || undefined,
           prayerLine: spark.prayerLine || undefined,
-          ctaPrimary: spark.ctaPrimary || undefined
+          ctaPrimary: spark.ctaPrimary || undefined,
+          weekTheme: spark.weekTheme || undefined
         });
-        
+
         if (genResult.success) {
           console.log(`[Bulk Audio] Successfully generated audio for spark ${spark.id}`);
           result.generated++;
@@ -283,35 +289,156 @@ export async function pregenerateAllDominionAudio(batchSize: number = 10): Promi
   return result;
 }
 
-export function scheduleAudioPregeneration(): void {
-  pregenerateTomorrowsAudio().catch(console.error);
-  
-  // Schedule to run at 23:30 London time (day before content goes live)
-  const runAt2330London = () => {
-    const now = new Date();
-    
-    // Calculate 23:30 London time
-    const londonOffset = getLondonOffset(now);
-    const next2330 = new Date();
-    next2330.setUTCHours(23 - Math.floor(londonOffset / 60), 30 - (londonOffset % 60), 0, 0);
-    
-    if (next2330 <= now) {
-      next2330.setDate(next2330.getDate() + 1);
-    }
-    
-    const msUntil2330 = next2330.getTime() - now.getTime();
-    
-    console.log(`[Audio Pre-generation] Scheduled next run at 23:30 London time in ${Math.round(msUntil2330 / 1000 / 60)} minutes`);
-    
-    setTimeout(() => {
-      pregenerateTomorrowsAudio().catch(console.error);
-      setInterval(() => {
-        pregenerateTomorrowsAudio().catch(console.error);
-      }, 24 * 60 * 60 * 1000);
-    }, msUntil2330);
+export interface AudioVerificationResult {
+  checked: number;
+  ready: number;
+  missing: number;
+  repaired: number;
+  failedRepairs: string[];
+}
+
+/**
+ * Verify that upcoming sparks (today + tomorrow) have audio ready.
+ * Any missing audio is regenerated with up to maxRetries attempts.
+ */
+export async function verifyAndRepairUpcomingAudio(maxRetries: number = 3): Promise<AudioVerificationResult> {
+  const result: AudioVerificationResult = {
+    checked: 0,
+    ready: 0,
+    missing: 0,
+    repaired: 0,
+    failedRepairs: [],
   };
-  
-  runAt2330London();
+
+  if (!process.env.SUPABASE_URL) {
+    console.log("[Audio Verify] Skipping - Supabase storage not configured");
+    return result;
+  }
+
+  console.log("[Audio Verify] Starting verification of today's and tomorrow's audio...");
+
+  try {
+    const now = new Date();
+    const londonNow = new Date(now.toLocaleString("en-US", { timeZone: "Europe/London" }));
+    const todayStr = londonNow.toISOString().split('T')[0];
+
+    const tomorrow = new Date(londonNow);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowStr = tomorrow.toISOString().split('T')[0];
+
+    const sparks = await storage.getSparksByDateRange(todayStr, tomorrowStr);
+
+    if (sparks.length === 0) {
+      console.log("[Audio Verify] No sparks found for today/tomorrow");
+      return result;
+    }
+
+    console.log(`[Audio Verify] Checking ${sparks.length} sparks (${todayStr} to ${tomorrowStr})`);
+
+    for (const spark of sparks) {
+      result.checked++;
+
+      if (!spark.fullTeaching) {
+        console.log(`[Audio Verify] Spark ${spark.id} has no teaching content, skipping`);
+        continue;
+      }
+
+      const existingUrl = await getSparkAudioUrl(spark.id);
+
+      if (existingUrl) {
+        result.ready++;
+        continue;
+      }
+
+      // Audio is missing — attempt repair with retries
+      result.missing++;
+      console.warn(`[Audio Verify] MISSING audio for spark ${spark.id}: "${spark.title}" (${spark.dailyDate})`);
+
+      let repaired = false;
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        console.log(`[Audio Verify] Retry ${attempt}/${maxRetries} for spark ${spark.id}...`);
+
+        try {
+          const genResult = await generateSparkAudio(spark.id, {
+            title: spark.title,
+            scriptureRef: spark.scriptureRef || undefined,
+            fullPassage: spark.fullPassage || undefined,
+            fullTeaching: spark.fullTeaching,
+            reflectionQuestion: spark.reflectionQuestion || undefined,
+            todayAction: spark.todayAction || undefined,
+            prayerLine: spark.prayerLine || undefined,
+            ctaPrimary: spark.ctaPrimary || undefined,
+            weekTheme: spark.weekTheme || undefined
+          });
+
+          if (genResult.success) {
+            console.log(`[Audio Verify] Repaired audio for spark ${spark.id} on attempt ${attempt}`);
+            result.repaired++;
+            repaired = true;
+            break;
+          }
+
+          console.error(`[Audio Verify] Attempt ${attempt} failed for spark ${spark.id}: ${genResult.error}`);
+        } catch (error: any) {
+          console.error(`[Audio Verify] Attempt ${attempt} threw error for spark ${spark.id}:`, error.message);
+        }
+
+        // Exponential backoff: 2s, 4s, 8s
+        if (attempt < maxRetries) {
+          const backoffMs = Math.pow(2, attempt) * 1000;
+          console.log(`[Audio Verify] Waiting ${backoffMs / 1000}s before next retry...`);
+          await new Promise(resolve => setTimeout(resolve, backoffMs));
+        }
+      }
+
+      if (!repaired) {
+        const msg = `Spark ${spark.id} "${spark.title}" (${spark.dailyDate}) - failed after ${maxRetries} retries`;
+        result.failedRepairs.push(msg);
+        console.error(`[Audio Verify] CRITICAL: ${msg}`);
+      }
+    }
+
+    console.log(`[Audio Verify] Complete: ${result.checked} checked, ${result.ready} ready, ${result.missing} missing, ${result.repaired} repaired, ${result.failedRepairs.length} still failing`);
+
+  } catch (error) {
+    console.error("[Audio Verify] Verification job failed:", error);
+  }
+
+  return result;
+}
+
+export function scheduleAudioPregeneration(): void {
+  // Generate audio for next 7 days on startup
+  pregenerateUpcomingAudio(7).catch(console.error);
+
+  // Schedule pre-generation at 23:30 London time
+  scheduleLondonTime(23, 30, () => {
+    pregenerateUpcomingAudio(7).catch(console.error);
+  }, "pre-generation");
+
+  // Schedule verification at 21:00 London time (3 hours before midnight for retries)
+  scheduleLondonTime(21, 0, () => {
+    verifyAndRepairUpcomingAudio(3).catch(console.error);
+  }, "verification");
+}
+
+function scheduleLondonTime(hour: number, minute: number, task: () => void, label: string): void {
+  const now = new Date();
+  const londonOffset = getLondonOffset(now);
+  const nextRun = new Date();
+  nextRun.setUTCHours(hour - Math.floor(londonOffset / 60), minute - (londonOffset % 60), 0, 0);
+
+  if (nextRun <= now) {
+    nextRun.setDate(nextRun.getDate() + 1);
+  }
+
+  const msUntil = nextRun.getTime() - now.getTime();
+  console.log(`[Audio Scheduler] ${label} scheduled at ${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')} London time in ${Math.round(msUntil / 1000 / 60)} minutes`);
+
+  setTimeout(() => {
+    task();
+    setInterval(task, 24 * 60 * 60 * 1000);
+  }, msUntil);
 }
 
 // Helper to get London timezone offset in minutes

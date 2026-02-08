@@ -11,7 +11,7 @@ import { Router } from 'express';
 import webPush from 'web-push';
 import { db } from '../db';
 import { sql } from 'drizzle-orm';
-import { isAuthenticated } from '../replitAuth';
+import { isAuthenticated } from '../auth';
 
 const router = Router();
 

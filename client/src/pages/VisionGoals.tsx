@@ -54,18 +54,15 @@ export function VisionGoals() {
 
   const createGoal = useMutation({
     mutationFn: async () => {
-      const res = await fetch(getApiUrl(`/api/vision/goals`), {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
+      return await apiFetchJson(getApiUrl(`/api/vision/goals`), {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({
           sessionId: parseInt(sessionId!),
           ...goalForm,
           deadline: goalForm.deadline ? new Date(goalForm.deadline).toISOString() : null,
         }),
       });
-      if (!res.ok) throw new Error("Failed to create goal");
-      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/vision/sessions/${sessionId}/goals`] });
@@ -76,17 +73,14 @@ export function VisionGoals() {
 
   const updateGoal = useMutation({
     mutationFn: async () => {
-      const res = await fetch(getApiUrl(`/api/vision/goals/${editingGoal.id}`), {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
+      return await apiFetchJson(getApiUrl(`/api/vision/goals/${editingGoal.id}`), {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({
           ...goalForm,
           deadline: goalForm.deadline ? new Date(goalForm.deadline).toISOString() : null,
         }),
       });
-      if (!res.ok) throw new Error("Failed to update goal");
-      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/vision/sessions/${sessionId}/goals`] });
@@ -98,14 +92,11 @@ export function VisionGoals() {
 
   const completeGoal = useMutation({
     mutationFn: async (goalId: number) => {
-      const res = await fetch(getApiUrl(`/api/vision/goals/${goalId}`), {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
+      return await apiFetchJson(getApiUrl(`/api/vision/goals/${goalId}`), {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ status: "completed" }),
       });
-      if (!res.ok) throw new Error("Failed to complete goal");
-      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/vision/sessions/${sessionId}/goals`] });

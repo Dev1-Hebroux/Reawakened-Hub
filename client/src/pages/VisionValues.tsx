@@ -82,14 +82,11 @@ export function VisionValues() {
 
   const saveValues = useMutation({
     mutationFn: async () => {
-      const res = await fetch(getApiUrl(`/api/vision/sessions/${sessionId}/values`), {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
+      return await apiFetchJson(getApiUrl(`/api/vision/sessions/${sessionId}/values`), {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ values: selectedValues, topValueMeaning }),
       });
-      if (!res.ok) throw new Error("Failed to save");
-      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/vision/sessions/${sessionId}/values`] });
@@ -99,14 +96,11 @@ export function VisionValues() {
 
   const savePurpose = useMutation({
     mutationFn: async () => {
-      const res = await fetch(getApiUrl(`/api/vision/sessions/${sessionId}/purpose`), {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
+      return await apiFetchJson(getApiUrl(`/api/vision/sessions/${sessionId}/purpose`), {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify(purpose),
       });
-      if (!res.ok) throw new Error("Failed to save");
-      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/vision/sessions/${sessionId}/purpose`] });

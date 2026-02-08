@@ -2,11 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
 import { useAuth } from '../../contexts/AuthContext';
 
-const IS_DEV = import.meta.env.DEV;
-
 export function RegisterPage() {
   const [, setLocation] = useLocation();
-  const { register, loginWithReplit, isAuthenticated, isLoading: authLoading, clearError } = useAuth();
+  const { register, isAuthenticated, isLoading: authLoading, clearError } = useAuth();
   
   const [formData, setFormData] = useState({
     email: '',
@@ -266,24 +264,6 @@ export function RegisterPage() {
               </button>
             </form>
             
-            {IS_DEV && (
-              <>
-                <div className="flex items-center gap-4 my-6">
-                  <div className="flex-1 border-t border-white/20" />
-                  <span className="text-xs text-white/40">dev only</span>
-                  <div className="flex-1 border-t border-white/20" />
-                </div>
-                <button
-                  onClick={() => loginWithReplit()}
-                  className="w-full py-2.5 px-4 rounded-xl text-sm border border-white/10 text-white/60 hover:bg-white/5 hover:text-white/80 transition-colors flex items-center justify-center gap-2"
-                  data-testid="button-replit-register"
-                >
-                  <ReplitLogo className="w-4 h-4" />
-                  Continue with Replit
-                </button>
-              </>
-            )}
-            
             <p className="mt-8 text-center text-white/70">
               Already have an account?{' '}
               <Link href="/login" className="font-semibold text-blue-300 hover:text-blue-200" data-testid="link-login">
@@ -342,16 +322,6 @@ function AppleIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor">
       <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z" />
-    </svg>
-  );
-}
-
-function ReplitLogo({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 32 32" fill="currentColor">
-      <path d="M7 5.5C7 4.67157 7.67157 4 8.5 4H15.5C16.3284 4 17 4.67157 17 5.5V12H8.5C7.67157 12 7 11.3284 7 10.5V5.5Z" />
-      <path d="M17 12H25.5C26.3284 12 27 12.6716 27 13.5V18.5C27 19.3284 26.3284 20 25.5 20H17V12Z" />
-      <path d="M7 21.5C7 20.6716 7.67157 20 8.5 20H17V26.5C17 27.3284 16.3284 28 15.5 28H8.5C7.67157 28 7 27.3284 7 26.5V21.5Z" />
     </svg>
   );
 }

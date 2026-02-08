@@ -168,11 +168,6 @@ router.post('/logout', csrfProtection, async (req, res) => {
     }
     clearSessionCookie(res);
     
-    // Clear passport user if present
-    if (req.logout) {
-      req.logout(() => {});
-    }
-    
     // Destroy session and clear cookies, then respond
     if (req.session) {
       req.session.destroy((err) => {
@@ -199,14 +194,6 @@ router.get('/me', async (req, res) => {
     const token = req.cookies?.auth_session;
     
     if (!token) {
-      const replitUser = (req as any).user;
-      if (replitUser?.claims?.sub) {
-        const user = await storage.getUser(replitUser.claims.sub);
-        if (user) {
-          const { passwordHash, ...safeUser } = user;
-          return res.json({ user: safeUser, provider: 'replit' });
-        }
-      }
       return res.status(401).json({ error: 'Not authenticated' });
     }
 
@@ -295,14 +282,11 @@ router.post('/verify-email', async (req, res) => {
 
 router.post('/add-password', csrfProtection, async (req, res) => {
   try {
-    const replitUser = (req as any).user;
     const sessionToken = req.cookies?.auth_session;
-    
+
     let userId: string | null = null;
 
-    if (replitUser?.claims?.sub) {
-      userId = replitUser.claims.sub;
-    } else if (sessionToken) {
+    if (sessionToken) {
       const user = await validateSession(sessionToken);
       userId = user?.id || null;
     }
@@ -332,15 +316,12 @@ router.post('/add-password', csrfProtection, async (req, res) => {
 
 router.post('/resend-verification', async (req, res) => {
   try {
-    const replitUser = (req as any).user;
     const sessionToken = req.cookies?.auth_session;
-    
+
     let user = null;
 
     if (sessionToken) {
       user = await validateSession(sessionToken);
-    } else if (replitUser?.claims?.sub) {
-      user = await storage.getUser(replitUser.claims.sub);
     }
 
     if (!user || !user.email) {

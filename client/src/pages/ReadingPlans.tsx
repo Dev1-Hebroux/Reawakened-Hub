@@ -778,11 +778,15 @@ function PlanCard({
               size="sm"
               className="gap-1 bg-primary hover:bg-primary/90 font-bold"
               onClick={(e) => {
+                e.preventDefault();
                 e.stopPropagation();
-                onEnroll();
+                if (!enrolling) {
+                  onEnroll();
+                }
               }}
               disabled={enrolling}
               data-testid={`button-enroll-plan-${plan.id}`}
+              type="button"
             >
               {enrolling ? "..." : "Start Plan"} <ArrowRight className="h-4 w-4" />
             </Button>

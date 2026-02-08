@@ -110,7 +110,7 @@ export async function loginWithEmail(
 
   if (!user.passwordHash) {
     await logAuditEvent(user.id, 'login_no_password', ipAddress, userAgent, {}, false);
-    return { success: false, error: 'Please use Replit to sign in, or set a password for your account' };
+    return { success: false, error: 'No password set for this account. Please use the forgot password link to set one.' };
   }
 
   const isValid = await verifyPassword(password, user.passwordHash);
@@ -158,66 +158,6 @@ export async function loginWithEmail(
   });
 
   await logAuditEvent(user.id, 'login', ipAddress, userAgent, { provider: 'email' });
-
-  return { success: true, user, sessionToken };
-}
-
-export async function loginWithReplit(
-  replitId: string,
-  email: string,
-  firstName?: string,
-  lastName?: string,
-  profileImageUrl?: string,
-  ipAddress?: string,
-  userAgent?: string
-): Promise<LoginResult> {
-  let [user] = await db
-    .select()
-    .from(users)
-    .where(eq(users.id, replitId))
-    .limit(1);
-
-  if (!user) {
-    [user] = await db
-      .insert(users)
-      .values({
-        id: replitId,
-        email: email?.toLowerCase(),
-        firstName,
-        lastName,
-        profileImageUrl,
-        authProvider: 'replit',
-        role: 'member',
-      })
-      .returning();
-
-    await logAuditEvent(replitId, 'register', ipAddress, userAgent, { provider: 'replit' });
-  } else {
-    const updates: Record<string, any> = {
-      lastLoginAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    if (email && !user.email) updates.email = email.toLowerCase();
-    if (firstName) updates.firstName = firstName;
-    if (lastName) updates.lastName = lastName;
-    if (profileImageUrl) updates.profileImageUrl = profileImageUrl;
-
-    await db.update(users).set(updates).where(eq(users.id, replitId));
-
-    await logAuditEvent(replitId, 'login', ipAddress, userAgent, { provider: 'replit' });
-  }
-
-  const sessionToken = generateToken(32);
-  const expiresAt = new Date(Date.now() + SESSION_TTL_MS);
-
-  await db.insert(userSessions).values({
-    userId: user.id,
-    token: sessionToken,
-    expiresAt,
-    ipAddress: ipAddress || null,
-    userAgent: userAgent || null,
-  });
 
   return { success: true, user, sessionToken };
 }
@@ -314,7 +254,7 @@ export async function resetPassword(
       .update(users)
       .set({
         passwordHash,
-        authProvider: sql`CASE WHEN auth_provider = 'replit' THEN 'both' ELSE auth_provider END`,
+        authProvider: 'email',
         loginAttempts: 0,
         lockedUntil: null,
         updatedAt: new Date(),
@@ -415,7 +355,7 @@ export async function addPasswordToAccount(
     .update(users)
     .set({
       passwordHash,
-      authProvider: 'both',
+      authProvider: 'email',
       updatedAt: new Date(),
     })
     .where(eq(users.id, userId));

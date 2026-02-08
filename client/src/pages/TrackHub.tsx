@@ -9,7 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import {
   Brain, Users, Crown, Lock, CheckCircle2, Play,
-  ChevronRight, Star, Target, Zap,
+  ChevronRight, Star, Target, Zap, Rocket,
   Heart, MessageCircle, Shield, Eye, Lightbulb,
   TrendingUp, Compass, ArrowRight, Calendar, BarChart3
 } from "lucide-react";
@@ -366,6 +366,38 @@ export function TrackHub() {
               </motion.div>
             ))}
           </div>
+
+          {/* Product Launch Tools - Featured Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="mb-8"
+          >
+            <div
+              onClick={() => navigate("/product-launch")}
+              className="bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl p-5 cursor-pointer hover:shadow-lg transition-all relative overflow-hidden group"
+            >
+              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
+              <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
+
+              <div className="relative flex items-center gap-4">
+                <div className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <Rocket className="w-7 h-7 text-white" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="text-lg font-bold text-white">Product Launch Tools</h3>
+                    <span className="px-2 py-0.5 bg-white/20 text-white text-xs font-medium rounded-full">New</span>
+                  </div>
+                  <p className="text-white/80 text-sm">
+                    Turn your God-given idea into reality with SWOT analysis, pricing calculator, and launch checklist
+                  </p>
+                </div>
+                <ChevronRight className="w-5 h-5 text-white/60 group-hover:translate-x-1 transition-transform" />
+              </div>
+            </div>
+          </motion.div>
 
           <h2 className="text-lg font-semibold text-[#2C3E2D] mb-4 flex items-center gap-2">
             <Compass className="w-5 h-5 text-[#7C9A8E]" />
