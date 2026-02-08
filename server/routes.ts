@@ -68,6 +68,31 @@ export async function registerRoutes(
     res.type('text/html').send('twilio-domain-verification=6fb6008290b49155dde41016be0276b0');
   });
 
+  // TEMPORARY: Bootstrap audio generation endpoint (remove after first use)
+  app.get('/api/spark-audio/bootstrap', async (req, res) => {
+    try {
+      const token = req.query.token;
+      const expectedToken = process.env.BOOTSTRAP_TOKEN || 'reawakened-2026-bootstrap';
+
+      if (token !== expectedToken) {
+        return res.status(403).json({ error: 'Invalid token' });
+      }
+
+      console.log('[BOOTSTRAP] Audio generation requested');
+      res.json({ message: 'Audio generation started in background', status: 'processing' });
+
+      // Run in background
+      import('./audio-pregeneration.js').then(({ pregenerateUpcomingAudio }) => {
+        pregenerateUpcomingAudio(7)
+          .then(() => console.log('[BOOTSTRAP] Audio generation complete'))
+          .catch(error => console.error('[BOOTSTRAP] Audio generation failed:', error));
+      });
+    } catch (error) {
+      console.error('[BOOTSTRAP] Error starting generation:', error);
+      res.status(500).json({ error: 'Failed to start generation' });
+    }
+  });
+
   // Health check endpoint for Fly.io
   app.get('/api/health', async (req, res) => {
     try {
