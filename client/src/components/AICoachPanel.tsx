@@ -84,17 +84,14 @@ export function AICoachPanel({ sessionId, tool, data, title, description, onUseG
 
   const analyze = useMutation({
     mutationFn: async () => {
-      const endpoint = sessionId 
+      const { apiFetchJson } = await import('@/lib/apiFetch');
+      const endpoint = sessionId
         ? `/api/vision/sessions/${sessionId}/ai/analyze`
         : `/api/ai/analyze`;
-      const res = await fetch(endpoint, {
+      const json = await apiFetchJson<{data: AIResponse}>(endpoint, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ tool, data }),
       });
-      if (!res.ok) throw new Error("Failed to get AI insights");
-      const json = await res.json();
       return json.data as AIResponse;
     },
     onSuccess: (data) => {

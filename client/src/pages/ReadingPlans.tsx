@@ -143,13 +143,11 @@ export function ReadingPlansPage() {
 
   const saveProfileMutation = useMutation({
     mutationFn: async (data: { maturityLevel: string; interests: string[] }) => {
-      const res = await fetch(getApiUrl("/api/user/spiritual-profile"), {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
+      return await apiFetchJson(getApiUrl("/api/user/spiritual-profile"), {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
-      if (!res.ok) throw new Error("Failed to save profile");
-      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/user/spiritual-profile"] });
@@ -161,12 +159,10 @@ export function ReadingPlansPage() {
 
   const enrollMutation = useMutation({
     mutationFn: async (planId: number) => {
-      const res = await fetch(getApiUrl(`/api/reading-plans/${planId}/enroll`), {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
+      return await apiFetchJson(getApiUrl(`/api/reading-plans/${planId}/enroll`), {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
       });
-      if (!res.ok) throw new Error("Failed to enroll");
-      return res.json();
     },
     onSuccess: (_, planId) => {
       queryClient.invalidateQueries({ queryKey: ["/api/user/reading-plans"] });

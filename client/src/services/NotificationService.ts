@@ -1,12 +1,14 @@
 /**
  * Push Notification Service
- * 
+ *
  * Premium notification experience with:
  * - Permission management with smart prompting
  * - Rich notification templates
  * - Scheduled local notifications
  * - Notification preferences sync
  */
+
+import { apiFetch } from '@/lib/apiFetch';
 
 export interface NotificationPayload {
   title: string;
@@ -293,10 +295,8 @@ class NotificationService {
 
   async updatePreferences(prefs: Partial<NotificationPreferences>): Promise<boolean> {
     try {
-      const response = await fetch(getApiUrl('/api/push/preferences'), {
+      const response = await apiFetch(getApiUrl('/api/push/preferences'), {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ ...this.preferences, ...prefs }),
       });
 
@@ -317,10 +317,8 @@ class NotificationService {
   }
 
   private async sendSubscriptionToServer(subscription: PushSubscription): Promise<void> {
-    await fetch(getApiUrl('/api/push/subscribe'), {
+    await apiFetch(getApiUrl('/api/push/subscribe'), {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
       body: JSON.stringify({
         subscription: subscription.toJSON(),
         preferences: this.preferences,
@@ -329,10 +327,8 @@ class NotificationService {
   }
 
   private async removeSubscriptionFromServer(): Promise<void> {
-    await fetch(getApiUrl('/api/push/unsubscribe'), {
+    await apiFetch(getApiUrl('/api/push/unsubscribe'), {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
       body: JSON.stringify({
         endpoint: this.subscription?.endpoint,
       }),
@@ -341,9 +337,8 @@ class NotificationService {
 
   async sendTestNotification(): Promise<boolean> {
     try {
-      const response = await fetch(getApiUrl('/api/push/test'), {
+      const response = await apiFetch(getApiUrl('/api/push/test'), {
         method: 'POST',
-        credentials: 'include',
       });
 
       const data = await response.json();

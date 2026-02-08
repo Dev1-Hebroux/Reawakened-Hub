@@ -1,11 +1,11 @@
 /**
  * Offline Service
- * 
+ *
  * Provides offline capability with IndexedDB storage,
  * sync queue management, and network status tracking.
  */
 
-import { getApiUrl } from '../lib/api';
+import { getApiUrl, apiFetch } from '../lib/api';
 
 // ============================================================================
 // Types
@@ -293,13 +293,9 @@ async function processSyncQueue(): Promise<void> {
       if (!isOnline) break;
 
       try {
-        const response = await fetch(getApiUrl(item.endpoint), {
+        const response = await apiFetch(getApiUrl(item.endpoint), {
           method: item.method,
-          headers: {
-            'Content-Type': 'application/json',
-          },
           body: item.body ? JSON.stringify(item.body) : undefined,
-          credentials: 'include',
         });
 
         if (response.ok) {

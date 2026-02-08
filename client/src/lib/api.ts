@@ -13,3 +13,9 @@ export function getApiUrl(path: string): string {
     const normalizedPath = path.startsWith('/') || path === '' ? path : `/${path}`;
     return `${API_BASE_URL}${normalizedPath}`;
 }
+
+/**
+ * Export the centralized CSRF-protected fetch utilities
+ * These should be used for all API requests to ensure proper CSRF token handling
+ */
+export { apiFetch, apiFetchJson, getCsrfToken } from './apiFetch';

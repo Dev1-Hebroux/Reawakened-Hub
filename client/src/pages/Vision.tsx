@@ -60,14 +60,11 @@ export function VisionPage() {
 
   const createSession = useMutation({
     mutationFn: async () => {
-      const res = await fetch(getApiUrl("/api/vision/sessions"), {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
+      return await apiFetchJson(getApiUrl("/api/vision/sessions"), {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ seasonType, seasonLabel, themeWord, mode }),
       });
-      if (!res.ok) throw new Error("Failed to create session");
-      return res.json();
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/vision/sessions/current"] });
