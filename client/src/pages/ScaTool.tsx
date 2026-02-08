@@ -53,23 +53,18 @@ export function ScaTool() {
 
   const saveExercise = useMutation({
     mutationFn: async () => {
-      const res = await fetch(getApiUrl(`/api/vision/sessions/${sessionId}/sca`), {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
+      const result = await apiFetchJson(`/api/vision/sessions/${sessionId}/sca`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({
           title: "Focus List",
           focusItemCount: focusItems.length,
         }),
       });
-      if (!res.ok) throw new Error("Failed to save exercise");
-      const result = await res.json();
 
       for (const item of focusItems) {
-        await fetch(getApiUrl(`/api/sca/${result.data.id}/focus-items`), {
+        await apiFetchJson(`/api/sca/${result.data.id}/focus-items`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
           body: JSON.stringify({
             title: item.title,
             itemIndex: focusItems.indexOf(item),

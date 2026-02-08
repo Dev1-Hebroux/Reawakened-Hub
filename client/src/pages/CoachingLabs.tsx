@@ -85,11 +85,10 @@ export function CoachingLabs() {
 
   const createBooking = useMutation({
     mutationFn: async () => {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
       const topic = COACHING_TOPICS.find(t => t.key === selectedTopic);
-      const res = await fetch("/api/session-bookings", {
+      return await apiFetchJson("/api/session-bookings", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({
           coachId: selectedCoachId,
           topic: topic?.label || selectedTopic,
@@ -100,8 +99,6 @@ export function CoachingLabs() {
           status: "requested",
         }),
       });
-      if (!res.ok) throw new Error("Failed to create booking");
-      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/user/session-bookings"] });

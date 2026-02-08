@@ -100,13 +100,11 @@ export function FeedbackResponse() {
 
   const submitFeedback = useMutation({
     mutationFn: async () => {
-      const res = await fetch(`/api/feedback/respond/${token}`, {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
+      return await apiFetchJson(`/api/feedback/respond/${token}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ answers }),
       });
-      if (!res.ok) throw new Error("Failed to submit feedback");
-      return res.json();
     },
     onSuccess: () => {
       setStep("complete");

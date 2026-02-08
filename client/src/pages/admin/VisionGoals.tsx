@@ -170,16 +170,11 @@ export function AdminVisionGoals() {
 
   const createMutation = useMutation({
     mutationFn: async (data: any) => {
-      const res = await fetch("/api/admin/goal-templates", {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
+      return await apiFetchJson("/api/admin/goal-templates", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
-      if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || "Failed to create goal template");
-      }
-      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/goal-templates"] });
@@ -193,16 +188,11 @@ export function AdminVisionGoals() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: any }) => {
-      const res = await fetch(`/api/admin/goal-templates/${id}`, {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
+      return await apiFetchJson(`/api/admin/goal-templates/${id}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
-      if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || "Failed to update goal template");
-      }
-      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/goal-templates"] });
@@ -216,8 +206,8 @@ export function AdminVisionGoals() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await fetch(`/api/admin/goal-templates/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed to delete goal template");
+      const { apiFetch } = await import('@/lib/apiFetch');
+      await apiFetch(`/api/admin/goal-templates/${id}`, { method: "DELETE" });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/goal-templates"] });

@@ -113,18 +113,15 @@ export function Mini360() {
 
   const createCampaign = useMutation({
     mutationFn: async () => {
-      const res = await fetch("/api/feedback-campaigns", {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
+      return await apiFetchJson("/api/feedback-campaigns", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({
           title: campaignTitle || "My 360 Feedback",
           focusDimensions: selectedDimensions,
           status: "draft",
         }),
       });
-      if (!res.ok) throw new Error("Failed to create campaign");
-      return res.json();
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/user/feedback-campaigns"] });
@@ -137,18 +134,15 @@ export function Mini360() {
 
   const createInvite = useMutation({
     mutationFn: async () => {
-      const res = await fetch(`/api/feedback-campaigns/${selectedCampaign!.id}/invites`, {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
+      return await apiFetchJson(`/api/feedback-campaigns/${selectedCampaign!.id}/invites`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({
           inviteeName: newInvite.name,
           inviteeEmail: newInvite.email,
           relationshipType: newInvite.type,
         }),
       });
-      if (!res.ok) throw new Error("Failed to create invite");
-      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/feedback-campaigns", selectedCampaign?.id, "invites"] });
@@ -158,12 +152,10 @@ export function Mini360() {
 
   const calculateResults = useMutation({
     mutationFn: async () => {
-      const res = await fetch(`/api/feedback-campaigns/${selectedCampaign!.id}/calculate`, {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
+      return await apiFetchJson(`/api/feedback-campaigns/${selectedCampaign!.id}/calculate`, {
         method: "POST",
-        credentials: "include",
       });
-      if (!res.ok) throw new Error("Failed to calculate results");
-      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/feedback-campaigns", selectedCampaign?.id, "aggregates"] });

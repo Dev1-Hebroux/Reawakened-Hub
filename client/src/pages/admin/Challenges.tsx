@@ -162,16 +162,11 @@ export function AdminChallenges() {
 
   const createMutation = useMutation({
     mutationFn: async (data: any) => {
-      const res = await fetch("/api/admin/challenges", {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
+      return await apiFetchJson("/api/admin/challenges", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
-      if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || "Failed to create challenge");
-      }
-      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/challenges"] });
@@ -185,16 +180,11 @@ export function AdminChallenges() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: any }) => {
-      const res = await fetch(`/api/admin/challenges/${id}`, {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
+      return await apiFetchJson(`/api/admin/challenges/${id}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
-      if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || "Failed to update challenge");
-      }
-      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/challenges"] });
@@ -208,8 +198,8 @@ export function AdminChallenges() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await fetch(`/api/admin/challenges/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed to delete challenge");
+      const { apiFetch } = await import('@/lib/apiFetch');
+      await apiFetch(`/api/admin/challenges/${id}`, { method: "DELETE" });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/challenges"] });

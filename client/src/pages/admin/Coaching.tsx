@@ -178,13 +178,11 @@ export function AdminCoaching() {
 
   const createCoachMutation = useMutation({
     mutationFn: async (data: CoachFormData) => {
-      const res = await fetch(getApiUrl('/api/admin/coaches'), {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
+      return await apiFetchJson('/api/admin/coaches', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
-      if (!res.ok) throw new Error((await res.json()).message || 'Failed to create coach');
-      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/coaches"] });
@@ -198,13 +196,11 @@ export function AdminCoaching() {
 
   const updateCoachMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: Partial<CoachFormData> }) => {
-      const res = await fetch(`/api/admin/coaches/${id}`, {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
+      return await apiFetchJson(`/api/admin/coaches/${id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
-      if (!res.ok) throw new Error((await res.json()).message || 'Failed to update coach');
-      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/coaches"] });
@@ -218,18 +214,16 @@ export function AdminCoaching() {
 
   const createCohortMutation = useMutation({
     mutationFn: async (data: CohortFormData) => {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
       const payload = {
         ...data,
         startDate: new Date(data.startDate),
         endDate: data.endDate ? new Date(data.endDate) : undefined,
       };
-      const res = await fetch('/api/admin/cohorts', {
+      return await apiFetchJson('/api/admin/cohorts', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error((await res.json()).message || 'Failed to create cohort');
-      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/cohorts"] });
@@ -243,18 +237,16 @@ export function AdminCoaching() {
 
   const updateCohortMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: Partial<CohortFormData> }) => {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
       const payload = {
         ...data,
         startDate: data.startDate ? new Date(data.startDate) : undefined,
         endDate: data.endDate ? new Date(data.endDate) : undefined,
       };
-      const res = await fetch(`/api/admin/cohorts/${id}`, {
+      return await apiFetchJson(`/api/admin/cohorts/${id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error((await res.json()).message || 'Failed to update cohort');
-      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/cohorts"] });

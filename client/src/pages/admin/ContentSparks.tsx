@@ -128,16 +128,11 @@ export function ContentSparks() {
 
   const createMutation = useMutation({
     mutationFn: async (data: SparkFormData) => {
-      const res = await fetch(getApiUrl('/api/admin/sparks'), {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
+      return await apiFetchJson('/api/admin/sparks', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
-      if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || 'Failed to create spark');
-      }
-      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/sparks"] });
@@ -151,16 +146,11 @@ export function ContentSparks() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: Partial<SparkFormData> }) => {
-      const res = await fetch(getApiUrl(`/api/admin/sparks/${id}`), {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
+      return await apiFetchJson(`/api/admin/sparks/${id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
-      if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || 'Failed to update spark');
-      }
-      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/sparks"] });
@@ -174,8 +164,8 @@ export function ContentSparks() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await fetch(getApiUrl(`/api/admin/sparks/${id}`), { method: 'DELETE' });
-      if (!res.ok) throw new Error('Failed to delete spark');
+      const { apiFetch } = await import('@/lib/apiFetch');
+      await apiFetch(`/api/admin/sparks/${id}`, { method: 'DELETE' });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/sparks"] });
@@ -189,16 +179,11 @@ export function ContentSparks() {
 
   const bulkMutation = useMutation({
     mutationFn: async ({ ids, action }: { ids: number[]; action: string }) => {
-      const res = await fetch(getApiUrl('/api/admin/sparks/bulk'), {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
+      return await apiFetchJson('/api/admin/sparks/bulk', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ids, action }),
       });
-      if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || 'Failed to update sparks');
-      }
-      return res.json();
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/sparks"] });

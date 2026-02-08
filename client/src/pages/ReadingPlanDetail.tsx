@@ -177,24 +177,12 @@ export function ReadingPlanDetail() {
   const enrollment = enrollments.find(e => e.planId === planId);
   const completedDays = new Set(enrollment?.progress?.filter(p => p.completed).map(p => p.dayNumber) || []);
 
-  const getCsrfToken = (): string | null => {
-    const match = document.cookie.match(/csrf_token=([^;]+)/);
-    return match ? match[1] : null;
-  };
-
   const enrollMutation = useMutation({
     mutationFn: async () => {
-      const csrfToken = getCsrfToken();
-      const headers: Record<string, string> = { "Content-Type": "application/json" };
-      if (csrfToken) headers["X-CSRF-Token"] = csrfToken;
-
-      const res = await fetch(`/api/reading-plans/${planId}/enroll`, {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
+      return await apiFetchJson(`/api/reading-plans/${planId}/enroll`, {
         method: "POST",
-        headers,
-        credentials: "include",
       });
-      if (!res.ok) throw new Error("Failed to enroll");
-      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/user/reading-plans"] });
@@ -205,21 +193,14 @@ export function ReadingPlanDetail() {
 
   const completeDayMutation = useMutation({
     mutationFn: async ({ dayNumber, journal }: { dayNumber: number; journal?: string }) => {
-      const csrfToken = getCsrfToken();
-      const headers: Record<string, string> = { "Content-Type": "application/json" };
-      if (csrfToken) headers["X-CSRF-Token"] = csrfToken;
-
-      const res = await fetch(`/api/reading-plans/${planId}/days/${dayNumber}/complete`, {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
+      return await apiFetchJson(`/api/reading-plans/${planId}/days/${dayNumber}/complete`, {
         method: "POST",
-        headers,
-        credentials: "include",
         body: JSON.stringify({
           journalEntry: journal,
           idempotencyKey: `${planId}-${dayNumber}-${new Date().toISOString().split('T')[0]}`
         }),
       });
-      if (!res.ok) throw new Error("Failed to complete day");
-      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/user/reading-plans"] });

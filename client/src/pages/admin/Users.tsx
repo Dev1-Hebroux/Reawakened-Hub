@@ -94,16 +94,11 @@ export function AdminUsers() {
 
   const roleChangeMutation = useMutation({
     mutationFn: async ({ userId, role }: { userId: string; role: Role }) => {
-      const res = await fetch(`/api/admin/users/${userId}/role`, {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
+      return await apiFetchJson(`/api/admin/users/${userId}/role`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ role }),
       });
-      if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || 'Failed to update role');
-      }
-      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });

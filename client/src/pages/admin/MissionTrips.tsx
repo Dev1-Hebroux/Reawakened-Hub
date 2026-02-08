@@ -186,16 +186,11 @@ export function AdminMissionTrips() {
 
   const createMutation = useMutation({
     mutationFn: async (data: any) => {
-      const res = await fetch("/api/admin/mission-trips", {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
+      return await apiFetchJson("/api/admin/mission-trips", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
-      if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || "Failed to create mission trip");
-      }
-      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/mission-trips"] });
@@ -209,16 +204,11 @@ export function AdminMissionTrips() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: any }) => {
-      const res = await fetch(`/api/admin/mission-trips/${id}`, {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
+      return await apiFetchJson(`/api/admin/mission-trips/${id}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
-      if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || "Failed to update mission trip");
-      }
-      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/mission-trips"] });
@@ -232,8 +222,8 @@ export function AdminMissionTrips() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await fetch(`/api/admin/mission-trips/${id}`, { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed to delete mission trip");
+      const { apiFetch } = await import('@/lib/apiFetch');
+      await apiFetch(`/api/admin/mission-trips/${id}`, { method: "DELETE" });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/mission-trips"] });
@@ -247,13 +237,11 @@ export function AdminMissionTrips() {
 
   const updateApplicationMutation = useMutation({
     mutationFn: async ({ id, status }: { id: number; status: string }) => {
-      const res = await fetch(`/api/admin/trip-applications/${id}`, {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
+      return await apiFetchJson(`/api/admin/trip-applications/${id}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
       });
-      if (!res.ok) throw new Error("Failed to update application");
-      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/mission-trips", viewingTrip?.id, "applications"] });

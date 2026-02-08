@@ -97,10 +97,9 @@ export function SessionBooking() {
 
   const createBooking = useMutation({
     mutationFn: async () => {
-      const res = await fetch("/api/sessions", {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
+      return await apiFetchJson("/api/sessions", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({
           coachId: selectedCoach?.id,
           slotId: selectedSlot?.id,
@@ -109,8 +108,6 @@ export function SessionBooking() {
           notes: bookingForm.notes,
         }),
       });
-      if (!res.ok) throw new Error("Failed to create booking");
-      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/user/sessions"] });

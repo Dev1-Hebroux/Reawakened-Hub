@@ -43,21 +43,15 @@ export function UnsubscribePage() {
 
   const handleResubscribe = async () => {
     if (!token) return;
-    
+
     setStatus('loading');
     try {
-      const response = await fetch(`/api/resubscribe/${token}`, { method: 'POST' });
-      const data = await response.json();
-      
-      if (response.ok) {
-        setStatus('resubscribed');
-      } else {
-        setStatus('error');
-        setErrorMessage(data.message || 'Failed to resubscribe');
-      }
-    } catch (error) {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
+      const data = await apiFetchJson(`/api/resubscribe/${token}`, { method: 'POST' });
+      setStatus('resubscribed');
+    } catch (error: any) {
       setStatus('error');
-      setErrorMessage('Something went wrong. Please try again.');
+      setErrorMessage(error.message || 'Something went wrong. Please try again.');
     }
   };
 

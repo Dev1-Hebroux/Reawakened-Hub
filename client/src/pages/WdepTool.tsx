@@ -80,14 +80,11 @@ export function WdepTool() {
 
   const createEntry = useMutation({
     mutationFn: async () => {
-      const res = await fetch(getApiUrl(`/api/vision/sessions/${sessionId}/wdep`), {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
+      return await apiFetchJson(`/api/vision/sessions/${sessionId}/wdep`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ title: "New WDEP Session" }),
       });
-      if (!res.ok) throw new Error("Failed to create WDEP entry");
-      return res.json();
     },
     onSuccess: (result) => {
       setWdepEntryId(result.data.id);
@@ -97,56 +94,44 @@ export function WdepTool() {
   const saveWants = useMutation({
     mutationFn: async () => {
       if (!wdepEntryId) return;
-      const res = await fetch(getApiUrl(`/api/wdep/${wdepEntryId}/wants`), {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
+      return await apiFetchJson(`/api/wdep/${wdepEntryId}/wants`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify(data.wants),
       });
-      if (!res.ok) throw new Error("Failed to save wants");
-      return res.json();
     },
   });
 
   const saveDoing = useMutation({
     mutationFn: async () => {
       if (!wdepEntryId) return;
-      const res = await fetch(getApiUrl(`/api/wdep/${wdepEntryId}/doing`), {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
+      return await apiFetchJson(`/api/wdep/${wdepEntryId}/doing`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify(data.doing),
       });
-      if (!res.ok) throw new Error("Failed to save doing");
-      return res.json();
     },
   });
 
   const saveEvaluation = useMutation({
     mutationFn: async () => {
       if (!wdepEntryId) return;
-      const res = await fetch(getApiUrl(`/api/wdep/${wdepEntryId}/evaluation`), {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
+      return await apiFetchJson(`/api/wdep/${wdepEntryId}/evaluation`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify(data.evaluation),
       });
-      if (!res.ok) throw new Error("Failed to save evaluation");
-      return res.json();
     },
   });
 
   const savePlan = useMutation({
     mutationFn: async () => {
       if (!wdepEntryId) return;
-      const res = await fetch(getApiUrl(`/api/wdep/${wdepEntryId}/plan`), {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
+      return await apiFetchJson(`/api/wdep/${wdepEntryId}/plan`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify(data.plan),
       });
-      if (!res.ok) throw new Error("Failed to save plan");
-      return res.json();
     },
     onSuccess: () => {
       navigate(`/vision/${sessionId}/wdep/${wdepEntryId}/experiment`);

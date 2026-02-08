@@ -169,18 +169,15 @@ export function StylesTool() {
       setSecondaryStyle(secondary);
       setStyleScores(scores);
 
-      const res = await fetch(`/api/vision/sessions/${sessionId}/style`, {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
+      return await apiFetchJson(`/api/vision/sessions/${sessionId}/style`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({
           primaryStyle: primary,
           secondaryStyle: secondary,
           scores,
         }),
       });
-      if (!res.ok) throw new Error("Failed to save style");
-      return res.json();
     },
     onSuccess: () => {
       setStep("results");

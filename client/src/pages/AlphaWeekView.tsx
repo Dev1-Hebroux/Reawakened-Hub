@@ -39,18 +39,15 @@ export function AlphaWeekView() {
 
   const updateProgress = useMutation({
     mutationFn: async (updates: { watchedAt?: boolean; prayerActionCompletedAt?: boolean; reflection?: string }) => {
-      const res = await fetch("/api/alpha-cohort-progress", {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
+      return await apiFetchJson("/api/alpha-cohort-progress", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({
           participantId: data?.participant.id,
           weekNumber: Number(weekNumber),
           ...updates,
         }),
       });
-      if (!res.ok) throw new Error("Failed to update progress");
-      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/alpha-cohorts/${cohortId}/week/${weekNumber}`] });

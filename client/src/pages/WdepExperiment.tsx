@@ -30,14 +30,13 @@ export function WdepExperiment() {
 
   const createExperiment = useMutation({
     mutationFn: async () => {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
       const today = new Date();
       const startDate = today.toISOString().split('T')[0];
       const endDate = new Date(today.getTime() + 6 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
-      const res = await fetch(getApiUrl(`/api/wdep/${wdepId}/experiment`), {
+      return await apiFetchJson(`/api/wdep/${wdepId}/experiment`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({
           dailyAction: wdepData?.data?.plan?.startNowAction || "",
           daysTarget: 7,
@@ -45,8 +44,6 @@ export function WdepExperiment() {
           endDate,
         }),
       });
-      if (!res.ok) throw new Error("Failed to create experiment");
-      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/wdep/${wdepId}`] });
@@ -55,14 +52,11 @@ export function WdepExperiment() {
 
   const logDay = useMutation({
     mutationFn: async ({ date, completed, note }: { date: string; completed: boolean; note?: string }) => {
-      const res = await fetch(getApiUrl(`/api/wdep/experiments/${wdepData?.data?.experiment?.id}/log`), {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
+      return await apiFetchJson(`/api/wdep/experiments/${wdepData?.data?.experiment?.id}/log`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ date, completed, note }),
       });
-      if (!res.ok) throw new Error("Failed to log day");
-      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/wdep/${wdepId}`] });
@@ -71,14 +65,11 @@ export function WdepExperiment() {
 
   const saveReflection = useMutation({
     mutationFn: async () => {
-      const res = await fetch(getApiUrl(`/api/wdep/experiments/${wdepData?.data?.experiment?.id}/reflection`), {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
+      return await apiFetchJson(`/api/wdep/experiments/${wdepData?.data?.experiment?.id}/reflection`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ reflectionDay7: reflection }),
       });
-      if (!res.ok) throw new Error("Failed to save reflection");
-      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/wdep/${wdepId}`] });

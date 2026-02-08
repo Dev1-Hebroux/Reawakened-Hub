@@ -72,20 +72,17 @@ export function StrengthsTool() {
 
   const saveStrengths = useMutation({
     mutationFn: async () => {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
       const strengths = top5.map((key, i) => ({
         strengthKey: key,
         rank: i + 1,
         selfRating: ratings.get(key) || 5,
         isSignature: i < 5,
       }));
-      const res = await fetch(`/api/vision/sessions/${sessionId}/strengths`, {
+      return await apiFetchJson(`/api/vision/sessions/${sessionId}/strengths`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ strengths }),
       });
-      if (!res.ok) throw new Error("Failed to save strengths");
-      return res.json();
     },
     onSuccess: () => {
       setStep("results");

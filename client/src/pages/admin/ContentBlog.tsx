@@ -80,16 +80,11 @@ export function ContentBlog() {
 
   const createMutation = useMutation({
     mutationFn: async (data: BlogFormData) => {
-      const res = await fetch(getApiUrl('/api/admin/blog-posts'), {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
+      return await apiFetchJson('/api/admin/blog-posts', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
-      if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || 'Failed to create blog post');
-      }
-      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/blog-posts"] });
@@ -103,16 +98,11 @@ export function ContentBlog() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: Partial<BlogFormData> }) => {
-      const res = await fetch(getApiUrl(`/api/admin/blog-posts/${id}`), {
+      const { apiFetchJson } = await import('@/lib/apiFetch');
+      return await apiFetchJson(`/api/admin/blog-posts/${id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
-      if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || 'Failed to update blog post');
-      }
-      return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/blog-posts"] });
@@ -126,8 +116,8 @@ export function ContentBlog() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await fetch(getApiUrl(`/api/admin/blog-posts/${id}`), { method: 'DELETE' });
-      if (!res.ok) throw new Error('Failed to delete blog post');
+      const { apiFetch } = await import('@/lib/apiFetch');
+      await apiFetch(`/api/admin/blog-posts/${id}`, { method: 'DELETE' });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/blog-posts"] });
