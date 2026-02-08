@@ -1,24 +1,34 @@
+# Dependencies (installed during build)
 node_modules
+
+# Build output (created during Docker build)
 dist
+
+# Version control
 .git
 .gitignore
+
+# Environment files
 .env
 .env.*
+
+# Logs and temp files
 *.log
 .DS_Store
 .config
 .cache
 coverage
 .nyc_output
+
+# Documentation (not needed in production)
 *.md
 !README.md
 docs/
+
+# Media and assets (large files excluded where possible)
 social-media/
-*.sql
-cookies*.txt
-scripts/*.sh
-.antigravityignore
-.github/
+# NOTE: client/public/media and client/public/podcast are needed for Vite build
+# They get copied to dist/public during build process
 attached_assets/Pasted*
 attached_assets/image_*
 attached_assets/*.png
@@ -32,3 +42,20 @@ attached_assets/*.md
 attached_assets/*.pdf
 attached_assets/generated_images/
 attached_assets/stock_images/
+
+# Database
+*.sql
+migrations/*.sql
+
+# Scripts and tools
+cookies*.txt
+scripts/*.sh
+.antigravityignore
+
+# CI/CD
+.github/
+
+# Development files
+.claude/
+*.code-workspace
+.vscode/
