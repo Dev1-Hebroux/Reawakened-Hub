@@ -109,6 +109,25 @@ router.get('/admin/spark-audio/status', isAuthenticated, async (req: any, res) =
   }
 });
 
+// TEMPORARY: One-time initial audio generation endpoint (remove after first use)
+router.post('/spark-audio/bootstrap', async (req, res) => {
+  try {
+    logger.info('Bootstrap audio generation requested');
+
+    res.json({ message: 'Audio generation started in background', status: 'processing' });
+
+    // Run in background
+    import('../audio-pregeneration.js').then(({ pregenerateUpcomingAudio }) => {
+      pregenerateUpcomingAudio(7)
+        .then(() => logger.info('Bootstrap audio generation complete'))
+        .catch(error => logger.error({ error }, 'Bootstrap audio generation failed'));
+    });
+  } catch (error) {
+    logger.error({ error }, 'Error starting bootstrap generation');
+    res.status(500).json({ error: 'Failed to start generation' });
+  }
+});
+
 router.post('/admin/spark-audio/generate-all', isAuthenticated, async (req: any, res) => {
   try {
     if (req.user?.claims?.metadata?.role !== 'super_admin' && req.user?.claims?.metadata?.role !== 'admin') {
