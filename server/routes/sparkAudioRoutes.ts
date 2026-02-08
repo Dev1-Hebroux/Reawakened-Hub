@@ -110,8 +110,17 @@ router.get('/admin/spark-audio/status', isAuthenticated, async (req: any, res) =
 });
 
 // TEMPORARY: One-time initial audio generation endpoint (remove after first use)
-router.post('/spark-audio/bootstrap', async (req, res) => {
+// Use GET with simple token to avoid CSRF issues
+router.get('/spark-audio/bootstrap', async (req, res) => {
   try {
+    // Simple auth check using environment variable
+    const token = req.query.token;
+    const expectedToken = process.env.BOOTSTRAP_TOKEN || 'reawakened-2026-bootstrap';
+
+    if (token !== expectedToken) {
+      return res.status(403).json({ error: 'Invalid token' });
+    }
+
     logger.info('Bootstrap audio generation requested');
 
     res.json({ message: 'Audio generation started in background', status: 'processing' });
