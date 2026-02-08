@@ -29,3 +29,6 @@ attached_assets/*.html
 attached_assets/*.msg
 attached_assets/*.txt
 attached_assets/*.md
+attached_assets/*.pdf
+attached_assets/generated_images/
+attached_assets/stock_images/
