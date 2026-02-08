@@ -44,7 +44,8 @@ export const validateCsrfToken: RequestHandler = (req, res, next) => {
   }
 
   // TEMPORARY: Allow bootstrap endpoint without CSRF (remove after first use)
-  if (req.path === '/api/spark-audio/bootstrap') {
+  // Note: path is relative to /api mount point, so it's /spark-audio/bootstrap not /api/spark-audio/bootstrap
+  if (req.path === '/spark-audio/bootstrap') {
     return next();
   }
   
