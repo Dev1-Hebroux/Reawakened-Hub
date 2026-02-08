@@ -45,13 +45,15 @@ export const validateCsrfToken: RequestHandler = (req, res, next) => {
 
   // TEMPORARY: Allow bootstrap endpoint without CSRF (remove after first use)
   // Note: path is relative to /api mount point, so it's /spark-audio/bootstrap not /api/spark-audio/bootstrap
+  console.log(`[CSRF DEBUG] Checking path: "${req.path}" vs "/spark-audio/bootstrap"`);
   if (req.path === '/spark-audio/bootstrap') {
+    console.log('[CSRF DEBUG] Bootstrap bypass activated!');
     return next();
   }
-  
+
   const cookieToken = req.cookies?.[CSRF_COOKIE_NAME];
   const headerToken = req.headers[CSRF_HEADER_NAME] as string;
-  
+
   if (!cookieToken || !headerToken) {
     console.warn(`[CSRF] Token missing: path=${req.path}, method=${req.method}, hasCookie=${!!cookieToken}, hasHeader=${!!headerToken}`);
     return res.status(403).json({
