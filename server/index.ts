@@ -11,13 +11,14 @@ import { scheduleAudioPregeneration } from "./audio-pregeneration";
 import { autoSeedDominionContent } from "./auto-seed";
 import { startNightlyContentSync } from "./content-sync";
 import { initializeNotificationScheduler } from "./notification-scheduler";
-import { 
+import {
   setCsrfToken,
   validateCsrfToken,
-  requestIdMiddleware, 
+  requestIdMiddleware,
   metricsMiddleware,
   metricsEndpoint,
-  authRateLimiter 
+  authRateLimiter,
+  setRLSContext
 } from "./middleware";
 import { jobScheduler, CronPatterns } from "./lib/jobScheduler";
 import { notificationService } from "./services/notificationService";
@@ -48,7 +49,6 @@ app.use(metricsMiddleware);
 app.use(setCsrfToken);
 app.use("/api", apiLimiter);
 app.use("/api/login", authRateLimiter);
-app.use("/api/callback", authRateLimiter);
 
 app.use(
   express.json({
