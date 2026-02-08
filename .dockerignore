@@ -18,3 +18,14 @@ social-media/
 cookies*.txt
 scripts/*.sh
 .antigravityignore
+.github/
+attached_assets/Pasted*
+attached_assets/image_*
+attached_assets/*.png
+attached_assets/*.jpg
+attached_assets/*.jpeg
+attached_assets/*.docx
+attached_assets/*.html
+attached_assets/*.msg
+attached_assets/*.txt
+attached_assets/*.md
