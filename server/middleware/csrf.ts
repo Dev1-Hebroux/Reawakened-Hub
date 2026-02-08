@@ -44,10 +44,13 @@ export const validateCsrfToken: RequestHandler = (req, res, next) => {
   }
 
   // TEMPORARY: Allow bootstrap endpoint without CSRF (remove after first use)
-  // Note: path is relative to /api mount point, so it's /spark-audio/bootstrap not /api/spark-audio/bootstrap
-  console.log(`[CSRF DEBUG] Checking path: "${req.path}" vs "/spark-audio/bootstrap"`);
-  if (req.path === '/spark-audio/bootstrap') {
-    console.log('[CSRF DEBUG] Bootstrap bypass activated!');
+  // Check both req.path and req.originalUrl to handle different mounting scenarios
+  const isBootstrap = req.path === '/spark-audio/bootstrap' ||
+                      req.originalUrl === '/api/spark-audio/bootstrap' ||
+                      req.originalUrl.endsWith('/spark-audio/bootstrap');
+
+  if (isBootstrap) {
+    console.log('[CSRF] Bootstrap endpoint bypass activated');
     return next();
   }
 
