@@ -7,7 +7,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { securityHeaders } from "./securityHeaders";
 import { apiLimiter } from "./rateLimiter";
-import { scheduleAudioPregeneration } from "./audio-pregeneration";
+import { pregenerateUpcomingAudio, verifyAndRepairUpcomingAudio } from "./audio-pregeneration";
 import { autoSeedDominionContent } from "./auto-seed";
 import { startNightlyContentSync } from "./content-sync";
 import { initializeNotificationScheduler } from "./notification-scheduler";
@@ -132,12 +132,7 @@ async function initializeBackgroundServices(): Promise<void> {
       
       // Start nightly content sync scheduler
       startNightlyContentSync();
-      
-      // Start audio pre-generation (only if API key configured)
-      if (process.env.OPENAI_API_KEY) {
-        scheduleAudioPregeneration();
-      }
-      
+
       // Start notification scheduler
       initializeNotificationScheduler();
       
@@ -230,7 +225,46 @@ async function initializeBackgroundServices(): Promise<void> {
           log(`Sent ${sent} weekly prayer reminders (${failed} failed)`, 'jobs');
         }
       );
-      
+
+      // Audio pre-generation jobs (only if OpenAI API key configured)
+      if (process.env.OPENAI_API_KEY && process.env.SUPABASE_URL) {
+        // Weekly audio pre-generation - runs every Sunday at 23:00 to prepare for the week ahead
+        jobScheduler.register(
+          'weekly-audio-pregeneration',
+          '0 23 * * 0', // Sunday at 23:00
+          async () => {
+            log('Starting weekly audio pre-generation for next 7 days', 'audio-jobs');
+            await pregenerateUpcomingAudio(7);
+            log('Weekly audio pre-generation complete', 'audio-jobs');
+          }
+        );
+
+        // Pre-release audio verification - runs at 04:30 daily (30 mins before 05:00 spark release)
+        jobScheduler.register(
+          'pre-release-audio-verification',
+          '30 4 * * *', // Daily at 04:30
+          async () => {
+            log('Starting pre-release audio verification', 'audio-jobs');
+            const result = await verifyAndRepairUpcomingAudio(3);
+
+            if (result.failedRepairs.length > 0) {
+              log(`WARNING: ${result.failedRepairs.length} sparks still missing audio after repair attempts!`, 'audio-jobs');
+              result.failedRepairs.forEach(msg => log(`  - ${msg}`, 'audio-jobs'));
+            } else {
+              log(`Pre-release verification complete: ${result.ready} ready, ${result.repaired} repaired`, 'audio-jobs');
+            }
+          }
+        );
+
+        // On startup, generate audio for upcoming sparks if needed
+        setTimeout(async () => {
+          log('Running initial audio check for upcoming sparks', 'audio-jobs');
+          await pregenerateUpcomingAudio(7);
+        }, 10000); // 10 seconds after startup
+      } else {
+        log('Audio generation disabled - OPENAI_API_KEY or SUPABASE_URL not configured', 'audio-jobs');
+      }
+
       jobScheduler.start();
       log('All background services initialized', 'background');
       

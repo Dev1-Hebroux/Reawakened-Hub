@@ -215,29 +215,46 @@ export function PodcastSection() {
     if (!episode) return;
 
     if (currentEpisode === episodeId && isPlaying) {
-      // Pause
+      // Pause current episode
       audioRef.current?.pause();
       setIsPlaying(false);
       return;
     }
 
     if (currentEpisode === episodeId && !isPlaying) {
-      // Resume
+      // Resume same episode
       audioRef.current?.play().catch(() => {});
       setIsPlaying(true);
       return;
     }
 
-    // Play new episode from start
+    // Switching to a different episode
+    // First, stop any currently playing audio
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+    }
+
+    // Reset all state for new episode
+    setIsPlaying(false);
     setCurrentEpisode(episodeId);
     setCurrentSectionIndex(0);
     setProgress(0);
+    setDuration(0);
 
+    // Load and play new episode
     if (audioRef.current) {
       audioRef.current.src = episode.sections[0];
-      audioRef.current.play().then(() => {
-        setIsPlaying(true);
-      }).catch(() => {});
+      audioRef.current.load(); // Force reload
+
+      // Use a small delay to ensure state is updated
+      setTimeout(() => {
+        audioRef.current?.play().then(() => {
+          setIsPlaying(true);
+        }).catch((error) => {
+          console.error('Playback failed:', error);
+        });
+      }, 100);
     }
   };
 
