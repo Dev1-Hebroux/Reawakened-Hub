@@ -269,7 +269,11 @@ export function PodcastSection() {
     return `${m}:${s.toString().padStart(2, '0')}`;
   };
 
-  const latestEpisode = PODCAST_EPISODES[0];
+  // Determine which episode to feature: the currently playing episode, or the latest episode
+  const featuredEpisode = activeEpisode || PODCAST_EPISODES[0];
+
+  // Episodes to show in the list (all episodes except the featured one)
+  const listEpisodes = PODCAST_EPISODES.filter(ep => ep.id !== featuredEpisode.id);
 
   return (
     <section id="podcast" className="relative overflow-hidden scroll-mt-20">
@@ -301,26 +305,27 @@ export function PodcastSection() {
           </div>
         </motion.div>
 
-        {/* Featured Latest Episode — Colorful Card */}
+        {/* Featured Episode — Shows currently playing or latest episode */}
         <motion.div
+          key={featuredEpisode.id}
           initial={{ opacity: 0, y: 28 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
           className="group relative rounded-3xl overflow-hidden mb-8"
         >
-          <div className={`absolute inset-0 bg-gradient-to-br ${latestEpisode.gradient} opacity-15`} />
+          <div className={`absolute inset-0 bg-gradient-to-br ${featuredEpisode.gradient} opacity-15`} />
           <div className="absolute inset-0 border border-white/[0.08] rounded-3xl" />
-          <div className={`absolute -top-20 -right-20 w-64 h-64 bg-gradient-to-br ${latestEpisode.gradient} opacity-10 rounded-full blur-[80px] pointer-events-none`} />
+          <div className={`absolute -top-20 -right-20 w-64 h-64 bg-gradient-to-br ${featuredEpisode.gradient} opacity-10 rounded-full blur-[80px] pointer-events-none`} />
 
           <div className="relative p-6 md:p-10">
             <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-start">
               {/* Episode Art — Cover Image */}
               <div className="relative flex-shrink-0">
-                <div className={`absolute inset-0 bg-gradient-to-br ${latestEpisode.gradient} rounded-3xl blur-xl scale-110 opacity-30 group-hover:opacity-50 transition-opacity duration-500`} />
+                <div className={`absolute inset-0 bg-gradient-to-br ${featuredEpisode.gradient} rounded-3xl blur-xl scale-110 opacity-30 group-hover:opacity-50 transition-opacity duration-500`} />
                 <div className={`relative w-24 h-24 md:w-32 md:h-32 rounded-3xl overflow-hidden shadow-2xl`}>
                   <img
-                    src={latestEpisode.coverImage}
-                    alt={latestEpisode.title}
+                    src={featuredEpisode.coverImage}
+                    alt={featuredEpisode.title}
                     className="w-full h-full object-cover"
                   />
                   <div className={`absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent`} />
@@ -330,36 +335,36 @@ export function PodcastSection() {
               <div className="flex-1 space-y-3">
                 {/* Meta badges */}
                 <div className="flex items-center gap-3 flex-wrap">
-                  <span className={`text-[10px] font-bold uppercase tracking-[0.2em] bg-gradient-to-r ${latestEpisode.gradientText} bg-clip-text text-transparent px-0.5`}>
-                    Latest Episode
+                  <span className={`text-[10px] font-bold uppercase tracking-[0.2em] bg-gradient-to-r ${featuredEpisode.gradientText} bg-clip-text text-transparent px-0.5`}>
+                    {currentEpisode === featuredEpisode.id ? 'Now Playing' : 'Latest Episode'}
                   </span>
                   <span className="text-[10px] font-medium uppercase tracking-[0.15em] text-white/30">
-                    Episode {latestEpisode.number} · {latestEpisode.releaseDate}
+                    Episode {featuredEpisode.number} · {featuredEpisode.releaseDate}
                   </span>
                 </div>
 
                 <h3 className="text-xl md:text-2xl font-display font-bold text-white tracking-tight leading-tight">
-                  {latestEpisode.title}
+                  {featuredEpisode.title}
                 </h3>
 
-                <p className="text-sm text-white/40 italic">{latestEpisode.theme}</p>
+                <p className="text-sm text-white/40 italic">{featuredEpisode.theme}</p>
 
                 <p className="text-sm text-white/60 leading-relaxed max-w-2xl hidden md:block">
-                  {latestEpisode.description}
+                  {featuredEpisode.description}
                 </p>
 
                 {/* Waveform */}
-                <WaveformBars color={latestEpisode.accentColor} active={currentEpisode === latestEpisode.id && isPlaying} />
+                <WaveformBars color={featuredEpisode.accentColor} active={currentEpisode === featuredEpisode.id && isPlaying} />
 
                 {/* Now Playing indicator */}
-                {currentEpisode === latestEpisode.id && (
+                {currentEpisode === featuredEpisode.id && (
                   <div className="flex items-center gap-3 text-xs text-white/40">
                     <span className="font-medium">
                       {SECTION_LABELS[currentSectionIndex]} — {formatTime(progress)} / {formatTime(duration)}
                     </span>
                     <div className="flex-1 h-1 bg-white/10 rounded-full overflow-hidden max-w-xs">
                       <div
-                        className={`h-full bg-gradient-to-r ${latestEpisode.gradient} rounded-full transition-all duration-300`}
+                        className={`h-full bg-gradient-to-r ${featuredEpisode.gradient} rounded-full transition-all duration-300`}
                         style={{ width: duration ? `${(progress / duration) * 100}%` : '0%' }}
                       />
                     </div>
@@ -376,38 +381,38 @@ export function PodcastSection() {
                 {/* Action row */}
                 <div className="flex items-center gap-4 pt-1">
                   <button
-                    onClick={() => playEpisode(latestEpisode.id)}
+                    onClick={() => playEpisode(featuredEpisode.id)}
                     className={`group/btn flex items-center gap-3 font-bold py-3 px-7 rounded-full transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] ${
-                      currentEpisode === latestEpisode.id && isPlaying
-                        ? `bg-gradient-to-r ${latestEpisode.gradient} text-white shadow-lg`
+                      currentEpisode === featuredEpisode.id && isPlaying
+                        ? `bg-gradient-to-r ${featuredEpisode.gradient} text-white shadow-lg`
                         : 'bg-white text-black hover:shadow-[0_0_40px_rgba(255,255,255,0.12)]'
                     }`}
                   >
                     <div className={`h-8 w-8 rounded-full flex items-center justify-center transition-transform group-hover/btn:scale-110 ${
-                      currentEpisode === latestEpisode.id && isPlaying
+                      currentEpisode === featuredEpisode.id && isPlaying
                         ? 'bg-white/20'
-                        : `bg-gradient-to-br ${latestEpisode.gradient}`
+                        : `bg-gradient-to-br ${featuredEpisode.gradient}`
                     }`}>
-                      {currentEpisode === latestEpisode.id && isPlaying ? (
+                      {currentEpisode === featuredEpisode.id && isPlaying ? (
                         <Pause className="h-3.5 w-3.5 fill-white text-white" />
                       ) : (
                         <Play className="h-3.5 w-3.5 fill-white text-white ml-0.5" />
                       )}
                     </div>
-                    {currentEpisode === latestEpisode.id && isPlaying ? 'Playing' : 'Listen Now'}
+                    {currentEpisode === featuredEpisode.id && isPlaying ? 'Playing' : 'Listen Now'}
                   </button>
                   <div className="flex items-center gap-2 text-sm text-white/30">
                     <Headphones className="h-4 w-4" />
-                    {latestEpisode.duration}
+                    {featuredEpisode.duration}
                   </div>
                   <span className="text-sm text-white/20 font-medium hidden sm:inline">
-                    {latestEpisode.scripture}
+                    {featuredEpisode.scripture}
                   </span>
                   {/* Share button */}
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      shareEpisode(latestEpisode);
+                      shareEpisode(featuredEpisode);
                     }}
                     className="ml-auto p-2.5 rounded-full bg-white/[0.06] border border-white/[0.08] hover:bg-white/[0.12] transition-all"
                     title="Share this episode"
@@ -420,9 +425,9 @@ export function PodcastSection() {
           </div>
         </motion.div>
 
-        {/* Episode List — Colorful list items */}
+        {/* Episode List — All episodes except the featured one */}
         <div className="space-y-3">
-          {PODCAST_EPISODES.slice(1).map((episode, index) => {
+          {listEpisodes.map((episode, index) => {
             const isActive = currentEpisode === episode.id;
             const isEpPlaying = isActive && isPlaying;
 
