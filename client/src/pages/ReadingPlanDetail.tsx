@@ -364,9 +364,9 @@ export function ReadingPlanDetail() {
           </motion.div>
         )}
 
-        <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-          <Calendar className="h-5 w-5 text-primary" />
-          Daily Readings
+        <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2 break-words">
+          <Calendar className="h-5 w-5 text-primary flex-shrink-0" />
+          <span>Daily Readings</span>
         </h2>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
